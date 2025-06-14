@@ -23,9 +23,9 @@
         <Button id="TestArcMapAddin2_OpenMainProcessingTabsFormCmd"
                 class="TestArcMapAddin2.Commands.OpenMainProcessingTabsFormCmd"
                 image="Images\Asses.png"
-                caption="打开主处理选项卡"
+                caption="打开主处理工具"
                 category="自然资源资产清查"
-                tooltip="打开主处理选项卡界面，进行核心数据处理。">
+                tooltip="打开主处理工具界面，进行核心数据处理。">
         </Button>
       </Commands>
       <Toolbars>

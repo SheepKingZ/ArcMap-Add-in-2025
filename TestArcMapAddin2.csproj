@@ -78,7 +78,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\OpenBasicDataFormCmd.cs" />
-    <Compile Include="Commands\OpenMainProcessFormCommand.cs" />
     <Compile Include="Commands\OpenMainProcessingTabsFormCmd.cs" />
     <Compile Include="Components\DataTableCreator.cs" />
     <Compile Include="Config.Designer.cs">
@@ -108,12 +107,6 @@
     </Compile>
     <Compile Include="Forms\ProgressDialog.cs">
       <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\TestForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\TestForm.Designer.cs">
-      <DependentUpon>TestForm.cs</DependentUpon>
     </Compile>
     <Compile Include="obj\Debug\.NETFramework,Version=v4.6.1.AssemblyAttributes.cs" />
     <Compile Include="obj\Debug\TemporaryGeneratedFile_036C0B5B-1481-4323-8D20-8F5ADCB23D92.cs" />
@@ -159,9 +152,8 @@
     <Content Include="obj\Debug\TestArcMapAddin2.csproj.FileListAbsolute.txt" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Forms\TestForm.resx">
-      <DependentUpon>TestForm.cs</DependentUpon>
-      <SubType>Designer</SubType>
+    <EmbeddedResource Include="Forms\CountySelectionForm.resx">
+      <DependentUpon>CountySelectionForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
