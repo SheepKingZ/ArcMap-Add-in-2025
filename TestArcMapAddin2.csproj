@@ -89,6 +89,9 @@
     <Compile Include="Forms\ForestForm\AssetValueCalculationForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Forms\ForestForm\AssetValueCalculationForm.Designer.cs">
+      <DependentUpon>AssetValueCalculationForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\ForestForm\BasePriceSupplementForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -106,6 +109,9 @@
     </Compile>
     <Compile Include="Forms\FieldMappingForm.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ForestForm\ExtractWorkScopeForm.Designer.cs">
+      <DependentUpon>ExtractWorkScopeForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\ForestForm\ForestProcessingFormBase.cs">
       <SubType>Form</SubType>
@@ -183,6 +189,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Forms\CountySelectionForm.resx">
       <DependentUpon>CountySelectionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ForestForm\AssetValueCalculationForm.resx">
+      <DependentUpon>AssetValueCalculationForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ForestForm\ExtractWorkScopeForm.resx">
+      <DependentUpon>ExtractWorkScopeForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\ForestForm\ForestProcessingFormBase.resx">
       <DependentUpon>ForestProcessingFormBase.cs</DependentUpon>

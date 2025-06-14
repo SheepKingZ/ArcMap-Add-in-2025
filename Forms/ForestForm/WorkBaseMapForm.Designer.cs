@@ -56,6 +56,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.mainPanel.Controls.Add(this.dataSourceGroupBox);
             this.mainPanel.Controls.Add(this.processingOptionsGroupBox);
+            this.mainPanel.Size = new System.Drawing.Size(637, 538);
             this.mainPanel.Controls.SetChildIndex(this.processingOptionsGroupBox, 0);
             this.mainPanel.Controls.SetChildIndex(this.dataSourceGroupBox, 0);
             this.mainPanel.Controls.SetChildIndex(this.statusLabel, 0);
@@ -73,7 +74,8 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             // descriptionTextBox
             // 
-            this.descriptionTextBox.Size = new System.Drawing.Size(593, 118);
+            this.descriptionTextBox.Location = new System.Drawing.Point(13, 76);
+            this.descriptionTextBox.Size = new System.Drawing.Size(595, 67);
             this.descriptionTextBox.Text = "工作范围与林地分等数据关联，补充完善数据库；工作范围与林地定级数据关联，将基准地价通过空间挂接森林图班。";
             // 
             // logTextBox
@@ -87,8 +89,26 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             // progressBar
             // 
-            this.progressBar.Location = new System.Drawing.Point(15, 542);
-            this.progressBar.Size = new System.Drawing.Size(600, 30);
+            this.progressBar.Location = new System.Drawing.Point(122, 500);
+            this.progressBar.Size = new System.Drawing.Size(493, 30);
+            // 
+            // startButton
+            // 
+            this.startButton.Size = new System.Drawing.Size(180, 37);
+            // 
+            // cancelButton
+            // 
+            this.cancelButton.Size = new System.Drawing.Size(180, 37);
+            // 
+            // closeButton
+            // 
+            this.closeButton.Location = new System.Drawing.Point(474, 23);
+            this.closeButton.Size = new System.Drawing.Size(134, 36);
+            // 
+            // bottomPanel
+            // 
+            this.bottomPanel.Location = new System.Drawing.Point(0, 538);
+            this.bottomPanel.Size = new System.Drawing.Size(637, 63);
             // 
             // dataSourceGroupBox
             // 
@@ -130,7 +150,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.btnBrowseWorkScope.Location = new System.Drawing.Point(500, 24);
             this.btnBrowseWorkScope.Name = "btnBrowseWorkScope";
-            this.btnBrowseWorkScope.Size = new System.Drawing.Size(80, 23);
+            this.btnBrowseWorkScope.Size = new System.Drawing.Size(80, 29);
             this.btnBrowseWorkScope.TabIndex = 2;
             this.btnBrowseWorkScope.Text = "浏览...";
             this.btnBrowseWorkScope.UseVisualStyleBackColor = true;
@@ -155,9 +175,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             // btnBrowseGrading
             // 
-            this.btnBrowseGrading.Location = new System.Drawing.Point(500, 54);
+            this.btnBrowseGrading.Location = new System.Drawing.Point(500, 57);
             this.btnBrowseGrading.Name = "btnBrowseGrading";
-            this.btnBrowseGrading.Size = new System.Drawing.Size(80, 29);
+            this.btnBrowseGrading.Size = new System.Drawing.Size(80, 26);
             this.btnBrowseGrading.TabIndex = 5;
             this.btnBrowseGrading.Text = "浏览...";
             this.btnBrowseGrading.UseVisualStyleBackColor = true;
@@ -182,7 +202,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             // btnBrowsePrice
             // 
-            this.btnBrowsePrice.Location = new System.Drawing.Point(500, 84);
+            this.btnBrowsePrice.Location = new System.Drawing.Point(500, 85);
             this.btnBrowsePrice.Name = "btnBrowsePrice";
             this.btnBrowsePrice.Size = new System.Drawing.Size(80, 29);
             this.btnBrowsePrice.TabIndex = 8;
@@ -194,7 +214,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.btnLoadCurrentMap.Location = new System.Drawing.Point(200, 115);
             this.btnLoadCurrentMap.Name = "btnLoadCurrentMap";
-            this.btnLoadCurrentMap.Size = new System.Drawing.Size(180, 25);
+            this.btnLoadCurrentMap.Size = new System.Drawing.Size(180, 29);
             this.btnLoadCurrentMap.TabIndex = 9;
             this.btnLoadCurrentMap.Text = "加载当前地图数据";
             this.btnLoadCurrentMap.UseVisualStyleBackColor = true;
@@ -218,7 +238,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.chkSpatialJoin.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkSpatialJoin.Location = new System.Drawing.Point(20, 25);
             this.chkSpatialJoin.Name = "chkSpatialJoin";
-            this.chkSpatialJoin.Size = new System.Drawing.Size(150, 20);
+            this.chkSpatialJoin.Size = new System.Drawing.Size(150, 26);
             this.chkSpatialJoin.TabIndex = 0;
             this.chkSpatialJoin.Text = "使用空间连接方式";
             this.chkSpatialJoin.UseVisualStyleBackColor = true;
@@ -241,9 +261,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.chkOverwriteExisting.Checked = true;
             this.chkOverwriteExisting.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkOverwriteExisting.Location = new System.Drawing.Point(400, 25);
+            this.chkOverwriteExisting.Location = new System.Drawing.Point(402, 28);
             this.chkOverwriteExisting.Name = "chkOverwriteExisting";
-            this.chkOverwriteExisting.Size = new System.Drawing.Size(150, 20);
+            this.chkOverwriteExisting.Size = new System.Drawing.Size(150, 23);
             this.chkOverwriteExisting.TabIndex = 2;
             this.chkOverwriteExisting.Text = "覆盖现有数据";
             this.chkOverwriteExisting.UseVisualStyleBackColor = true;
@@ -252,7 +272,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(634, 601);
+            this.ClientSize = new System.Drawing.Size(637, 601);
             this.Name = "WorkBaseMapForm";
             this.Text = "制作森林工作底图";
             this.mainPanel.ResumeLayout(false);

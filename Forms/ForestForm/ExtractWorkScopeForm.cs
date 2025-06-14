@@ -21,102 +21,15 @@ namespace TestArcMapAddin2.Forms
         
         public ExtractWorkScopeForm()
         {
-            InitializeComponents();
-        }
-        
-        private void InitializeComponents()
-        {
-            this.Text = "提取森林工作范围";
-            this.titleLabel.Text = "1. 提取森林工作范围";
-            
-            this.descriptionTextBox.Text = 
-                "以林草湿荒普查数据为基础，关联城镇开发边界矢量数据，筛选提取地类为林地，且土地权属性质为国有的图斑地块，" +
-                "或地类为林地，土地权属性质为集体但又位于城镇开发边界内的图斑地块，即为县（区）森林资源资产清查工作范围。";
-            
-            // Add custom controls specific to this form
-            GroupBox dataSourceGroupBox = new GroupBox
-            {
-                Text = "数据来源",
-                Location = new Point(15, 150),
-                Size = new Size(600, 120)
-            };
-            
-            Label lblInventoryData = new Label
-            {
-                Text = "林草湿荒普查数据:",
-                Location = new Point(15, 25),
-                Size = new Size(150, 20),
-                TextAlign = ContentAlignment.MiddleRight
-            };
-            
-            TextBox txtInventoryData = new TextBox
-            {
-                Location = new Point(170, 25),
-                Size = new Size(320, 20),
-                ReadOnly = true
-            };
-            
-            Button btnBrowseInventory = new Button
-            {
-                Text = "浏览...",
-                Location = new Point(500, 24),
-                Size = new Size(80, 23)
-            };
-            
-            Label lblUrbanBoundary = new Label
-            {
-                Text = "城镇开发边界数据:",
-                Location = new Point(15, 55),
-                Size = new Size(150, 20),
-                TextAlign = ContentAlignment.MiddleRight
-            };
-            
-            TextBox txtUrbanBoundary = new TextBox
-            {
-                Location = new Point(170, 55),
-                Size = new Size(320, 20),
-                ReadOnly = true
-            };
-            
-            Button btnBrowseBoundary = new Button
-            {
-                Text = "浏览...",
-                Location = new Point(500, 54),
-                Size = new Size(80, 23)
-            };
-            
-            Button btnLoadCurrentMap = new Button
-            {
-                Text = "加载当前地图数据",
-                Location = new Point(200, 85),
-                Size = new Size(180, 25)
-            };
-            
-            // Add controls to the group box
-            dataSourceGroupBox.Controls.Add(lblInventoryData);
-            dataSourceGroupBox.Controls.Add(txtInventoryData);
-            dataSourceGroupBox.Controls.Add(btnBrowseInventory);
-            dataSourceGroupBox.Controls.Add(lblUrbanBoundary);
-            dataSourceGroupBox.Controls.Add(txtUrbanBoundary);
-            dataSourceGroupBox.Controls.Add(btnBrowseBoundary);
-            dataSourceGroupBox.Controls.Add(btnLoadCurrentMap);
-            
-            // Adjust the location of the existing log text box
-            this.logTextBox.Location = new Point(15, 280);
-            this.logTextBox.Size = new Size(600, 140);
-            
-            // Adjust other control positions
-            this.statusLabel.Location = new Point(15, 430);
-            this.progressBar.Location = new Point(15, 455);
-            
-            // Add the group box to the main panel
-            this.mainPanel.Controls.Add(dataSourceGroupBox);
+            InitializeComponent(); // Changed from InitializeComponents
             
             // Wire up the browse button events
-            btnBrowseInventory.Click += (sender, e) => BrowseForData(txtInventoryData, "选择林草湿荒普查数据", "图层文件 (*.shp)|*.shp|所有文件 (*.*)|*.*");
-            btnBrowseBoundary.Click += (sender, e) => BrowseForData(txtUrbanBoundary, "选择城镇开发边界数据", "图层文件 (*.shp)|*.shp|所有文件 (*.*)|*.*");
-            btnLoadCurrentMap.Click += BtnLoadCurrentMap_Click;
+            this.btnBrowseInventory.Click += (sender, e) => BrowseForData(this.txtInventoryData, "选择林草湿荒普查数据", "图层文件 (*.shp)|*.shp|所有文件 (*.*)|*.*");
+            this.btnBrowseBoundary.Click += (sender, e) => BrowseForData(this.txtUrbanBoundary, "选择城镇开发边界数据", "图层文件 (*.shp)|*.shp|所有文件 (*.*)|*.*");
+            this.btnLoadCurrentMap.Click += BtnLoadCurrentMap_Click;
         }
+        
+        // Removed InitializeComponents() method as it's now in the Designer.cs file
 
         private void BrowseForData(TextBox textBox, string title, string filter)
         {
@@ -141,11 +54,8 @@ namespace TestArcMapAddin2.Forms
                 // and load the relevant layers
                 
                 // For demo purposes, just fill in some sample paths
-                var txtInventoryData = this.mainPanel.Controls.Find("txtInventoryData", true)[0] as TextBox;
-                var txtUrbanBoundary = this.mainPanel.Controls.Find("txtUrbanBoundary", true)[0] as TextBox;
-                
-                txtInventoryData.Text = @"C:\GIS_Data\林草湿荒普查数据.shp";
-                txtUrbanBoundary.Text = @"C:\GIS_Data\城镇开发边界.shp";
+                this.txtInventoryData.Text = @"C:\GIS_Data\林草湿荒普查数据.shp"; // New way
+                this.txtUrbanBoundary.Text = @"C:\GIS_Data\城镇开发边界.shp"; // New way
                 
                 Log("数据已从当前地图加载");
             }
@@ -161,10 +71,7 @@ namespace TestArcMapAddin2.Forms
             base.StartButton_Click(sender, e);
             
             // Get the file paths from the text boxes
-            var txtInventoryData = this.mainPanel.Controls.Find("txtInventoryData", true)[0] as TextBox;
-            var txtUrbanBoundary = this.mainPanel.Controls.Find("txtUrbanBoundary", true)[0] as TextBox;
-            
-            if (string.IsNullOrEmpty(txtInventoryData.Text) || string.IsNullOrEmpty(txtUrbanBoundary.Text))
+            if (string.IsNullOrEmpty(this.txtInventoryData.Text) || string.IsNullOrEmpty(this.txtUrbanBoundary.Text)) // New way
             {
                 MessageBox.Show("请先选择所需数据文件", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 OnProcessingComplete(false);
@@ -173,7 +80,7 @@ namespace TestArcMapAddin2.Forms
             
             processingCancelled = false;
             // Start the processing in a background task
-            Task.Run(() => ProcessExtractWorkScope(txtInventoryData.Text, txtUrbanBoundary.Text));
+            Task.Run(() => ProcessExtractWorkScope(this.txtInventoryData.Text, this.txtUrbanBoundary.Text)); // New way
         }
         
         private void ProcessExtractWorkScope(string inventoryDataPath, string boundaryDataPath)
