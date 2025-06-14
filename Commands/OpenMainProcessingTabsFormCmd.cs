@@ -9,6 +9,9 @@ namespace TestArcMapAddin2.Commands
     {
         public OpenMainProcessingTabsFormCmd()
         {
+            this.Caption = "打开数据预处理工具";
+            this.Tooltip = "打开广东省全民所有自然资源（森林、草地、湿地）资产清查工具";
+            this.Message = "正在打开自然资源资产清查工具...";
         }
 
         protected override void OnClick()

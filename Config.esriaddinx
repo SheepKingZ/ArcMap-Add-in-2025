@@ -13,21 +13,31 @@
   <AddIn language="CLR" library="TestArcMapAddin2.dll" namespace="TestArcMapAddin2">
     <ArcMap>
       <Commands>
-        <Button id="TestArcMapAddin2_OpenMainProcessFormCommand" 
-                class="TestArcMapAddin2.Commands.OpenMainProcessFormCommand" 
-                caption="打开资产清查工具" 
-                category="自然资源资产清查" 
-                message="正在打开自然资源资产清查工具..." 
-                tooltip="打开广东省全民所有自然资源（森林、草地、湿地）资产清查工具">
-          <Image>Images\OpenMainProcessFormCommand.png</Image>
+        <Button id="TestArcMapAddin2_OpenBasicDataFormCmd"
+                class="TestArcMapAddin2.Commands.OpenBasicDataFormCmd"
+                caption="打开数据预处理工具"
+                category="自然资源资产清查"
+                message="正在打开数据预处理工具..."
+                image="Images\添加数据.png"
+                tooltip="打开数据预处理表单，进行基础数据准备工作。">
+        </Button>
+        <Button id="TestArcMapAddin2_OpenMainProcessingTabsFormCmd"
+                class="TestArcMapAddin2.Commands.OpenMainProcessingTabsFormCmd"
+                caption="打开主处理选项卡"
+                category="自然资源资产清查"
+                message="正在打开主处理选项卡界面..."
+                image="Images\资产评估.png"
+                tooltip="打开主处理选项卡界面，进行核心数据处理。">
         </Button>
       </Commands>
       <Toolbars>
-        <Toolbar id="TestArcMapAddin2_NR_Asset_Tools_Toolbar" 
-                 caption="自然资源资产清查工具栏" 
+        <Toolbar id="TestArcMapAddin2_NR_Asset_Tools_Toolbar"
+                 caption="自然资源资产清查工具栏"
                  showInitially="true">
           <Items>
             <Button refID="TestArcMapAddin2_OpenMainProcessFormCommand" />
+            <Button refID="TestArcMapAddin2_OpenBasicDataFormCmd" />
+            <Button refID="TestArcMapAddin2_OpenMainProcessingTabsFormCmd" />
           </Items>
         </Toolbar>
       </Toolbars>
