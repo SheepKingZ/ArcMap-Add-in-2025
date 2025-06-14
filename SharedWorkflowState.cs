@@ -1,4 +1,4 @@
-// 假设这个文件位于 Utilities/SharedWorkflowState.cs
+// 这个文件位于 Utilities/SharedWorkflowState.cs
 using System.Collections.Generic;
 
 public static class SharedWorkflowState

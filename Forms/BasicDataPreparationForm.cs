@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using TestArcMapAddin2.Forms; // For CountySelectionForm
+using TestArcMapAddin2.Forms; // 用于CountySelectionForm
 
 namespace TestArcMapAddin2.Forms
 {
@@ -24,7 +24,7 @@ namespace TestArcMapAddin2.Forms
 
         private void InitializeFormState()
         {
-            // Initialize labels based on current shared state or defaults
+            // 根据当前共享状态或默认值初始化标签
             lblWorkspace.Text = string.IsNullOrEmpty(SharedWorkflowState.WorkspacePath) ? "未选择工作空间" : SharedWorkflowState.WorkspacePath;
             lblWorkspace.ForeColor = string.IsNullOrEmpty(SharedWorkflowState.WorkspacePath) ? Color.Black : Color.DarkGreen;
 
@@ -140,9 +140,9 @@ namespace TestArcMapAddin2.Forms
                         SharedWorkflowState.WorkspacePath = dialog.SelectedPath;
                         lblWorkspace.Text = SharedWorkflowState.WorkspacePath;
                         lblWorkspace.ForeColor = Color.DarkGreen;
-                        // Reset subsequent step flags if workspace changes
+                        // 如果工作空间更改，重置后续步骤标志
                         SharedWorkflowState.ResetBasicDataFlags();
-                        InitializeFormState(); // Re-initialize to reflect reset flags
+                        InitializeFormState(); // 重新初始化以反映重置的标志
                     }
                     else
                     {
@@ -163,9 +163,9 @@ namespace TestArcMapAddin2.Forms
                     SharedWorkflowState.SelectedCounties = form.SelectedCounties;
                     lblCounties.Text = $"已选择 {SharedWorkflowState.SelectedCounties.Count} 个县区：{string.Join(", ", SharedWorkflowState.SelectedCounties)}";
                     lblCounties.ForeColor = Color.DarkGreen;
-                    // Reset subsequent step flags if counties change
+                    // 如果县区更改，重置后续步骤标志
                     SharedWorkflowState.ResetBasicDataFlags();
-                    InitializeFormState(); // Re-initialize to reflect reset flags
+                    InitializeFormState(); // 重新初始化以反映重置的标志
                 }
             }
             UpdateButtonStates();
@@ -219,10 +219,10 @@ namespace TestArcMapAddin2.Forms
 
         private void BtnCreateCountyEmptyTables_Click(object sender, EventArgs e)
         {
-            // Placeholder for actual logic
+            // 实际逻辑的占位符
             MessageBox.Show("正在创建县级空表...", "提示");
-            // TODO: Implement creation of empty tables logic
-            // On success:
+            // 待实现：创建空表逻辑
+            // 成功后：
             SharedWorkflowState.CountyEmptyTablesCreated = true;
             lblCountyEmptyTablesStatus.Text = "县级空表创建完成";
             lblCountyEmptyTablesStatus.ForeColor = Color.DarkGreen;

@@ -24,14 +24,14 @@ namespace TestArcMapAddin2.Forms
             checkedListBoxCounties.Items.Add("县B");
             checkedListBoxCounties.Items.Add("县C");
             // 根据需要添加更多县
-            SelectedCounties = new List<string>(); // Initialize SelectedCounties
+            SelectedCounties = new List<string>(); // 初始化SelectedCounties
         }
 
-        public CountySelectionForm(List<string> previouslySelectedCounties) : this() // Call parameterless constructor
+        public CountySelectionForm(List<string> previouslySelectedCounties) : this() // 调用无参构造函数
         {
             SelectedCounties = previouslySelectedCounties ?? new List<string>();
 
-            // Pre-select items in the CheckedListBox based on previouslySelectedCounties
+            // 根据previouslySelectedCounties预选中CheckedListBox中的项目
             for (int i = 0; i < checkedListBoxCounties.Items.Count; i++)
             {
                 if (SelectedCounties.Contains(checkedListBoxCounties.Items[i].ToString()))
@@ -98,7 +98,7 @@ namespace TestArcMapAddin2.Forms
             // checkBoxSelectAll
             // 
             this.checkBoxSelectAll.AutoSize = true;
-            this.checkBoxSelectAll.Location = new System.Drawing.Point(296, 19);
+            this.checkBoxSelectAll.Location = new System.Drawing.Point(306, 13);
             this.checkBoxSelectAll.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.checkBoxSelectAll.Name = "checkBoxSelectAll";
             this.checkBoxSelectAll.Size = new System.Drawing.Size(70, 22);

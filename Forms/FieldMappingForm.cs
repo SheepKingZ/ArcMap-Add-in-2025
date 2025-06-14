@@ -21,6 +21,7 @@ namespace TestArcMapAddin2.Forms
 
         private void InitializeComponent()
         {
+            // 组件初始化代码保持不变
             this.labelInfo = new System.Windows.Forms.Label();
             this.buttonOK = new System.Windows.Forms.Button();
             this.buttonCancel = new System.Windows.Forms.Button();
