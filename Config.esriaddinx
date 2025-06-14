@@ -1,0 +1,36 @@
+﻿<ESRI.Configuration xmlns="http://schemas.esri.com/Desktop/AddIns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>自然资源资产清查工具</Name>
+  <AddInID>{6241798d-cf83-49f0-a56f-6b01f69e03ea}</AddInID>
+  <Description>广东省全民所有自然资源（森林、草地、湿地）资产清查工具</Description>
+  <Version>1.0</Version>
+  <Image>Images\TestArcMapAddin2.png</Image>
+  <Author>RyoTech</Author>
+  <Company></Company>
+  <Date>2025/6/12</Date>
+  <Targets>
+    <Target name="Desktop" version="10.8" />
+  </Targets>
+  <AddIn language="CLR" library="TestArcMapAddin2.dll" namespace="TestArcMapAddin2">
+    <ArcMap>
+      <Commands>
+        <Button id="TestArcMapAddin2_OpenMainProcessFormCommand" 
+                class="TestArcMapAddin2.Commands.OpenMainProcessFormCommand" 
+                caption="打开资产清查工具" 
+                category="自然资源资产清查" 
+                message="正在打开自然资源资产清查工具..." 
+                tooltip="打开广东省全民所有自然资源（森林、草地、湿地）资产清查工具">
+          <Image>Images\OpenMainProcessFormCommand.png</Image>
+        </Button>
+      </Commands>
+      <Toolbars>
+        <Toolbar id="TestArcMapAddin2_NR_Asset_Tools_Toolbar" 
+                 caption="自然资源资产清查工具栏" 
+                 showInitially="true">
+          <Items>
+            <Button refID="TestArcMapAddin2_OpenMainProcessFormCommand" />
+          </Items>
+        </Toolbar>
+      </Toolbars>
+    </ArcMap>
+  </AddIn>
+</ESRI.Configuration>

@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestArcMapAddin2", "TestArcMapAddin2.csproj", "{6241798D-CF83-49F0-A56F-6B01F69E03EA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6241798D-CF83-49F0-A56F-6B01F69E03EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6241798D-CF83-49F0-A56F-6B01F69E03EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6241798D-CF83-49F0-A56F-6B01F69E03EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6241798D-CF83-49F0-A56F-6B01F69E03EA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1184D367-F330-4007-B565-FE5DAF48A62A}
+	EndGlobalSection
+EndGlobal
