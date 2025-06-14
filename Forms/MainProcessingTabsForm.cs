@@ -15,7 +15,6 @@ namespace TestArcMapAddin2.Forms
         {
             InitializeComponent();
             InitializeFormState();
-            this.Load += MainProcessingTabsForm_Load;
         }
 
         private void InitializeFormState()
@@ -316,18 +315,7 @@ namespace TestArcMapAddin2.Forms
         }
 
 
-        private void MainProcessingTabsForm_Load(object sender, EventArgs e)
-        {
-            if (!SharedWorkflowState.IsBasicDataPrepared)
-            {
-                MessageBox.Show("请首先完成基础数据准备步骤。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                // Optionally disable all tabs or close this form
-                // For now, buttons are disabled by UpdateButtonStates if IsBasicDataPrepared is false.
-            }
-            AdjustButtonPositions();
-            this.bottomPanel.Resize += BottomPanel_Resize;
-            UpdateButtonStates(); // Ensure states are correct on load
-        }
+
 
         private void BottomPanel_Resize(object sender, EventArgs e)
         {

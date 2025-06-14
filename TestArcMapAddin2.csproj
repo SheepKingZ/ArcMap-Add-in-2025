@@ -154,8 +154,8 @@
     <AddInContent Include="Images\OpenMainProcessFormCommand.png" />
     <Content Include=".gitattributes" />
     <Content Include=".gitignore" />
-    <Content Include="Images\添加数据.png" />
-    <Content Include="Images\资产评估.png" />
+    <AddInContent Include="Images\Asses.png" />
+    <AddInContent Include="Images\Data.png" />
     <Content Include="obj\Debug\TestArcMapAddin2.csproj.FileListAbsolute.txt" />
   </ItemGroup>
   <ItemGroup>

@@ -12,6 +12,9 @@ namespace TestArcMapAddin2.Forms
 {
     public partial class BasicDataPreparationForm : Form
     {
+        private string prerequisiteData1Path = "";
+        private string prerequisiteData2Path = "";
+
         public BasicDataPreparationForm()
         {
             InitializeComponent();
@@ -36,14 +39,38 @@ namespace TestArcMapAddin2.Forms
                 lblCounties.ForeColor = Color.Black;
             }
 
-            lblPrerequisiteDataStatus.Text = SharedWorkflowState.PrerequisiteDataLoaded ? "前提数据加载完成" : "未加载前提数据";
-            lblPrerequisiteDataStatus.ForeColor = SharedWorkflowState.PrerequisiteDataLoaded ? Color.DarkGreen : Color.Black;
+            // 更新前提数据1状态
+            if (!string.IsNullOrEmpty(SharedWorkflowState.PrerequisiteData1Path))
+            {
+                lblPrerequisiteData1Status.Text = SharedWorkflowState.PrerequisiteData1Path;
+                lblPrerequisiteData1Status.ForeColor = Color.DarkGreen;
+                prerequisiteData1Path = SharedWorkflowState.PrerequisiteData1Path;
+            }
+            else
+            {
+                lblPrerequisiteData1Status.Text = "未加载前提数据1";
+                lblPrerequisiteData1Status.ForeColor = Color.Black;
+            }
+
+            // 更新前提数据2状态
+            if (!string.IsNullOrEmpty(SharedWorkflowState.PrerequisiteData2Path))
+            {
+                lblPrerequisiteData2Status.Text = SharedWorkflowState.PrerequisiteData2Path;
+                lblPrerequisiteData2Status.ForeColor = Color.DarkGreen;
+                prerequisiteData2Path = SharedWorkflowState.PrerequisiteData2Path;
+            }
+            else
+            {
+                lblPrerequisiteData2Status.Text = "未加载前提数据2";
+                lblPrerequisiteData2Status.ForeColor = Color.Black;
+            }
+
             lblCountyEmptyTablesStatus.Text = SharedWorkflowState.CountyEmptyTablesCreated ? "县级空表创建完成" : "未创建县级空表";
             lblCountyEmptyTablesStatus.ForeColor = SharedWorkflowState.CountyEmptyTablesCreated ? Color.DarkGreen : Color.Black;
 
             UpdateButtonStates();
         }
-        
+
         private void LoadStateFromShared()
         {
             if (!string.IsNullOrEmpty(SharedWorkflowState.WorkspacePath))
@@ -56,15 +83,29 @@ namespace TestArcMapAddin2.Forms
                 lblCounties.Text = $"已选择 {SharedWorkflowState.SelectedCounties.Count} 个县区：{string.Join(", ", SharedWorkflowState.SelectedCounties)}";
                 lblCounties.ForeColor = Color.DarkGreen;
             }
-            // Reflect status of prerequisite data and empty tables
-            lblPrerequisiteDataStatus.Text = SharedWorkflowState.PrerequisiteDataLoaded ? "前提数据加载完成" : "未加载前提数据";
-            lblPrerequisiteDataStatus.ForeColor = SharedWorkflowState.PrerequisiteDataLoaded ? Color.DarkGreen : Color.Black;
+
+            // 加载前提数据1状态
+            if (!string.IsNullOrEmpty(SharedWorkflowState.PrerequisiteData1Path))
+            {
+                lblPrerequisiteData1Status.Text = SharedWorkflowState.PrerequisiteData1Path;
+                lblPrerequisiteData1Status.ForeColor = Color.DarkGreen;
+                prerequisiteData1Path = SharedWorkflowState.PrerequisiteData1Path;
+            }
+
+            // 加载前提数据2状态
+            if (!string.IsNullOrEmpty(SharedWorkflowState.PrerequisiteData2Path))
+            {
+                lblPrerequisiteData2Status.Text = SharedWorkflowState.PrerequisiteData2Path;
+                lblPrerequisiteData2Status.ForeColor = Color.DarkGreen;
+                prerequisiteData2Path = SharedWorkflowState.PrerequisiteData2Path;
+            }
+
+            // 加载县级空表状态
             lblCountyEmptyTablesStatus.Text = SharedWorkflowState.CountyEmptyTablesCreated ? "县级空表创建完成" : "未创建县级空表";
             lblCountyEmptyTablesStatus.ForeColor = SharedWorkflowState.CountyEmptyTablesCreated ? Color.DarkGreen : Color.Black;
-            
+
             UpdateButtonStates();
         }
-
 
         private void UpdateButtonStates()
         {
@@ -72,11 +113,14 @@ namespace TestArcMapAddin2.Forms
             bool hasCounties = SharedWorkflowState.SelectedCounties != null && SharedWorkflowState.SelectedCounties.Count > 0;
             bool hasBasicSetup = hasWorkspace && hasCounties;
 
-            btnLoadPrerequisiteData.Enabled = hasBasicSetup;
+            btnLoadPrerequisiteData1.Enabled = hasBasicSetup;
+            btnLoadPrerequisiteData2.Enabled = hasBasicSetup;
             btnCreateCountyEmptyTables.Enabled = hasBasicSetup;
-            
-            // OK button should only be enabled if all prerequisite steps are done
-            btnOK.Enabled = hasBasicSetup && SharedWorkflowState.PrerequisiteDataLoaded && SharedWorkflowState.CountyEmptyTablesCreated;
+
+            // OK按钮只有当所有前提步骤都完成后才启用
+            bool prereqDataLoaded = !string.IsNullOrEmpty(SharedWorkflowState.PrerequisiteData1Path) &&
+                                  !string.IsNullOrEmpty(SharedWorkflowState.PrerequisiteData2Path);
+            btnOK.Enabled = hasBasicSetup && prereqDataLoaded && SharedWorkflowState.CountyEmptyTablesCreated;
         }
 
         private void BtnSelectWorkspace_Click(object sender, EventArgs e)
@@ -97,7 +141,7 @@ namespace TestArcMapAddin2.Forms
                         lblWorkspace.Text = SharedWorkflowState.WorkspacePath;
                         lblWorkspace.ForeColor = Color.DarkGreen;
                         // Reset subsequent step flags if workspace changes
-                        SharedWorkflowState.ResetBasicDataFlags(); 
+                        SharedWorkflowState.ResetBasicDataFlags();
                         InitializeFormState(); // Re-initialize to reflect reset flags
                     }
                     else
@@ -119,7 +163,7 @@ namespace TestArcMapAddin2.Forms
                     SharedWorkflowState.SelectedCounties = form.SelectedCounties;
                     lblCounties.Text = $"已选择 {SharedWorkflowState.SelectedCounties.Count} 个县区：{string.Join(", ", SharedWorkflowState.SelectedCounties)}";
                     lblCounties.ForeColor = Color.DarkGreen;
-                     // Reset subsequent step flags if counties change
+                    // Reset subsequent step flags if counties change
                     SharedWorkflowState.ResetBasicDataFlags();
                     InitializeFormState(); // Re-initialize to reflect reset flags
                 }
@@ -127,17 +171,50 @@ namespace TestArcMapAddin2.Forms
             UpdateButtonStates();
         }
 
-        private void BtnLoadPrerequisiteData_Click(object sender, EventArgs e)
+        private void BtnLoadPrerequisiteData1_Click(object sender, EventArgs e)
         {
-            // Placeholder for actual logic
-            MessageBox.Show("正在加载前提数据...", "提示");
-            // TODO: Implement prerequisite data loading logic
-            // On success:
-            SharedWorkflowState.PrerequisiteDataLoaded = true;
-            lblPrerequisiteDataStatus.Text = "前提数据加载完成";
-            lblPrerequisiteDataStatus.ForeColor = Color.DarkGreen;
-            MessageBox.Show("前提数据加载完成.", "成功");
-            UpdateButtonStates();
+            using (OpenFileDialog dialog = new OpenFileDialog())
+            {
+                dialog.Filter = "数据文件 (*.shp;*.gdb;*.mdb)|*.shp;*.gdb;*.mdb|所有文件 (*.*)|*.*";
+                dialog.Title = "选择前提数据1";
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    // 保存路径
+                    prerequisiteData1Path = dialog.FileName;
+                    SharedWorkflowState.PrerequisiteData1Path = prerequisiteData1Path;
+
+                    // 更新UI
+                    lblPrerequisiteData1Status.Text = prerequisiteData1Path;
+                    lblPrerequisiteData1Status.ForeColor = Color.DarkGreen;
+
+                    MessageBox.Show("前提数据1加载完成。", "成功");
+                    UpdateButtonStates();
+                }
+            }
+        }
+
+        private void BtnLoadPrerequisiteData2_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog dialog = new OpenFileDialog())
+            {
+                dialog.Filter = "数据文件 (*.shp;*.gdb;*.mdb)|*.shp;*.gdb;*.mdb|所有文件 (*.*)|*.*";
+                dialog.Title = "选择前提数据2";
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    // 保存路径
+                    prerequisiteData2Path = dialog.FileName;
+                    SharedWorkflowState.PrerequisiteData2Path = prerequisiteData2Path;
+
+                    // 更新UI
+                    lblPrerequisiteData2Status.Text = prerequisiteData2Path;
+                    lblPrerequisiteData2Status.ForeColor = Color.DarkGreen;
+
+                    MessageBox.Show("前提数据2加载完成。", "成功");
+                    UpdateButtonStates();
+                }
+            }
         }
 
         private void BtnCreateCountyEmptyTables_Click(object sender, EventArgs e)
@@ -155,9 +232,14 @@ namespace TestArcMapAddin2.Forms
 
         private void BtnOK_Click(object sender, EventArgs e)
         {
-            SharedWorkflowState.IsBasicDataPrepared = SharedWorkflowState.PrerequisiteDataLoaded && SharedWorkflowState.CountyEmptyTablesCreated &&
+            // 检查是否两个前提数据都已加载
+            bool prerequisiteDataLoaded = !string.IsNullOrEmpty(SharedWorkflowState.PrerequisiteData1Path) &&
+                                          !string.IsNullOrEmpty(SharedWorkflowState.PrerequisiteData2Path);
+
+            SharedWorkflowState.IsBasicDataPrepared = prerequisiteDataLoaded && SharedWorkflowState.CountyEmptyTablesCreated &&
                                                       !string.IsNullOrEmpty(SharedWorkflowState.WorkspacePath) &&
                                                       SharedWorkflowState.SelectedCounties != null && SharedWorkflowState.SelectedCounties.Any();
+
             if (SharedWorkflowState.IsBasicDataPrepared)
             {
                 this.DialogResult = DialogResult.OK;
