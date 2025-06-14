@@ -1,6 +1,6 @@
 using System.Windows.Forms;
 using System.Drawing;
-
+using System;
 namespace TestArcMapAddin2.Forms.ForestForm
 {
     partial class WorkBaseMapForm
@@ -46,12 +46,34 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.chkSpatialJoin = new System.Windows.Forms.CheckBox();
             this.cmbJoinMethod = new System.Windows.Forms.ComboBox();
             this.chkOverwriteExisting = new System.Windows.Forms.CheckBox();
+            this.mainPanel.SuspendLayout();
+            this.bottomPanel.SuspendLayout();
             this.dataSourceGroupBox.SuspendLayout();
             this.processingOptionsGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
+            // mainPanel
+            // 
+            this.mainPanel.Controls.Add(this.dataSourceGroupBox);
+            this.mainPanel.Controls.Add(this.processingOptionsGroupBox);
+            this.mainPanel.Controls.SetChildIndex(this.processingOptionsGroupBox, 0);
+            this.mainPanel.Controls.SetChildIndex(this.dataSourceGroupBox, 0);
+            this.mainPanel.Controls.SetChildIndex(this.statusLabel, 0);
+            this.mainPanel.Controls.SetChildIndex(this.logTextBox, 0);
+            this.mainPanel.Controls.SetChildIndex(this.descriptionTextBox, 0);
+            this.mainPanel.Controls.SetChildIndex(this.progressBar, 0);
+            this.mainPanel.Controls.SetChildIndex(this.titleLabel, 0);
+            // 
+            // titleLabel
+            // 
+            this.titleLabel.Location = new System.Drawing.Point(26, 22);
+            this.titleLabel.Size = new System.Drawing.Size(599, 45);
+            this.titleLabel.Text = "2. 制作森林工作底图";
+            this.titleLabel.Click += new System.EventHandler(this.titleLabel_Click);
+            // 
             // descriptionTextBox
             // 
+            this.descriptionTextBox.Size = new System.Drawing.Size(593, 118);
             this.descriptionTextBox.Text = "工作范围与林地分等数据关联，补充完善数据库；工作范围与林地定级数据关联，将基准地价通过空间挂接森林图班。";
             // 
             // logTextBox
@@ -65,11 +87,8 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             // progressBar
             // 
-            this.progressBar.Location = new System.Drawing.Point(15, 525);
-            // 
-            // titleLabel
-            // 
-            this.titleLabel.Text = "2. 制作森林工作底图";
+            this.progressBar.Location = new System.Drawing.Point(15, 542);
+            this.progressBar.Size = new System.Drawing.Size(600, 30);
             // 
             // dataSourceGroupBox
             // 
@@ -104,7 +123,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.txtWorkScope.Location = new System.Drawing.Point(170, 25);
             this.txtWorkScope.Name = "txtWorkScope";
             this.txtWorkScope.ReadOnly = true;
-            this.txtWorkScope.Size = new System.Drawing.Size(320, 20);
+            this.txtWorkScope.Size = new System.Drawing.Size(320, 28);
             this.txtWorkScope.TabIndex = 1;
             // 
             // btnBrowseWorkScope
@@ -131,14 +150,14 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.txtForestGrading.Location = new System.Drawing.Point(170, 55);
             this.txtForestGrading.Name = "txtForestGrading";
             this.txtForestGrading.ReadOnly = true;
-            this.txtForestGrading.Size = new System.Drawing.Size(320, 20);
+            this.txtForestGrading.Size = new System.Drawing.Size(320, 28);
             this.txtForestGrading.TabIndex = 4;
             // 
             // btnBrowseGrading
             // 
             this.btnBrowseGrading.Location = new System.Drawing.Point(500, 54);
             this.btnBrowseGrading.Name = "btnBrowseGrading";
-            this.btnBrowseGrading.Size = new System.Drawing.Size(80, 23);
+            this.btnBrowseGrading.Size = new System.Drawing.Size(80, 29);
             this.btnBrowseGrading.TabIndex = 5;
             this.btnBrowseGrading.Text = "浏览...";
             this.btnBrowseGrading.UseVisualStyleBackColor = true;
@@ -158,14 +177,14 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.txtPriceData.Location = new System.Drawing.Point(170, 85);
             this.txtPriceData.Name = "txtPriceData";
             this.txtPriceData.ReadOnly = true;
-            this.txtPriceData.Size = new System.Drawing.Size(320, 20);
+            this.txtPriceData.Size = new System.Drawing.Size(320, 28);
             this.txtPriceData.TabIndex = 7;
             // 
             // btnBrowsePrice
             // 
             this.btnBrowsePrice.Location = new System.Drawing.Point(500, 84);
             this.btnBrowsePrice.Name = "btnBrowsePrice";
-            this.btnBrowsePrice.Size = new System.Drawing.Size(80, 23);
+            this.btnBrowsePrice.Size = new System.Drawing.Size(80, 29);
             this.btnBrowsePrice.TabIndex = 8;
             this.btnBrowsePrice.Text = "浏览...";
             this.btnBrowsePrice.UseVisualStyleBackColor = true;
@@ -215,7 +234,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             "最近"});
             this.cmbJoinMethod.Location = new System.Drawing.Point(180, 25);
             this.cmbJoinMethod.Name = "cmbJoinMethod";
-            this.cmbJoinMethod.Size = new System.Drawing.Size(200, 20);
+            this.cmbJoinMethod.Size = new System.Drawing.Size(200, 26);
             this.cmbJoinMethod.TabIndex = 1;
             // 
             // chkOverwriteExisting
@@ -231,18 +250,14 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             // WorkBaseMapForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(634, 601); // Adjusted to fit all controls
+            this.ClientSize = new System.Drawing.Size(634, 601);
             this.Name = "WorkBaseMapForm";
             this.Text = "制作森林工作底图";
-            this.mainPanel.Controls.Add(this.dataSourceGroupBox);
-            this.mainPanel.Controls.Add(this.processingOptionsGroupBox);
-            // Ensure mainPanel is ordered correctly if it was added to Controls in base
-            if (this.Controls.Contains(this.mainPanel))
-            {
-                this.Controls.SetChildIndex(this.mainPanel, this.Controls.Count - 1);
-            }
+            this.mainPanel.ResumeLayout(false);
+            this.mainPanel.PerformLayout();
+            this.bottomPanel.ResumeLayout(false);
             this.dataSourceGroupBox.ResumeLayout(false);
             this.dataSourceGroupBox.PerformLayout();
             this.processingOptionsGroupBox.ResumeLayout(false);

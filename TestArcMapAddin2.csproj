@@ -187,6 +187,9 @@
     <EmbeddedResource Include="Forms\ForestForm\ForestProcessingFormBase.resx">
       <DependentUpon>ForestProcessingFormBase.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ForestForm\WorkBaseMapForm.resx">
+      <DependentUpon>WorkBaseMapForm.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <ZipFileExtension>esriAddIn</ZipFileExtension>

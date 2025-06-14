@@ -6,14 +6,13 @@ using ESRI.ArcGIS.Geodatabase;
 using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.Carto;
 using Point = System.Drawing.Point;
-using TestArcMapAddin2.Forms.ForestForm;
 
 namespace TestArcMapAddin2.Forms.ForestForm
 {
     /// <summary>
     /// Form for creating forest work base maps and linking with forest classification and pricing data
     /// </summary>
-    public partial class WorkBaseMapForm : ForestProcessingFormBase
+    public partial class WorkBaseMapForm : TestArcMapAddin2.Forms.ForestForm.ForestProcessingFormBase
     {
         private bool processingCancelled = false;
         
@@ -213,6 +212,11 @@ namespace TestArcMapAddin2.Forms.ForestForm
                 // The base method will handle UI updates.
                 base.OnProcessingComplete(false); // Explicitly call to ensure UI reset if loop hasn't checked flag yet.
             }
+        }
+
+        private void titleLabel_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
