@@ -41,7 +41,7 @@ namespace TestArcMapAddin2.Components
 
         public void CreateGrasslandTable(IFeatureWorkspace featureWorkspace, string tableName)
         {
-            IFieldsEdit fields = new ESRI.ArcGIS.Geodatabase.FieldsClass();
+            IFieldsEdit fields = new FieldsClass();
             fields.AddField(CreateField("AssetInventoryID", "资产清查标识码", esriFieldType.esriFieldTypeString, 50));
             fields.AddField(CreateField("Name", "名称", esriFieldType.esriFieldTypeString, 100));
             fields.AddField(CreateField("Code", "代码", esriFieldType.esriFieldTypeString, 50));
@@ -62,7 +62,7 @@ namespace TestArcMapAddin2.Components
 
         public void CreateWetlandTable(IFeatureWorkspace featureWorkspace, string tableName)
         {
-            IFieldsEdit fields = new ESRI.ArcGIS.Geodatabase.FieldsClass();
+            IFieldsEdit fields = new FieldsClass();
             fields.AddField(CreateField("AssetInventoryID", "资产清查标识码", esriFieldType.esriFieldTypeString, 50));
             fields.AddField(CreateField("Name", "名称", esriFieldType.esriFieldTypeString, 100));
             fields.AddField(CreateField("Code", "代码", esriFieldType.esriFieldTypeString, 50));
@@ -86,7 +86,7 @@ namespace TestArcMapAddin2.Components
 
         private IField CreateField(string name, string aliasName, esriFieldType type, int length = 0)
         {
-            IFieldEdit field = new ESRI.ArcGIS.Geodatabase.FieldClass();
+            IFieldEdit field = new FieldClass();
             field.Name_2 = name;
             field.AliasName_2 = aliasName;
             field.Type_2 = type;
