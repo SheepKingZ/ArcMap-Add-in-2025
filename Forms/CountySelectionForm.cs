@@ -23,6 +23,21 @@ namespace TestArcMapAddin2.Forms
             checkedListBoxCounties.Items.Add("县B");
             checkedListBoxCounties.Items.Add("县C");
             // 根据需要添加更多县
+            SelectedCounties = new List<string>(); // Initialize SelectedCounties
+        }
+
+        public CountySelectionForm(List<string> previouslySelectedCounties) : this() // Call parameterless constructor
+        {
+            SelectedCounties = previouslySelectedCounties ?? new List<string>();
+
+            // Pre-select items in the CheckedListBox based on previouslySelectedCounties
+            for (int i = 0; i < checkedListBoxCounties.Items.Count; i++)
+            {
+                if (SelectedCounties.Contains(checkedListBoxCounties.Items[i].ToString()))
+                {
+                    checkedListBoxCounties.SetItemChecked(i, true);
+                }
+            }
         }
 
         private void InitializeComponent()
