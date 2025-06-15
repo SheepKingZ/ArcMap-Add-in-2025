@@ -34,14 +34,14 @@ namespace TestArcMapAddin2.Forms.ForestForm
         {
             this.mainPanel = new System.Windows.Forms.Panel();
             this.titleLabel = new System.Windows.Forms.Label();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
             this.descriptionTextBox = new System.Windows.Forms.TextBox();
             this.logTextBox = new System.Windows.Forms.TextBox();
             this.statusLabel = new System.Windows.Forms.Label();
-            this.progressBar = new System.Windows.Forms.ProgressBar();
-            this.startButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
             this.closeButton = new System.Windows.Forms.Button();
             this.bottomPanel = new System.Windows.Forms.Panel();
+            this.startButton = new System.Windows.Forms.Button();
             this.mainPanel.SuspendLayout();
             this.bottomPanel.SuspendLayout();
             this.SuspendLayout();
@@ -55,9 +55,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.mainPanel.Controls.Add(this.statusLabel);
             this.mainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mainPanel.Location = new System.Drawing.Point(0, 0);
-            this.mainPanel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.mainPanel.Margin = new System.Windows.Forms.Padding(4);
             this.mainPanel.Name = "mainPanel";
-            this.mainPanel.Padding = new System.Windows.Forms.Padding(22, 22, 22, 22);
+            this.mainPanel.Padding = new System.Windows.Forms.Padding(22);
             this.mainPanel.Size = new System.Drawing.Size(951, 602);
             this.mainPanel.TabIndex = 0;
             // 
@@ -71,11 +71,19 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.titleLabel.TabIndex = 0;
             this.titleLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // progressBar
+            // 
+            this.progressBar.Location = new System.Drawing.Point(128, 546);
+            this.progressBar.Margin = new System.Windows.Forms.Padding(4);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(792, 30);
+            this.progressBar.TabIndex = 4;
+            // 
             // descriptionTextBox
             // 
             this.descriptionTextBox.BackColor = System.Drawing.Color.LightYellow;
             this.descriptionTextBox.Location = new System.Drawing.Point(22, 82);
-            this.descriptionTextBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.descriptionTextBox.Margin = new System.Windows.Forms.Padding(4);
             this.descriptionTextBox.Multiline = true;
             this.descriptionTextBox.Name = "descriptionTextBox";
             this.descriptionTextBox.ReadOnly = true;
@@ -87,7 +95,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.logTextBox.BackColor = System.Drawing.Color.White;
             this.logTextBox.Location = new System.Drawing.Point(22, 225);
-            this.logTextBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.logTextBox.Margin = new System.Windows.Forms.Padding(4);
             this.logTextBox.Multiline = true;
             this.logTextBox.Name = "logTextBox";
             this.logTextBox.ReadOnly = true;
@@ -105,30 +113,11 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.statusLabel.Text = "准备就绪...";
             this.statusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // progressBar
-            // 
-            this.progressBar.Location = new System.Drawing.Point(128, 546);
-            this.progressBar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(792, 30);
-            this.progressBar.TabIndex = 4;
-            // 
-            // startButton
-            // 
-            this.startButton.Location = new System.Drawing.Point(22, 22);
-            this.startButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.startButton.Name = "startButton";
-            this.startButton.Size = new System.Drawing.Size(180, 45);
-            this.startButton.TabIndex = 0;
-            this.startButton.Text = "开始处理";
-            this.startButton.UseVisualStyleBackColor = true;
-            this.startButton.Click += new System.EventHandler(this.StartButton_Click);
-            // 
             // cancelButton
             // 
             this.cancelButton.Enabled = false;
             this.cancelButton.Location = new System.Drawing.Point(255, 22);
-            this.cancelButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cancelButton.Margin = new System.Windows.Forms.Padding(4);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(180, 45);
             this.cancelButton.TabIndex = 1;
@@ -140,7 +129,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.closeButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.closeButton.Location = new System.Drawing.Point(742, 22);
-            this.closeButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.closeButton.Margin = new System.Windows.Forms.Padding(4);
             this.closeButton.Name = "closeButton";
             this.closeButton.Size = new System.Drawing.Size(180, 45);
             this.closeButton.TabIndex = 2;
@@ -156,10 +145,21 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.bottomPanel.Controls.Add(this.closeButton);
             this.bottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.bottomPanel.Location = new System.Drawing.Point(0, 602);
-            this.bottomPanel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.bottomPanel.Margin = new System.Windows.Forms.Padding(4);
             this.bottomPanel.Name = "bottomPanel";
             this.bottomPanel.Size = new System.Drawing.Size(951, 90);
             this.bottomPanel.TabIndex = 1;
+            // 
+            // startButton
+            // 
+            this.startButton.Location = new System.Drawing.Point(22, 22);
+            this.startButton.Margin = new System.Windows.Forms.Padding(4);
+            this.startButton.Name = "startButton";
+            this.startButton.Size = new System.Drawing.Size(180, 45);
+            this.startButton.TabIndex = 0;
+            this.startButton.Text = "开始处理";
+            this.startButton.UseVisualStyleBackColor = true;
+            this.startButton.Click += new System.EventHandler(this.StartButton_Click);
             // 
             // ForestProcessingFormBase
             // 
@@ -171,7 +171,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.Controls.Add(this.bottomPanel);
             this.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.Name = "ForestProcessingFormBase";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -192,9 +192,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
         protected System.Windows.Forms.TextBox logTextBox;
         protected System.Windows.Forms.Label statusLabel;
         protected System.Windows.Forms.ProgressBar progressBar;
-        protected System.Windows.Forms.Button startButton;
         protected System.Windows.Forms.Button cancelButton;
         protected System.Windows.Forms.Button closeButton;
         protected System.Windows.Forms.Panel bottomPanel;
+        protected Button startButton;
     }
 }

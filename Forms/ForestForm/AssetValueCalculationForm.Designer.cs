@@ -28,10 +28,10 @@ namespace TestArcMapAddin2.Forms.ForestForm
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
             this.workspaceGroupBox = new System.Windows.Forms.GroupBox();
             this.lblWorkspace = new System.Windows.Forms.Label();
             this.txtWorkspace = new System.Windows.Forms.TextBox();
@@ -212,7 +212,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.mainPanel.Controls.Add(this.workspaceGroupBox);
             this.mainPanel.Controls.Add(this.workflowTabs);
-            this.mainPanel.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.mainPanel.Margin = new System.Windows.Forms.Padding(6);
             this.mainPanel.Padding = new System.Windows.Forms.Padding(33, 30, 33, 30);
             this.mainPanel.Size = new System.Drawing.Size(1101, 825);
             this.mainPanel.Controls.SetChildIndex(this.workflowTabs, 0);
@@ -232,7 +232,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // descriptionTextBox
             // 
             this.descriptionTextBox.Location = new System.Drawing.Point(32, 68);
-            this.descriptionTextBox.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.descriptionTextBox.Margin = new System.Windows.Forms.Padding(6);
             this.descriptionTextBox.Size = new System.Drawing.Size(1041, 41);
             this.descriptionTextBox.Text = "本工具基于林草湿荒普查数据，结合城镇开发边界、林地分等定级和基准地价等数据，进行森林资源资产价值计算，包括工作范围提取、底图制作、价格参数提取、价格补充、资产价值" +
     "计算、数据质检和数据库构建等步骤。";
@@ -241,25 +241,25 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.logTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.logTextBox.Location = new System.Drawing.Point(47, 686);
-            this.logTextBox.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
-            this.logTextBox.Size = new System.Drawing.Size(980, 103);
+            this.logTextBox.Location = new System.Drawing.Point(47, 1132);
+            this.logTextBox.Margin = new System.Windows.Forms.Padding(6);
+            this.logTextBox.Size = new System.Drawing.Size(1280, 103);
             // 
             // statusLabel
             // 
             this.statusLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.statusLabel.Location = new System.Drawing.Point(22, 829);
+            this.statusLabel.Location = new System.Drawing.Point(22, 1275);
             this.statusLabel.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.statusLabel.Size = new System.Drawing.Size(725, 28);
+            this.statusLabel.Size = new System.Drawing.Size(1025, 28);
             // 
             // progressBar
             // 
             this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar.Location = new System.Drawing.Point(22, 856);
-            this.progressBar.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
-            this.progressBar.Size = new System.Drawing.Size(725, 28);
+            this.progressBar.Location = new System.Drawing.Point(22, 1302);
+            this.progressBar.Margin = new System.Windows.Forms.Padding(6);
+            this.progressBar.Size = new System.Drawing.Size(1025, 28);
             // 
             // bottomPanel
             // 
@@ -274,9 +274,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.workspaceGroupBox.Controls.Add(this.txtWorkspace);
             this.workspaceGroupBox.Controls.Add(this.btnSelectWorkspace);
             this.workspaceGroupBox.Location = new System.Drawing.Point(22, 111);
-            this.workspaceGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.workspaceGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.workspaceGroupBox.Name = "workspaceGroupBox";
-            this.workspaceGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.workspaceGroupBox.Padding = new System.Windows.Forms.Padding(4);
             this.workspaceGroupBox.Size = new System.Drawing.Size(1051, 83);
             this.workspaceGroupBox.TabIndex = 0;
             this.workspaceGroupBox.TabStop = false;
@@ -297,7 +297,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.txtWorkspace.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtWorkspace.Location = new System.Drawing.Point(150, 35);
-            this.txtWorkspace.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtWorkspace.Margin = new System.Windows.Forms.Padding(4);
             this.txtWorkspace.Name = "txtWorkspace";
             this.txtWorkspace.ReadOnly = true;
             this.txtWorkspace.Size = new System.Drawing.Size(719, 28);
@@ -307,7 +307,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.btnSelectWorkspace.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSelectWorkspace.Location = new System.Drawing.Point(885, 33);
-            this.btnSelectWorkspace.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSelectWorkspace.Margin = new System.Windows.Forms.Padding(4);
             this.btnSelectWorkspace.Name = "btnSelectWorkspace";
             this.btnSelectWorkspace.Size = new System.Drawing.Size(120, 32);
             this.btnSelectWorkspace.TabIndex = 2;
@@ -327,7 +327,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.workflowTabs.Controls.Add(this.cleanQATab);
             this.workflowTabs.Controls.Add(this.buildDatabaseTab);
             this.workflowTabs.Location = new System.Drawing.Point(22, 208);
-            this.workflowTabs.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.workflowTabs.Margin = new System.Windows.Forms.Padding(4);
             this.workflowTabs.Name = "workflowTabs";
             this.workflowTabs.SelectedIndex = 0;
             this.workflowTabs.Size = new System.Drawing.Size(1051, 610);
@@ -339,9 +339,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.extractScopeTab.Controls.Add(this.extractionSettingsGroupBox);
             this.extractScopeTab.Controls.Add(this.resultsGroupBox);
             this.extractScopeTab.Location = new System.Drawing.Point(4, 28);
-            this.extractScopeTab.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.extractScopeTab.Margin = new System.Windows.Forms.Padding(4);
             this.extractScopeTab.Name = "extractScopeTab";
-            this.extractScopeTab.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.extractScopeTab.Padding = new System.Windows.Forms.Padding(4);
             this.extractScopeTab.Size = new System.Drawing.Size(1043, 578);
             this.extractScopeTab.TabIndex = 0;
             this.extractScopeTab.Text = "1. 提取工作范围";
@@ -359,9 +359,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.dataSourceGroupBox.Controls.Add(this.btnBrowseUrbanBoundary);
             this.dataSourceGroupBox.Controls.Add(this.btnLoadCurrentMap);
             this.dataSourceGroupBox.Location = new System.Drawing.Point(15, 14);
-            this.dataSourceGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.dataSourceGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.dataSourceGroupBox.Name = "dataSourceGroupBox";
-            this.dataSourceGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.dataSourceGroupBox.Padding = new System.Windows.Forms.Padding(4);
             this.dataSourceGroupBox.Size = new System.Drawing.Size(1005, 166);
             this.dataSourceGroupBox.TabIndex = 0;
             this.dataSourceGroupBox.TabStop = false;
@@ -382,7 +382,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.txtForestData.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtForestData.Location = new System.Drawing.Point(240, 35);
-            this.txtForestData.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtForestData.Margin = new System.Windows.Forms.Padding(4);
             this.txtForestData.Name = "txtForestData";
             this.txtForestData.ReadOnly = true;
             this.txtForestData.Size = new System.Drawing.Size(583, 28);
@@ -392,7 +392,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.btnBrowseForestData.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnBrowseForestData.Location = new System.Drawing.Point(841, 33);
-            this.btnBrowseForestData.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseForestData.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseForestData.Name = "btnBrowseForestData";
             this.btnBrowseForestData.Size = new System.Drawing.Size(120, 32);
             this.btnBrowseForestData.TabIndex = 2;
@@ -414,7 +414,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.txtUrbanBoundary.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtUrbanBoundary.Location = new System.Drawing.Point(240, 76);
-            this.txtUrbanBoundary.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtUrbanBoundary.Margin = new System.Windows.Forms.Padding(4);
             this.txtUrbanBoundary.Name = "txtUrbanBoundary";
             this.txtUrbanBoundary.ReadOnly = true;
             this.txtUrbanBoundary.Size = new System.Drawing.Size(583, 28);
@@ -424,7 +424,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.btnBrowseUrbanBoundary.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnBrowseUrbanBoundary.Location = new System.Drawing.Point(841, 75);
-            this.btnBrowseUrbanBoundary.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseUrbanBoundary.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseUrbanBoundary.Name = "btnBrowseUrbanBoundary";
             this.btnBrowseUrbanBoundary.Size = new System.Drawing.Size(120, 32);
             this.btnBrowseUrbanBoundary.TabIndex = 5;
@@ -434,7 +434,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // btnLoadCurrentMap
             // 
             this.btnLoadCurrentMap.Location = new System.Drawing.Point(240, 118);
-            this.btnLoadCurrentMap.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnLoadCurrentMap.Margin = new System.Windows.Forms.Padding(4);
             this.btnLoadCurrentMap.Name = "btnLoadCurrentMap";
             this.btnLoadCurrentMap.Size = new System.Drawing.Size(270, 35);
             this.btnLoadCurrentMap.TabIndex = 6;
@@ -457,9 +457,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.extractionSettingsGroupBox.Controls.Add(this.txtCollectiveValue);
             this.extractionSettingsGroupBox.Controls.Add(this.btnExtractScope);
             this.extractionSettingsGroupBox.Location = new System.Drawing.Point(15, 194);
-            this.extractionSettingsGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.extractionSettingsGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.extractionSettingsGroupBox.Name = "extractionSettingsGroupBox";
-            this.extractionSettingsGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.extractionSettingsGroupBox.Padding = new System.Windows.Forms.Padding(4);
             this.extractionSettingsGroupBox.Size = new System.Drawing.Size(1005, 166);
             this.extractionSettingsGroupBox.TabIndex = 1;
             this.extractionSettingsGroupBox.TabStop = false;
@@ -480,7 +480,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.cboLandTypeField.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboLandTypeField.FormattingEnabled = true;
             this.cboLandTypeField.Location = new System.Drawing.Point(225, 35);
-            this.cboLandTypeField.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cboLandTypeField.Margin = new System.Windows.Forms.Padding(4);
             this.cboLandTypeField.Name = "cboLandTypeField";
             this.cboLandTypeField.Size = new System.Drawing.Size(298, 26);
             this.cboLandTypeField.TabIndex = 1;
@@ -500,7 +500,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.cboOwnershipField.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboOwnershipField.FormattingEnabled = true;
             this.cboOwnershipField.Location = new System.Drawing.Point(225, 76);
-            this.cboOwnershipField.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cboOwnershipField.Margin = new System.Windows.Forms.Padding(4);
             this.cboOwnershipField.Name = "cboOwnershipField";
             this.cboOwnershipField.Size = new System.Drawing.Size(298, 26);
             this.cboOwnershipField.TabIndex = 3;
@@ -518,7 +518,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // txtForestValue
             // 
             this.txtForestValue.Location = new System.Drawing.Point(698, 35);
-            this.txtForestValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtForestValue.Margin = new System.Windows.Forms.Padding(4);
             this.txtForestValue.Name = "txtForestValue";
             this.txtForestValue.Size = new System.Drawing.Size(118, 28);
             this.txtForestValue.TabIndex = 5;
@@ -537,7 +537,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // txtStateOwnershipValue
             // 
             this.txtStateOwnershipValue.Location = new System.Drawing.Point(698, 76);
-            this.txtStateOwnershipValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtStateOwnershipValue.Margin = new System.Windows.Forms.Padding(4);
             this.txtStateOwnershipValue.Name = "txtStateOwnershipValue";
             this.txtStateOwnershipValue.Size = new System.Drawing.Size(118, 28);
             this.txtStateOwnershipValue.TabIndex = 7;
@@ -556,7 +556,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // txtCollectiveValue
             // 
             this.txtCollectiveValue.Location = new System.Drawing.Point(698, 118);
-            this.txtCollectiveValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtCollectiveValue.Margin = new System.Windows.Forms.Padding(4);
             this.txtCollectiveValue.Name = "txtCollectiveValue";
             this.txtCollectiveValue.Size = new System.Drawing.Size(118, 28);
             this.txtCollectiveValue.TabIndex = 9;
@@ -565,7 +565,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // btnExtractScope
             // 
             this.btnExtractScope.Location = new System.Drawing.Point(225, 118);
-            this.btnExtractScope.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnExtractScope.Margin = new System.Windows.Forms.Padding(4);
             this.btnExtractScope.Name = "btnExtractScope";
             this.btnExtractScope.Size = new System.Drawing.Size(270, 35);
             this.btnExtractScope.TabIndex = 10;
@@ -579,10 +579,10 @@ namespace TestArcMapAddin2.Forms.ForestForm
             | System.Windows.Forms.AnchorStyles.Right)));
             this.resultsGroupBox.Controls.Add(this.lblExtractionResults);
             this.resultsGroupBox.Location = new System.Drawing.Point(15, 374);
-            this.resultsGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.resultsGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.resultsGroupBox.Name = "resultsGroupBox";
-            this.resultsGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.resultsGroupBox.Size = new System.Drawing.Size(1005, 159);
+            this.resultsGroupBox.Padding = new System.Windows.Forms.Padding(4);
+            this.resultsGroupBox.Size = new System.Drawing.Size(1005, 223);
             this.resultsGroupBox.TabIndex = 2;
             this.resultsGroupBox.TabStop = false;
             this.resultsGroupBox.Text = "结果";
@@ -595,7 +595,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.lblExtractionResults.Location = new System.Drawing.Point(22, 35);
             this.lblExtractionResults.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblExtractionResults.Name = "lblExtractionResults";
-            this.lblExtractionResults.Size = new System.Drawing.Size(961, 103);
+            this.lblExtractionResults.Size = new System.Drawing.Size(961, 194);
             this.lblExtractionResults.TabIndex = 0;
             this.lblExtractionResults.Text = "尚未执行工作范围提取";
             this.lblExtractionResults.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -606,9 +606,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.createBaseMapTab.Controls.Add(this.landPriceGroupBox);
             this.createBaseMapTab.Controls.Add(this.linkResultsGroupBox);
             this.createBaseMapTab.Location = new System.Drawing.Point(4, 28);
-            this.createBaseMapTab.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.createBaseMapTab.Margin = new System.Windows.Forms.Padding(4);
             this.createBaseMapTab.Name = "createBaseMapTab";
-            this.createBaseMapTab.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.createBaseMapTab.Padding = new System.Windows.Forms.Padding(4);
             this.createBaseMapTab.Size = new System.Drawing.Size(1043, 578);
             this.createBaseMapTab.TabIndex = 1;
             this.createBaseMapTab.Text = "2. 制作工作底图";
@@ -623,10 +623,10 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.landGradeGroupBox.Controls.Add(this.btnBrowseLandGradeData);
             this.landGradeGroupBox.Controls.Add(this.btnLinkLandGradeData);
             this.landGradeGroupBox.Location = new System.Drawing.Point(15, 14);
-            this.landGradeGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.landGradeGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.landGradeGroupBox.Name = "landGradeGroupBox";
-            this.landGradeGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.landGradeGroupBox.Size = new System.Drawing.Size(986, 125);
+            this.landGradeGroupBox.Padding = new System.Windows.Forms.Padding(4);
+            this.landGradeGroupBox.Size = new System.Drawing.Size(1006, 125);
             this.landGradeGroupBox.TabIndex = 0;
             this.landGradeGroupBox.TabStop = false;
             this.landGradeGroupBox.Text = "林地分等数据";
@@ -646,27 +646,27 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.txtLandGradeData.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtLandGradeData.Location = new System.Drawing.Point(210, 35);
-            this.txtLandGradeData.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtLandGradeData.Margin = new System.Windows.Forms.Padding(4);
             this.txtLandGradeData.Name = "txtLandGradeData";
             this.txtLandGradeData.ReadOnly = true;
-            this.txtLandGradeData.Size = new System.Drawing.Size(594, 28);
+            this.txtLandGradeData.Size = new System.Drawing.Size(592, 28);
             this.txtLandGradeData.TabIndex = 1;
             // 
             // btnBrowseLandGradeData
             // 
             this.btnBrowseLandGradeData.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowseLandGradeData.Location = new System.Drawing.Point(821, 33);
-            this.btnBrowseLandGradeData.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseLandGradeData.Location = new System.Drawing.Point(810, 33);
+            this.btnBrowseLandGradeData.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseLandGradeData.Name = "btnBrowseLandGradeData";
-            this.btnBrowseLandGradeData.Size = new System.Drawing.Size(120, 32);
+            this.btnBrowseLandGradeData.Size = new System.Drawing.Size(80, 32);
             this.btnBrowseLandGradeData.TabIndex = 2;
             this.btnBrowseLandGradeData.Text = "浏览...";
             this.btnBrowseLandGradeData.UseVisualStyleBackColor = true;
             // 
             // btnLinkLandGradeData
             // 
-            this.btnLinkLandGradeData.Location = new System.Drawing.Point(404, 95);
-            this.btnLinkLandGradeData.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnLinkLandGradeData.Location = new System.Drawing.Point(404, 82);
+            this.btnLinkLandGradeData.Margin = new System.Windows.Forms.Padding(4);
             this.btnLinkLandGradeData.Name = "btnLinkLandGradeData";
             this.btnLinkLandGradeData.Size = new System.Drawing.Size(270, 35);
             this.btnLinkLandGradeData.TabIndex = 3;
@@ -682,10 +682,10 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.landPriceGroupBox.Controls.Add(this.btnBrowseLandPriceData);
             this.landPriceGroupBox.Controls.Add(this.btnLinkLandPriceData);
             this.landPriceGroupBox.Location = new System.Drawing.Point(15, 152);
-            this.landPriceGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.landPriceGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.landPriceGroupBox.Name = "landPriceGroupBox";
-            this.landPriceGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.landPriceGroupBox.Size = new System.Drawing.Size(986, 125);
+            this.landPriceGroupBox.Padding = new System.Windows.Forms.Padding(4);
+            this.landPriceGroupBox.Size = new System.Drawing.Size(1006, 125);
             this.landPriceGroupBox.TabIndex = 1;
             this.landPriceGroupBox.TabStop = false;
             this.landPriceGroupBox.Text = "林地定级与基准地价数据";
@@ -705,27 +705,28 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.txtLandPriceData.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtLandPriceData.Location = new System.Drawing.Point(210, 35);
-            this.txtLandPriceData.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtLandPriceData.Margin = new System.Windows.Forms.Padding(4);
             this.txtLandPriceData.Name = "txtLandPriceData";
             this.txtLandPriceData.ReadOnly = true;
-            this.txtLandPriceData.Size = new System.Drawing.Size(594, 28);
+            this.txtLandPriceData.Size = new System.Drawing.Size(592, 28);
             this.txtLandPriceData.TabIndex = 1;
             // 
             // btnBrowseLandPriceData
             // 
             this.btnBrowseLandPriceData.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowseLandPriceData.Location = new System.Drawing.Point(821, 33);
-            this.btnBrowseLandPriceData.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseLandPriceData.Location = new System.Drawing.Point(810, 33);
+            this.btnBrowseLandPriceData.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseLandPriceData.Name = "btnBrowseLandPriceData";
-            this.btnBrowseLandPriceData.Size = new System.Drawing.Size(120, 32);
+            this.btnBrowseLandPriceData.Size = new System.Drawing.Size(80, 32);
             this.btnBrowseLandPriceData.TabIndex = 2;
             this.btnBrowseLandPriceData.Text = "浏览...";
             this.btnBrowseLandPriceData.UseVisualStyleBackColor = true;
+            this.btnBrowseLandPriceData.Click += new System.EventHandler(this.btnBrowseLandPriceData_Click);
             // 
             // btnLinkLandPriceData
             // 
             this.btnLinkLandPriceData.Location = new System.Drawing.Point(404, 82);
-            this.btnLinkLandPriceData.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnLinkLandPriceData.Margin = new System.Windows.Forms.Padding(4);
             this.btnLinkLandPriceData.Name = "btnLinkLandPriceData";
             this.btnLinkLandPriceData.Size = new System.Drawing.Size(270, 35);
             this.btnLinkLandPriceData.TabIndex = 3;
@@ -743,11 +744,11 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.linkResultsGroupBox.Controls.Add(this.lblPriceMatchRateValue);
             this.linkResultsGroupBox.Controls.Add(this.btnSaveBaseMap);
             this.linkResultsGroupBox.Controls.Add(this.btnViewBaseMap);
-            this.linkResultsGroupBox.Location = new System.Drawing.Point(15, 291);
-            this.linkResultsGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.linkResultsGroupBox.Location = new System.Drawing.Point(15, 290);
+            this.linkResultsGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.linkResultsGroupBox.Name = "linkResultsGroupBox";
-            this.linkResultsGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.linkResultsGroupBox.Size = new System.Drawing.Size(986, 159);
+            this.linkResultsGroupBox.Padding = new System.Windows.Forms.Padding(4);
+            this.linkResultsGroupBox.Size = new System.Drawing.Size(1006, 280);
             this.linkResultsGroupBox.TabIndex = 2;
             this.linkResultsGroupBox.TabStop = false;
             this.linkResultsGroupBox.Text = "关联结果";
@@ -796,7 +797,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.btnSaveBaseMap.Enabled = false;
             this.btnSaveBaseMap.Location = new System.Drawing.Point(22, 118);
-            this.btnSaveBaseMap.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSaveBaseMap.Margin = new System.Windows.Forms.Padding(4);
             this.btnSaveBaseMap.Name = "btnSaveBaseMap";
             this.btnSaveBaseMap.Size = new System.Drawing.Size(270, 35);
             this.btnSaveBaseMap.TabIndex = 4;
@@ -807,7 +808,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.btnViewBaseMap.Enabled = false;
             this.btnViewBaseMap.Location = new System.Drawing.Point(315, 118);
-            this.btnViewBaseMap.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnViewBaseMap.Margin = new System.Windows.Forms.Padding(4);
             this.btnViewBaseMap.Name = "btnViewBaseMap";
             this.btnViewBaseMap.Size = new System.Drawing.Size(270, 35);
             this.btnViewBaseMap.TabIndex = 5;
@@ -819,9 +820,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.priceParamsTab.Controls.Add(this.priceParamsGroupBox);
             this.priceParamsTab.Controls.Add(this.priceFactorsGroupBox);
             this.priceParamsTab.Location = new System.Drawing.Point(4, 28);
-            this.priceParamsTab.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.priceParamsTab.Margin = new System.Windows.Forms.Padding(4);
             this.priceParamsTab.Name = "priceParamsTab";
-            this.priceParamsTab.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.priceParamsTab.Padding = new System.Windows.Forms.Padding(4);
             this.priceParamsTab.Size = new System.Drawing.Size(1043, 578);
             this.priceParamsTab.TabIndex = 2;
             this.priceParamsTab.Text = "3. 价格参数提取";
@@ -839,10 +840,10 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.priceParamsGroupBox.Controls.Add(this.btnBrowseBasePriceData);
             this.priceParamsGroupBox.Controls.Add(this.btnExtractPriceParams);
             this.priceParamsGroupBox.Location = new System.Drawing.Point(15, 14);
-            this.priceParamsGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.priceParamsGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.priceParamsGroupBox.Name = "priceParamsGroupBox";
-            this.priceParamsGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.priceParamsGroupBox.Size = new System.Drawing.Size(986, 166);
+            this.priceParamsGroupBox.Padding = new System.Windows.Forms.Padding(4);
+            this.priceParamsGroupBox.Size = new System.Drawing.Size(1286, 166);
             this.priceParamsGroupBox.TabIndex = 0;
             this.priceParamsGroupBox.TabStop = false;
             this.priceParamsGroupBox.Text = "林地定级价格参数";
@@ -862,19 +863,19 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.txtGradeIndices.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtGradeIndices.Location = new System.Drawing.Point(210, 35);
-            this.txtGradeIndices.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtGradeIndices.Margin = new System.Windows.Forms.Padding(4);
             this.txtGradeIndices.Name = "txtGradeIndices";
             this.txtGradeIndices.ReadOnly = true;
-            this.txtGradeIndices.Size = new System.Drawing.Size(594, 28);
+            this.txtGradeIndices.Size = new System.Drawing.Size(864, 28);
             this.txtGradeIndices.TabIndex = 1;
             // 
             // btnBrowseGradeIndices
             // 
             this.btnBrowseGradeIndices.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowseGradeIndices.Location = new System.Drawing.Point(821, 33);
-            this.btnBrowseGradeIndices.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseGradeIndices.Location = new System.Drawing.Point(1082, 29);
+            this.btnBrowseGradeIndices.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseGradeIndices.Name = "btnBrowseGradeIndices";
-            this.btnBrowseGradeIndices.Size = new System.Drawing.Size(120, 32);
+            this.btnBrowseGradeIndices.Size = new System.Drawing.Size(88, 32);
             this.btnBrowseGradeIndices.TabIndex = 2;
             this.btnBrowseGradeIndices.Text = "浏览...";
             this.btnBrowseGradeIndices.UseVisualStyleBackColor = true;
@@ -894,19 +895,19 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.txtBasePriceData.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtBasePriceData.Location = new System.Drawing.Point(210, 76);
-            this.txtBasePriceData.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtBasePriceData.Margin = new System.Windows.Forms.Padding(4);
             this.txtBasePriceData.Name = "txtBasePriceData";
             this.txtBasePriceData.ReadOnly = true;
-            this.txtBasePriceData.Size = new System.Drawing.Size(594, 28);
+            this.txtBasePriceData.Size = new System.Drawing.Size(864, 28);
             this.txtBasePriceData.TabIndex = 4;
             // 
             // btnBrowseBasePriceData
             // 
             this.btnBrowseBasePriceData.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowseBasePriceData.Location = new System.Drawing.Point(821, 75);
-            this.btnBrowseBasePriceData.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseBasePriceData.Location = new System.Drawing.Point(1082, 76);
+            this.btnBrowseBasePriceData.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseBasePriceData.Name = "btnBrowseBasePriceData";
-            this.btnBrowseBasePriceData.Size = new System.Drawing.Size(120, 32);
+            this.btnBrowseBasePriceData.Size = new System.Drawing.Size(88, 32);
             this.btnBrowseBasePriceData.TabIndex = 5;
             this.btnBrowseBasePriceData.Text = "浏览...";
             this.btnBrowseBasePriceData.UseVisualStyleBackColor = true;
@@ -914,7 +915,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // btnExtractPriceParams
             // 
             this.btnExtractPriceParams.Location = new System.Drawing.Point(396, 123);
-            this.btnExtractPriceParams.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnExtractPriceParams.Margin = new System.Windows.Forms.Padding(4);
             this.btnExtractPriceParams.Name = "btnExtractPriceParams";
             this.btnExtractPriceParams.Size = new System.Drawing.Size(270, 35);
             this.btnExtractPriceParams.TabIndex = 6;
@@ -934,10 +935,10 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.priceFactorsGroupBox.Controls.Add(this.btnLoadPriceParams);
             this.priceFactorsGroupBox.Controls.Add(this.dgvPriceFactors);
             this.priceFactorsGroupBox.Location = new System.Drawing.Point(15, 194);
-            this.priceFactorsGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.priceFactorsGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.priceFactorsGroupBox.Name = "priceFactorsGroupBox";
-            this.priceFactorsGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.priceFactorsGroupBox.Size = new System.Drawing.Size(986, 239);
+            this.priceFactorsGroupBox.Padding = new System.Windows.Forms.Padding(4);
+            this.priceFactorsGroupBox.Size = new System.Drawing.Size(1286, 685);
             this.priceFactorsGroupBox.TabIndex = 1;
             this.priceFactorsGroupBox.TabStop = false;
             this.priceFactorsGroupBox.Text = "价格修正因子及收益还原率";
@@ -957,19 +958,19 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.txtModifiers.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtModifiers.Location = new System.Drawing.Point(210, 35);
-            this.txtModifiers.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtModifiers.Margin = new System.Windows.Forms.Padding(4);
             this.txtModifiers.Name = "txtModifiers";
             this.txtModifiers.ReadOnly = true;
-            this.txtModifiers.Size = new System.Drawing.Size(594, 28);
+            this.txtModifiers.Size = new System.Drawing.Size(864, 28);
             this.txtModifiers.TabIndex = 1;
             // 
             // btnBrowseModifiers
             // 
             this.btnBrowseModifiers.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowseModifiers.Location = new System.Drawing.Point(821, 33);
-            this.btnBrowseModifiers.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseModifiers.Location = new System.Drawing.Point(1082, 33);
+            this.btnBrowseModifiers.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseModifiers.Name = "btnBrowseModifiers";
-            this.btnBrowseModifiers.Size = new System.Drawing.Size(120, 32);
+            this.btnBrowseModifiers.Size = new System.Drawing.Size(88, 32);
             this.btnBrowseModifiers.TabIndex = 2;
             this.btnBrowseModifiers.Text = "浏览...";
             this.btnBrowseModifiers.UseVisualStyleBackColor = true;
@@ -993,7 +994,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             0,
             131072});
             this.numYieldRate.Location = new System.Drawing.Point(210, 76);
-            this.numYieldRate.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.numYieldRate.Margin = new System.Windows.Forms.Padding(4);
             this.numYieldRate.Maximum = new decimal(new int[] {
             10,
             0,
@@ -1016,7 +1017,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // btnLoadPriceParams
             // 
             this.btnLoadPriceParams.Location = new System.Drawing.Point(210, 118);
-            this.btnLoadPriceParams.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnLoadPriceParams.Margin = new System.Windows.Forms.Padding(4);
             this.btnLoadPriceParams.Name = "btnLoadPriceParams";
             this.btnLoadPriceParams.Size = new System.Drawing.Size(270, 35);
             this.btnLoadPriceParams.TabIndex = 5;
@@ -1031,32 +1032,32 @@ namespace TestArcMapAddin2.Forms.ForestForm
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvPriceFactors.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvPriceFactors.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvPriceFactors.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             this.dgvPriceFactors.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvPriceFactors.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.FactorName,
             this.Weight});
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvPriceFactors.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvPriceFactors.DefaultCellStyle = dataGridViewCellStyle6;
             this.dgvPriceFactors.Location = new System.Drawing.Point(22, 159);
-            this.dgvPriceFactors.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.dgvPriceFactors.Margin = new System.Windows.Forms.Padding(4);
             this.dgvPriceFactors.Name = "dgvPriceFactors";
             this.dgvPriceFactors.ReadOnly = true;
             this.dgvPriceFactors.RowHeadersWidth = 62;
-            this.dgvPriceFactors.Size = new System.Drawing.Size(941, 66);
+            this.dgvPriceFactors.Size = new System.Drawing.Size(1148, 440);
             this.dgvPriceFactors.TabIndex = 6;
             // 
             // FactorName
@@ -1078,9 +1079,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.supplementPriceTab.Controls.Add(this.supplementSettingsGroupBox);
             this.supplementPriceTab.Controls.Add(this.supplementResultsGroupBox);
             this.supplementPriceTab.Location = new System.Drawing.Point(4, 28);
-            this.supplementPriceTab.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.supplementPriceTab.Margin = new System.Windows.Forms.Padding(4);
             this.supplementPriceTab.Name = "supplementPriceTab";
-            this.supplementPriceTab.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.supplementPriceTab.Padding = new System.Windows.Forms.Padding(4);
             this.supplementPriceTab.Size = new System.Drawing.Size(1043, 578);
             this.supplementPriceTab.TabIndex = 3;
             this.supplementPriceTab.Text = "4. 补充基准地价";
@@ -1096,10 +1097,10 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.supplementSettingsGroupBox.Controls.Add(this.numDefaultBasePrice);
             this.supplementSettingsGroupBox.Controls.Add(this.btnSupplementPrice);
             this.supplementSettingsGroupBox.Location = new System.Drawing.Point(15, 14);
-            this.supplementSettingsGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.supplementSettingsGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.supplementSettingsGroupBox.Name = "supplementSettingsGroupBox";
-            this.supplementSettingsGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.supplementSettingsGroupBox.Size = new System.Drawing.Size(986, 125);
+            this.supplementSettingsGroupBox.Padding = new System.Windows.Forms.Padding(4);
+            this.supplementSettingsGroupBox.Size = new System.Drawing.Size(1286, 125);
             this.supplementSettingsGroupBox.TabIndex = 0;
             this.supplementSettingsGroupBox.TabStop = false;
             this.supplementSettingsGroupBox.Text = "补充设置";
@@ -1124,10 +1125,11 @@ namespace TestArcMapAddin2.Forms.ForestForm
             "反距离加权插值",
             "克里金插值法"});
             this.cboSupplementMethod.Location = new System.Drawing.Point(210, 35);
-            this.cboSupplementMethod.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cboSupplementMethod.Margin = new System.Windows.Forms.Padding(4);
             this.cboSupplementMethod.Name = "cboSupplementMethod";
             this.cboSupplementMethod.Size = new System.Drawing.Size(298, 26);
             this.cboSupplementMethod.TabIndex = 1;
+            this.cboSupplementMethod.SelectedIndexChanged += new System.EventHandler(this.cboSupplementMethod_SelectedIndexChanged);
             // 
             // lblDefaultBasePrice
             // 
@@ -1148,7 +1150,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             0,
             131072});
             this.numDefaultBasePrice.Location = new System.Drawing.Point(720, 35);
-            this.numDefaultBasePrice.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.numDefaultBasePrice.Margin = new System.Windows.Forms.Padding(4);
             this.numDefaultBasePrice.Maximum = new decimal(new int[] {
             100000,
             0,
@@ -1172,7 +1174,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // btnSupplementPrice
             // 
             this.btnSupplementPrice.Location = new System.Drawing.Point(210, 76);
-            this.btnSupplementPrice.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSupplementPrice.Margin = new System.Windows.Forms.Padding(4);
             this.btnSupplementPrice.Name = "btnSupplementPrice";
             this.btnSupplementPrice.Size = new System.Drawing.Size(270, 35);
             this.btnSupplementPrice.TabIndex = 4;
@@ -1192,10 +1194,10 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.supplementResultsGroupBox.Controls.Add(this.btnViewPriceDistribution);
             this.supplementResultsGroupBox.Controls.Add(this.priceDistributionPanel);
             this.supplementResultsGroupBox.Location = new System.Drawing.Point(15, 152);
-            this.supplementResultsGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.supplementResultsGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.supplementResultsGroupBox.Name = "supplementResultsGroupBox";
-            this.supplementResultsGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.supplementResultsGroupBox.Size = new System.Drawing.Size(986, 280);
+            this.supplementResultsGroupBox.Padding = new System.Windows.Forms.Padding(4);
+            this.supplementResultsGroupBox.Size = new System.Drawing.Size(1286, 726);
             this.supplementResultsGroupBox.TabIndex = 1;
             this.supplementResultsGroupBox.TabStop = false;
             this.supplementResultsGroupBox.Text = "补充结果";
@@ -1244,7 +1246,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.btnSaveSupplementResults.Enabled = false;
             this.btnSaveSupplementResults.Location = new System.Drawing.Point(22, 118);
-            this.btnSaveSupplementResults.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSaveSupplementResults.Margin = new System.Windows.Forms.Padding(4);
             this.btnSaveSupplementResults.Name = "btnSaveSupplementResults";
             this.btnSaveSupplementResults.Size = new System.Drawing.Size(270, 35);
             this.btnSaveSupplementResults.TabIndex = 4;
@@ -1255,7 +1257,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.btnViewPriceDistribution.Enabled = false;
             this.btnViewPriceDistribution.Location = new System.Drawing.Point(315, 118);
-            this.btnViewPriceDistribution.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnViewPriceDistribution.Margin = new System.Windows.Forms.Padding(4);
             this.btnViewPriceDistribution.Name = "btnViewPriceDistribution";
             this.btnViewPriceDistribution.Size = new System.Drawing.Size(270, 35);
             this.btnViewPriceDistribution.TabIndex = 5;
@@ -1269,9 +1271,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
             | System.Windows.Forms.AnchorStyles.Right)));
             this.priceDistributionPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.priceDistributionPanel.Location = new System.Drawing.Point(22, 166);
-            this.priceDistributionPanel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.priceDistributionPanel.Margin = new System.Windows.Forms.Padding(4);
             this.priceDistributionPanel.Name = "priceDistributionPanel";
-            this.priceDistributionPanel.Size = new System.Drawing.Size(940, 100);
+            this.priceDistributionPanel.Size = new System.Drawing.Size(998, 252);
             this.priceDistributionPanel.TabIndex = 6;
             // 
             // calculateValueTab
@@ -1279,9 +1281,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.calculateValueTab.Controls.Add(this.calculationSettingsGroupBox);
             this.calculateValueTab.Controls.Add(this.resultSummaryGroupBox);
             this.calculateValueTab.Location = new System.Drawing.Point(4, 28);
-            this.calculateValueTab.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.calculateValueTab.Margin = new System.Windows.Forms.Padding(4);
             this.calculateValueTab.Name = "calculateValueTab";
-            this.calculateValueTab.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.calculateValueTab.Padding = new System.Windows.Forms.Padding(4);
             this.calculateValueTab.Size = new System.Drawing.Size(1043, 578);
             this.calculateValueTab.TabIndex = 4;
             this.calculateValueTab.Text = "5. 资源资产价值计算";
@@ -1300,10 +1302,10 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.calculationSettingsGroupBox.Controls.Add(this.chkExportResults);
             this.calculationSettingsGroupBox.Controls.Add(this.btnCalculateValue);
             this.calculationSettingsGroupBox.Location = new System.Drawing.Point(15, 14);
-            this.calculationSettingsGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.calculationSettingsGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.calculationSettingsGroupBox.Name = "calculationSettingsGroupBox";
-            this.calculationSettingsGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.calculationSettingsGroupBox.Size = new System.Drawing.Size(997, 166);
+            this.calculationSettingsGroupBox.Padding = new System.Windows.Forms.Padding(4);
+            this.calculationSettingsGroupBox.Size = new System.Drawing.Size(1297, 166);
             this.calculationSettingsGroupBox.TabIndex = 0;
             this.calculationSettingsGroupBox.TabStop = false;
             this.calculationSettingsGroupBox.Text = "计算设置";
@@ -1327,7 +1329,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             0,
             131072});
             this.numDateModifier.Location = new System.Drawing.Point(210, 35);
-            this.numDateModifier.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.numDateModifier.Margin = new System.Windows.Forms.Padding(4);
             this.numDateModifier.Maximum = new decimal(new int[] {
             2,
             0,
@@ -1366,7 +1368,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             0,
             131072});
             this.numPeriodModifier.Location = new System.Drawing.Point(578, 35);
-            this.numPeriodModifier.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.numPeriodModifier.Margin = new System.Windows.Forms.Padding(4);
             this.numPeriodModifier.Maximum = new decimal(new int[] {
             2,
             0,
@@ -1405,7 +1407,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             "收益还原法",
             "市场比较法"});
             this.cboCalcMethod.Location = new System.Drawing.Point(210, 76);
-            this.cboCalcMethod.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cboCalcMethod.Margin = new System.Windows.Forms.Padding(4);
             this.cboCalcMethod.Name = "cboCalcMethod";
             this.cboCalcMethod.Size = new System.Drawing.Size(298, 26);
             this.cboCalcMethod.TabIndex = 5;
@@ -1416,7 +1418,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.chkExportResults.Checked = true;
             this.chkExportResults.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkExportResults.Location = new System.Drawing.Point(578, 79);
-            this.chkExportResults.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkExportResults.Margin = new System.Windows.Forms.Padding(4);
             this.chkExportResults.Name = "chkExportResults";
             this.chkExportResults.Size = new System.Drawing.Size(142, 22);
             this.chkExportResults.TabIndex = 6;
@@ -1426,7 +1428,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // btnCalculateValue
             // 
             this.btnCalculateValue.Location = new System.Drawing.Point(210, 118);
-            this.btnCalculateValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnCalculateValue.Margin = new System.Windows.Forms.Padding(4);
             this.btnCalculateValue.Name = "btnCalculateValue";
             this.btnCalculateValue.Size = new System.Drawing.Size(270, 35);
             this.btnCalculateValue.TabIndex = 7;
@@ -1450,10 +1452,10 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.resultSummaryGroupBox.Controls.Add(this.btnViewValueStats);
             this.resultSummaryGroupBox.Controls.Add(this.valueDistributionPanel);
             this.resultSummaryGroupBox.Location = new System.Drawing.Point(15, 194);
-            this.resultSummaryGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.resultSummaryGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.resultSummaryGroupBox.Name = "resultSummaryGroupBox";
-            this.resultSummaryGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.resultSummaryGroupBox.Size = new System.Drawing.Size(997, 239);
+            this.resultSummaryGroupBox.Padding = new System.Windows.Forms.Padding(4);
+            this.resultSummaryGroupBox.Size = new System.Drawing.Size(1297, 685);
             this.resultSummaryGroupBox.TabIndex = 1;
             this.resultSummaryGroupBox.TabStop = false;
             this.resultSummaryGroupBox.Text = "计算结果摘要";
@@ -1544,7 +1546,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.btnSaveCalculationResults.Enabled = false;
             this.btnSaveCalculationResults.Location = new System.Drawing.Point(156, 123);
-            this.btnSaveCalculationResults.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSaveCalculationResults.Margin = new System.Windows.Forms.Padding(4);
             this.btnSaveCalculationResults.Name = "btnSaveCalculationResults";
             this.btnSaveCalculationResults.Size = new System.Drawing.Size(270, 35);
             this.btnSaveCalculationResults.TabIndex = 8;
@@ -1555,7 +1557,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.btnViewValueStats.Enabled = false;
             this.btnViewValueStats.Location = new System.Drawing.Point(499, 123);
-            this.btnViewValueStats.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnViewValueStats.Margin = new System.Windows.Forms.Padding(4);
             this.btnViewValueStats.Name = "btnViewValueStats";
             this.btnViewValueStats.Size = new System.Drawing.Size(270, 35);
             this.btnViewValueStats.TabIndex = 9;
@@ -1568,10 +1570,10 @@ namespace TestArcMapAddin2.Forms.ForestForm
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.valueDistributionPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.valueDistributionPanel.Location = new System.Drawing.Point(22, 166);
-            this.valueDistributionPanel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.valueDistributionPanel.Location = new System.Drawing.Point(8, 166);
+            this.valueDistributionPanel.Margin = new System.Windows.Forms.Padding(4);
             this.valueDistributionPanel.Name = "valueDistributionPanel";
-            this.valueDistributionPanel.Size = new System.Drawing.Size(951, 58);
+            this.valueDistributionPanel.Size = new System.Drawing.Size(978, 210);
             this.valueDistributionPanel.TabIndex = 10;
             // 
             // cleanQATab
@@ -1579,9 +1581,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.cleanQATab.Controls.Add(this.cleaningSettingsGroupBox);
             this.cleanQATab.Controls.Add(this.qaResultsGroupBox);
             this.cleanQATab.Location = new System.Drawing.Point(4, 28);
-            this.cleanQATab.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cleanQATab.Margin = new System.Windows.Forms.Padding(4);
             this.cleanQATab.Name = "cleanQATab";
-            this.cleanQATab.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cleanQATab.Padding = new System.Windows.Forms.Padding(4);
             this.cleanQATab.Size = new System.Drawing.Size(1043, 578);
             this.cleanQATab.TabIndex = 5;
             this.cleanQATab.Text = "6. 数据清洗质检";
@@ -1599,10 +1601,10 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.cleaningSettingsGroupBox.Controls.Add(this.chkValidateDomainValues);
             this.cleaningSettingsGroupBox.Controls.Add(this.btnCleanQA);
             this.cleaningSettingsGroupBox.Location = new System.Drawing.Point(15, 14);
-            this.cleaningSettingsGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cleaningSettingsGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.cleaningSettingsGroupBox.Name = "cleaningSettingsGroupBox";
-            this.cleaningSettingsGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.cleaningSettingsGroupBox.Size = new System.Drawing.Size(986, 166);
+            this.cleaningSettingsGroupBox.Padding = new System.Windows.Forms.Padding(4);
+            this.cleaningSettingsGroupBox.Size = new System.Drawing.Size(1286, 166);
             this.cleaningSettingsGroupBox.TabIndex = 0;
             this.cleaningSettingsGroupBox.TabStop = false;
             this.cleaningSettingsGroupBox.Text = "清洗设置";
@@ -1622,19 +1624,19 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.txtFieldMapping.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtFieldMapping.Location = new System.Drawing.Point(210, 35);
-            this.txtFieldMapping.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtFieldMapping.Margin = new System.Windows.Forms.Padding(4);
             this.txtFieldMapping.Name = "txtFieldMapping";
             this.txtFieldMapping.ReadOnly = true;
-            this.txtFieldMapping.Size = new System.Drawing.Size(594, 28);
+            this.txtFieldMapping.Size = new System.Drawing.Size(856, 28);
             this.txtFieldMapping.TabIndex = 1;
             // 
             // btnBrowseFieldMapping
             // 
             this.btnBrowseFieldMapping.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowseFieldMapping.Location = new System.Drawing.Point(821, 33);
-            this.btnBrowseFieldMapping.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseFieldMapping.Location = new System.Drawing.Point(1074, 33);
+            this.btnBrowseFieldMapping.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseFieldMapping.Name = "btnBrowseFieldMapping";
-            this.btnBrowseFieldMapping.Size = new System.Drawing.Size(120, 32);
+            this.btnBrowseFieldMapping.Size = new System.Drawing.Size(96, 32);
             this.btnBrowseFieldMapping.TabIndex = 2;
             this.btnBrowseFieldMapping.Text = "浏览...";
             this.btnBrowseFieldMapping.UseVisualStyleBackColor = true;
@@ -1645,7 +1647,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.chkRemoveTempFields.Checked = true;
             this.chkRemoveTempFields.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkRemoveTempFields.Location = new System.Drawing.Point(210, 79);
-            this.chkRemoveTempFields.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkRemoveTempFields.Margin = new System.Windows.Forms.Padding(4);
             this.chkRemoveTempFields.Name = "chkRemoveTempFields";
             this.chkRemoveTempFields.Size = new System.Drawing.Size(142, 22);
             this.chkRemoveTempFields.TabIndex = 3;
@@ -1658,7 +1660,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.chkFixGeometryIssues.Checked = true;
             this.chkFixGeometryIssues.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkFixGeometryIssues.Location = new System.Drawing.Point(405, 79);
-            this.chkFixGeometryIssues.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkFixGeometryIssues.Margin = new System.Windows.Forms.Padding(4);
             this.chkFixGeometryIssues.Name = "chkFixGeometryIssues";
             this.chkFixGeometryIssues.Size = new System.Drawing.Size(142, 22);
             this.chkFixGeometryIssues.TabIndex = 4;
@@ -1671,7 +1673,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.chkValidateDomainValues.Checked = true;
             this.chkValidateDomainValues.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkValidateDomainValues.Location = new System.Drawing.Point(600, 79);
-            this.chkValidateDomainValues.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkValidateDomainValues.Margin = new System.Windows.Forms.Padding(4);
             this.chkValidateDomainValues.Name = "chkValidateDomainValues";
             this.chkValidateDomainValues.Size = new System.Drawing.Size(142, 22);
             this.chkValidateDomainValues.TabIndex = 5;
@@ -1681,7 +1683,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // btnCleanQA
             // 
             this.btnCleanQA.Location = new System.Drawing.Point(405, 123);
-            this.btnCleanQA.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnCleanQA.Margin = new System.Windows.Forms.Padding(4);
             this.btnCleanQA.Name = "btnCleanQA";
             this.btnCleanQA.Size = new System.Drawing.Size(270, 35);
             this.btnCleanQA.TabIndex = 6;
@@ -1703,10 +1705,10 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.qaResultsGroupBox.Controls.Add(this.btnSaveCleanData);
             this.qaResultsGroupBox.Controls.Add(this.dgvQAIssues);
             this.qaResultsGroupBox.Location = new System.Drawing.Point(15, 194);
-            this.qaResultsGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.qaResultsGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.qaResultsGroupBox.Name = "qaResultsGroupBox";
-            this.qaResultsGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.qaResultsGroupBox.Size = new System.Drawing.Size(986, 239);
+            this.qaResultsGroupBox.Padding = new System.Windows.Forms.Padding(4);
+            this.qaResultsGroupBox.Size = new System.Drawing.Size(1286, 685);
             this.qaResultsGroupBox.TabIndex = 1;
             this.qaResultsGroupBox.TabStop = false;
             this.qaResultsGroupBox.Text = "质检结果";
@@ -1775,7 +1777,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.btnViewQAReport.Enabled = false;
             this.btnViewQAReport.Location = new System.Drawing.Point(169, 123);
-            this.btnViewQAReport.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnViewQAReport.Margin = new System.Windows.Forms.Padding(4);
             this.btnViewQAReport.Name = "btnViewQAReport";
             this.btnViewQAReport.Size = new System.Drawing.Size(270, 35);
             this.btnViewQAReport.TabIndex = 6;
@@ -1786,7 +1788,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.btnSaveCleanData.Enabled = false;
             this.btnSaveCleanData.Location = new System.Drawing.Point(534, 118);
-            this.btnSaveCleanData.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSaveCleanData.Margin = new System.Windows.Forms.Padding(4);
             this.btnSaveCleanData.Name = "btnSaveCleanData";
             this.btnSaveCleanData.Size = new System.Drawing.Size(270, 35);
             this.btnSaveCleanData.TabIndex = 7;
@@ -1801,34 +1803,34 @@ namespace TestArcMapAddin2.Forms.ForestForm
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvQAIssues.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvQAIssues.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvQAIssues.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
             this.dgvQAIssues.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvQAIssues.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.IssueType,
             this.Count,
             this.Fixed,
             this.Description});
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvQAIssues.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle8.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvQAIssues.DefaultCellStyle = dataGridViewCellStyle8;
             this.dgvQAIssues.Location = new System.Drawing.Point(22, 166);
-            this.dgvQAIssues.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.dgvQAIssues.Margin = new System.Windows.Forms.Padding(4);
             this.dgvQAIssues.Name = "dgvQAIssues";
             this.dgvQAIssues.ReadOnly = true;
             this.dgvQAIssues.RowHeadersWidth = 62;
-            this.dgvQAIssues.Size = new System.Drawing.Size(941, 59);
+            this.dgvQAIssues.Size = new System.Drawing.Size(1148, 437);
             this.dgvQAIssues.TabIndex = 8;
             // 
             // IssueType
@@ -1864,9 +1866,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.buildDatabaseTab.Controls.Add(this.dbSettingsGroupBox);
             this.buildDatabaseTab.Controls.Add(this.outputTablesGroupBox);
             this.buildDatabaseTab.Location = new System.Drawing.Point(4, 28);
-            this.buildDatabaseTab.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buildDatabaseTab.Margin = new System.Windows.Forms.Padding(4);
             this.buildDatabaseTab.Name = "buildDatabaseTab";
-            this.buildDatabaseTab.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buildDatabaseTab.Padding = new System.Windows.Forms.Padding(4);
             this.buildDatabaseTab.Size = new System.Drawing.Size(1043, 578);
             this.buildDatabaseTab.TabIndex = 6;
             this.buildDatabaseTab.Text = "7. 构建数据库";
@@ -1885,10 +1887,10 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.dbSettingsGroupBox.Controls.Add(this.cboOutputFormat);
             this.dbSettingsGroupBox.Controls.Add(this.btnBuildDatabase);
             this.dbSettingsGroupBox.Location = new System.Drawing.Point(15, 14);
-            this.dbSettingsGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.dbSettingsGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.dbSettingsGroupBox.Name = "dbSettingsGroupBox";
-            this.dbSettingsGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.dbSettingsGroupBox.Size = new System.Drawing.Size(986, 166);
+            this.dbSettingsGroupBox.Padding = new System.Windows.Forms.Padding(4);
+            this.dbSettingsGroupBox.Size = new System.Drawing.Size(1286, 166);
             this.dbSettingsGroupBox.TabIndex = 0;
             this.dbSettingsGroupBox.TabStop = false;
             this.dbSettingsGroupBox.Text = "数据库设置";
@@ -1908,19 +1910,19 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.txtOutputLocation.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtOutputLocation.Location = new System.Drawing.Point(210, 35);
-            this.txtOutputLocation.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtOutputLocation.Margin = new System.Windows.Forms.Padding(4);
             this.txtOutputLocation.Name = "txtOutputLocation";
             this.txtOutputLocation.ReadOnly = true;
-            this.txtOutputLocation.Size = new System.Drawing.Size(594, 28);
+            this.txtOutputLocation.Size = new System.Drawing.Size(846, 28);
             this.txtOutputLocation.TabIndex = 1;
             // 
             // btnBrowseOutputLocation
             // 
             this.btnBrowseOutputLocation.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowseOutputLocation.Location = new System.Drawing.Point(821, 33);
-            this.btnBrowseOutputLocation.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseOutputLocation.Location = new System.Drawing.Point(1079, 33);
+            this.btnBrowseOutputLocation.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseOutputLocation.Name = "btnBrowseOutputLocation";
-            this.btnBrowseOutputLocation.Size = new System.Drawing.Size(120, 32);
+            this.btnBrowseOutputLocation.Size = new System.Drawing.Size(81, 30);
             this.btnBrowseOutputLocation.TabIndex = 2;
             this.btnBrowseOutputLocation.Text = "浏览...";
             this.btnBrowseOutputLocation.UseVisualStyleBackColor = true;
@@ -1938,7 +1940,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // txtOutputName
             // 
             this.txtOutputName.Location = new System.Drawing.Point(210, 76);
-            this.txtOutputName.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtOutputName.Margin = new System.Windows.Forms.Padding(4);
             this.txtOutputName.Name = "txtOutputName";
             this.txtOutputName.Size = new System.Drawing.Size(298, 28);
             this.txtOutputName.TabIndex = 4;
@@ -1964,7 +1966,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             "Excel工作簿",
             "Shapefile"});
             this.cboOutputFormat.Location = new System.Drawing.Point(668, 76);
-            this.cboOutputFormat.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cboOutputFormat.Margin = new System.Windows.Forms.Padding(4);
             this.cboOutputFormat.Name = "cboOutputFormat";
             this.cboOutputFormat.Size = new System.Drawing.Size(238, 26);
             this.cboOutputFormat.TabIndex = 6;
@@ -1972,7 +1974,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // btnBuildDatabase
             // 
             this.btnBuildDatabase.Location = new System.Drawing.Point(210, 118);
-            this.btnBuildDatabase.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBuildDatabase.Margin = new System.Windows.Forms.Padding(4);
             this.btnBuildDatabase.Name = "btnBuildDatabase";
             this.btnBuildDatabase.Size = new System.Drawing.Size(270, 35);
             this.btnBuildDatabase.TabIndex = 7;
@@ -1990,10 +1992,10 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.outputTablesGroupBox.Controls.Add(this.btnViewOutputFiles);
             this.outputTablesGroupBox.Controls.Add(this.btnGenerateReport);
             this.outputTablesGroupBox.Location = new System.Drawing.Point(15, 194);
-            this.outputTablesGroupBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.outputTablesGroupBox.Margin = new System.Windows.Forms.Padding(4);
             this.outputTablesGroupBox.Name = "outputTablesGroupBox";
-            this.outputTablesGroupBox.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.outputTablesGroupBox.Size = new System.Drawing.Size(986, 246);
+            this.outputTablesGroupBox.Padding = new System.Windows.Forms.Padding(4);
+            this.outputTablesGroupBox.Size = new System.Drawing.Size(1286, 692);
             this.outputTablesGroupBox.TabIndex = 1;
             this.outputTablesGroupBox.TabStop = false;
             this.outputTablesGroupBox.Text = "输出数据表";
@@ -2011,9 +2013,9 @@ namespace TestArcMapAddin2.Forms.ForestForm
             "林地分等数据表",
             "林地基准地价表"});
             this.clbOutputTables.Location = new System.Drawing.Point(22, 35);
-            this.clbOutputTables.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.clbOutputTables.Margin = new System.Windows.Forms.Padding(4);
             this.clbOutputTables.Name = "clbOutputTables";
-            this.clbOutputTables.Size = new System.Drawing.Size(939, 104);
+            this.clbOutputTables.Size = new System.Drawing.Size(1239, 104);
             this.clbOutputTables.TabIndex = 0;
             // 
             // lblOutputStatus
@@ -2033,7 +2035,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.lblOutputStatusValue.Location = new System.Drawing.Point(210, 166);
             this.lblOutputStatusValue.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblOutputStatusValue.Name = "lblOutputStatusValue";
-            this.lblOutputStatusValue.Size = new System.Drawing.Size(753, 28);
+            this.lblOutputStatusValue.Size = new System.Drawing.Size(1053, 28);
             this.lblOutputStatusValue.TabIndex = 2;
             this.lblOutputStatusValue.Text = "尚未执行";
             this.lblOutputStatusValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2042,7 +2044,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.btnViewOutputFiles.Enabled = false;
             this.btnViewOutputFiles.Location = new System.Drawing.Point(22, 208);
-            this.btnViewOutputFiles.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnViewOutputFiles.Margin = new System.Windows.Forms.Padding(4);
             this.btnViewOutputFiles.Name = "btnViewOutputFiles";
             this.btnViewOutputFiles.Size = new System.Drawing.Size(270, 35);
             this.btnViewOutputFiles.TabIndex = 3;
@@ -2053,7 +2055,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             // 
             this.btnGenerateReport.Enabled = false;
             this.btnGenerateReport.Location = new System.Drawing.Point(315, 208);
-            this.btnGenerateReport.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnGenerateReport.Margin = new System.Windows.Forms.Padding(4);
             this.btnGenerateReport.Name = "btnGenerateReport";
             this.btnGenerateReport.Size = new System.Drawing.Size(270, 35);
             this.btnGenerateReport.TabIndex = 4;
@@ -2065,7 +2067,7 @@ namespace TestArcMapAddin2.Forms.ForestForm
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1101, 915);
-            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.Margin = new System.Windows.Forms.Padding(6);
             this.Name = "AssetValueCalculationForm";
             this.Text = "森林资源资产清查计算工具";
             this.mainPanel.ResumeLayout(false);

@@ -833,5 +833,15 @@ namespace TestArcMapAddin2.Forms.ForestForm
             base.CancelButton_Click(sender, e);
             processingCancelled = true;
         }
+
+        private void btnBrowseLandPriceData_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void cboSupplementMethod_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }
