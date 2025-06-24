@@ -16,14 +16,14 @@
         <Button id="TestArcMapAddin2_OpenBasicDataFormCmd"
                 class="TestArcMapAddin2.Commands.OpenBasicDataFormCmd"
                 image="Images\Data.png"
-                caption="打开数据库创建工具"
+                caption="打开数据准备工具"
                 category="自然资源资产清查"  
-                tooltip="打开数据预处理表单，进行基础数据准备工作。">
+                tooltip="打开数据预处理界面，进行基础数据准备工作。">
         </Button>
         <Button id="TestArcMapAddin2_OpenMainProcessingTabsFormCmd"
                 class="TestArcMapAddin2.Commands.OpenMainProcessingTabsFormCmd"
-                image="Images\Asses.png"
-                caption="打开主处理工具"
+                image="Images\Count.png"
+                caption="打开资产清查工具"
                 category="自然资源资产清查"
                 tooltip="打开主处理工具界面，进行核心数据处理。">
         </Button>

@@ -154,8 +154,9 @@
       <LastGenOutput>Config.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </AddInContent>
-  </ItemGroup>
-  <ItemGroup>
+    <AddInContent Include="Images\Asses.png" />
+    <AddInContent Include="Images\Data.png" />
+    <AddInContent Include="Images\OpenMainProcessFormCommand.png" />
     <AddInContent Include="Images\TestArcMapAddin2.png" />
   </ItemGroup>
   <ItemGroup>
@@ -179,11 +180,9 @@
     <None Include="obj\Release\TestArcMapAddin2.csproj.CoreCompileInputs.cache" />
   </ItemGroup>
   <ItemGroup>
-    <AddInContent Include="Images\OpenMainProcessFormCommand.png" />
     <Content Include=".gitattributes" />
     <Content Include=".gitignore" />
-    <AddInContent Include="Images\Asses.png" />
-    <AddInContent Include="Images\Data.png" />
+    <AddInContent Include="Images\Count.png" />
     <Content Include="obj\Debug\TestArcMapAddin2.csproj.FileListAbsolute.txt" />
   </ItemGroup>
   <ItemGroup>
@@ -201,6 +200,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\ForestForm\WorkBaseMapForm.resx">
       <DependentUpon>WorkBaseMapForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\MainProcessingTabsForm.resx">
+      <DependentUpon>MainProcessingTabsForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

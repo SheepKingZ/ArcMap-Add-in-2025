@@ -233,22 +233,22 @@ namespace TestArcMapAddin2.Forms
         private void BtnOK_Click(object sender, EventArgs e)
         {
             // 检查是否两个前提数据都已加载
-            bool prerequisiteDataLoaded = !string.IsNullOrEmpty(SharedWorkflowState.PrerequisiteData1Path) &&
-                                          !string.IsNullOrEmpty(SharedWorkflowState.PrerequisiteData2Path);
+            //bool prerequisiteDataLoaded = !string.IsNullOrEmpty(SharedWorkflowState.PrerequisiteData1Path) &&
+            //                              !string.IsNullOrEmpty(SharedWorkflowState.PrerequisiteData2Path);
 
-            SharedWorkflowState.IsBasicDataPrepared = prerequisiteDataLoaded && SharedWorkflowState.CountyEmptyTablesCreated &&
-                                                      !string.IsNullOrEmpty(SharedWorkflowState.WorkspacePath) &&
-                                                      SharedWorkflowState.SelectedCounties != null && SharedWorkflowState.SelectedCounties.Any();
+            //SharedWorkflowState.IsBasicDataPrepared = prerequisiteDataLoaded && SharedWorkflowState.CountyEmptyTablesCreated &&
+            //                                          !string.IsNullOrEmpty(SharedWorkflowState.WorkspacePath) &&
+            //                                          SharedWorkflowState.SelectedCounties != null && SharedWorkflowState.SelectedCounties.Any();
 
-            if (SharedWorkflowState.IsBasicDataPrepared)
-            {
-                this.DialogResult = DialogResult.OK;
-                this.Close();
-            }
-            else
-            {
-                MessageBox.Show("请先完成所有基础数据准备步骤。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+            //if (SharedWorkflowState.IsBasicDataPrepared)
+            //{
+            //    this.DialogResult = DialogResult.OK;
+            //    this.Close();
+            //}
+            //else
+            //{
+            //    MessageBox.Show("请先完成所有基础数据准备步骤。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //}
         }
 
         private void BtnCancel_Click(object sender, EventArgs e)

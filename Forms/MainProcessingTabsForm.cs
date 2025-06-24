@@ -108,9 +108,9 @@ namespace TestArcMapAddin2.Forms
             btnForestExtractScope.Enabled = basicDataReady;
             btnForestCreateBasemapLinkPrice.Enabled = basicDataReady && forestTasksCompleted["extractScope"];
             btnForestSupplementPrice.Enabled = basicDataReady && forestTasksCompleted["createBasemapLink"];
-            btnForestCalculateValue.Enabled = basicDataReady && forestTasksCompleted["supplementPrice"];
-            btnForestCleanQA.Enabled = basicDataReady && forestTasksCompleted["calculateValue"];
-            btnForestBuildDBTables.Enabled = basicDataReady && forestTasksCompleted["cleanQA"];
+            //btnForestCalculateValue.Enabled = basicDataReady && forestTasksCompleted["supplementPrice"];
+            //btnForestCleanQA.Enabled = basicDataReady && forestTasksCompleted["calculateValue"];
+            //btnForestBuildDBTables.Enabled = basicDataReady && forestTasksCompleted["cleanQA"];
 
             // 草地选项卡按钮
             btnGrasslandExtractScope.Enabled = basicDataReady;
@@ -146,7 +146,7 @@ namespace TestArcMapAddin2.Forms
             int forestSteps = forestTasksCompleted.Count;
             int forestCompleted = forestTasksCompleted.Count(x => x.Value);
             forestProgressBar.Value = forestSteps > 0 ? (forestCompleted * 100) / forestSteps : 0;
-            forestStepLabel.Text = $"已完成 {forestCompleted}/{forestSteps} 步骤";
+            //forestStepLabel.Text = $"已完成 {forestCompleted}/{forestSteps} 步骤";
 
             // 更新草地工作流进度
             int grasslandSteps = grasslandTasksCompleted.Count;
@@ -600,6 +600,11 @@ namespace TestArcMapAddin2.Forms
 
             showForestWorkflowDetails.Text = forestDetailPanel.Visible ?
                 "隐藏详细流程说明 ▲" : "显示详细流程说明 ▼";
+        }
+
+        private void forestStepLabel_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
