@@ -23,12 +23,13 @@ namespace ForestResourcePlugin
             this.btnBrowseLCXZGX = new System.Windows.Forms.Button();
             this.btnBrowseCZKFBJ = new System.Windows.Forms.Button();
             this.btnBrowseOutput = new System.Windows.Forms.Button();
-            this.txtLCXZGXPath = new System.Windows.Forms.TextBox();
-            this.txtCZKFBJPath = new System.Windows.Forms.TextBox();
+            this.cmbLCXZGXPath = new System.Windows.Forms.ComboBox();
+            this.cmbCZKFBJPath = new System.Windows.Forms.ComboBox();
             this.txtOutputPath = new System.Windows.Forms.TextBox();
             this.lblLCXZGX = new System.Windows.Forms.Label();
             this.lblCZKFBJ = new System.Windows.Forms.Label();
             this.lblOutput = new System.Windows.Forms.Label();
+            this.btnRefreshLayers = new System.Windows.Forms.Button();
             this.groupBoxOptions = new System.Windows.Forms.GroupBox();
             this.chkTopologyCheck = new System.Windows.Forms.CheckBox();
             this.chkGeometryValidation = new System.Windows.Forms.CheckBox();
@@ -115,12 +116,13 @@ namespace ForestResourcePlugin
             this.groupBoxFiles.Controls.Add(this.btnBrowseLCXZGX);
             this.groupBoxFiles.Controls.Add(this.btnBrowseCZKFBJ);
             this.groupBoxFiles.Controls.Add(this.btnBrowseOutput);
-            this.groupBoxFiles.Controls.Add(this.txtLCXZGXPath);
-            this.groupBoxFiles.Controls.Add(this.txtCZKFBJPath);
+            this.groupBoxFiles.Controls.Add(this.cmbLCXZGXPath);
+            this.groupBoxFiles.Controls.Add(this.cmbCZKFBJPath);
             this.groupBoxFiles.Controls.Add(this.txtOutputPath);
             this.groupBoxFiles.Controls.Add(this.lblLCXZGX);
             this.groupBoxFiles.Controls.Add(this.lblCZKFBJ);
             this.groupBoxFiles.Controls.Add(this.lblOutput);
+            this.groupBoxFiles.Controls.Add(this.btnRefreshLayers);
             this.groupBoxFiles.Location = new System.Drawing.Point(9, 8);
             this.groupBoxFiles.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.groupBoxFiles.Name = "groupBoxFiles";
@@ -163,23 +165,27 @@ namespace ForestResourcePlugin
             this.btnBrowseOutput.UseVisualStyleBackColor = true;
             this.btnBrowseOutput.Click += new System.EventHandler(this.btnBrowseOutput_Click);
             // 
-            // txtLCXZGXPath
+            // cmbLCXZGXPath
             // 
-            this.txtLCXZGXPath.Location = new System.Drawing.Point(210, 37);
-            this.txtLCXZGXPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.txtLCXZGXPath.Name = "txtLCXZGXPath";
-            this.txtLCXZGXPath.ReadOnly = true;
-            this.txtLCXZGXPath.Size = new System.Drawing.Size(814, 28);
-            this.txtLCXZGXPath.TabIndex = 1;
+            this.cmbLCXZGXPath.FormattingEnabled = true;
+            this.cmbLCXZGXPath.Location = new System.Drawing.Point(210, 37);
+            this.cmbLCXZGXPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbLCXZGXPath.Name = "cmbLCXZGXPath";
+            this.cmbLCXZGXPath.Size = new System.Drawing.Size(814, 26);
+            this.cmbLCXZGXPath.TabIndex = 1;
+            this.cmbLCXZGXPath.DropDown += new System.EventHandler(this.cmbLCXZGXPath_DropDown);
+            this.cmbLCXZGXPath.SelectedIndexChanged += new System.EventHandler(this.cmbLCXZGXPath_SelectedIndexChanged);
             // 
-            // txtCZKFBJPath
+            // cmbCZKFBJPath
             // 
-            this.txtCZKFBJPath.Location = new System.Drawing.Point(210, 79);
-            this.txtCZKFBJPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.txtCZKFBJPath.Name = "txtCZKFBJPath";
-            this.txtCZKFBJPath.ReadOnly = true;
-            this.txtCZKFBJPath.Size = new System.Drawing.Size(814, 28);
-            this.txtCZKFBJPath.TabIndex = 4;
+            this.cmbCZKFBJPath.FormattingEnabled = true;
+            this.cmbCZKFBJPath.Location = new System.Drawing.Point(210, 79);
+            this.cmbCZKFBJPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbCZKFBJPath.Name = "cmbCZKFBJPath";
+            this.cmbCZKFBJPath.Size = new System.Drawing.Size(814, 26);
+            this.cmbCZKFBJPath.TabIndex = 4;
+            this.cmbCZKFBJPath.DropDown += new System.EventHandler(this.cmbCZKFBJPath_DropDown);
+            this.cmbCZKFBJPath.SelectedIndexChanged += new System.EventHandler(this.cmbCZKFBJPath_SelectedIndexChanged);
             // 
             // txtOutputPath
             // 
@@ -219,6 +225,16 @@ namespace ForestResourcePlugin
             this.lblOutput.Size = new System.Drawing.Size(89, 18);
             this.lblOutput.TabIndex = 6;
             this.lblOutput.Text = "Êä³öÂ·¾¶:";
+            // 
+            // btnRefreshLayers
+            // 
+            this.btnRefreshLayers.Location = new System.Drawing.Point(210, 153);
+            this.btnRefreshLayers.Name = "btnRefreshLayers";
+            this.btnRefreshLayers.Size = new System.Drawing.Size(153, 32);
+            this.btnRefreshLayers.TabIndex = 9;
+            this.btnRefreshLayers.Text = "Ë¢ÐÂµØÍ¼Í¼²ã";
+            this.btnRefreshLayers.UseVisualStyleBackColor = true;
+            this.btnRefreshLayers.Click += new System.EventHandler(this.btnRefreshLayers_Click);
             // 
             // groupBoxOptions
             // 
@@ -350,8 +366,6 @@ namespace ForestResourcePlugin
             this.groupBoxFieldSelect.TabIndex = 0;
             this.groupBoxFieldSelect.TabStop = false;
             this.groupBoxFieldSelect.Text = "×Ö¶ÎÑ¡Ôñ";
-            // 
-            // cmbLandTypeField
             // 
             this.cmbLandTypeField.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbLandTypeField.FormattingEnabled = true;
@@ -704,12 +718,13 @@ namespace ForestResourcePlugin
         private System.Windows.Forms.Button btnBrowseLCXZGX;
         private System.Windows.Forms.Button btnBrowseCZKFBJ;
         private System.Windows.Forms.Button btnBrowseOutput;
-        private System.Windows.Forms.TextBox txtLCXZGXPath;
-        private System.Windows.Forms.TextBox txtCZKFBJPath;
+        private System.Windows.Forms.ComboBox cmbLCXZGXPath;
+        private System.Windows.Forms.ComboBox cmbCZKFBJPath;
         private System.Windows.Forms.TextBox txtOutputPath;
         private System.Windows.Forms.Label lblLCXZGX;
         private System.Windows.Forms.Label lblCZKFBJ;
         private System.Windows.Forms.Label lblOutput;
+        private System.Windows.Forms.Button btnRefreshLayers;
 
         private System.Windows.Forms.GroupBox groupBoxOptions;
         private System.Windows.Forms.CheckBox chkTopologyCheck;

@@ -16,6 +16,7 @@ namespace ForestResourcePlugin
         private DataTable mappingData;
         private IFeatureClass lcxzgxFeatureClass; // 林草现状图层要素类
         private IFeatureClass czkfbjFeatureClass; // 城镇开发边界要素类
+        private List<LayerInfo> mapLayers; // 当前地图文档中的图层列表
 
         public Basic()
         {
@@ -53,6 +54,47 @@ namespace ForestResourcePlugin
             chkForestLand.CheckedChanged += FilterCheckBox_CheckedChanged;
             chkStateOwned.CheckedChanged += FilterCheckBox_CheckedChanged;
             chkCollectiveInBoundary.CheckedChanged += FilterCheckBox_CheckedChanged;
+
+            // 加载地图图层
+            LoadMapLayers();
+        }
+
+        // 加载地图中的图层
+        private void LoadMapLayers()
+        {
+            try
+            {
+                UpdateStatus("正在获取地图图层...");
+                
+                // 清空下拉框
+                cmbLCXZGXPath.Items.Clear();
+                cmbCZKFBJPath.Items.Clear();
+                
+                // 添加提示选项
+                cmbLCXZGXPath.Items.Add("-- 请选择林草现状图层 --");
+                cmbCZKFBJPath.Items.Add("-- 请选择城镇开发边界图层 --");
+                
+                // 选择默认值
+                cmbLCXZGXPath.SelectedIndex = 0;
+                cmbCZKFBJPath.SelectedIndex = 0;
+                
+                // 获取地图图层
+                mapLayers = MapLayerUtilities.GetMapLayers();
+                
+                // 添加图层到下拉列表
+                foreach (LayerInfo layer in mapLayers)
+                {
+                    cmbLCXZGXPath.Items.Add(layer);
+                    cmbCZKFBJPath.Items.Add(layer);
+                }
+                
+                UpdateStatus($"已加载 {mapLayers.Count} 个地图图层");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus("加载地图图层失败");
+                System.Diagnostics.Debug.WriteLine($"加载地图图层出错: {ex.Message}");
+            }
         }
 
         // 复选框状态改变事件处理
@@ -78,7 +120,8 @@ namespace ForestResourcePlugin
                 dialog.Title = "选择林草现状图层(LCXZGX-P)";
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    txtLCXZGXPath.Text = dialog.FileName;
+                    // 直接将文件路径设置为ComboBox的文本内容
+                    cmbLCXZGXPath.Text = dialog.FileName;
                     LoadLCXZGXFields();
                 }
             }
@@ -92,12 +135,13 @@ namespace ForestResourcePlugin
                 dialog.Title = "选择城镇开发边界图层(CZKFBJ)";
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    txtCZKFBJPath.Text = dialog.FileName;
+                    // 直接将文件路径设置为ComboBox的文本内容
+                    cmbCZKFBJPath.Text = dialog.FileName;
                     
                     // 加载城镇开发边界图层
                     try
                     {
-                        LoadCZKFBJLayer(txtCZKFBJPath.Text);
+                        LoadCZKFBJLayer(cmbCZKFBJPath.Text);
                         UpdateStatus("成功加载城镇开发边界图层");
                     }
                     catch (Exception ex)
@@ -131,7 +175,7 @@ namespace ForestResourcePlugin
                 cmbLandOwnerField.Items.Clear();
                 
                 // Check if file exists
-                if (string.IsNullOrEmpty(txtLCXZGXPath.Text) || !File.Exists(txtLCXZGXPath.Text))
+                if (string.IsNullOrEmpty(cmbLCXZGXPath.Text) || !File.Exists(cmbLCXZGXPath.Text))
                 {
                     MessageBox.Show("选择的Shapefile文件不存在或无效", "读取字段失败", 
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -142,7 +186,7 @@ namespace ForestResourcePlugin
                 progressBar.Value = 30;
                 
                 // 使用ShapefileReader工具类读取字段
-                List<string> fieldNames = ShapefileReader.GetShapefileFieldNames(txtLCXZGXPath.Text);
+                List<string> fieldNames = ShapefileReader.GetShapefileFieldNames(cmbLCXZGXPath.Text);
                 
                 // 添加字段到下拉列表
                 foreach (string fieldName in fieldNames)
@@ -164,7 +208,7 @@ namespace ForestResourcePlugin
                 }
 
                 // 加载林草现状图层
-                LoadLCXZGXLayer(txtLCXZGXPath.Text);
+                LoadLCXZGXLayer(cmbLCXZGXPath.Text);
                 
                 progressBar.Value = 100;
                 UpdateStatus($"已读取 {fieldNames.Count} 个字段");
@@ -450,7 +494,7 @@ namespace ForestResourcePlugin
                             }
 
                             previewData.Rows.Add(row);
-                            processedCount++;
+                            processedCount--;
                         }
 
                         // 释放COM对象
@@ -663,15 +707,15 @@ namespace ForestResourcePlugin
 
         private bool ValidateInputs()
         {
-            if (string.IsNullOrEmpty(txtLCXZGXPath.Text))
+            if (string.IsNullOrEmpty(cmbLCXZGXPath.Text))
             {
                 MessageBox.Show("请选择林草现状图层", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
-            if (string.IsNullOrEmpty(txtCZKFBJPath.Text))
+            if (string.IsNullOrEmpty(cmbCZKFBJPath.Text))
             {
-                MessageBox.Show("请选择城镇开发边界图层", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("请选择城镇开发边界图层", "验证失败", MessageBoxIcon.Warning);
                 return false;
             }
 
@@ -729,6 +773,29 @@ namespace ForestResourcePlugin
         {
             lblStatus.Text = $"状态：{message}";
             Application.DoEvents();
+        }
+
+        private void btnRefreshLayers_Click(object sender, EventArgs e)
+        {
+            LoadMapLayers();
+        }
+
+        private void cmbLCXZGXPath_DropDown(object sender, EventArgs e)
+        {
+            // 当下拉框打开时，如果地图图层为空，则重新加载地图图层
+            if (mapLayers == null || mapLayers.Count == 0)
+            {
+                LoadMapLayers();
+            }
+        }
+
+        private void cmbCZKFBJPath_DropDown(object sender, EventArgs e)
+        {
+            // 当下拉框打开时，如果地图图层为空，则重新加载地图图层
+            if (mapLayers == null || mapLayers.Count == 0)
+            {
+                LoadMapLayers();
+            }
         }
     }
 }
