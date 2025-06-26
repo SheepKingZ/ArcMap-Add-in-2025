@@ -1,0 +1,1240 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<FieldMappingTemplate>
+  <TemplateInfo>
+    <Name>林草现状数据字段映射模板</Name>
+    <Description>用于林草现状图层完整字段映射，包含所有业务字段的自动映射配置</Description>
+    <Version>1.0</Version>
+    <CreateDate>2025-06-26</CreateDate>
+  </TemplateInfo>
+
+  <FieldMappings>
+    <!-- 标识码 -->
+    <Mapping>
+      <TargetField>bsm</TargetField>
+      <SourceField>BSM</SourceField>
+      <FieldType>String</FieldType>
+      <Required>true</Required>
+      <Description>标识码，唯一标识符</Description>
+    </Mapping>
+
+    <!-- 要素代码 -->
+    <Mapping>
+      <TargetField>ysdm</TargetField>
+      <SourceField>YSDM</SourceField>
+      <FieldType>String</FieldType>
+      <Required>true</Required>
+      <Description>要素分类代码</Description>
+    </Mapping>
+
+    <!-- 图斑预编号 -->
+    <Mapping>
+      <TargetField>tbybh</TargetField>
+      <SourceField>TBYBH</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>图斑预编号</Description>
+    </Mapping>
+
+    <!-- 图斑编号 -->
+    <Mapping>
+      <TargetField>tbbh</TargetField>
+      <SourceField>TBBH</SourceField>
+      <FieldType>String</FieldType>
+      <Required>true</Required>
+      <Description>图斑正式编号</Description>
+    </Mapping>
+
+    <!-- 地类编码 -->
+    <Mapping>
+      <TargetField>dlbm</TargetField>
+      <SourceField>DLBM</SourceField>
+      <FieldType>String</FieldType>
+      <Required>true</Required>
+      <Description>国土调查地类编码</Description>
+    </Mapping>
+
+    <!-- 地类名称 -->
+    <Mapping>
+      <TargetField>dlmc</TargetField>
+      <SourceField>DLMC</SourceField>
+      <FieldType>String</FieldType>
+      <Required>true</Required>
+      <Description>地类中文名称</Description>
+    </Mapping>
+
+    <!-- 权属性质 -->
+    <Mapping>
+      <TargetField>qsxz</TargetField>
+      <SourceField>QSXZ</SourceField>
+      <FieldType>String</FieldType>
+      <Required>true</Required>
+      <Description>土地所有权性质分类</Description>
+    </Mapping>
+
+    <!-- 权属单位代码 -->
+    <Mapping>
+      <TargetField>qsdwdm</TargetField>
+      <SourceField>QSDWDM</SourceField>
+      <FieldType>String</FieldType>
+      <Required>true</Required>
+      <Description>权属单位行政区划代码</Description>
+    </Mapping>
+
+    <!-- 权属单位名称 -->
+    <Mapping>
+      <TargetField>qsdwmc</TargetField>
+      <SourceField>QSDWMC</SourceField>
+      <FieldType>String</FieldType>
+      <Required>true</Required>
+      <Description>权属单位全称</Description>
+    </Mapping>
+
+    <!-- 坐落单位代码 -->
+    <Mapping>
+      <TargetField>zldwdm</TargetField>
+      <SourceField>ZLDWDM</SourceField>
+      <FieldType>String</FieldType>
+      <Required>true</Required>
+      <Description>图斑实际坐落单位代码</Description>
+    </Mapping>
+
+    <!-- 坐落单位名称 -->
+    <Mapping>
+      <TargetField>zldwmc</TargetField>
+      <SourceField>ZLDWMC</SourceField>
+      <FieldType>String</FieldType>
+      <Required>true</Required>
+      <Description>图斑实际坐落单位名称</Description>
+    </Mapping>
+
+    <!-- 图斑面积 -->
+    <Mapping>
+      <TargetField>tbmj</TargetField>
+      <SourceField>TBMJ</SourceField>
+      <FieldType>Double</FieldType>
+      <Required>true</Required>
+      <Decimal>2</Decimal>
+      <Description>图斑总面积（平方米）</Description>
+    </Mapping>
+
+    <!-- 扣除地类编码 -->
+    <Mapping>
+      <TargetField>kcdlbm</TargetField>
+      <SourceField>KCDLBM</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>需要扣除的地类编码</Description>
+    </Mapping>
+
+    <!-- 扣除地类系数 -->
+    <Mapping>
+      <TargetField>kcxs</TargetField>
+      <SourceField>KCXS</SourceField>
+      <FieldType>Float</FieldType>
+      <Required>false</Required>
+      <Decimal>4</Decimal>
+      <Description>扣除地类的计算系数</Description>
+    </Mapping>
+
+    <!-- 扣除地类面积 -->
+    <Mapping>
+      <TargetField>kcmj</TargetField>
+      <SourceField>KCMJ</SourceField>
+      <FieldType>Double</FieldType>
+      <Required>false</Required>
+      <Decimal>2</Decimal>
+      <Description>扣除地类的面积（平方米）</Description>
+    </Mapping>
+
+    <!-- 图斑地类面积 -->
+    <Mapping>
+      <TargetField>tbdlmj</TargetField>
+      <SourceField>TBDLMJ</SourceField>
+      <FieldType>Double</FieldType>
+      <Required>true</Required>
+      <Decimal>2</Decimal>
+      <Description>扣除后的净面积（平方米）</Description>
+    </Mapping>
+
+    <!-- 耕地类型 -->
+    <Mapping>
+      <TargetField>gdlx</TargetField>
+      <SourceField>GDLX</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>耕地二级分类类型</Description>
+    </Mapping>
+
+    <!-- 耕地坡度级别 -->
+    <Mapping>
+      <TargetField>gdpdjb</TargetField>
+      <SourceField>GDPDJB</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>耕地所处坡度级别</Description>
+    </Mapping>
+
+    <!-- 线性图斑宽度 -->
+    <Mapping>
+      <TargetField>xxtbkd</TargetField>
+      <SourceField>XXTBKD</SourceField>
+      <FieldType>Float</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>线性图斑的平均宽度（米）</Description>
+    </Mapping>
+
+    <!-- 图斑细化代码 -->
+    <Mapping>
+      <TargetField>tbxhdm</TargetField>
+      <SourceField>TBXHDM</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>图斑细化分类代码</Description>
+    </Mapping>
+
+    <!-- 图斑细化名称 -->
+    <Mapping>
+      <TargetField>tbxhmc</TargetField>
+      <SourceField>TBXHMC</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>图斑细化分类名称</Description>
+    </Mapping>
+
+    <!-- 种植属性代码 -->
+    <Mapping>
+      <TargetField>zzsxdm</TargetField>
+      <SourceField>ZZSXDM</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>种植业特征分类代码</Description>
+    </Mapping>
+
+    <!-- 种植属性名称 -->
+    <Mapping>
+      <TargetField>zzsxmc</TargetField>
+      <SourceField>ZZSXMC</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>种植业特征分类名称</Description>
+    </Mapping>
+
+    <!-- 耕地等别 -->
+    <Mapping>
+      <TargetField>gddb</TargetField>
+      <SourceField>GDDB</SourceField>
+      <FieldType>Integer</FieldType>
+      <Required>false</Required>
+      <Description>耕地质量等别</Description>
+    </Mapping>
+
+    <!-- 飞入地标识 -->
+    <Mapping>
+      <TargetField>frdbs</TargetField>
+      <SourceField>FRDBS</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>是否飞入地（1-是，0-否）</Description>
+    </Mapping>
+
+    <!-- 城镇村属性码 -->
+    <Mapping>
+      <TargetField>czcsxm</TargetField>
+      <SourceField>CZCSXM</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>城镇村属性分类代码</Description>
+    </Mapping>
+
+    <!-- 数据年份 -->
+    <Mapping>
+      <TargetField>sjnf</TargetField>
+      <SourceField>SJNF</SourceField>
+      <FieldType>Integer</FieldType>
+      <Required>true</Required>
+      <Description>调查数据年份（YYYY）</Description>
+    </Mapping>
+
+    <!-- 国土备注 -->
+    <Mapping>
+      <TargetField>bz</TargetField>
+      <SourceField>BZ</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>国土调查备注信息</Description>
+    </Mapping>
+
+    <!-- 省（区、市） -->
+    <Mapping>
+      <TargetField>sheng</TargetField>
+      <SourceField>SHENG</SourceField>
+      <FieldType>String</FieldType>
+      <Required>true</Required>
+      <Description>省级行政区划代码</Description>
+    </Mapping>
+
+    <!-- 县（市、旗） -->
+    <Mapping>
+      <TargetField>xian</TargetField>
+      <SourceField>XIAN</SourceField>
+      <FieldType>String</FieldType>
+      <Required>true</Required>
+      <Description>县级行政区划代码</Description>
+    </Mapping>
+
+    <!-- 乡 -->
+    <Mapping>
+      <TargetField>xiang</TargetField>
+      <SourceField>XIANG</SourceField>
+      <FieldType>String</FieldType>
+      <Required>true</Required>
+      <Description>乡级行政区划代码</Description>
+    </Mapping>
+
+    <!-- 村 -->
+    <Mapping>
+      <TargetField>cun</TargetField>
+      <SourceField>CUN</SourceField>
+      <FieldType>String</FieldType>
+      <Required>true</Required>
+      <Description>村级行政区划代码</Description>
+    </Mapping>
+
+    <!-- 林业局（牧场） -->
+    <Mapping>
+      <TargetField>lin_ye_ju</TargetField>
+      <SourceField>LIN_YE_JU</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>林业局或牧场代码</Description>
+    </Mapping>
+
+    <!-- 林场(分场) -->
+    <Mapping>
+      <TargetField>lin_chang</TargetField>
+      <SourceField>LIN_CHANG</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>林场或分场代码</Description>
+    </Mapping>
+
+    <!-- 林(草)班 -->
+    <Mapping>
+      <TargetField>lin_ban</TargetField>
+      <SourceField>LIN_BAN</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>林班或草班编号</Description>
+    </Mapping>
+
+    <!-- 小班号 -->
+    <Mapping>
+      <TargetField>xiao_ban</TargetField>
+      <SourceField>XIAO_BAN</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>小班编号</Description>
+    </Mapping>
+
+    <!-- 流域 -->
+    <Mapping>
+      <TargetField>ly</TargetField>
+      <SourceField>LY</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>所属流域编码</Description>
+    </Mapping>
+
+    <!-- 生态区位 -->
+    <Mapping>
+      <TargetField>stqw</TargetField>
+      <SourceField>STQW</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>生态保护区位代码</Description>
+    </Mapping>
+
+    <!-- 生态区位名称 -->
+    <Mapping>
+      <TargetField>stqwmc</TargetField>
+      <SourceField>STQWMC</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>生态保护区位名称</Description>
+    </Mapping>
+
+    <!-- 地貌 -->
+    <Mapping>
+      <TargetField>di_mao</TargetField>
+      <SourceField>DI_MAO</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>地形地貌分类代码</Description>
+    </Mapping>
+
+    <!-- 海拔 -->
+    <Mapping>
+      <TargetField>hai_ba</TargetField>
+      <SourceField>HAI_BA</SourceField>
+      <FieldType>Integer</FieldType>
+      <Required>false</Required>
+      <Description>平均海拔高度（米）</Description>
+    </Mapping>
+
+    <!-- 坡向 -->
+    <Mapping>
+      <TargetField>po_xiang</TargetField>
+      <SourceField>PO_XIANG</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>坡向方位代码</Description>
+    </Mapping>
+
+    <!-- 坡位 -->
+    <Mapping>
+      <TargetField>po_wei</TargetField>
+      <SourceField>PO_WEI</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>坡位位置代码</Description>
+    </Mapping>
+
+    <!-- 坡度 -->
+    <Mapping>
+      <TargetField>po_du</TargetField>
+      <SourceField>PO_DU</SourceField>
+      <FieldType>Integer</FieldType>
+      <Required>false</Required>
+      <Description>坡度值（度）</Description>
+    </Mapping>
+
+    <!-- 土壤类型 -->
+    <Mapping>
+      <TargetField>tu_rang_lx</TargetField>
+      <SourceField>TU_RANG_LX</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>土壤分类类型代码</Description>
+    </Mapping>
+
+    <!-- 土层厚度 -->
+    <Mapping>
+      <TargetField>tu_ceng_hd</TargetField>
+      <SourceField>TU_CENG_HD</SourceField>
+      <FieldType>Integer</FieldType>
+      <Required>false</Required>
+      <Description>有效土层厚度（厘米）</Description>
+    </Mapping>
+
+    <!-- 土壤质地 -->
+    <Mapping>
+      <TargetField>tu_rang_zd</TargetField>
+      <SourceField>TU_RANG_ZD</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>土壤质地分类代码</Description>
+    </Mapping>
+
+    <!-- 土地所有权属 -->
+    <Mapping>
+      <TargetField>ld_qs</TargetField>
+      <SourceField>LD_QS</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>土地所有权属分类</Description>
+    </Mapping>
+
+    <!-- 土地使用权属 -->
+    <Mapping>
+      <TargetField>tdsyqs</TargetField>
+      <SourceField>TDSYQS</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>土地使用权属分类</Description>
+    </Mapping>
+
+    <!-- 小班面积 -->
+    <Mapping>
+      <TargetField>xbmj</TargetField>
+      <SourceField>XBMJ</SourceField>
+      <FieldType>Double</FieldType>
+      <Required>false</Required>
+      <Decimal>2</Decimal>
+      <Description>小班面积（平方米）</Description>
+    </Mapping>
+
+    <!-- 地类 -->
+    <Mapping>
+      <TargetField>di_lei</TargetField>
+      <SourceField>DI_LEI</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>林草资源地类代码</Description>
+    </Mapping>
+
+    <!-- 植被覆盖类型 -->
+    <Mapping>
+      <TargetField>zbfglx</TargetField>
+      <SourceField>ZBFGLX</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>植被覆盖类型代码</Description>
+    </Mapping>
+
+    <!-- 植被结构 -->
+    <Mapping>
+      <TargetField>zb_jg</TargetField>
+      <SourceField>ZB_JG</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>植被垂直结构代码</Description>
+    </Mapping>
+
+    <!-- 植被总盖度 -->
+    <Mapping>
+      <TargetField>zbgd</TargetField>
+      <SourceField>ZBGD</SourceField>
+      <FieldType>Integer</FieldType>
+      <Required>false</Required>
+      <Description>植被总覆盖度（百分比）</Description>
+    </Mapping>
+
+    <!-- 郁闭度 -->
+    <Mapping>
+      <TargetField>yu_bi_du</TargetField>
+      <SourceField>YU_BI_DU</SourceField>
+      <FieldType>Double</FieldType>
+      <Required>false</Required>
+      <Decimal>2</Decimal>
+      <Description>乔木层郁闭度（0-1）</Description>
+    </Mapping>
+
+    <!-- 灌木盖度 -->
+    <Mapping>
+      <TargetField>gmgd</TargetField>
+      <SourceField>GMGD</SourceField>
+      <FieldType>Integer</FieldType>
+      <Required>false</Required>
+      <Description>灌木层覆盖度（百分比）</Description>
+    </Mapping>
+
+    <!-- 草本盖度 -->
+    <Mapping>
+      <TargetField>cbgd</TargetField>
+      <SourceField>CBGD</SourceField>
+      <FieldType>Integer</FieldType>
+      <Required>false</Required>
+      <Description>草本层覆盖度（百分比）</Description>
+    </Mapping>
+
+    <!-- 优势树（灌）种 -->
+    <Mapping>
+      <TargetField>you_shi_sz</TargetField>
+      <SourceField>YOU_SHI_SZ</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>优势树种或灌木种代码</Description>
+    </Mapping>
+
+    <!-- 起源 -->
+    <Mapping>
+      <TargetField>qi_yuan</TargetField>
+      <SourceField>QI_YUAN</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>林分起源（天然/人工）</Description>
+    </Mapping>
+
+    <!-- 平均年龄 -->
+    <Mapping>
+      <TargetField>pingjun_nl</TargetField>
+      <SourceField>PINGJUN_NL</SourceField>
+      <FieldType>Integer</FieldType>
+      <Required>false</Required>
+      <Description>林分平均年龄（年）</Description>
+    </Mapping>
+
+    <!-- 龄组 -->
+    <Mapping>
+      <TargetField>ling_zu</TargetField>
+      <SourceField>LING_ZU</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>林分龄组代码</Description>
+    </Mapping>
+
+    <!-- 平均胸径 -->
+    <Mapping>
+      <TargetField>pingjun_xj</TargetField>
+      <SourceField>PINGJUN_XJ</SourceField>
+      <FieldType>Float</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>林木平均胸径（厘米）</Description>
+    </Mapping>
+
+    <!-- 平均树高 -->
+    <Mapping>
+      <TargetField>pingjun_sg</TargetField>
+      <SourceField>PINGJUN_SG</SourceField>
+      <FieldType>Float</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>林木平均树高（米）</Description>
+    </Mapping>
+
+    <!-- 每公顷株数 -->
+    <Mapping>
+      <TargetField>mei_gq_zs</TargetField>
+      <SourceField>MEI_GQ_ZS</SourceField>
+      <FieldType>Integer</FieldType>
+      <Required>false</Required>
+      <Description>每公顷林木株数</Description>
+    </Mapping>
+
+    <!-- 每公顷蓄积 -->
+    <Mapping>
+      <TargetField>mei_gq_xj</TargetField>
+      <SourceField>MEI_GQ_XJ</SourceField>
+      <FieldType>Double</FieldType>
+      <Required>false</Required>
+      <Decimal>2</Decimal>
+      <Description>每公顷林木蓄积量（立方米）</Description>
+    </Mapping>
+
+    <!-- 蓄积量 -->
+    <Mapping>
+      <TargetField>huo_lm_xj</TargetField>
+      <SourceField>HUO_LM_XJ</SourceField>
+      <FieldType>Integer</FieldType>
+      <Required>false</Required>
+      <Description>小班总蓄积量（立方米）</Description>
+    </Mapping>
+
+    <!-- 生物量 -->
+    <Mapping>
+      <TargetField>sheng_wu_l</TargetField>
+      <SourceField>SHENG_WU_L</SourceField>
+      <FieldType>Integer</FieldType>
+      <Required>false</Required>
+      <Description>小班生物量（吨）</Description>
+    </Mapping>
+
+    <!-- 碳储量 -->
+    <Mapping>
+      <TargetField>tan_chu_l</TargetField>
+      <SourceField>TAN_CHU_L</SourceField>
+      <FieldType>Integer</FieldType>
+      <Required>false</Required>
+      <Description>小班碳储量（吨）</Description>
+    </Mapping>
+
+    <!-- 林木所有权属 -->
+    <Mapping>
+      <TargetField>lmqs</TargetField>
+      <SourceField>LMQS</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>林木所有权属分类</Description>
+    </Mapping>
+
+    <!-- 林木使用权属 -->
+    <Mapping>
+      <TargetField>lmsyqs</TargetField>
+      <SourceField>LMSYQS</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>林木使用权属分类</Description>
+    </Mapping>
+
+    <!-- 林种 -->
+    <Mapping>
+      <TargetField>lin_zhong</TargetField>
+      <SourceField>LIN_ZHONG</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>森林资源林种代码</Description>
+    </Mapping>
+
+    <!-- 树种组成 -->
+    <Mapping>
+      <TargetField>shuzhong_zc</TargetField>
+      <SourceField>SHUZHONG_ZC</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>树种组成表达式（选填）</Description>
+    </Mapping>
+
+    <!-- 事权等级 -->
+    <Mapping>
+      <TargetField>shi_quan_d</TargetField>
+      <SourceField>SHI_QUAN_D</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>国家级公益林事权等级</Description>
+    </Mapping>
+
+    <!-- 公益林变化类型 -->
+    <Mapping>
+      <TargetField>gyl_bhlx</TargetField>
+      <SourceField>GYL_BHLX</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>公益林变化类型代码</Description>
+    </Mapping>
+
+    <!-- 林地管理类型 -->
+    <Mapping>
+      <TargetField>ldgl_lx</TargetField>
+      <SourceField>LDGL_LX</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>林地管理类型代码</Description>
+    </Mapping>
+
+    <!-- 林地保护等级 -->
+    <Mapping>
+      <TargetField>bh_dj</TargetField>
+      <SourceField>BH_DJ</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>林地保护等级代码</Description>
+    </Mapping>
+
+    <!-- 林地质量等级 -->
+    <Mapping>
+      <TargetField>zl_dj</TargetField>
+      <SourceField>ZL_DJ</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>林地质量等级代码</Description>
+    </Mapping>
+
+    <!-- 草原分区 -->
+    <Mapping>
+      <TargetField>cy_fq</TargetField>
+      <SourceField>CY_FQ</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>草原自然分区代码</Description>
+    </Mapping>
+
+    <!-- 草原起源 -->
+    <Mapping>
+      <TargetField>cd_qy</TargetField>
+      <SourceField>CD_QY</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>草原植被起源代码</Description>
+    </Mapping>
+
+    <!-- 草原类 -->
+    <Mapping>
+      <TargetField>cd_l</TargetField>
+      <SourceField>CD_L</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>草原类型一级分类代码</Description>
+    </Mapping>
+
+    <!-- 草原型 -->
+    <Mapping>
+      <TargetField>cd_xing</TargetField>
+      <SourceField>CD_XING</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>草原类型二级分类代码</Description>
+    </Mapping>
+
+    <!-- 优势草种 -->
+    <Mapping>
+      <TargetField>ys_caoz</TargetField>
+      <SourceField>YS_CAOZ</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>优势草种名称</Description>
+    </Mapping>
+
+    <!-- 功能类别 -->
+    <Mapping>
+      <TargetField>cdgn</TargetField>
+      <SourceField>CDGN</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>草原功能类别代码</Description>
+    </Mapping>
+
+    <!-- 单位面积鲜草产量 -->
+    <Mapping>
+      <TargetField>xc_cl</TargetField>
+      <SourceField>XC_CL</SourceField>
+      <FieldType>Double</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>单位面积鲜草产量（公斤/亩）</Description>
+    </Mapping>
+
+    <!-- 小班鲜草产量 -->
+    <Mapping>
+      <TargetField>xb_xccl</TargetField>
+      <SourceField>XB_XCCL</SourceField>
+      <FieldType>Double</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>小班总鲜草产量（公斤）</Description>
+    </Mapping>
+
+    <!-- 可食牧草比例 -->
+    <Mapping>
+      <TargetField>ksmcbl</TargetField>
+      <SourceField>KSMCBL</SourceField>
+      <FieldType>Double</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>可食牧草占总产量比例（0-1）</Description>
+    </Mapping>
+
+    <!-- 小班干草产量 -->
+    <Mapping>
+      <TargetField>xb_gccl</TargetField>
+      <SourceField>XB_GCCL</SourceField>
+      <FieldType>Double</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>小班总干草产量（公斤）</Description>
+    </Mapping>
+
+    <!-- 小班可食干牧草产量 -->
+    <Mapping>
+      <TargetField>xb_ksgccl</TargetField>
+      <SourceField>XB_KSGCCL</SourceField>
+      <FieldType>Double</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>小班可食干牧草产量（公斤）</Description>
+    </Mapping>
+
+    <!-- 小班可食鲜牧草产量 -->
+    <Mapping>
+      <TargetField>xb_ksxccl</TargetField>
+      <SourceField>XB_KSXCCL</SourceField>
+      <FieldType>Double</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>小班可食鲜牧草产量（公斤）</Description>
+    </Mapping>
+
+    <!-- 利用方式 -->
+    <Mapping>
+      <TargetField>cdlyfs</TargetField>
+      <SourceField>CDLYFS</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>草原利用方式代码</Description>
+    </Mapping>
+
+    <!-- 放牧时长 -->
+    <Mapping>
+      <TargetField>fm_shch</TargetField>
+      <SourceField>FM_SHCH</SourceField>
+      <FieldType>Integer</FieldType>
+      <Required>false</Required>
+      <Description>年放牧时长（月）</Description>
+    </Mapping>
+
+    <!-- 草原类别 -->
+    <Mapping>
+      <TargetField>cylb</TargetField>
+      <SourceField>CYLB</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>基本草原类别代码</Description>
+    </Mapping>
+
+    <!-- 裸斑面积比例 -->
+    <Mapping>
+      <TargetField>lbmj_bl</TargetField>
+      <SourceField>LBMJ_BL</SourceField>
+      <FieldType>Integer</FieldType>
+      <Required>false</Required>
+      <Description>裸斑面积占比（百分比）</Description>
+    </Mapping>
+
+    <!-- 草原退化类型 -->
+    <Mapping>
+      <TargetField>thlx</TargetField>
+      <SourceField>THLX</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>草原退化类型代码</Description>
+    </Mapping>
+
+    <!-- 草原退化程度 -->
+    <Mapping>
+      <TargetField>thcd</TargetField>
+      <SourceField>THCD</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>草原退化程度代码</Description>
+    </Mapping>
+
+    <!-- 禁牧与草畜平衡 -->
+    <Mapping>
+      <TargetField>jm_ph</TargetField>
+      <SourceField>JM_PH</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>禁牧或草畜平衡状态</Description>
+    </Mapping>
+
+    <!-- 草原管理类型 -->
+    <Mapping>
+      <TargetField>cdgl_lx</TargetField>
+      <SourceField>CDGL_LX</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>草原管理类型代码</Description>
+    </Mapping>
+
+    <!-- 湿地管理分级 -->
+    <Mapping>
+      <TargetField>sd_dj</TargetField>
+      <SourceField>SD_DJ</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>湿地保护管理等级</Description>
+    </Mapping>
+
+    <!-- 重要湿地名称 -->
+    <Mapping>
+      <TargetField>zysd_bm</TargetField>
+      <SourceField>ZYSD_BM</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>重要湿地正式名称</Description>
+    </Mapping>
+
+    <!-- 湿地保护形式 -->
+    <Mapping>
+      <TargetField>bhdsx</TargetField>
+      <SourceField>BHDSX</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>湿地保护形式代码</Description>
+    </Mapping>
+
+    <!-- 自然保护地 -->
+    <Mapping>
+      <TargetField>bhddm</TargetField>
+      <SourceField>BHDDM</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>所属自然保护地名称</Description>
+    </Mapping>
+
+    <!-- 湿地利用方式 -->
+    <Mapping>
+      <TargetField>sdlyfs</TargetField>
+      <SourceField>SDLYFS</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>湿地利用方式代码</Description>
+    </Mapping>
+
+    <!-- 受威胁状况 -->
+    <Mapping>
+      <TargetField>sdwxzk</TargetField>
+      <SourceField>SDWXZK</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>湿地受威胁状况代码</Description>
+    </Mapping>
+
+    <!-- 湿地管理类型 -->
+    <Mapping>
+      <TargetField>sdgllx</TargetField>
+      <SourceField>SDGLLX</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>湿地管理类型代码</Description>
+    </Mapping>
+
+    <!-- 荒漠调查区类型 -->
+    <Mapping>
+      <TargetField>dcqlx</TargetField>
+      <SourceField>DCQLX</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>荒漠化/沙化/石漠化类型</Description>
+    </Mapping>
+
+    <!-- 气候类型 -->
+    <Mapping>
+      <TargetField>qhlx</TargetField>
+      <SourceField>QHLX</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>荒漠区气候类型代码</Description>
+    </Mapping>
+
+    <!-- 沙化类型 -->
+    <Mapping>
+      <TargetField>shlx</TargetField>
+      <SourceField>SHLX</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>土地沙化类型代码</Description>
+    </Mapping>
+
+    <!-- 沙化程度 -->
+    <Mapping>
+      <TargetField>shcd</TargetField>
+      <SourceField>SHCD</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>土地沙化程度代码</Description>
+    </Mapping>
+
+    <!-- 所属沙漠沙地 -->
+    <Mapping>
+      <TargetField>sssmsd</TargetField>
+      <SourceField>SSSMSD</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>所属沙漠或沙地代码</Description>
+    </Mapping>
+
+    <!-- 荒漠化类型 -->
+    <Mapping>
+      <TargetField>hmhlx</TargetField>
+      <SourceField>HMHLX</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>土地荒漠化类型代码</Description>
+    </Mapping>
+
+    <!-- 荒漠化程度 -->
+    <Mapping>
+      <TargetField>hmhcd</TargetField>
+      <SourceField>HMHCD</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>土地荒漠化程度代码</Description>
+    </Mapping>
+
+    <!-- 基岩裸露度/土壤砾石含量 -->
+    <Mapping>
+      <TargetField>trls</TargetField>
+      <SourceField>TRLS</SourceField>
+      <FieldType>Float</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>基岩裸露度或砾石含量（百分比）</Description>
+    </Mapping>
+
+    <!-- 覆沙厚度 -->
+    <Mapping>
+      <TargetField>fshd</TargetField>
+      <SourceField>FSHD</SourceField>
+      <FieldType>Float</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>地表覆沙厚度（厘米）</Description>
+    </Mapping>
+
+    <!-- 沙丘高度 -->
+    <Mapping>
+      <TargetField>sqgd</TargetField>
+      <SourceField>SQGD</SourceField>
+      <FieldType>Float</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>沙丘平均高度（米）</Description>
+    </Mapping>
+
+    <!-- 侵蚀沟面积比例 -->
+    <Mapping>
+      <TargetField>qsg</TargetField>
+      <SourceField>QSG</SourceField>
+      <FieldType>Float</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>侵蚀沟占地面积比例（百分比）</Description>
+    </Mapping>
+
+    <!-- 盐碱斑占地率 -->
+    <Mapping>
+      <TargetField>yjb</TargetField>
+      <SourceField>YJB</SourceField>
+      <FieldType>Float</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>盐碱斑占地面积比例（百分比）</Description>
+    </Mapping>
+
+    <!-- 作物产量下降率 -->
+    <Mapping>
+      <TargetField>zwclxjl</TargetField>
+      <SourceField>ZWCLXJL</SourceField>
+      <FieldType>Float</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>因荒漠化导致的产量下降率（百分比）</Description>
+    </Mapping>
+
+    <!-- 作物缺苗率 -->
+    <Mapping>
+      <TargetField>zwqml</TargetField>
+      <SourceField>ZWQML</SourceField>
+      <FieldType>Float</FieldType>
+      <Required>false</Required>
+      <Decimal>1</Decimal>
+      <Description>农作物缺苗比例（百分比）</Description>
+    </Mapping>
+
+    <!-- 作物产量 -->
+    <Mapping>
+      <TargetField>zwcl</TargetField>
+      <SourceField>ZWCL</SourceField>
+      <FieldType>Float</FieldType>
+      <Required>false</Required>
+      <Description>单位面积作物产量（公斤/亩）</Description>
+    </Mapping>
+
+    <!-- 灌溉能力 -->
+    <Mapping>
+      <TargetField>ggnl</TargetField>
+      <SourceField>GGNL</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>耕地灌溉条件代码</Description>
+    </Mapping>
+
+    <!-- 农田林网化率 -->
+    <Mapping>
+      <TargetField>ntlwhl</TargetField>
+      <SourceField>NTLWHL</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>农田林网化程度代码</Description>
+    </Mapping>
+
+    <!-- 风蚀状况 -->
+    <Mapping>
+      <TargetField>fszk</TargetField>
+      <SourceField>FSZK</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>风蚀程度分级代码</Description>
+    </Mapping>
+
+    <!-- 土壤表层结构 -->
+    <Mapping>
+      <TargetField>trbcjg</TargetField>
+      <SourceField>TRBCJG</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>土壤表层结构代码</Description>
+    </Mapping>
+
+    <!-- 荒漠化沙化可治理度 -->
+    <Mapping>
+      <TargetField>kzld</TargetField>
+      <SourceField>KZLD</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>可治理难度分级代码</Description>
+    </Mapping>
+
+    <!-- 治理措施 -->
+    <Mapping>
+      <TargetField>zlcs</TargetField>
+      <SourceField>ZLCS</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>荒漠化治理措施代码</Description>
+    </Mapping>
+
+    <!-- 治理程度 -->
+    <Mapping>
+      <TargetField>zlcd</TargetField>
+      <SourceField>ZLCD</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>治理工程完成程度代码</Description>
+    </Mapping>
+
+    <!-- 石漠化状况 -->
+    <Mapping>
+      <TargetField>smhzk</TargetField>
+      <SourceField>SMHZK</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>石漠化存在状态代码</Description>
+    </Mapping>
+
+    <!-- 石漠化程度 -->
+    <Mapping>
+      <TargetField>smhcd</TargetField>
+      <SourceField>SMHCD</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>石漠化严重程度代码</Description>
+    </Mapping>
+
+    <!-- 石漠化演变类型 -->
+    <Mapping>
+      <TargetField>smhyblx</TargetField>
+      <SourceField>SMHYBLX</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>石漠化演变趋势代码</Description>
+    </Mapping>
+
+    <!-- 岩溶地貌 -->
+    <Mapping>
+      <TargetField>yrdm</TargetField>
+      <SourceField>YRDM</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>岩溶地貌类型代码</Description>
+    </Mapping>
+
+    <!-- 核实标记 -->
+    <Mapping>
+      <TargetField>hsbj</TargetField>
+      <SourceField>HSBJ</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>数据核实状态标记</Description>
+    </Mapping>
+
+    <!-- 光伏用地标注 -->
+    <Mapping>
+      <TargetField>gfyd</TargetField>
+      <SourceField>GFYD</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>光伏项目用地标识</Description>
+    </Mapping>
+
+    <!-- 调查人员 -->
+    <Mapping>
+      <TargetField>dc_ry</TargetField>
+      <SourceField>DC_RY</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>外业调查人员姓名</Description>
+    </Mapping>
+
+    <!-- 调查日期 -->
+    <Mapping>
+      <TargetField>dc_rq</TargetField>
+      <SourceField>DC_RQ</SourceField>
+      <FieldType>String</FieldType>
+      <Required>false</Required>
+      <Description>调查日期（YYYYMMDD）</Description>
+    </Mapping>
+  </FieldMappings>
+</FieldMappingTemplate>

@@ -154,22 +154,7 @@ namespace TestArcMapAddin2.Forms
             UpdateButtonStates();
         }
 
-        private void BtnSelectCounties_Click(object sender, EventArgs e)
-        {
-            using (CountySelectionForm form = new CountySelectionForm(SharedWorkflowState.SelectedCounties))
-            {
-                if (form.ShowDialog() == DialogResult.OK)
-                {
-                    SharedWorkflowState.SelectedCounties = form.SelectedCounties;
-                    lblCounties.Text = $"已选择 {SharedWorkflowState.SelectedCounties.Count} 个县区：{string.Join(", ", SharedWorkflowState.SelectedCounties)}";
-                    lblCounties.ForeColor = Color.DarkGreen;
-                    // 如果县区更改，重置后续步骤标志
-                    SharedWorkflowState.ResetBasicDataFlags();
-                    InitializeFormState(); // 重新初始化以反映重置的标志
-                }
-            }
-            UpdateButtonStates();
-        }
+        
 
         private void BtnLoadPrerequisiteData1_Click(object sender, EventArgs e)
         {

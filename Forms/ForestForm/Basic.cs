@@ -7,6 +7,7 @@ using ESRI.ArcGIS.Geodatabase;
 using ESRI.ArcGIS.DataSourcesFile;
 using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.Carto;
+using System.Linq;
 
 namespace ForestResourcePlugin
 {
@@ -59,12 +60,24 @@ namespace ForestResourcePlugin
             LoadMapLayers();
         }
 
-        // 加载地图中的图层
+        // 改进的加载地图图层方法
         private void LoadMapLayers()
         {
             try
             {
+                UpdateStatus("正在检查ArcMap连接状态...");
+                progressBar.Value = 5;
+                
+                // 首先检查ArcMap是否正在运行
+                if (!MapLayerUtilities.IsArcMapRunning())
+                {
+                    UpdateStatus("未检测到运行中的ArcMap，请确保ArcMap已启动并加载了地图文档");
+                    SetupDropdownsForFileMode();
+                    return;
+                }
+                
                 UpdateStatus("正在获取地图图层...");
+                progressBar.Value = 10;
                 
                 // 清空下拉框
                 cmbLCXZGXPath.Items.Clear();
@@ -78,37 +91,157 @@ namespace ForestResourcePlugin
                 cmbLCXZGXPath.SelectedIndex = 0;
                 cmbCZKFBJPath.SelectedIndex = 0;
                 
-                // 获取地图图层
-                mapLayers = MapLayerUtilities.GetMapLayers();
+                progressBar.Value = 30;
                 
-                // 添加图层到下拉列表
-                foreach (LayerInfo layer in mapLayers)
+                // 获取地图图层 - 优先获取多边形图层
+                mapLayers = MapLayerUtilities.GetPolygonLayers();
+                
+                progressBar.Value = 60;
+                
+                if (mapLayers != null && mapLayers.Count > 0)
                 {
-                    cmbLCXZGXPath.Items.Add(layer);
-                    cmbCZKFBJPath.Items.Add(layer);
+                    UpdateStatus($"成功获取到 {mapLayers.Count} 个多边形图层");
+                    
+                    // 添加所有图层到下拉列表
+                    foreach (LayerInfo layer in mapLayers)
+                    {
+                        cmbLCXZGXPath.Items.Add(layer);
+                        cmbCZKFBJPath.Items.Add(layer);
+                        System.Diagnostics.Debug.WriteLine($"添加图层到下拉框: {layer.Name} ({layer.GeometryType})");
+                    }
+                    
+                    // 尝试智能匹配图层
+                    AutoMatchLayers();
+                    
+                    progressBar.Value = 100;
+                    UpdateStatus($"已加载 {mapLayers.Count} 个地图图层");
                 }
-                
-                UpdateStatus($"已加载 {mapLayers.Count} 个地图图层");
+                else
+                {
+                    // 如果没有获取到图层，提供文件模式选项
+                    SetupDropdownsForFileMode();
+                    UpdateStatus("未找到合适的多边形图层，请使用浏览按钮选择文件或检查ArcMap中的图层");
+                }
             }
             catch (Exception ex)
             {
-                UpdateStatus("加载地图图层失败");
                 System.Diagnostics.Debug.WriteLine($"加载地图图层出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"堆栈跟踪: {ex.StackTrace}");
+                
+                UpdateStatus($"加载地图图层失败: {ex.Message}");
+                SetupDropdownsForFileMode();
+                progressBar.Value = 0;
             }
         }
 
-        // 复选框状态改变事件处理
-        private void FilterCheckBox_CheckedChanged(object sender, EventArgs e)
+        /// <summary>
+        /// 设置下拉框为文件模式
+        /// </summary>
+        private void SetupDropdownsForFileMode()
         {
-            // 当任何筛选条件变化时清空预览数据
-            if (previewData != null)
+            try
             {
-                previewData.Clear();
-                dgvPreview.DataSource = null;
-                lblPreviewCount.Text = "预览结果：0 个图斑";
+                // 清空下拉框
+                cmbLCXZGXPath.Items.Clear();
+                cmbCZKFBJPath.Items.Clear();
                 
-                // 提示用户重新生成预览
-                UpdateStatus("筛选条件已更改，请重新生成预览");
+                // 添加文件模式提示
+                if (MapLayerUtilities.IsArcMapRunning())
+                {
+                    cmbLCXZGXPath.Items.Add("-- 未找到合适的多边形图层，请使用浏览按钮选择文件 --");
+                    cmbCZKFBJPath.Items.Add("-- 未找到合适的多边形图层，请使用浏览按钮选择文件 --");
+                }
+                else
+                {
+                    cmbLCXZGXPath.Items.Add("-- ArcMap未运行，请使用浏览按钮选择文件 --");
+                    cmbCZKFBJPath.Items.Add("-- ArcMap未运行，请使用浏览按钮选择文件 --");
+                }
+                
+                cmbLCXZGXPath.SelectedIndex = 0;
+                cmbCZKFBJPath.SelectedIndex = 0;
+                
+                // 清空图层列表
+                mapLayers = new List<LayerInfo>();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"设置文件模式失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 智能匹配图层名称
+        /// </summary>
+        private void AutoMatchLayers()
+        {
+            try
+            {
+                if (mapLayers == null || mapLayers.Count == 0) return;
+
+                System.Diagnostics.Debug.WriteLine("开始智能匹配图层...");
+
+                // 林草现状图层的名称模式
+                string[] lcxzgxPatterns = { "林草现状", "LCXZGX", "LCXZ", "现状", "Forest", "林地", "草地" };
+                // 城镇开发边界图层的名称模式
+                string[] czkfbjPatterns = { "城镇开发边界", "CZKFBJ", "开发边界", "Urban", "Development", "边界", "城镇" };
+
+                // 尝试匹配林草现状图层
+                LayerInfo lcxzgxMatch = null;
+                foreach (var pattern in lcxzgxPatterns)
+                {
+                    lcxzgxMatch = mapLayers.FirstOrDefault(layer => 
+                        layer.Name.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0);
+                    if (lcxzgxMatch != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"智能匹配林草现状图层: {lcxzgxMatch.Name} (匹配模式: {pattern})");
+                        break;
+                    }
+                }
+
+                if (lcxzgxMatch != null)
+                {
+                    // 在下拉框中选择匹配的图层
+                    for (int i = 1; i < cmbLCXZGXPath.Items.Count; i++)
+                    {
+                        if (cmbLCXZGXPath.Items[i] is LayerInfo layer && layer.Name == lcxzgxMatch.Name)
+                        {
+                            cmbLCXZGXPath.SelectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+
+                // 尝试匹配城镇开发边界图层
+                LayerInfo czkfbjMatch = null;
+                foreach (var pattern in czkfbjPatterns)
+                {
+                    czkfbjMatch = mapLayers.FirstOrDefault(layer => 
+                        layer.Name.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0);
+                    if (czkfbjMatch != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"智能匹配城镇开发边界图层: {czkfbjMatch.Name} (匹配模式: {pattern})");
+                        break;
+                    }
+                }
+
+                if (czkfbjMatch != null)
+                {
+                    // 在下拉框中选择匹配的图层
+                    for (int i = 1; i < cmbCZKFBJPath.Items.Count; i++)
+                    {
+                        if (cmbCZKFBJPath.Items[i] is LayerInfo layer && layer.Name == czkfbjMatch.Name)
+                        {
+                            cmbCZKFBJPath.SelectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine("智能匹配完成");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"智能匹配图层出错: {ex.Message}");
             }
         }
 
@@ -141,7 +274,7 @@ namespace ForestResourcePlugin
                     // 加载城镇开发边界图层
                     try
                     {
-                        LoadCZKFBJLayer(cmbCZKFBJPath.Text);
+                        LoadCZKFBJFromPath(cmbCZKFBJPath.Text);
                         UpdateStatus("成功加载城镇开发边界图层");
                     }
                     catch (Exception ex)
@@ -163,6 +296,239 @@ namespace ForestResourcePlugin
                 {
                     txtOutputPath.Text = dialog.SelectedPath;
                 }
+            }
+        }
+
+        private void btnRefreshLayers_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("用户点击刷新图层按钮");
+            
+            // 显示刷新状态
+            btnRefreshLayers.Enabled = false;
+            btnRefreshLayers.Text = "刷新中...";
+            
+            try
+            {
+                LoadMapLayers();
+            }
+            finally
+            {
+                // 恢复按钮状态
+                btnRefreshLayers.Enabled = true;
+                btnRefreshLayers.Text = "刷新地图图层";
+            }
+        }
+
+        private void cmbLCXZGXPath_DropDown(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("林草现状图层下拉框打开");
+            
+            // 当下拉框打开时，如果地图图层为空或者只有提示项，则重新加载地图图层
+            if (mapLayers == null || mapLayers.Count == 0 || cmbLCXZGXPath.Items.Count <= 1)
+            {
+                System.Diagnostics.Debug.WriteLine("检测到图层列表为空，重新加载图层");
+                LoadMapLayers();
+            }
+        }
+
+        private void cmbCZKFBJPath_DropDown(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("城镇开发边界图层下拉框打开");
+            
+            // 当下拉框打开时，如果地图图层为空或者只有提示项，则重新加载地图图层
+            if (mapLayers == null || mapLayers.Count == 0 || cmbCZKFBJPath.Items.Count <= 1)
+            {
+                System.Diagnostics.Debug.WriteLine("检测到图层列表为空，重新加载图层");
+                LoadMapLayers();
+            }
+        }
+
+        // 林草现状图层下拉框选择改变事件
+        private void cmbLCXZGXPath_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"林草现状图层选择改变，索引: {cmbLCXZGXPath.SelectedIndex}");
+                
+                // 如果选择的是提示项，则不执行任何操作
+                if (cmbLCXZGXPath.SelectedIndex == 0)
+                {
+                    lcxzgxFeatureClass = null;
+                    System.Diagnostics.Debug.WriteLine("选择了提示项，清空要素类");
+                    return;
+                }
+
+                // 获取选择的项
+                object selectedItem = cmbLCXZGXPath.SelectedItem;
+                System.Diagnostics.Debug.WriteLine($"选择的项类型: {selectedItem?.GetType().Name}");
+                
+                if (selectedItem is LayerInfo layerInfo)
+                {
+                    System.Diagnostics.Debug.WriteLine($"从地图图层加载: {layerInfo.Name}");
+                    
+                    // 验证图层是否为多边形类型
+                    if (!MapLayerUtilities.IsPolygonLayer(layerInfo))
+                    {
+                        MessageBox.Show($"选择的图层 '{layerInfo.Name}' 不是多边形图层，请选择多边形图层", 
+                            "图层类型错误", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        cmbLCXZGXPath.SelectedIndex = 0;
+                        return;
+                    }
+                    
+                    // 从地图图层加载
+                    lcxzgxFeatureClass = layerInfo.FeatureClass;
+                    LoadFieldsFromFeatureClass(lcxzgxFeatureClass);
+                    UpdateStatus($"已选择地图图层: {layerInfo.Name} ({layerInfo.GeometryType})");
+                }
+                else if (selectedItem is string filePath && !string.IsNullOrEmpty(filePath) && File.Exists(filePath))
+                {
+                    System.Diagnostics.Debug.WriteLine($"从文件路径加载: {filePath}");
+                    // 从文件路径加载
+                    LoadLCXZGXFields();
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"无效的选择项: {selectedItem}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"加载林草现状图层失败: {ex.Message}");
+                MessageBox.Show($"加载林草现状图层失败: {ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                UpdateStatus("加载林草现状图层失败");
+            }
+        }
+
+        // 城镇开发边界图层下拉框选择改变事件
+        private void cmbCZKFBJPath_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"城镇开发边界图层选择改变，索引: {cmbCZKFBJPath.SelectedIndex}");
+                
+                // 如果选择的是提示项，则不执行任何操作
+                if (cmbCZKFBJPath.SelectedIndex == 0)
+                {
+                    czkfbjFeatureClass = null;
+                    System.Diagnostics.Debug.WriteLine("选择了提示项，清空要素类");
+                    return;
+                }
+
+                // 获取选择的项
+                object selectedItem = cmbCZKFBJPath.SelectedItem;
+                System.Diagnostics.Debug.WriteLine($"选择的项类型: {selectedItem?.GetType().Name}");
+                
+                if (selectedItem is LayerInfo layerInfo)
+                {
+                    System.Diagnostics.Debug.WriteLine($"从地图图层加载: {layerInfo.Name}");
+                    
+                    // 验证图层是否为多边形类型
+                    if (!MapLayerUtilities.IsPolygonLayer(layerInfo))
+                    {
+                        MessageBox.Show($"选择的图层 '{layerInfo.Name}' 不是多边形图层，请选择多边形图层", 
+                            "图层类型错误", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        cmbCZKFBJPath.SelectedIndex = 0;
+                        return;
+                    }
+                    
+                    // 从地图图层加载
+                    czkfbjFeatureClass = layerInfo.FeatureClass;
+                    UpdateStatus($"已选择地图图层: {layerInfo.Name} ({layerInfo.GeometryType})");
+                }
+                else if (selectedItem is string filePath && !string.IsNullOrEmpty(filePath) && File.Exists(filePath))
+                {
+                    System.Diagnostics.Debug.WriteLine($"从文件路径加载: {filePath}");
+                    // 从文件路径加载
+                    LoadCZKFBJFromPath(filePath);
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"无效的选择项: {selectedItem}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"加载城镇开发边界图层失败: {ex.Message}");
+                MessageBox.Show($"加载城镇开发边界图层失败: {ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                UpdateStatus("加载城镇开发边界图层失败");
+            }
+        }
+
+        // 从要素类加载字段
+        private void LoadFieldsFromFeatureClass(IFeatureClass featureClass)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("开始从要素类加载字段");
+                
+                // Clear existing items in dropdown lists
+                cmbLandTypeField.Items.Clear();
+                cmbLandOwnerField.Items.Clear();
+                
+                if (featureClass == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("要素类为空，无法加载字段");
+                    return;
+                }
+                
+                UpdateStatus("正在读取图层字段...");
+                
+                List<string> fieldNames = new List<string>();
+                
+                // 读取要素类的字段
+                IFields fields = featureClass.Fields;
+                System.Diagnostics.Debug.WriteLine($"要素类字段总数: {fields.FieldCount}");
+                
+                for (int i = 0; i < fields.FieldCount; i++)
+                {
+                    IField field = fields.get_Field(i);
+                    System.Diagnostics.Debug.WriteLine($"字段 {i}: {field.Name} ({field.Type})");
+                    
+                    // 只添加字符串和数值类型的字段
+                    if (field.Type == esriFieldType.esriFieldTypeString ||
+                        field.Type == esriFieldType.esriFieldTypeSmallInteger ||
+                        field.Type == esriFieldType.esriFieldTypeInteger ||
+                        field.Type == esriFieldType.esriFieldTypeSingle ||
+                        field.Type == esriFieldType.esriFieldTypeDouble)
+                    {
+                        fieldNames.Add(field.Name);
+                    }
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"有效字段数量: {fieldNames.Count}");
+                
+                // 添加字段到下拉列表
+                foreach (string fieldName in fieldNames)
+                {
+                    cmbLandTypeField.Items.Add(fieldName);
+                    cmbLandOwnerField.Items.Add(fieldName);
+                }
+                
+                // 选择默认字段（如果有字段）
+                if (cmbLandTypeField.Items.Count > 0)
+                {
+                    // 尝试查找与地类相关的字段
+                    int landTypeIndex = FindBestMatchIndex(cmbLandTypeField.Items, new[] { "地类", "Y_DLBM", "LandType", "DL", "Land", "Type", "DLDM" });
+                    cmbLandTypeField.SelectedIndex = landTypeIndex >= 0 ? landTypeIndex : 0;
+                    System.Diagnostics.Debug.WriteLine($"选择地类字段: {cmbLandTypeField.SelectedItem}");
+                    
+                    // 尝试查找与土地权属相关的字段
+                    int landOwnerIndex = FindBestMatchIndex(cmbLandOwnerField.Items, new[] { "权属", "土地权属", "TDQS", "LD_QS", "Ownership", "Owner", "QS", "QSXZ" });
+                    cmbLandOwnerField.SelectedIndex = landOwnerIndex >= 0 ? landOwnerIndex : 0;
+                    System.Diagnostics.Debug.WriteLine($"选择权属字段: {cmbLandOwnerField.SelectedItem}");
+                }
+                
+                UpdateStatus($"已读取 {fieldNames.Count} 个字段");
+                System.Diagnostics.Debug.WriteLine("字段加载完成");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"读取图层字段时出错: {ex.Message}");
+                MessageBox.Show($"读取图层字段时出错: {ex.Message}", "错误", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                UpdateStatus("读取字段失败");
             }
         }
 
@@ -241,8 +607,8 @@ namespace ForestResourcePlugin
             }
         }
 
-        // 加载城镇开发边界图层
-        private void LoadCZKFBJLayer(string shapefilePath)
+        // 从文件路径加载城镇开发边界图层
+        private void LoadCZKFBJFromPath(string shapefilePath)
         {
             try
             {
@@ -259,6 +625,12 @@ namespace ForestResourcePlugin
             {
                 throw new Exception($"加载城镇开发边界图层失败: {ex.Message}", ex);
             }
+        }
+
+        // 加载城镇开发边界图层 (保持向后兼容)
+        private void LoadCZKFBJLayer(string shapefilePath)
+        {
+            LoadCZKFBJFromPath(shapefilePath);
         }
 
         // Helper method to find the best matching field name
@@ -494,7 +866,7 @@ namespace ForestResourcePlugin
                             }
 
                             previewData.Rows.Add(row);
-                            processedCount--;
+                            processedCount++;
                         }
 
                         // 释放COM对象
@@ -675,10 +1047,21 @@ namespace ForestResourcePlugin
             {
                 dialog.Filter = "映射模板 (*.xml)|*.xml|All Files (*.*)|*.*";
                 dialog.Title = "加载字段映射模板";
+                dialog.InitialDirectory = System.IO.Path.Combine(Application.StartupPath, "Templates");
+                
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    // 加载映射模板逻辑
-                    UpdateStatus($"已加载模板：{System.IO.Path.GetFileName(dialog.FileName)}");
+                    try
+                    {
+                        LoadFieldMappingTemplate(dialog.FileName);
+                        UpdateStatus($"已加载模板：{System.IO.Path.GetFileName(dialog.FileName)}");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"加载模板失败：{ex.Message}", "错误", 
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        UpdateStatus("加载模板失败");
+                    }
                 }
             }
         }
@@ -689,12 +1072,310 @@ namespace ForestResourcePlugin
             {
                 dialog.Filter = "映射模板 (*.xml)|*.xml|All Files (*.*)|*.*";
                 dialog.Title = "保存字段映射模板";
+                dialog.InitialDirectory = System.IO.Path.Combine(Application.StartupPath, "Templates");
+                dialog.FileName = "FieldMappingTemplate.xml";
+                
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    // 保存映射模板逻辑
-                    UpdateStatus($"模板已保存：{System.IO.Path.GetFileName(dialog.FileName)}");
+                    try
+                    {
+                        SaveFieldMappingTemplate(dialog.FileName);
+                        UpdateStatus($"模板已保存：{System.IO.Path.GetFileName(dialog.FileName)}");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"保存模板失败：{ex.Message}", "错误", 
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        UpdateStatus("保存模板失败");
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// 加载字段映射模板
+        /// </summary>
+        private void LoadFieldMappingTemplate(string templatePath)
+        {
+            if (!File.Exists(templatePath))
+            {
+                throw new FileNotFoundException($"模板文件不存在：{templatePath}");
+            }
+
+            try
+            {
+                var template = LoadTemplateFromXml(templatePath);
+                ApplyTemplateToMappingGrid(template);
+                
+                MessageBox.Show($"成功加载模板：{template.Name}\n描述：{template.Description}", 
+                    "模板加载成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"解析模板文件失败：{ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 保存字段映射模板
+        /// </summary>
+        private void SaveFieldMappingTemplate(string templatePath)
+        {
+            try
+            {
+                var template = CreateTemplateFromMappingGrid();
+                SaveTemplateToXml(template, templatePath);
+                
+                MessageBox.Show("模板保存成功！", "保存完成", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"保存模板文件失败：{ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 从 XML 文件加载模板
+        /// </summary>
+        private FieldMappingTemplate LoadTemplateFromXml(string xmlPath)
+        {
+            var template = new FieldMappingTemplate();
+            var doc = new System.Xml.XmlDocument();
+            doc.Load(xmlPath);
+
+            // 读取模板信息
+            var infoNode = doc.SelectSingleNode("//TemplateInfo");
+            if (infoNode != null)
+            {
+                template.Name = infoNode.SelectSingleNode("Name")?.InnerText ?? "";
+                template.Description = infoNode.SelectSingleNode("Description")?.InnerText ?? "";
+                template.Version = infoNode.SelectSingleNode("Version")?.InnerText ?? "";
+
+                if (DateTime.TryParse(infoNode.SelectSingleNode("CreateDate")?.InnerText, out DateTime createDate))
+                {
+                    template.CreateDate = createDate;
+                }
+            }
+
+            // 读取字段映射
+            var mappingNodes = doc.SelectNodes("//FieldMappings/Mapping");
+            foreach (System.Xml.XmlNode node in mappingNodes)
+            {
+                var mapping = new FieldMapping
+                {
+                    TargetField = node.SelectSingleNode("TargetField")?.InnerText ?? "",
+                    SourceField = node.SelectSingleNode("SourceField")?.InnerText ?? "",
+                    FieldType = node.SelectSingleNode("FieldType")?.InnerText ?? "",
+                    Required = bool.Parse(node.SelectSingleNode("Required")?.InnerText ?? "false"),
+                    Description = node.SelectSingleNode("Description")?.InnerText ?? ""
+                };
+
+                // 读取备选字段
+                var altFields = node.SelectNodes("AlternativeFields/Field");
+                foreach (System.Xml.XmlNode altField in altFields)
+                {
+                    mapping.AlternativeFields.Add(altField.InnerText);
+                }
+
+                template.FieldMappings.Add(mapping);
+            }
+
+            // 读取值映射
+            var valueMappingNodes = doc.SelectNodes("//ValueMappings/ValueMapping");
+            foreach (System.Xml.XmlNode node in valueMappingNodes)
+            {
+                var valueMapping = new ValueMapping
+                {
+                    // 修复：使用 Attributes 属性访问 XML 属性值
+                    TargetField = node.Attributes?["TargetField"]?.Value ?? ""
+                };
+
+                var valueMapNodes = node.SelectNodes("ValueMap");
+                foreach (System.Xml.XmlNode mapNode in valueMapNodes)
+                {
+                    string sourceValue = mapNode.SelectSingleNode("SourceValue")?.InnerText ?? "";
+                    string targetValue = mapNode.SelectSingleNode("TargetValue")?.InnerText ?? "";
+                    valueMapping.ValueMap[sourceValue] = targetValue;
+                }
+
+                template.ValueMappings.Add(valueMapping);
+            }
+
+            return template;
+        }
+
+        /// <summary>
+        /// 将模板保存到 XML 文件
+        /// </summary>
+        private void SaveTemplateToXml(FieldMappingTemplate template, string xmlPath)
+        {
+            var doc = new System.Xml.XmlDocument();
+            var root = doc.CreateElement("FieldMappingTemplate");
+            doc.AppendChild(root);
+
+            // 创建模板信息节点
+            var infoNode = doc.CreateElement("TemplateInfo");
+            infoNode.AppendChild(CreateTextElement(doc, "Name", template.Name));
+            infoNode.AppendChild(CreateTextElement(doc, "Description", template.Description));
+            infoNode.AppendChild(CreateTextElement(doc, "Version", template.Version));
+            infoNode.AppendChild(CreateTextElement(doc, "CreateDate", template.CreateDate.ToString("yyyy-MM-dd")));
+            root.AppendChild(infoNode);
+
+            // 创建字段映射节点
+            var mappingsNode = doc.CreateElement("FieldMappings");
+            foreach (var mapping in template.FieldMappings)
+            {
+                var mappingNode = doc.CreateElement("Mapping");
+                mappingNode.AppendChild(CreateTextElement(doc, "TargetField", mapping.TargetField));
+                mappingNode.AppendChild(CreateTextElement(doc, "SourceField", mapping.SourceField));
+                mappingNode.AppendChild(CreateTextElement(doc, "FieldType", mapping.FieldType));
+                mappingNode.AppendChild(CreateTextElement(doc, "Required", mapping.Required.ToString()));
+                mappingNode.AppendChild(CreateTextElement(doc, "Description", mapping.Description));
+
+                // 添加备选字段
+                if (mapping.AlternativeFields.Count > 0)
+                {
+                    var altFieldsNode = doc.CreateElement("AlternativeFields");
+                    foreach (var altField in mapping.AlternativeFields)
+                    {
+                        altFieldsNode.AppendChild(CreateTextElement(doc, "Field", altField));
+                    }
+                    mappingNode.AppendChild(altFieldsNode);
+                }
+
+                mappingsNode.AppendChild(mappingNode);
+            }
+            root.AppendChild(mappingsNode);
+
+            // 保存文档
+            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(xmlPath));
+            doc.Save(xmlPath);
+        }
+
+        /// <summary>
+        /// 应用模板到映射表格
+        /// </summary>
+        private void ApplyTemplateToMappingGrid(FieldMappingTemplate template)
+        {
+            // 清空现有数据
+            mappingData.Clear();
+
+            // 获取当前可用的源字段列表
+            List<string> availableSourceFields = GetAvailableSourceFields();
+
+            // 应用模板映射
+            foreach (var mapping in template.FieldMappings)
+            {
+                string selectedSourceField = "";
+                
+                // 首先尝试使用模板中指定的源字段
+                if (availableSourceFields.Contains(mapping.SourceField))
+                {
+                    selectedSourceField = mapping.SourceField;
+                }
+                else
+                {
+                    // 如果指定的源字段不存在，尝试使用备选字段
+                    foreach (var altField in mapping.AlternativeFields)
+                    {
+                        if (availableSourceFields.Contains(altField))
+                        {
+                            selectedSourceField = altField;
+                            break;
+                        }
+                    }
+                }
+
+                string status = string.IsNullOrEmpty(selectedSourceField) ? "未映射" : "已映射";
+                mappingData.Rows.Add(mapping.TargetField, selectedSourceField, status);
+            }
+
+            dgvMapping.Refresh();
+        }
+
+        /// <summary>
+        /// 从映射表格创建模板
+        /// </summary>
+        private FieldMappingTemplate CreateTemplateFromMappingGrid()
+        {
+            var template = new FieldMappingTemplate
+            {
+                Name = "自定义字段映射模板",
+                Description = "基于当前字段映射配置生成的模板",
+                Version = "1.0",
+                CreateDate = DateTime.Now
+            };
+
+            foreach (DataRow row in mappingData.Rows)
+            {
+                var mapping = new FieldMapping
+                {
+                    TargetField = row["目标字段"].ToString(),
+                    SourceField = row["源字段"].ToString(),
+                    FieldType = "String", // 默认字符串类型
+                    Required = IsRequiredField(row["目标字段"].ToString()),
+                    Description = GetFieldDescription(row["目标字段"].ToString())
+                };
+
+                template.FieldMappings.Add(mapping);
+            }
+
+            return template;
+        }
+
+        /// <summary>
+        /// 获取可用的源字段列表
+        /// </summary>
+        private List<string> GetAvailableSourceFields()
+        {
+            var fields = new List<string>();
+            
+            if (cmbLandTypeField.Items.Count > 0)
+            {
+                foreach (object item in cmbLandTypeField.Items)
+                {
+                    fields.Add(item.ToString());
+                }
+            }
+
+            return fields.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// 判断字段是否必需
+        /// </summary>
+        private bool IsRequiredField(string fieldName)
+        {
+            string[] requiredFields = { "TBDH", "DLMC", "TDQS", "MJ" };
+            return requiredFields.Contains(fieldName);
+        }
+
+        /// <summary>
+        /// 获取字段描述
+        /// </summary>
+        private string GetFieldDescription(string fieldName)
+        {
+            var descriptions = new Dictionary<string, string>
+            {
+                { "TBDH", "图斑编号，唯一标识符" },
+                { "DLMC", "地类名称" },
+                { "TDQS", "土地权属性质" },
+                { "MJ", "图斑面积，单位：公顷" },
+                { "LZFL", "林种分类信息" }
+            };
+
+            return descriptions.ContainsKey(fieldName) ? descriptions[fieldName] : "";
+        }
+
+        /// <summary>
+        /// 创建文本元素
+        /// </summary>
+        private System.Xml.XmlElement CreateTextElement(System.Xml.XmlDocument doc, string name, string value)
+        {
+            var element = doc.CreateElement(name);
+            element.InnerText = value ?? "";
+            return element;
         }
 
         private void btnExecute_Click(object sender, EventArgs e)
@@ -707,15 +1388,15 @@ namespace ForestResourcePlugin
 
         private bool ValidateInputs()
         {
-            if (string.IsNullOrEmpty(cmbLCXZGXPath.Text))
+            if (lcxzgxFeatureClass == null)
             {
                 MessageBox.Show("请选择林草现状图层", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
-            if (string.IsNullOrEmpty(cmbCZKFBJPath.Text))
+            if (chkCollectiveInBoundary.Checked && czkfbjFeatureClass == null)
             {
-                MessageBox.Show("请选择城镇开发边界图层", "验证失败", MessageBoxIcon.Warning);
+                MessageBox.Show("启用了\"集体林在城镇开发边界内\"筛选条件，请先选择城镇开发边界图层", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
@@ -775,27 +1456,94 @@ namespace ForestResourcePlugin
             Application.DoEvents();
         }
 
-        private void btnRefreshLayers_Click(object sender, EventArgs e)
+        // 复选框状态改变事件处理
+        private void FilterCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            LoadMapLayers();
-        }
-
-        private void cmbLCXZGXPath_DropDown(object sender, EventArgs e)
-        {
-            // 当下拉框打开时，如果地图图层为空，则重新加载地图图层
-            if (mapLayers == null || mapLayers.Count == 0)
+            try
             {
-                LoadMapLayers();
+                System.Diagnostics.Debug.WriteLine($"筛选条件复选框状态改变: {((CheckBox)sender).Name} = {((CheckBox)sender).Checked}");
+                
+                // 当任何筛选条件变化时清空预览数据
+                if (previewData != null)
+                {
+                    previewData.Clear();
+                    dgvPreview.DataSource = null;
+                    lblPreviewCount.Text = "预览结果：0 个图斑";
+                    
+                    // 提示用户重新生成预览
+                    UpdateStatus("筛选条件已更改，请重新生成预览");
+                }
+                
+                // 根据复选框状态更新界面状态
+                CheckBox checkbox = sender as CheckBox;
+                if (checkbox != null)
+                {
+                    switch (checkbox.Name)
+                    {
+                        case "chkCollectiveInBoundary":
+                            // 如果启用了集体林在城镇开发边界内的筛选，确保城镇开发边界图层已加载
+                            if (checkbox.Checked && czkfbjFeatureClass == null)
+                            {
+                                UpdateStatus("启用了集体林筛选条件，请确保已选择城镇开发边界图层");
+                            }
+                            break;
+                        case "chkForestLand":
+                            // 如果禁用了林地筛选，提示用户
+                            if (!checkbox.Checked)
+                            {
+                                UpdateStatus("已禁用林地筛选条件");
+                            }
+                            break;
+                        case "chkStateOwned":
+                            // 如果禁用了国有林筛选，提示用户
+                            if (!checkbox.Checked)
+                            {
+                                UpdateStatus("已禁用国有林筛选条件");
+                            }
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"处理筛选条件变化时出错: {ex.Message}");
+                UpdateStatus("处理筛选条件变化时出错");
             }
         }
+    }
 
-        private void cmbCZKFBJPath_DropDown(object sender, EventArgs e)
-        {
-            // 当下拉框打开时，如果地图图层为空，则重新加载地图图层
-            if (mapLayers == null || mapLayers.Count == 0)
-            {
-                LoadMapLayers();
-            }
-        }
+    /// <summary>
+    /// 字段映射配置类
+    /// </summary>
+    public class FieldMapping
+    {
+        public string TargetField { get; set; }
+        public string SourceField { get; set; }
+        public string FieldType { get; set; }
+        public bool Required { get; set; }
+        public string Description { get; set; }
+        public List<string> AlternativeFields { get; set; } = new List<string>();
+    }
+
+    /// <summary>
+    /// 值映射配置类
+    /// </summary>
+    public class ValueMapping
+    {
+        public string TargetField { get; set; }
+        public Dictionary<string, string> ValueMap { get; set; } = new Dictionary<string, string>();
+    }
+
+    /// <summary>
+    /// 字段映射模板类
+    /// </summary>
+    public class FieldMappingTemplate
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Version { get; set; }
+        public DateTime CreateDate { get; set; }
+        public List<FieldMapping> FieldMappings { get; set; } = new List<FieldMapping>();
+        public List<ValueMapping> ValueMappings { get; set; } = new List<ValueMapping>();
     }
 }

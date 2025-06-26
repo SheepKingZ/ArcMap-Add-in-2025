@@ -20,6 +20,7 @@ namespace ForestResourcePlugin
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabDataSource = new System.Windows.Forms.TabPage();
             this.groupBoxFiles = new System.Windows.Forms.GroupBox();
+            this.btnRefreshLayers = new System.Windows.Forms.Button(); // 添加刷新按钮
             this.btnBrowseLCXZGX = new System.Windows.Forms.Button();
             this.btnBrowseCZKFBJ = new System.Windows.Forms.Button();
             this.btnBrowseOutput = new System.Windows.Forms.Button();
@@ -29,7 +30,6 @@ namespace ForestResourcePlugin
             this.lblLCXZGX = new System.Windows.Forms.Label();
             this.lblCZKFBJ = new System.Windows.Forms.Label();
             this.lblOutput = new System.Windows.Forms.Label();
-            this.btnRefreshLayers = new System.Windows.Forms.Button();
             this.groupBoxOptions = new System.Windows.Forms.GroupBox();
             this.chkTopologyCheck = new System.Windows.Forms.CheckBox();
             this.chkGeometryValidation = new System.Windows.Forms.CheckBox();
@@ -91,7 +91,7 @@ namespace ForestResourcePlugin
             this.tabControl.Controls.Add(this.tabMapping);
             this.tabControl.Dock = System.Windows.Forms.DockStyle.Top;
             this.tabControl.Location = new System.Drawing.Point(0, 0);
-            this.tabControl.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabControl.Margin = new System.Windows.Forms.Padding(4);
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
             this.tabControl.Size = new System.Drawing.Size(1196, 623);
@@ -103,9 +103,9 @@ namespace ForestResourcePlugin
             this.tabDataSource.Controls.Add(this.groupBoxOptions);
             this.tabDataSource.Controls.Add(this.groupBoxCoordSystem);
             this.tabDataSource.Location = new System.Drawing.Point(4, 28);
-            this.tabDataSource.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabDataSource.Margin = new System.Windows.Forms.Padding(4);
             this.tabDataSource.Name = "tabDataSource";
-            this.tabDataSource.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabDataSource.Padding = new System.Windows.Forms.Padding(4);
             this.tabDataSource.Size = new System.Drawing.Size(1188, 591);
             this.tabDataSource.TabIndex = 0;
             this.tabDataSource.Text = "数据源配置";
@@ -113,6 +113,7 @@ namespace ForestResourcePlugin
             // 
             // groupBoxFiles
             // 
+            this.groupBoxFiles.Controls.Add(this.btnRefreshLayers);
             this.groupBoxFiles.Controls.Add(this.btnBrowseLCXZGX);
             this.groupBoxFiles.Controls.Add(this.btnBrowseCZKFBJ);
             this.groupBoxFiles.Controls.Add(this.btnBrowseOutput);
@@ -122,20 +123,30 @@ namespace ForestResourcePlugin
             this.groupBoxFiles.Controls.Add(this.lblLCXZGX);
             this.groupBoxFiles.Controls.Add(this.lblCZKFBJ);
             this.groupBoxFiles.Controls.Add(this.lblOutput);
-            this.groupBoxFiles.Controls.Add(this.btnRefreshLayers);
             this.groupBoxFiles.Location = new System.Drawing.Point(9, 8);
-            this.groupBoxFiles.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxFiles.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxFiles.Name = "groupBoxFiles";
-            this.groupBoxFiles.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.groupBoxFiles.Size = new System.Drawing.Size(1170, 166);
+            this.groupBoxFiles.Padding = new System.Windows.Forms.Padding(4);
+            this.groupBoxFiles.Size = new System.Drawing.Size(1170, 200); // 增加高度以容纳刷新按钮
             this.groupBoxFiles.TabIndex = 0;
             this.groupBoxFiles.TabStop = false;
             this.groupBoxFiles.Text = "文件选择";
             // 
+            // btnRefreshLayers
+            // 
+            this.btnRefreshLayers.Location = new System.Drawing.Point(22, 160);
+            this.btnRefreshLayers.Margin = new System.Windows.Forms.Padding(4);
+            this.btnRefreshLayers.Name = "btnRefreshLayers";
+            this.btnRefreshLayers.Size = new System.Drawing.Size(150, 32);
+            this.btnRefreshLayers.TabIndex = 9;
+            this.btnRefreshLayers.Text = "刷新地图图层";
+            this.btnRefreshLayers.UseVisualStyleBackColor = true;
+            this.btnRefreshLayers.Click += new System.EventHandler(this.btnRefreshLayers_Click);
+            // 
             // btnBrowseLCXZGX
             // 
             this.btnBrowseLCXZGX.Location = new System.Drawing.Point(1035, 35);
-            this.btnBrowseLCXZGX.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseLCXZGX.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseLCXZGX.Name = "btnBrowseLCXZGX";
             this.btnBrowseLCXZGX.Size = new System.Drawing.Size(112, 32);
             this.btnBrowseLCXZGX.TabIndex = 2;
@@ -146,7 +157,7 @@ namespace ForestResourcePlugin
             // btnBrowseCZKFBJ
             // 
             this.btnBrowseCZKFBJ.Location = new System.Drawing.Point(1035, 76);
-            this.btnBrowseCZKFBJ.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseCZKFBJ.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseCZKFBJ.Name = "btnBrowseCZKFBJ";
             this.btnBrowseCZKFBJ.Size = new System.Drawing.Size(112, 32);
             this.btnBrowseCZKFBJ.TabIndex = 5;
@@ -157,7 +168,7 @@ namespace ForestResourcePlugin
             // btnBrowseOutput
             // 
             this.btnBrowseOutput.Location = new System.Drawing.Point(1035, 118);
-            this.btnBrowseOutput.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseOutput.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseOutput.Name = "btnBrowseOutput";
             this.btnBrowseOutput.Size = new System.Drawing.Size(112, 32);
             this.btnBrowseOutput.TabIndex = 8;
@@ -169,7 +180,7 @@ namespace ForestResourcePlugin
             // 
             this.cmbLCXZGXPath.FormattingEnabled = true;
             this.cmbLCXZGXPath.Location = new System.Drawing.Point(210, 37);
-            this.cmbLCXZGXPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbLCXZGXPath.Margin = new System.Windows.Forms.Padding(4);
             this.cmbLCXZGXPath.Name = "cmbLCXZGXPath";
             this.cmbLCXZGXPath.Size = new System.Drawing.Size(814, 26);
             this.cmbLCXZGXPath.TabIndex = 1;
@@ -180,7 +191,7 @@ namespace ForestResourcePlugin
             // 
             this.cmbCZKFBJPath.FormattingEnabled = true;
             this.cmbCZKFBJPath.Location = new System.Drawing.Point(210, 79);
-            this.cmbCZKFBJPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbCZKFBJPath.Margin = new System.Windows.Forms.Padding(4);
             this.cmbCZKFBJPath.Name = "cmbCZKFBJPath";
             this.cmbCZKFBJPath.Size = new System.Drawing.Size(814, 26);
             this.cmbCZKFBJPath.TabIndex = 4;
@@ -190,7 +201,7 @@ namespace ForestResourcePlugin
             // txtOutputPath
             // 
             this.txtOutputPath.Location = new System.Drawing.Point(210, 120);
-            this.txtOutputPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtOutputPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtOutputPath.Name = "txtOutputPath";
             this.txtOutputPath.ReadOnly = true;
             this.txtOutputPath.Size = new System.Drawing.Size(814, 28);
@@ -199,7 +210,7 @@ namespace ForestResourcePlugin
             // lblLCXZGX
             // 
             this.lblLCXZGX.AutoSize = true;
-            this.lblLCXZGX.Location = new System.Drawing.Point(22, 42);
+            this.lblLCXZGX.Location = new System.Drawing.Point(8, 42);
             this.lblLCXZGX.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblLCXZGX.Name = "lblLCXZGX";
             this.lblLCXZGX.Size = new System.Drawing.Size(197, 18);
@@ -209,7 +220,7 @@ namespace ForestResourcePlugin
             // lblCZKFBJ
             // 
             this.lblCZKFBJ.AutoSize = true;
-            this.lblCZKFBJ.Location = new System.Drawing.Point(22, 83);
+            this.lblCZKFBJ.Location = new System.Drawing.Point(8, 83);
             this.lblCZKFBJ.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblCZKFBJ.Name = "lblCZKFBJ";
             this.lblCZKFBJ.Size = new System.Drawing.Size(197, 18);
@@ -219,22 +230,12 @@ namespace ForestResourcePlugin
             // lblOutput
             // 
             this.lblOutput.AutoSize = true;
-            this.lblOutput.Location = new System.Drawing.Point(22, 125);
+            this.lblOutput.Location = new System.Drawing.Point(14, 125);
             this.lblOutput.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblOutput.Name = "lblOutput";
             this.lblOutput.Size = new System.Drawing.Size(89, 18);
             this.lblOutput.TabIndex = 6;
             this.lblOutput.Text = "输出路径:";
-            // 
-            // btnRefreshLayers
-            // 
-            this.btnRefreshLayers.Location = new System.Drawing.Point(210, 153);
-            this.btnRefreshLayers.Name = "btnRefreshLayers";
-            this.btnRefreshLayers.Size = new System.Drawing.Size(153, 32);
-            this.btnRefreshLayers.TabIndex = 9;
-            this.btnRefreshLayers.Text = "刷新地图图层";
-            this.btnRefreshLayers.UseVisualStyleBackColor = true;
-            this.btnRefreshLayers.Click += new System.EventHandler(this.btnRefreshLayers_Click);
             // 
             // groupBoxOptions
             // 
@@ -243,10 +244,10 @@ namespace ForestResourcePlugin
             this.groupBoxOptions.Controls.Add(this.chkCreateBackup);
             this.groupBoxOptions.Controls.Add(this.chkGenerateReport);
             this.groupBoxOptions.Controls.Add(this.lblBufferDistance);
-            this.groupBoxOptions.Location = new System.Drawing.Point(9, 183);
-            this.groupBoxOptions.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxOptions.Location = new System.Drawing.Point(9, 217); // 调整位置
+            this.groupBoxOptions.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxOptions.Name = "groupBoxOptions";
-            this.groupBoxOptions.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxOptions.Padding = new System.Windows.Forms.Padding(4);
             this.groupBoxOptions.Size = new System.Drawing.Size(570, 194);
             this.groupBoxOptions.TabIndex = 1;
             this.groupBoxOptions.TabStop = false;
@@ -256,7 +257,7 @@ namespace ForestResourcePlugin
             // 
             this.chkTopologyCheck.AutoSize = true;
             this.chkTopologyCheck.Location = new System.Drawing.Point(22, 35);
-            this.chkTopologyCheck.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkTopologyCheck.Margin = new System.Windows.Forms.Padding(4);
             this.chkTopologyCheck.Name = "chkTopologyCheck";
             this.chkTopologyCheck.Size = new System.Drawing.Size(214, 22);
             this.chkTopologyCheck.TabIndex = 0;
@@ -267,7 +268,7 @@ namespace ForestResourcePlugin
             // 
             this.chkGeometryValidation.AutoSize = true;
             this.chkGeometryValidation.Location = new System.Drawing.Point(22, 66);
-            this.chkGeometryValidation.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkGeometryValidation.Margin = new System.Windows.Forms.Padding(4);
             this.chkGeometryValidation.Name = "chkGeometryValidation";
             this.chkGeometryValidation.Size = new System.Drawing.Size(106, 22);
             this.chkGeometryValidation.TabIndex = 1;
@@ -278,7 +279,7 @@ namespace ForestResourcePlugin
             // 
             this.chkCreateBackup.AutoSize = true;
             this.chkCreateBackup.Location = new System.Drawing.Point(300, 35);
-            this.chkCreateBackup.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkCreateBackup.Margin = new System.Windows.Forms.Padding(4);
             this.chkCreateBackup.Name = "chkCreateBackup";
             this.chkCreateBackup.Size = new System.Drawing.Size(106, 22);
             this.chkCreateBackup.TabIndex = 2;
@@ -289,7 +290,7 @@ namespace ForestResourcePlugin
             // 
             this.chkGenerateReport.AutoSize = true;
             this.chkGenerateReport.Location = new System.Drawing.Point(300, 66);
-            this.chkGenerateReport.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkGenerateReport.Margin = new System.Windows.Forms.Padding(4);
             this.chkGenerateReport.Name = "chkGenerateReport";
             this.chkGenerateReport.Size = new System.Drawing.Size(106, 22);
             this.chkGenerateReport.TabIndex = 3;
@@ -309,10 +310,10 @@ namespace ForestResourcePlugin
             // 
             this.groupBoxCoordSystem.Controls.Add(this.cmbCoordSystem);
             this.groupBoxCoordSystem.Controls.Add(this.lblCoordSystem);
-            this.groupBoxCoordSystem.Location = new System.Drawing.Point(609, 183);
-            this.groupBoxCoordSystem.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxCoordSystem.Location = new System.Drawing.Point(609, 217); // 调整位置
+            this.groupBoxCoordSystem.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxCoordSystem.Name = "groupBoxCoordSystem";
-            this.groupBoxCoordSystem.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxCoordSystem.Padding = new System.Windows.Forms.Padding(4);
             this.groupBoxCoordSystem.Size = new System.Drawing.Size(570, 194);
             this.groupBoxCoordSystem.TabIndex = 2;
             this.groupBoxCoordSystem.TabStop = false;
@@ -323,7 +324,7 @@ namespace ForestResourcePlugin
             this.cmbCoordSystem.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbCoordSystem.FormattingEnabled = true;
             this.cmbCoordSystem.Location = new System.Drawing.Point(22, 62);
-            this.cmbCoordSystem.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbCoordSystem.Margin = new System.Windows.Forms.Padding(4);
             this.cmbCoordSystem.Name = "cmbCoordSystem";
             this.cmbCoordSystem.Size = new System.Drawing.Size(523, 26);
             this.cmbCoordSystem.TabIndex = 1;
@@ -344,9 +345,9 @@ namespace ForestResourcePlugin
             this.tabFilter.Controls.Add(this.groupBoxConditions);
             this.tabFilter.Controls.Add(this.groupBoxPreview);
             this.tabFilter.Location = new System.Drawing.Point(4, 28);
-            this.tabFilter.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabFilter.Margin = new System.Windows.Forms.Padding(4);
             this.tabFilter.Name = "tabFilter";
-            this.tabFilter.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabFilter.Padding = new System.Windows.Forms.Padding(4);
             this.tabFilter.Size = new System.Drawing.Size(1188, 591);
             this.tabFilter.TabIndex = 1;
             this.tabFilter.Text = "筛选条件设置";
@@ -359,18 +360,20 @@ namespace ForestResourcePlugin
             this.groupBoxFieldSelect.Controls.Add(this.lblLandTypeField);
             this.groupBoxFieldSelect.Controls.Add(this.lblLandOwnerField);
             this.groupBoxFieldSelect.Location = new System.Drawing.Point(9, 8);
-            this.groupBoxFieldSelect.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxFieldSelect.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxFieldSelect.Name = "groupBoxFieldSelect";
-            this.groupBoxFieldSelect.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxFieldSelect.Padding = new System.Windows.Forms.Padding(4);
             this.groupBoxFieldSelect.Size = new System.Drawing.Size(1170, 111);
             this.groupBoxFieldSelect.TabIndex = 0;
             this.groupBoxFieldSelect.TabStop = false;
             this.groupBoxFieldSelect.Text = "字段选择";
             // 
+            // cmbLandTypeField
+            // 
             this.cmbLandTypeField.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbLandTypeField.FormattingEnabled = true;
             this.cmbLandTypeField.Location = new System.Drawing.Point(150, 35);
-            this.cmbLandTypeField.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbLandTypeField.Margin = new System.Windows.Forms.Padding(4);
             this.cmbLandTypeField.Name = "cmbLandTypeField";
             this.cmbLandTypeField.Size = new System.Drawing.Size(298, 26);
             this.cmbLandTypeField.TabIndex = 1;
@@ -380,7 +383,7 @@ namespace ForestResourcePlugin
             this.cmbLandOwnerField.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbLandOwnerField.FormattingEnabled = true;
             this.cmbLandOwnerField.Location = new System.Drawing.Point(675, 35);
-            this.cmbLandOwnerField.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbLandOwnerField.Margin = new System.Windows.Forms.Padding(4);
             this.cmbLandOwnerField.Name = "cmbLandOwnerField";
             this.cmbLandOwnerField.Size = new System.Drawing.Size(298, 26);
             this.cmbLandOwnerField.TabIndex = 3;
@@ -411,9 +414,9 @@ namespace ForestResourcePlugin
             this.groupBoxConditions.Controls.Add(this.chkStateOwned);
             this.groupBoxConditions.Controls.Add(this.chkCollectiveInBoundary);
             this.groupBoxConditions.Location = new System.Drawing.Point(9, 127);
-            this.groupBoxConditions.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxConditions.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxConditions.Name = "groupBoxConditions";
-            this.groupBoxConditions.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxConditions.Padding = new System.Windows.Forms.Padding(4);
             this.groupBoxConditions.Size = new System.Drawing.Size(1170, 111);
             this.groupBoxConditions.TabIndex = 1;
             this.groupBoxConditions.TabStop = false;
@@ -425,7 +428,7 @@ namespace ForestResourcePlugin
             this.chkForestLand.Checked = true;
             this.chkForestLand.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkForestLand.Location = new System.Drawing.Point(22, 35);
-            this.chkForestLand.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkForestLand.Margin = new System.Windows.Forms.Padding(4);
             this.chkForestLand.Name = "chkForestLand";
             this.chkForestLand.Size = new System.Drawing.Size(124, 22);
             this.chkForestLand.TabIndex = 0;
@@ -438,7 +441,7 @@ namespace ForestResourcePlugin
             this.chkStateOwned.Checked = true;
             this.chkStateOwned.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkStateOwned.Location = new System.Drawing.Point(22, 66);
-            this.chkStateOwned.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkStateOwned.Margin = new System.Windows.Forms.Padding(4);
             this.chkStateOwned.Name = "chkStateOwned";
             this.chkStateOwned.Size = new System.Drawing.Size(214, 22);
             this.chkStateOwned.TabIndex = 1;
@@ -451,7 +454,7 @@ namespace ForestResourcePlugin
             this.chkCollectiveInBoundary.Checked = true;
             this.chkCollectiveInBoundary.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkCollectiveInBoundary.Location = new System.Drawing.Point(375, 66);
-            this.chkCollectiveInBoundary.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkCollectiveInBoundary.Margin = new System.Windows.Forms.Padding(4);
             this.chkCollectiveInBoundary.Name = "chkCollectiveInBoundary";
             this.chkCollectiveInBoundary.Size = new System.Drawing.Size(394, 22);
             this.chkCollectiveInBoundary.TabIndex = 2;
@@ -464,9 +467,9 @@ namespace ForestResourcePlugin
             this.groupBoxPreview.Controls.Add(this.btnPreview);
             this.groupBoxPreview.Controls.Add(this.lblPreviewCount);
             this.groupBoxPreview.Location = new System.Drawing.Point(9, 246);
-            this.groupBoxPreview.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxPreview.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxPreview.Name = "groupBoxPreview";
-            this.groupBoxPreview.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxPreview.Padding = new System.Windows.Forms.Padding(4);
             this.groupBoxPreview.Size = new System.Drawing.Size(1170, 332);
             this.groupBoxPreview.TabIndex = 2;
             this.groupBoxPreview.TabStop = false;
@@ -478,7 +481,7 @@ namespace ForestResourcePlugin
             this.dgvPreview.AllowUserToDeleteRows = false;
             this.dgvPreview.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvPreview.Location = new System.Drawing.Point(22, 35);
-            this.dgvPreview.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.dgvPreview.Margin = new System.Windows.Forms.Padding(4);
             this.dgvPreview.Name = "dgvPreview";
             this.dgvPreview.ReadOnly = true;
             this.dgvPreview.RowHeadersWidth = 62;
@@ -488,7 +491,7 @@ namespace ForestResourcePlugin
             // btnPreview
             // 
             this.btnPreview.Location = new System.Drawing.Point(22, 292);
-            this.btnPreview.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnPreview.Margin = new System.Windows.Forms.Padding(4);
             this.btnPreview.Name = "btnPreview";
             this.btnPreview.Size = new System.Drawing.Size(150, 32);
             this.btnPreview.TabIndex = 1;
@@ -511,7 +514,7 @@ namespace ForestResourcePlugin
             this.tabMapping.Controls.Add(this.groupBoxMapping);
             this.tabMapping.Controls.Add(this.groupBoxTemplate);
             this.tabMapping.Location = new System.Drawing.Point(4, 28);
-            this.tabMapping.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabMapping.Margin = new System.Windows.Forms.Padding(4);
             this.tabMapping.Name = "tabMapping";
             this.tabMapping.Size = new System.Drawing.Size(1188, 591);
             this.tabMapping.TabIndex = 2;
@@ -523,9 +526,9 @@ namespace ForestResourcePlugin
             this.groupBoxMapping.Controls.Add(this.dgvMapping);
             this.groupBoxMapping.Controls.Add(this.btnAutoMapping);
             this.groupBoxMapping.Location = new System.Drawing.Point(9, 8);
-            this.groupBoxMapping.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxMapping.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxMapping.Name = "groupBoxMapping";
-            this.groupBoxMapping.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxMapping.Padding = new System.Windows.Forms.Padding(4);
             this.groupBoxMapping.Size = new System.Drawing.Size(1170, 443);
             this.groupBoxMapping.TabIndex = 0;
             this.groupBoxMapping.TabStop = false;
@@ -537,7 +540,7 @@ namespace ForestResourcePlugin
             this.dgvMapping.AllowUserToDeleteRows = false;
             this.dgvMapping.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvMapping.Location = new System.Drawing.Point(22, 35);
-            this.dgvMapping.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.dgvMapping.Margin = new System.Windows.Forms.Padding(4);
             this.dgvMapping.Name = "dgvMapping";
             this.dgvMapping.RowHeadersWidth = 62;
             this.dgvMapping.Size = new System.Drawing.Size(1125, 360);
@@ -546,7 +549,7 @@ namespace ForestResourcePlugin
             // btnAutoMapping
             // 
             this.btnAutoMapping.Location = new System.Drawing.Point(22, 403);
-            this.btnAutoMapping.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnAutoMapping.Margin = new System.Windows.Forms.Padding(4);
             this.btnAutoMapping.Name = "btnAutoMapping";
             this.btnAutoMapping.Size = new System.Drawing.Size(150, 32);
             this.btnAutoMapping.TabIndex = 1;
@@ -560,9 +563,9 @@ namespace ForestResourcePlugin
             this.groupBoxTemplate.Controls.Add(this.btnSaveTemplate);
             this.groupBoxTemplate.Controls.Add(this.lblTemplateInfo);
             this.groupBoxTemplate.Location = new System.Drawing.Point(9, 460);
-            this.groupBoxTemplate.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxTemplate.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxTemplate.Name = "groupBoxTemplate";
-            this.groupBoxTemplate.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxTemplate.Padding = new System.Windows.Forms.Padding(4);
             this.groupBoxTemplate.Size = new System.Drawing.Size(1170, 111);
             this.groupBoxTemplate.TabIndex = 1;
             this.groupBoxTemplate.TabStop = false;
@@ -571,7 +574,7 @@ namespace ForestResourcePlugin
             // btnLoadTemplate
             // 
             this.btnLoadTemplate.Location = new System.Drawing.Point(22, 35);
-            this.btnLoadTemplate.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnLoadTemplate.Margin = new System.Windows.Forms.Padding(4);
             this.btnLoadTemplate.Name = "btnLoadTemplate";
             this.btnLoadTemplate.Size = new System.Drawing.Size(150, 32);
             this.btnLoadTemplate.TabIndex = 0;
@@ -582,7 +585,7 @@ namespace ForestResourcePlugin
             // btnSaveTemplate
             // 
             this.btnSaveTemplate.Location = new System.Drawing.Point(195, 35);
-            this.btnSaveTemplate.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSaveTemplate.Margin = new System.Windows.Forms.Padding(4);
             this.btnSaveTemplate.Name = "btnSaveTemplate";
             this.btnSaveTemplate.Size = new System.Drawing.Size(150, 32);
             this.btnSaveTemplate.TabIndex = 1;
@@ -609,7 +612,7 @@ namespace ForestResourcePlugin
             this.panelBottom.Controls.Add(this.btnClose);
             this.panelBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panelBottom.Location = new System.Drawing.Point(0, 631);
-            this.panelBottom.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.panelBottom.Margin = new System.Windows.Forms.Padding(4);
             this.panelBottom.Name = "panelBottom";
             this.panelBottom.Size = new System.Drawing.Size(1196, 111);
             this.panelBottom.TabIndex = 1;
@@ -617,7 +620,7 @@ namespace ForestResourcePlugin
             // progressBar
             // 
             this.progressBar.Location = new System.Drawing.Point(18, 17);
-            this.progressBar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.progressBar.Margin = new System.Windows.Forms.Padding(4);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(750, 32);
             this.progressBar.TabIndex = 0;
@@ -635,7 +638,7 @@ namespace ForestResourcePlugin
             // btnExecute
             // 
             this.btnExecute.Location = new System.Drawing.Point(825, 17);
-            this.btnExecute.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnExecute.Margin = new System.Windows.Forms.Padding(4);
             this.btnExecute.Name = "btnExecute";
             this.btnExecute.Size = new System.Drawing.Size(112, 32);
             this.btnExecute.TabIndex = 2;
@@ -647,7 +650,7 @@ namespace ForestResourcePlugin
             // 
             this.btnCancel.Enabled = false;
             this.btnCancel.Location = new System.Drawing.Point(946, 17);
-            this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnCancel.Margin = new System.Windows.Forms.Padding(4);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(112, 32);
             this.btnCancel.TabIndex = 3;
@@ -658,7 +661,7 @@ namespace ForestResourcePlugin
             // btnClose
             // 
             this.btnClose.Location = new System.Drawing.Point(1068, 17);
-            this.btnClose.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnClose.Margin = new System.Windows.Forms.Padding(4);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(112, 32);
             this.btnClose.TabIndex = 4;
@@ -673,7 +676,7 @@ namespace ForestResourcePlugin
             this.Controls.Add(this.tabControl);
             this.Controls.Add(this.panelBottom);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "Basic";
@@ -715,6 +718,7 @@ namespace ForestResourcePlugin
 
         // 数据源配置页控件
         private System.Windows.Forms.GroupBox groupBoxFiles;
+        private System.Windows.Forms.Button btnRefreshLayers; // 刷新图层按钮
         private System.Windows.Forms.Button btnBrowseLCXZGX;
         private System.Windows.Forms.Button btnBrowseCZKFBJ;
         private System.Windows.Forms.Button btnBrowseOutput;
@@ -724,7 +728,6 @@ namespace ForestResourcePlugin
         private System.Windows.Forms.Label lblLCXZGX;
         private System.Windows.Forms.Label lblCZKFBJ;
         private System.Windows.Forms.Label lblOutput;
-        private System.Windows.Forms.Button btnRefreshLayers;
 
         private System.Windows.Forms.GroupBox groupBoxOptions;
         private System.Windows.Forms.CheckBox chkTopologyCheck;

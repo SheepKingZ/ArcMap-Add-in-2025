@@ -115,7 +115,6 @@ namespace TestArcMapAddin2.Forms
             this.btnSelectCounties.TabIndex = 3;
             this.btnSelectCounties.Text = "Ñ¡ÔñÏØÇø";
             this.btnSelectCounties.UseVisualStyleBackColor = true;
-            this.btnSelectCounties.Click += new System.EventHandler(this.BtnSelectCounties_Click);
 
             // lblCounties
             this.lblCounties.Font = defaultFont;

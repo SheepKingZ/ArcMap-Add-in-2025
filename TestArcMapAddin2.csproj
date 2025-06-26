@@ -104,20 +104,11 @@
     <Compile Include="Forms\BasicDataPreparationForm.Designer.cs">
       <DependentUpon>BasicDataPreparationForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\CountySelectionForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="Forms\ForestForm\Basic.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\ForestForm\Basic.Designer.cs">
       <DependentUpon>Basic.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\ForestForm\ExtractWorkScopeForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\ForestForm\ExtractWorkScopeForm.Designer.cs">
-      <DependentUpon>ExtractWorkScopeForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\ForestForm\ForestProcessingFormBase.cs">
       <SubType>Form</SubType>
@@ -139,9 +130,6 @@
     </Compile>
     <Compile Include="Forms\MainProcessingTabsForm.Designer.cs">
       <DependentUpon>MainProcessingTabsForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\ProgressDialog.cs">
-      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\ForestForm\WorkBaseMapForm.cs">
       <SubType>Form</SubType>
@@ -193,19 +181,14 @@
     <Content Include=".gitignore" />
     <AddInContent Include="Images\Count.png" />
     <Content Include="obj\Debug\TestArcMapAddin2.csproj.FileListAbsolute.txt" />
+    <Content Include="XML\Field.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Forms\CountySelectionForm.resx">
-      <DependentUpon>CountySelectionForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Forms\ForestForm\AssetValueCalculationForm.resx">
       <DependentUpon>AssetValueCalculationForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\ForestForm\Basic.resx">
       <DependentUpon>Basic.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\ForestForm\ExtractWorkScopeForm.resx">
-      <DependentUpon>ExtractWorkScopeForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\ForestForm\ForestProcessingFormBase.resx">
       <DependentUpon>ForestProcessingFormBase.cs</DependentUpon>
