@@ -8,6 +8,8 @@ using System.Text;
 using System.Web.UI.DataVisualization.Charting;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
+// Add reference to ForestResourcePlugin namespace to access the Basic class
+using ForestResourcePlugin;
 
 namespace TestArcMapAddin2.Forms
 {
@@ -78,7 +80,7 @@ namespace TestArcMapAddin2.Forms
             UpdateButtonStates();
 
             // 更新进度条
-            forestProgressBar.Value = 0;
+            //forestProgressBar.Value = 0;
             grasslandProgressBar.Value = 0;
             wetlandProgressBar.Value = 0;
             outputProgressBar.Value = 0;
@@ -145,7 +147,7 @@ namespace TestArcMapAddin2.Forms
             // 更新森林工作流进度
             int forestSteps = forestTasksCompleted.Count;
             int forestCompleted = forestTasksCompleted.Count(x => x.Value);
-            forestProgressBar.Value = forestSteps > 0 ? (forestCompleted * 100) / forestSteps : 0;
+            //forestProgressBar.Value = forestSteps > 0 ? (forestCompleted * 100) / forestSteps : 0;
             //forestStepLabel.Text = $"已完成 {forestCompleted}/{forestSteps} 步骤";
 
             // 更新草地工作流进度
@@ -592,6 +594,7 @@ namespace TestArcMapAddin2.Forms
 
         private void ShowForestWorkflowDetails_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
+            // Keep existing toggle functionality
             forestDetailPanel.Visible = !forestDetailPanel.Visible;
             forestWorkflowExplanation.Visible = forestDetailPanel.Visible;
             forestResultsTextBox.Visible = forestDetailPanel.Visible;
@@ -600,6 +603,19 @@ namespace TestArcMapAddin2.Forms
 
             showForestWorkflowDetails.Text = forestDetailPanel.Visible ?
                 "隐藏详细流程说明 ▲" : "显示详细流程说明 ▼";
+            
+            // Add code to display the Basic.cs window
+            try
+            {
+                // Create and show the Basic form as a dialog
+                Basic basicForm = new Basic();
+                basicForm.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打开基础数据窗口时出错: {ex.Message}", "错误", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void forestStepLabel_Click(object sender, EventArgs e)

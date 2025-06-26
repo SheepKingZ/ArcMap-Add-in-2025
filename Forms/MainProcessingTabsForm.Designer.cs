@@ -47,9 +47,6 @@
         private System.Windows.Forms.Button btnExportSummaryTables;
         private System.Windows.Forms.Button btnGenerateReport;
         private System.Windows.Forms.Button btnGenerateThematicMaps;
-
-        // 进度条和步骤标签
-        private System.Windows.Forms.ProgressBar forestProgressBar;
         private System.Windows.Forms.ProgressBar grasslandProgressBar;
         private System.Windows.Forms.ProgressBar wetlandProgressBar;
         private System.Windows.Forms.ProgressBar outputProgressBar;
@@ -77,9 +74,9 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainProcessingTabsForm));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.mainPanel = new System.Windows.Forms.Panel();
             this.titleLabel = new System.Windows.Forms.Label();
             this.tabControlMain = new System.Windows.Forms.TabControl();
@@ -90,7 +87,6 @@
             this.btnForestCreateBasemapLinkPrice = new System.Windows.Forms.Button();
             this.btnForestSupplementPrice = new System.Windows.Forms.Button();
             this.lblForestProcessingStatus = new System.Windows.Forms.Label();
-            this.forestProgressBar = new System.Windows.Forms.ProgressBar();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.btnGrasslandExtractScope = new System.Windows.Forms.Button();
             this.btnGrasslandCreateBasemapLinkPrice = new System.Windows.Forms.Button();
@@ -145,9 +141,9 @@
             this.mainPanel.Controls.Add(this.bottomPanel);
             this.mainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mainPanel.Location = new System.Drawing.Point(0, 0);
-            this.mainPanel.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.mainPanel.Margin = new System.Windows.Forms.Padding(6);
             this.mainPanel.Name = "mainPanel";
-            this.mainPanel.Padding = new System.Windows.Forms.Padding(22, 22, 22, 22);
+            this.mainPanel.Padding = new System.Windows.Forms.Padding(22);
             this.mainPanel.Size = new System.Drawing.Size(1320, 1080);
             this.mainPanel.TabIndex = 0;
             // 
@@ -172,7 +168,7 @@
             this.tabControlMain.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.tabControlMain.ItemSize = new System.Drawing.Size(100, 22);
             this.tabControlMain.Location = new System.Drawing.Point(22, 82);
-            this.tabControlMain.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabControlMain.Margin = new System.Windows.Forms.Padding(4);
             this.tabControlMain.Name = "tabControlMain";
             this.tabControlMain.SelectedIndex = 0;
             this.tabControlMain.Size = new System.Drawing.Size(1275, 870);
@@ -186,13 +182,12 @@
             this.tabPage2.Controls.Add(this.btnForestCreateBasemapLinkPrice);
             this.tabPage2.Controls.Add(this.btnForestSupplementPrice);
             this.tabPage2.Controls.Add(this.lblForestProcessingStatus);
-            this.tabPage2.Controls.Add(this.forestProgressBar);
             this.tabPage2.Font = new System.Drawing.Font("宋体", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.tabPage2.ForeColor = System.Drawing.Color.Black;
             this.tabPage2.Location = new System.Drawing.Point(4, 26);
-            this.tabPage2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPage2.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(15, 15, 15, 15);
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(15);
             this.tabPage2.Size = new System.Drawing.Size(1267, 840);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "🌲 森林资源资产清查";
@@ -214,7 +209,7 @@
             // 
             this.forestDetailPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.forestDetailPanel.Location = new System.Drawing.Point(30, 270);
-            this.forestDetailPanel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.forestDetailPanel.Margin = new System.Windows.Forms.Padding(4);
             this.forestDetailPanel.Name = "forestDetailPanel";
             this.forestDetailPanel.Size = new System.Drawing.Size(1214, 524);
             this.forestDetailPanel.TabIndex = 10;
@@ -224,7 +219,7 @@
             // 
             this.btnForestExtractScope.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnForestExtractScope.Location = new System.Drawing.Point(30, 45);
-            this.btnForestExtractScope.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnForestExtractScope.Margin = new System.Windows.Forms.Padding(4);
             this.btnForestExtractScope.Name = "btnForestExtractScope";
             this.btnForestExtractScope.Size = new System.Drawing.Size(240, 45);
             this.btnForestExtractScope.TabIndex = 0;
@@ -236,7 +231,7 @@
             // 
             this.btnForestCreateBasemapLinkPrice.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnForestCreateBasemapLinkPrice.Location = new System.Drawing.Point(330, 45);
-            this.btnForestCreateBasemapLinkPrice.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnForestCreateBasemapLinkPrice.Margin = new System.Windows.Forms.Padding(4);
             this.btnForestCreateBasemapLinkPrice.Name = "btnForestCreateBasemapLinkPrice";
             this.btnForestCreateBasemapLinkPrice.Size = new System.Drawing.Size(240, 45);
             this.btnForestCreateBasemapLinkPrice.TabIndex = 1;
@@ -248,7 +243,7 @@
             // 
             this.btnForestSupplementPrice.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnForestSupplementPrice.Location = new System.Drawing.Point(630, 45);
-            this.btnForestSupplementPrice.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnForestSupplementPrice.Margin = new System.Windows.Forms.Padding(4);
             this.btnForestSupplementPrice.Name = "btnForestSupplementPrice";
             this.btnForestSupplementPrice.Size = new System.Drawing.Size(240, 45);
             this.btnForestSupplementPrice.TabIndex = 2;
@@ -267,14 +262,6 @@
             this.lblForestProcessingStatus.Text = "等待森林资源清查处理";
             this.lblForestProcessingStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // forestProgressBar
-            // 
-            this.forestProgressBar.Location = new System.Drawing.Point(900, 112);
-            this.forestProgressBar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.forestProgressBar.Name = "forestProgressBar";
-            this.forestProgressBar.Size = new System.Drawing.Size(345, 30);
-            this.forestProgressBar.TabIndex = 7;
-            // 
             // tabPage3
             // 
             this.tabPage3.Controls.Add(this.btnGrasslandExtractScope);
@@ -289,9 +276,9 @@
             this.tabPage3.Font = new System.Drawing.Font("宋体", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.tabPage3.ForeColor = System.Drawing.Color.Black;
             this.tabPage3.Location = new System.Drawing.Point(4, 26);
-            this.tabPage3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPage3.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(15, 15, 15, 15);
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(15);
             this.tabPage3.Size = new System.Drawing.Size(1267, 840);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "🌿 草地资源资产清查";
@@ -301,7 +288,7 @@
             // 
             this.btnGrasslandExtractScope.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnGrasslandExtractScope.Location = new System.Drawing.Point(30, 45);
-            this.btnGrasslandExtractScope.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnGrasslandExtractScope.Margin = new System.Windows.Forms.Padding(4);
             this.btnGrasslandExtractScope.Name = "btnGrasslandExtractScope";
             this.btnGrasslandExtractScope.Size = new System.Drawing.Size(240, 45);
             this.btnGrasslandExtractScope.TabIndex = 0;
@@ -313,7 +300,7 @@
             // 
             this.btnGrasslandCreateBasemapLinkPrice.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnGrasslandCreateBasemapLinkPrice.Location = new System.Drawing.Point(330, 45);
-            this.btnGrasslandCreateBasemapLinkPrice.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnGrasslandCreateBasemapLinkPrice.Margin = new System.Windows.Forms.Padding(4);
             this.btnGrasslandCreateBasemapLinkPrice.Name = "btnGrasslandCreateBasemapLinkPrice";
             this.btnGrasslandCreateBasemapLinkPrice.Size = new System.Drawing.Size(240, 45);
             this.btnGrasslandCreateBasemapLinkPrice.TabIndex = 1;
@@ -325,7 +312,7 @@
             // 
             this.btnGrasslandSupplementPrice.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnGrasslandSupplementPrice.Location = new System.Drawing.Point(630, 45);
-            this.btnGrasslandSupplementPrice.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnGrasslandSupplementPrice.Margin = new System.Windows.Forms.Padding(4);
             this.btnGrasslandSupplementPrice.Name = "btnGrasslandSupplementPrice";
             this.btnGrasslandSupplementPrice.Size = new System.Drawing.Size(240, 45);
             this.btnGrasslandSupplementPrice.TabIndex = 2;
@@ -337,7 +324,7 @@
             // 
             this.btnGrasslandCalculateValue.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnGrasslandCalculateValue.Location = new System.Drawing.Point(30, 112);
-            this.btnGrasslandCalculateValue.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnGrasslandCalculateValue.Margin = new System.Windows.Forms.Padding(4);
             this.btnGrasslandCalculateValue.Name = "btnGrasslandCalculateValue";
             this.btnGrasslandCalculateValue.Size = new System.Drawing.Size(240, 45);
             this.btnGrasslandCalculateValue.TabIndex = 3;
@@ -349,7 +336,7 @@
             // 
             this.btnGrasslandCleanQA.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnGrasslandCleanQA.Location = new System.Drawing.Point(330, 112);
-            this.btnGrasslandCleanQA.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnGrasslandCleanQA.Margin = new System.Windows.Forms.Padding(4);
             this.btnGrasslandCleanQA.Name = "btnGrasslandCleanQA";
             this.btnGrasslandCleanQA.Size = new System.Drawing.Size(240, 45);
             this.btnGrasslandCleanQA.TabIndex = 4;
@@ -361,7 +348,7 @@
             // 
             this.btnGrasslandBuildDBTables.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnGrasslandBuildDBTables.Location = new System.Drawing.Point(630, 112);
-            this.btnGrasslandBuildDBTables.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnGrasslandBuildDBTables.Margin = new System.Windows.Forms.Padding(4);
             this.btnGrasslandBuildDBTables.Name = "btnGrasslandBuildDBTables";
             this.btnGrasslandBuildDBTables.Size = new System.Drawing.Size(240, 45);
             this.btnGrasslandBuildDBTables.TabIndex = 5;
@@ -383,7 +370,7 @@
             // grasslandProgressBar
             // 
             this.grasslandProgressBar.Location = new System.Drawing.Point(900, 112);
-            this.grasslandProgressBar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.grasslandProgressBar.Margin = new System.Windows.Forms.Padding(4);
             this.grasslandProgressBar.Name = "grasslandProgressBar";
             this.grasslandProgressBar.Size = new System.Drawing.Size(345, 30);
             this.grasslandProgressBar.TabIndex = 7;
@@ -410,9 +397,9 @@
             this.tabPage4.Font = new System.Drawing.Font("宋体", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.tabPage4.ForeColor = System.Drawing.Color.Black;
             this.tabPage4.Location = new System.Drawing.Point(4, 26);
-            this.tabPage4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPage4.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Padding = new System.Windows.Forms.Padding(15, 15, 15, 15);
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(15);
             this.tabPage4.Size = new System.Drawing.Size(1267, 840);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "🏞️ 湿地资源资产清查";
@@ -422,7 +409,7 @@
             // 
             this.btnWetlandExtractScopeBasemap.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnWetlandExtractScopeBasemap.Location = new System.Drawing.Point(30, 45);
-            this.btnWetlandExtractScopeBasemap.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnWetlandExtractScopeBasemap.Margin = new System.Windows.Forms.Padding(4);
             this.btnWetlandExtractScopeBasemap.Name = "btnWetlandExtractScopeBasemap";
             this.btnWetlandExtractScopeBasemap.Size = new System.Drawing.Size(240, 45);
             this.btnWetlandExtractScopeBasemap.TabIndex = 0;
@@ -434,7 +421,7 @@
             // 
             this.btnWetlandCleanQA.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnWetlandCleanQA.Location = new System.Drawing.Point(330, 45);
-            this.btnWetlandCleanQA.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnWetlandCleanQA.Margin = new System.Windows.Forms.Padding(4);
             this.btnWetlandCleanQA.Name = "btnWetlandCleanQA";
             this.btnWetlandCleanQA.Size = new System.Drawing.Size(240, 45);
             this.btnWetlandCleanQA.TabIndex = 1;
@@ -446,7 +433,7 @@
             // 
             this.btnWetlandBuildDBTables.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnWetlandBuildDBTables.Location = new System.Drawing.Point(630, 45);
-            this.btnWetlandBuildDBTables.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnWetlandBuildDBTables.Margin = new System.Windows.Forms.Padding(4);
             this.btnWetlandBuildDBTables.Name = "btnWetlandBuildDBTables";
             this.btnWetlandBuildDBTables.Size = new System.Drawing.Size(240, 45);
             this.btnWetlandBuildDBTables.TabIndex = 2;
@@ -468,7 +455,7 @@
             // wetlandProgressBar
             // 
             this.wetlandProgressBar.Location = new System.Drawing.Point(900, 45);
-            this.wetlandProgressBar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.wetlandProgressBar.Margin = new System.Windows.Forms.Padding(4);
             this.wetlandProgressBar.Name = "wetlandProgressBar";
             this.wetlandProgressBar.Size = new System.Drawing.Size(345, 30);
             this.wetlandProgressBar.TabIndex = 4;
@@ -499,9 +486,9 @@
             this.tabPage5.Font = new System.Drawing.Font("宋体", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.tabPage5.ForeColor = System.Drawing.Color.Black;
             this.tabPage5.Location = new System.Drawing.Point(4, 26);
-            this.tabPage5.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPage5.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage5.Name = "tabPage5";
-            this.tabPage5.Padding = new System.Windows.Forms.Padding(15, 15, 15, 15);
+            this.tabPage5.Padding = new System.Windows.Forms.Padding(15);
             this.tabPage5.Size = new System.Drawing.Size(1267, 840);
             this.tabPage5.TabIndex = 4;
             this.tabPage5.Text = "📊 综合质检、统计与成果输出";
@@ -511,7 +498,7 @@
             // 
             this.btnOverallQualityCheck.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnOverallQualityCheck.Location = new System.Drawing.Point(30, 45);
-            this.btnOverallQualityCheck.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnOverallQualityCheck.Margin = new System.Windows.Forms.Padding(4);
             this.btnOverallQualityCheck.Name = "btnOverallQualityCheck";
             this.btnOverallQualityCheck.Size = new System.Drawing.Size(202, 45);
             this.btnOverallQualityCheck.TabIndex = 0;
@@ -523,7 +510,7 @@
             // 
             this.btnStatisticalAggregation.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnStatisticalAggregation.Location = new System.Drawing.Point(285, 45);
-            this.btnStatisticalAggregation.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnStatisticalAggregation.Margin = new System.Windows.Forms.Padding(4);
             this.btnStatisticalAggregation.Name = "btnStatisticalAggregation";
             this.btnStatisticalAggregation.Size = new System.Drawing.Size(202, 45);
             this.btnStatisticalAggregation.TabIndex = 1;
@@ -535,7 +522,7 @@
             // 
             this.btnDataAnalysis.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnDataAnalysis.Location = new System.Drawing.Point(540, 45);
-            this.btnDataAnalysis.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnDataAnalysis.Margin = new System.Windows.Forms.Padding(4);
             this.btnDataAnalysis.Name = "btnDataAnalysis";
             this.btnDataAnalysis.Size = new System.Drawing.Size(202, 45);
             this.btnDataAnalysis.TabIndex = 2;
@@ -547,7 +534,7 @@
             // 
             this.btnExportDatasetDB.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnExportDatasetDB.Location = new System.Drawing.Point(30, 112);
-            this.btnExportDatasetDB.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnExportDatasetDB.Margin = new System.Windows.Forms.Padding(4);
             this.btnExportDatasetDB.Name = "btnExportDatasetDB";
             this.btnExportDatasetDB.Size = new System.Drawing.Size(202, 45);
             this.btnExportDatasetDB.TabIndex = 3;
@@ -559,7 +546,7 @@
             // 
             this.btnExportSummaryTables.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnExportSummaryTables.Location = new System.Drawing.Point(285, 112);
-            this.btnExportSummaryTables.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnExportSummaryTables.Margin = new System.Windows.Forms.Padding(4);
             this.btnExportSummaryTables.Name = "btnExportSummaryTables";
             this.btnExportSummaryTables.Size = new System.Drawing.Size(202, 45);
             this.btnExportSummaryTables.TabIndex = 4;
@@ -571,7 +558,7 @@
             // 
             this.btnGenerateReport.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnGenerateReport.Location = new System.Drawing.Point(540, 112);
-            this.btnGenerateReport.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnGenerateReport.Margin = new System.Windows.Forms.Padding(4);
             this.btnGenerateReport.Name = "btnGenerateReport";
             this.btnGenerateReport.Size = new System.Drawing.Size(202, 45);
             this.btnGenerateReport.TabIndex = 5;
@@ -583,7 +570,7 @@
             // 
             this.btnGenerateThematicMaps.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnGenerateThematicMaps.Location = new System.Drawing.Point(795, 112);
-            this.btnGenerateThematicMaps.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnGenerateThematicMaps.Margin = new System.Windows.Forms.Padding(4);
             this.btnGenerateThematicMaps.Name = "btnGenerateThematicMaps";
             this.btnGenerateThematicMaps.Size = new System.Drawing.Size(202, 45);
             this.btnGenerateThematicMaps.TabIndex = 6;
@@ -605,7 +592,7 @@
             // outputProgressBar
             // 
             this.outputProgressBar.Location = new System.Drawing.Point(900, 45);
-            this.outputProgressBar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.outputProgressBar.Margin = new System.Windows.Forms.Padding(4);
             this.outputProgressBar.Name = "outputProgressBar";
             this.outputProgressBar.Size = new System.Drawing.Size(345, 30);
             this.outputProgressBar.TabIndex = 8;
@@ -628,7 +615,7 @@
             this.bottomPanel.Controls.Add(this.btnHelp);
             this.bottomPanel.Controls.Add(this.btnClose);
             this.bottomPanel.Location = new System.Drawing.Point(22, 968);
-            this.bottomPanel.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.bottomPanel.Margin = new System.Windows.Forms.Padding(6);
             this.bottomPanel.Name = "bottomPanel";
             this.bottomPanel.Size = new System.Drawing.Size(1275, 90);
             this.bottomPanel.TabIndex = 6;
@@ -648,7 +635,7 @@
             // 
             this.btnHelp.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnHelp.Location = new System.Drawing.Point(975, 22);
-            this.btnHelp.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.btnHelp.Margin = new System.Windows.Forms.Padding(6);
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(105, 38);
             this.btnHelp.TabIndex = 0;
@@ -661,7 +648,7 @@
             this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnClose.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnClose.Location = new System.Drawing.Point(1125, 22);
-            this.btnClose.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.btnClose.Margin = new System.Windows.Forms.Padding(6);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(105, 38);
             this.btnClose.TabIndex = 1;
@@ -697,17 +684,17 @@
             // 
             // forestResourceChart
             // 
-            chartArea3.Name = "ChartArea1";
-            this.forestResourceChart.ChartAreas.Add(chartArea3);
-            legend3.Name = "Legend1";
-            this.forestResourceChart.Legends.Add(legend3);
+            chartArea1.Name = "ChartArea1";
+            this.forestResourceChart.ChartAreas.Add(chartArea1);
+            legend1.Name = "Legend1";
+            this.forestResourceChart.Legends.Add(legend1);
             this.forestResourceChart.Location = new System.Drawing.Point(420, 190);
             this.forestResourceChart.Name = "forestResourceChart";
-            series3.ChartArea = "ChartArea1";
-            series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
-            series3.Legend = "Legend1";
-            series3.Name = "Series1";
-            this.forestResourceChart.Series.Add(series3);
+            series1.ChartArea = "ChartArea1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
+            series1.Legend = "Legend1";
+            series1.Name = "Series1";
+            this.forestResourceChart.Series.Add(series1);
             this.forestResourceChart.Size = new System.Drawing.Size(400, 200);
             this.forestResourceChart.TabIndex = 13;
             this.forestResourceChart.Text = "森林资源清查进度";
@@ -733,7 +720,7 @@
             this.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.ForeColor = System.Drawing.Color.Black;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.Margin = new System.Windows.Forms.Padding(6);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "MainProcessingTabsForm";

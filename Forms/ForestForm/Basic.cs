@@ -2,6 +2,11 @@
 using System.Windows.Forms;
 using System.Data;
 using System.IO;
+using System.Collections.Generic;
+using ESRI.ArcGIS.Geodatabase;
+using ESRI.ArcGIS.DataSourcesFile;
+using ESRI.ArcGIS.Geometry;
+using ESRI.ArcGIS.Carto;
 
 namespace ForestResourcePlugin
 {
@@ -9,6 +14,8 @@ namespace ForestResourcePlugin
     {
         private DataTable previewData;
         private DataTable mappingData;
+        private IFeatureClass lcxzgxFeatureClass; // 林草现状图层要素类
+        private IFeatureClass czkfbjFeatureClass; // 城镇开发边界要素类
 
         public Basic()
         {
@@ -36,6 +43,31 @@ namespace ForestResourcePlugin
 
             // 初始化字段映射表格
             InitializeMappingGrid();
+
+            // 初始化筛选条件复选框
+            chkForestLand.Checked = true;
+            chkStateOwned.Checked = true;
+            chkCollectiveInBoundary.Checked = true;
+
+            // 为复选框添加事件处理程序
+            chkForestLand.CheckedChanged += FilterCheckBox_CheckedChanged;
+            chkStateOwned.CheckedChanged += FilterCheckBox_CheckedChanged;
+            chkCollectiveInBoundary.CheckedChanged += FilterCheckBox_CheckedChanged;
+        }
+
+        // 复选框状态改变事件处理
+        private void FilterCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            // 当任何筛选条件变化时清空预览数据
+            if (previewData != null)
+            {
+                previewData.Clear();
+                dgvPreview.DataSource = null;
+                lblPreviewCount.Text = "预览结果：0 个图斑";
+                
+                // 提示用户重新生成预览
+                UpdateStatus("筛选条件已更改，请重新生成预览");
+            }
         }
 
         private void btnBrowseLCXZGX_Click(object sender, EventArgs e)
@@ -61,6 +93,19 @@ namespace ForestResourcePlugin
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     txtCZKFBJPath.Text = dialog.FileName;
+                    
+                    // 加载城镇开发边界图层
+                    try
+                    {
+                        LoadCZKFBJLayer(txtCZKFBJPath.Text);
+                        UpdateStatus("成功加载城镇开发边界图层");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"加载城镇开发边界图层失败: {ex.Message}", "错误",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        UpdateStatus("加载城镇开发边界图层失败");
+                    }
                 }
             }
         }
@@ -79,47 +124,456 @@ namespace ForestResourcePlugin
 
         private void LoadLCXZGXFields()
         {
-            // 模拟加载字段到筛选条件页面
-            cmbLandTypeField.Items.Clear();
-            cmbLandOwnerField.Items.Clear();
-
-            // 这里应该使用ArcObjects读取实际字段
-            string[] sampleFields = { "地类", "土地权属", "图斑编号", "面积", "林种", "优势树种" };
-
-            foreach (string field in sampleFields)
+            try
             {
-                cmbLandTypeField.Items.Add(field);
-                cmbLandOwnerField.Items.Add(field);
-            }
+                // Clear existing items in dropdown lists
+                cmbLandTypeField.Items.Clear();
+                cmbLandOwnerField.Items.Clear();
+                
+                // Check if file exists
+                if (string.IsNullOrEmpty(txtLCXZGXPath.Text) || !File.Exists(txtLCXZGXPath.Text))
+                {
+                    MessageBox.Show("选择的Shapefile文件不存在或无效", "读取字段失败", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                
+                UpdateStatus("正在读取Shapefile字段...");
+                progressBar.Value = 30;
+                
+                // 使用ShapefileReader工具类读取字段
+                List<string> fieldNames = ShapefileReader.GetShapefileFieldNames(txtLCXZGXPath.Text);
+                
+                // 添加字段到下拉列表
+                foreach (string fieldName in fieldNames)
+                {
+                    cmbLandTypeField.Items.Add(fieldName);
+                    cmbLandOwnerField.Items.Add(fieldName);
+                }
+                
+                // 选择默认字段（如果有字段）
+                if (cmbLandTypeField.Items.Count > 0)
+                {
+                    // 尝试查找与地类相关的字段
+                    int landTypeIndex = FindBestMatchIndex(cmbLandTypeField.Items, new[] { "地类", "Y_DLBM", "LandType", "DL", "Land", "Type", "DLDM" });
+                    cmbLandTypeField.SelectedIndex = landTypeIndex >= 0 ? landTypeIndex : 0;
+                    
+                    // 尝试查找与土地权属相关的字段
+                    int landOwnerIndex = FindBestMatchIndex(cmbLandOwnerField.Items, new[] { "权属", "土地权属", "TDQS", "LD_QS", "Ownership", "Owner", "QS" });
+                    cmbLandOwnerField.SelectedIndex = landOwnerIndex >= 0 ? landOwnerIndex : 0;
+                }
 
-            if (cmbLandTypeField.Items.Count > 0)
-                cmbLandTypeField.SelectedIndex = 0;
-            if (cmbLandOwnerField.Items.Count > 0)
-                cmbLandOwnerField.SelectedIndex = 1;
+                // 加载林草现状图层
+                LoadLCXZGXLayer(txtLCXZGXPath.Text);
+                
+                progressBar.Value = 100;
+                UpdateStatus($"已读取 {fieldNames.Count} 个字段");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"读取Shapefile字段时出错: {ex.Message}", "错误", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                UpdateStatus("读取字段失败");
+            }
+        }
+
+        // 加载林草现状图层
+        private void LoadLCXZGXLayer(string shapefilePath)
+        {
+            try
+            {
+                // Get the directory and filename without extension
+                string directory = System.IO.Path.GetDirectoryName(shapefilePath);
+                string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
+
+                // Create a workspace factory and open the shapefile
+                IWorkspaceFactory workspaceFactory = new ShapefileWorkspaceFactory();
+                IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(directory, 0);
+                lcxzgxFeatureClass = featureWorkspace.OpenFeatureClass(fileName);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"加载林草现状图层失败: {ex.Message}", ex);
+            }
+        }
+
+        // 加载城镇开发边界图层
+        private void LoadCZKFBJLayer(string shapefilePath)
+        {
+            try
+            {
+                // Get the directory and filename without extension
+                string directory = System.IO.Path.GetDirectoryName(shapefilePath);
+                string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
+
+                // Create a workspace factory and open the shapefile
+                IWorkspaceFactory workspaceFactory = new ShapefileWorkspaceFactory();
+                IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(directory, 0);
+                czkfbjFeatureClass = featureWorkspace.OpenFeatureClass(fileName);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"加载城镇开发边界图层失败: {ex.Message}", ex);
+            }
+        }
+
+        // Helper method to find the best matching field name
+        private int FindBestMatchIndex(ComboBox.ObjectCollection items, string[] searchTerms)
+        {
+            foreach (string term in searchTerms)
+            {
+                for (int i = 0; i < items.Count; i++)
+                {
+                    string item = items[i].ToString();
+                    if (item.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        return i;
+                    }
+                }
+            }
+            return -1; // No match found
         }
 
         private void btnPreview_Click(object sender, EventArgs e)
         {
-            // 执行预览逻辑
-            UpdateStatus("正在生成预览...");
-            progressBar.Value = 50;
+            try
+            {
+                // 验证输入
+                if (lcxzgxFeatureClass == null)
+                {
+                    MessageBox.Show("请先加载林草现状图层", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
-            // 模拟预览数据
-            previewData = new DataTable();
-            previewData.Columns.Add("图斑编号");
-            previewData.Columns.Add("地类");
-            previewData.Columns.Add("土地权属");
-            previewData.Columns.Add("面积");
+                if (chkCollectiveInBoundary.Checked && czkfbjFeatureClass == null)
+                {
+                    MessageBox.Show("启用了\"集体林在城镇开发边界内\"筛选条件，请先加载城镇开发边界图层",
+                        "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
-            // 添加示例数据
-            previewData.Rows.Add("TB001", "林地", "国有", "10.5");
-            previewData.Rows.Add("TB002", "林地", "集体", "8.2");
+                UpdateStatus("正在生成预览...");
+                progressBar.Value = 10;
 
-            dgvPreview.DataSource = previewData;
-            lblPreviewCount.Text = $"预览结果：{previewData.Rows.Count} 个图斑";
+                // 构建查询条件
+                string landTypeField = cmbLandTypeField.SelectedItem?.ToString();
+                string landOwnerField = cmbLandOwnerField.SelectedItem?.ToString();
 
-            progressBar.Value = 100;
-            UpdateStatus("预览完成");
+                if (string.IsNullOrEmpty(landTypeField) || string.IsNullOrEmpty(landOwnerField))
+                {
+                    MessageBox.Show("请选择地类字段和土地权属字段", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                string whereClause = "";
+                List<string> forestConditions = new List<string>();
+
+                // 处理筛选条件：
+                // 1. 地类为林地且土地权属为国有的图斑
+                // 2. 地类为林地且土地权属为集体(位于城镇开发边界内的部分由后续空间查询处理)
+                if (chkForestLand.Checked)
+                {
+                    // 构建林地条件
+                    string forestCondition = $"{landTypeField} LIKE '03%'";
+
+                    if (chkStateOwned.Checked)
+                    {
+                        // 条件1：林地且国有
+                        forestConditions.Add($"({forestCondition} AND {landOwnerField} = '20')");
+                    }
+
+                    // 条件2：林地且集体 - 这里先选出所有集体林图斑，后续通过空间查询过滤城镇开发边界内的部分
+                    if (chkCollectiveInBoundary.Checked)
+                    {
+                        forestConditions.Add($"({forestCondition} AND {landOwnerField} = '30')");
+                    }
+                }
+
+                // 将条件组合为SQL语句 - 使用OR连接两个不同子条件
+                if (forestConditions.Count > 0)
+                {
+                    whereClause = string.Join(" OR ", forestConditions);
+                }
+
+                // 创建查询过滤器
+                IQueryFilter queryFilter = new QueryFilterClass();
+                if (!string.IsNullOrEmpty(whereClause))
+                {
+                    queryFilter.WhereClause = whereClause;
+                }
+
+                progressBar.Value = 30;
+                UpdateStatus("正在执行查询...");
+
+                // 创建数据表
+                previewData = new DataTable();
+                previewData.Columns.Add("图斑编号");
+                previewData.Columns.Add("地类");
+                previewData.Columns.Add("土地权属");
+                previewData.Columns.Add("面积(公顷)"); // 将字段名更改为更明确的标识
+
+                // 设置最大预览记录数
+                const int MAX_PREVIEW_COUNT = 5000;
+                int totalCount = 0; // 总记录数
+                int processedCount = 0; // 已处理记录数
+
+                // 执行查询
+                IFeatureCursor cursor = null;
+                IFeature feature = null;
+
+                try
+                {
+                    cursor = lcxzgxFeatureClass.Search(queryFilter, false);
+
+                    progressBar.Value = 50;
+                    UpdateStatus("正在加载预览数据...");
+
+                    // 预先查找字段索引，避免重复查找
+                    int tbdhIndex = lcxzgxFeatureClass.FindField("TBDH");
+                    if (tbdhIndex == -1) tbdhIndex = lcxzgxFeatureClass.FindField("BSM");
+                    if (tbdhIndex == -1) tbdhIndex = lcxzgxFeatureClass.FindField("OBJECTID");
+
+                    int dlmcIndex = lcxzgxFeatureClass.FindField(landTypeField);
+                    int tdqsIndex = lcxzgxFeatureClass.FindField(landOwnerField);
+                    
+                    // 使用指定的字段名查找图斑面积和土地权属
+                    int tbmjIndex = lcxzgxFeatureClass.FindField("TBMJ");
+                    int qsxzIndex = lcxzgxFeatureClass.FindField("QSXZ");
+                    
+                    // 如果找不到指定的面积字段，尝试使用其他常用字段名
+                    if (tbmjIndex == -1)
+                    {
+                        tbmjIndex = lcxzgxFeatureClass.FindField("MJ");
+                        if (tbmjIndex == -1) tbmjIndex = lcxzgxFeatureClass.FindField("AREA");
+                        if (tbmjIndex == -1) tbmjIndex = lcxzgxFeatureClass.FindField("面积");
+                    }
+                    
+                    // 如果找不到指定的权属字段，尝试使用土地权属字段
+                    if (qsxzIndex == -1 && tdqsIndex != -1)
+                    {
+                        qsxzIndex = tdqsIndex;
+                    }
+
+                    while ((feature = cursor.NextFeature()) != null)
+                    {
+                        totalCount++;
+
+                        bool shouldAdd = false;
+
+                        // 获取土地权属值 - 优先使用QSXZ字段
+                        string ownerValue = "";
+                        if (qsxzIndex != -1)
+                        {
+                            ownerValue = feature.get_Value(qsxzIndex)?.ToString() ?? "";
+                        }
+                        else if (tdqsIndex != -1)
+                        {
+                            ownerValue = feature.get_Value(tdqsIndex)?.ToString() ?? "";
+                        }
+                        
+                        // 如果是国有林地，直接添加
+                        if (ownerValue == "1" || ownerValue == "20") // 1和20都可能表示国有
+                        {
+                            shouldAdd = true;
+                        }
+                        // 如果是集体林地且需要检查是否在城镇开发边界内
+                        else if ((ownerValue == "2" || ownerValue == "30") && chkCollectiveInBoundary.Checked && czkfbjFeatureClass != null) // 2和30都可能表示集体
+                        {
+                            // 执行空间查询，检查是否在城镇开发边界内
+                            if (IsFeatureInBoundary(feature))
+                            {
+                                shouldAdd = true;
+                            }
+                        }
+
+                        // 如果符合条件且未超过最大预览数量限制，则添加到预览
+                        if (shouldAdd && processedCount < MAX_PREVIEW_COUNT)
+                        {
+                            DataRow row = previewData.NewRow();
+
+                            // 直接获取字段值，不做计算处理
+                            row["图斑编号"] = tbdhIndex != -1 ? feature.get_Value(tbdhIndex)?.ToString() ?? feature.OID.ToString() : feature.OID.ToString();
+                            row["地类"] = dlmcIndex != -1 ? feature.get_Value(dlmcIndex)?.ToString() ?? "" : "";
+
+                            // 土地权属字段 - 优先使用QSXZ字段
+                            string qsValue = ownerValue;
+
+                            // 土地权属代码转换 - 保留简单的转换逻辑以提高可读性
+                            switch (qsValue)
+                            {
+                                case "1":
+                                case "20":
+                                    row["土地权属"] = "国有";
+                                    break;
+                                case "2":
+                                case "30":
+                                    row["土地权属"] = "集体";
+                                    break;
+                                default:
+                                    row["土地权属"] = qsValue;
+                                    break;
+                            }
+
+                            // 面积 - 直接使用TBMJ字段
+                            if (tbmjIndex != -1)
+                            {
+                                object mjValue = feature.get_Value(tbmjIndex);
+                                if (mjValue != null)
+                                {
+                                    // 处理面积值，确保它是有效的数字
+                                    if (mjValue is double || mjValue is float || mjValue is decimal)
+                                    {
+                                        // 直接显示字段值，假设单位已经是公顷
+                                        row["面积(公顷)"] = Convert.ToDouble(mjValue).ToString("F2");
+                                    }
+                                    else
+                                    {
+                                        // 尝试解析为数字
+                                        if (double.TryParse(mjValue.ToString(), out double mjDouble))
+                                        {
+                                            row["面积(公顷)"] = mjDouble.ToString("F2");
+                                        }
+                                        else
+                                        {
+                                            row["面积(公顷)"] = mjValue.ToString();
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    row["面积(公顷)"] = "";
+                                }
+                            }
+                            else
+                            {
+                                row["面积(公顷)"] = "";
+                            }
+
+                            previewData.Rows.Add(row);
+                            processedCount++;
+                        }
+
+                        // 释放COM对象
+                        if (feature != null)
+                        {
+                            System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                            feature = null;
+                        }
+
+                        // 每处理100条记录更新一次进度
+                        if (totalCount % 100 == 0)
+                        {
+                            progressBar.Value = 50 + Math.Min((totalCount / 100), 40);
+                            UpdateStatus($"正在加载数据: 已处理 {totalCount} 条记录...");
+                            Application.DoEvents();
+                        }
+
+                        // 如果已经超过最大预览数量且找到了足够满足条件的记录，则提前结束循环
+                        if (totalCount > MAX_PREVIEW_COUNT * 2 && processedCount >= MAX_PREVIEW_COUNT)
+                        {
+                            break;
+                        }
+                    }
+                }
+                finally
+                {
+                    // 确保释放资源
+                    if (feature != null)
+                    {
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                    }
+                    if (cursor != null)
+                    {
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                    }
+                }
+
+                // 显示数据
+                dgvPreview.DataSource = previewData;
+
+                // 更新显示信息
+                if (totalCount > processedCount)
+                {
+                    lblPreviewCount.Text = $"预览结果：{processedCount}/{totalCount} 个图斑 (仅显示前 {MAX_PREVIEW_COUNT} 个)";
+                }
+                else
+                {
+                    lblPreviewCount.Text = $"预览结果：{processedCount} 个图斑";
+                }
+
+                progressBar.Value = 100;
+                UpdateStatus("预览生成完成");
+
+                // 强制垃圾回收
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+            catch (OutOfMemoryException ex)
+            {
+                MessageBox.Show($"内存不足，无法处理此数量的图斑。请减少筛选范围后重试。\n\n错误详情: {ex.Message}",
+                    "内存不足", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                UpdateStatus("预览生成失败 - 内存不足");
+                progressBar.Value = 0;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"生成预览时出错: {ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                UpdateStatus("预览生成失败");
+                progressBar.Value = 0;
+            }
+        }
+
+        // 检查要素是否在城镇开发边界内
+        private bool IsFeatureInBoundary(IFeature feature)
+        {
+            try
+            {
+                // 空间过滤器
+                ISpatialFilter spatialFilter = new SpatialFilterClass();
+                spatialFilter.Geometry = feature.Shape;
+                spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
+
+                // 查询城镇开发边界
+                IFeatureCursor boundaryCursor = czkfbjFeatureClass.Search(spatialFilter, false);
+                IFeature boundaryFeature = boundaryCursor.NextFeature();
+
+                // 如果找到任何相交的边界要素，则返回true
+                return boundaryFeature != null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"空间查询出错: {ex.Message}");
+                return false;
+            }
+        }
+
+        // 在地图上高亮显示筛选出的要素
+        private void HighlightFeaturesOnMap(List<IFeature> features)
+        {
+            try
+            {
+                // 这里实现与ArcMap交互的代码，将筛选出的要素在地图上高亮显示
+                // 通常涉及获取当前地图文档和图层，然后设置选择集
+                // 此部分需要根据具体的ArcObjects环境实现
+                
+                // 示例代码（需要根据实际ArcObjects环境调整）
+                 //IActiveView activeView = (ArcMap.Document.FocusMap as IActiveView);
+                 //IMap map = activeView.FocusMap;
+                 //map.ClearSelection();
+                
+                 //foreach (IFeature feature in features)
+                 //{
+                 //    map.SelectFeature(lcxzgxFeatureLayer, feature);
+                 //}
+                
+                 //activeView.PartialRefresh(esriViewDrawPhase.esriViewGeoSelection, null, null);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"高亮显示要素出错: {ex.Message}");
+                // 这里不抛出异常，因为高亮显示失败不应阻止其他操作
+            }
         }
 
         private void InitializeMappingGrid()
@@ -180,7 +634,7 @@ namespace ForestResourcePlugin
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     // 加载映射模板逻辑
-                    UpdateStatus($"已加载模板：{Path.GetFileName(dialog.FileName)}");
+                    UpdateStatus($"已加载模板：{System.IO.Path.GetFileName(dialog.FileName)}");
                 }
             }
         }
@@ -194,7 +648,7 @@ namespace ForestResourcePlugin
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     // 保存映射模板逻辑
-                    UpdateStatus($"模板已保存：{Path.GetFileName(dialog.FileName)}");
+                    UpdateStatus($"模板已保存：{System.IO.Path.GetFileName(dialog.FileName)}");
                 }
             }
         }
