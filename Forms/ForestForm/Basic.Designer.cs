@@ -20,7 +20,7 @@ namespace ForestResourcePlugin
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabDataSource = new System.Windows.Forms.TabPage();
             this.groupBoxFiles = new System.Windows.Forms.GroupBox();
-            this.btnRefreshLayers = new System.Windows.Forms.Button(); // 添加刷新按钮
+            this.btnRefreshLayers = new System.Windows.Forms.Button();
             this.btnBrowseLCXZGX = new System.Windows.Forms.Button();
             this.btnBrowseCZKFBJ = new System.Windows.Forms.Button();
             this.btnBrowseOutput = new System.Windows.Forms.Button();
@@ -127,7 +127,7 @@ namespace ForestResourcePlugin
             this.groupBoxFiles.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxFiles.Name = "groupBoxFiles";
             this.groupBoxFiles.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBoxFiles.Size = new System.Drawing.Size(1170, 200); // 增加高度以容纳刷新按钮
+            this.groupBoxFiles.Size = new System.Drawing.Size(1170, 200);
             this.groupBoxFiles.TabIndex = 0;
             this.groupBoxFiles.TabStop = false;
             this.groupBoxFiles.Text = "文件选择";
@@ -244,7 +244,7 @@ namespace ForestResourcePlugin
             this.groupBoxOptions.Controls.Add(this.chkCreateBackup);
             this.groupBoxOptions.Controls.Add(this.chkGenerateReport);
             this.groupBoxOptions.Controls.Add(this.lblBufferDistance);
-            this.groupBoxOptions.Location = new System.Drawing.Point(9, 217); // 调整位置
+            this.groupBoxOptions.Location = new System.Drawing.Point(9, 217);
             this.groupBoxOptions.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxOptions.Name = "groupBoxOptions";
             this.groupBoxOptions.Padding = new System.Windows.Forms.Padding(4);
@@ -310,7 +310,7 @@ namespace ForestResourcePlugin
             // 
             this.groupBoxCoordSystem.Controls.Add(this.cmbCoordSystem);
             this.groupBoxCoordSystem.Controls.Add(this.lblCoordSystem);
-            this.groupBoxCoordSystem.Location = new System.Drawing.Point(609, 217); // 调整位置
+            this.groupBoxCoordSystem.Location = new System.Drawing.Point(609, 217);
             this.groupBoxCoordSystem.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxCoordSystem.Name = "groupBoxCoordSystem";
             this.groupBoxCoordSystem.Padding = new System.Windows.Forms.Padding(4);
@@ -667,6 +667,7 @@ namespace ForestResourcePlugin
             this.btnClose.TabIndex = 4;
             this.btnClose.Text = "关闭";
             this.btnClose.UseVisualStyleBackColor = true;
+            //this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
             // Basic
             // 

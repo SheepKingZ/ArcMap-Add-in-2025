@@ -1415,30 +1415,262 @@ namespace ForestResourcePlugin
             btnCancel.Enabled = true;
             progressBar.Value = 0;
 
-            UpdateStatus("开始处理数据...");
-
-            // 这里实现实际的ArcObjects处理逻辑
-            // 1. 读取林草现状图层
-            // 2. 读取城镇开发边界图层
-            // 3. 执行空间查询和属性筛选
-            // 4. 创建结果要素类
-            // 5. 执行字段映射
-
-            // 模拟处理进度
-            for (int i = 0; i <= 100; i += 10)
+            try
             {
-                progressBar.Value = i;
-                UpdateStatus($"处理进度：{i}%");
-                Application.DoEvents();
-                System.Threading.Thread.Sleep(200);
+                UpdateStatus("开始处理数据...");
+                progressBar.Value = 5;
+
+                // 1. 验证字段映射
+                if (!ValidateFieldMapping())
+                {
+                    return;
+                }
+
+                progressBar.Value = 10;
+                UpdateStatus("正在构建查询条件...");
+
+                // 2. 构建查询条件
+                string landTypeField = cmbLandTypeField.SelectedItem?.ToString();
+                string landOwnerField = cmbLandOwnerField.SelectedItem?.ToString();
+                
+                string whereClause = BuildWhereClause(landTypeField, landOwnerField);
+                
+                progressBar.Value = 20;
+                UpdateStatus("正在查询符合条件的图斑...");
+
+                // 3. 查询符合条件的要素
+                List<IFeature> filteredFeatures = QueryFilteredFeatures(whereClause);
+                
+                if (filteredFeatures.Count == 0)
+                {
+                    MessageBox.Show("没有找到符合筛选条件的图斑", "处理结果", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                progressBar.Value = 40;
+                UpdateStatus($"找到 {filteredFeatures.Count} 个符合条件的图斑，正在创建输出文件...");
+
+                // 4. 创建输出Shapefile
+                string outputShapefilePath = System.IO.Path.Combine(txtOutputPath.Text, 
+                    $"ForestScope_{DateTime.Now:yyyyMMdd_HHmmss}.shp");
+
+                var exporter = new ShapefileExporter();
+                var fieldMappings = GetFieldMappingsFromGrid();
+
+                progressBar.Value = 50;
+                UpdateStatus("正在创建输出Shapefile结构...");
+
+                // 5. 执行导出
+                exporter.ExportToShapefile(
+                    filteredFeatures,
+                    lcxzgxFeatureClass,
+                    outputShapefilePath,
+                    fieldMappings,
+                    cmbCoordSystem.SelectedItem?.ToString(),
+                    (progress, message) => {
+                        this.Invoke(new Action(() => {
+                            progressBar.Value = 50 + (progress / 2); // 50-100的进度
+                            UpdateStatus(message);
+                        }));
+                    }
+                );
+
+                progressBar.Value = 100;
+                UpdateStatus("处理完成！");
+
+                // 6. 显示结果
+                string resultMessage = $"森林资源资产清查工作范围生成完成！\n\n" +
+                    $"处理结果：\n" +
+                    $"- 符合条件的图斑数量：{filteredFeatures.Count}\n" +
+                    $"- 输出文件：{outputShapefilePath}\n" +
+                    $"- 坐标系：{cmbCoordSystem.SelectedItem}\n" +
+                    $"- 字段映射数量：{fieldMappings.Count}";
+
+                MessageBox.Show(resultMessage, "处理完成", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // 询问是否打开输出文件夹
+                if (MessageBox.Show("是否打开输出文件夹？", "处理完成", 
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    System.Diagnostics.Process.Start("explorer.exe", txtOutputPath.Text);
+                }
+            }
+            catch (Exception ex)
+            {
+                progressBar.Value = 0;
+                UpdateStatus("处理失败");
+                MessageBox.Show($"处理过程中发生错误：\n{ex.Message}", "错误", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Debug.WriteLine($"ExecuteProcessing错误: {ex}");
+            }
+            finally
+            {
+                btnExecute.Enabled = true;
+                btnCancel.Enabled = false;
+            }
+        }
+
+        /// <summary>
+        /// 验证字段映射配置
+        /// </summary>
+        private bool ValidateFieldMapping()
+        {
+            if (mappingData == null || mappingData.Rows.Count == 0)
+            {
+                MessageBox.Show("请先配置字段映射", "验证失败", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
             }
 
-            UpdateStatus("处理完成！");
-            btnExecute.Enabled = true;
-            btnCancel.Enabled = false;
+            // 检查是否有必需字段未映射
+            var unmappedRequired = new List<string>();
+            foreach (DataRow row in mappingData.Rows)
+            {
+                string targetField = row["目标字段"].ToString();
+                string sourceField = row["源字段"].ToString();
+                string status = row["映射状态"].ToString();
 
-            MessageBox.Show("森林资源资产清查工作范围生成完成！", "处理完成",
-                          MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (IsRequiredField(targetField) && 
+                    (string.IsNullOrEmpty(sourceField) || status == "未映射"))
+                {
+                    unmappedRequired.Add(targetField);
+                }
+            }
+
+            if (unmappedRequired.Count > 0)
+            {
+                MessageBox.Show($"以下必需字段未映射：\n{string.Join(", ", unmappedRequired)}", 
+                    "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 构建WHERE查询条件
+        /// </summary>
+        private string BuildWhereClause(string landTypeField, string landOwnerField)
+        {
+            var conditions = new List<string>();
+
+            if (chkForestLand.Checked)
+            {
+                string forestCondition = $"{landTypeField} LIKE '03%'";
+
+                if (chkStateOwned.Checked)
+                {
+                    conditions.Add($"({forestCondition} AND {landOwnerField} = '20')");
+                }
+
+                if (chkCollectiveInBoundary.Checked)
+                {
+                    conditions.Add($"({forestCondition} AND {landOwnerField} = '30')");
+                }
+            }
+
+            return conditions.Count > 0 ? string.Join(" OR ", conditions) : "";
+        }
+
+        /// <summary>
+        /// 查询符合条件的要素
+        /// </summary>
+        private List<IFeature> QueryFilteredFeatures(string whereClause)
+        {
+            var features = new List<IFeature>();
+            IFeatureCursor cursor = null;
+            IFeature feature = null;
+
+            try
+            {
+                // 创建查询过滤器
+                IQueryFilter queryFilter = new QueryFilterClass();
+                if (!string.IsNullOrEmpty(whereClause))
+                {
+                    queryFilter.WhereClause = whereClause;
+                }
+
+                cursor = lcxzgxFeatureClass.Search(queryFilter, false);
+
+                while ((feature = cursor.NextFeature()) != null)
+                {
+                    bool shouldInclude = false;
+
+                    // 获取权属值进行进一步筛选
+                    string landOwnerField = cmbLandOwnerField.SelectedItem?.ToString();
+                    int ownerFieldIndex = lcxzgxFeatureClass.FindField(landOwnerField);
+                    
+                    if (ownerFieldIndex != -1)
+                    {
+                        string ownerValue = feature.get_Value(ownerFieldIndex)?.ToString() ?? "";
+
+                        // 国有林地直接包含
+                        if (chkStateOwned.Checked && (ownerValue == "1" || ownerValue == "20"))
+                        {
+                            shouldInclude = true;
+                        }
+                        // 集体林地需要检查是否在城镇开发边界内
+                        else if (chkCollectiveInBoundary.Checked && 
+                                (ownerValue == "2" || ownerValue == "30") && 
+                                czkfbjFeatureClass != null)
+                        {
+                            if (IsFeatureInBoundary(feature))
+                            {
+                                shouldInclude = true;
+                            }
+                        }
+                    }
+
+                    if (shouldInclude)
+                    {
+                        // 克隆要素以避免COM对象释放问题
+                        features.Add(feature);
+                        feature = null; // 防止在finally中重复释放
+                    }
+                    else if (feature != null)
+                    {
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                        feature = null;
+                    }
+                }
+            }
+            finally
+            {
+                if (feature != null)
+                {
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                }
+                if (cursor != null)
+                {
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                }
+            }
+
+            return features;
+        }
+
+        /// <summary>
+        /// 从映射表格获取字段映射配置
+        /// </summary>
+        private Dictionary<string, string> GetFieldMappingsFromGrid()
+        {
+            var mappings = new Dictionary<string, string>();
+
+            foreach (DataRow row in mappingData.Rows)
+            {
+                string targetField = row["目标字段"].ToString();
+                string sourceField = row["源字段"].ToString();
+                string status = row["映射状态"].ToString();
+
+                if (!string.IsNullOrEmpty(sourceField) && status == "已映射")
+                {
+                    mappings[targetField] = sourceField;
+                }
+            }
+
+            return mappings;
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
