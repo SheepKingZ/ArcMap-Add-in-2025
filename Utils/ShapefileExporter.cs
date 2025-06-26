@@ -55,48 +55,65 @@ namespace ForestResourcePlugin
             IWorkspaceFactory workspaceFactory = new ShapefileWorkspaceFactory();
             IFeatureWorkspace outputWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(outputDir, 0);
 
-            progressCallback?.Invoke(10, "正在创建字段结构...");
+            IFeatureClass outputFeatureClass = null;
 
-            // 创建输出要素类的字段
-            IFieldsEdit outputFields = CreateOutputFields(sourceFeatureClass, fieldMappings, features[0]);
-
-            progressCallback?.Invoke(15, "正在创建输出要素类...");
-
-            // 创建输出要素类
-            IFeatureClass outputFeatureClass = outputWorkspace.CreateFeatureClass(
-                fileName,
-                outputFields,
-                null, // UID
-                null, // CLSID
-                esriFeatureType.esriFTSimple,
-                "Shape", // geometry field name
-                "" // config keyword
-            );
-
-            progressCallback?.Invoke(20, "正在设置坐标系...");
-
-            // 设置坐标系（如果指定）
-            if (!string.IsNullOrEmpty(coordinateSystem))
+            try
             {
-                SetCoordinateSystem(outputFeatureClass, coordinateSystem);
+                progressCallback?.Invoke(10, "正在创建字段结构...");
+
+                // 创建输出要素类的字段
+                IFieldsEdit outputFields = CreateOutputFields(sourceFeatureClass, fieldMappings, features[0]);
+
+                progressCallback?.Invoke(15, "正在创建输出要素类...");
+
+                // 创建输出要素类
+                outputFeatureClass = outputWorkspace.CreateFeatureClass(
+                    fileName,
+                    outputFields,
+                    null, // UID
+                    null, // CLSID
+                    esriFeatureType.esriFTSimple,
+                    "Shape", // geometry field name
+                    "" // config keyword
+                );
+
+                progressCallback?.Invoke(20, "正在设置坐标系...");
+
+                // 设置坐标系（如果指定）
+                if (!string.IsNullOrEmpty(coordinateSystem))
+                {
+                    SetCoordinateSystem(outputFeatureClass, coordinateSystem);
+                }
+
+                progressCallback?.Invoke(25, "开始复制要素...");
+
+                // 复制要素
+                CopyFeatures(features, sourceFeatureClass, outputFeatureClass, fieldMappings, progressCallback);
+
+                progressCallback?.Invoke(100, $"成功导出 {features.Count} 个要素到 {outputPath}");
             }
-
-            progressCallback?.Invoke(25, "开始复制要素...");
-
-            // 复制要素
-            CopyFeatures(features, sourceFeatureClass, outputFeatureClass, fieldMappings, progressCallback);
-
-            progressCallback?.Invoke(100, $"成功导出 {features.Count} 个要素到 {outputPath}");
-
-            // 释放资源
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(outputFeatureClass);
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(outputWorkspace);
+            finally
+            {
+                // 释放资源
+                if (outputFeatureClass != null)
+                {
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(outputFeatureClass);
+                }
+                if (outputWorkspace != null)
+                {
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(outputWorkspace);
+                }
+                if (workspaceFactory != null)
+                {
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(workspaceFactory);
+                }
+            }
         }
 
         /// <summary>
         /// 创建输出字段结构
         /// </summary>
-        private IFieldsEdit CreateOutputFields(IFeatureClass sourceFeatureClass, 
+        private IFieldsEdit CreateOutputFields(IFeatureClass sourceFeatureClass,
             Dictionary<string, string> fieldMappings, IFeature sampleFeature)
         {
             IFieldsEdit outputFields = new FieldsClass();
@@ -111,19 +128,26 @@ namespace ForestResourcePlugin
             IFieldEdit shapeField = new FieldClass();
             shapeField.Name_2 = "Shape";
             shapeField.Type_2 = esriFieldType.esriFieldTypeGeometry;
-            
+
             // 设置几何定义
             IGeometryDefEdit geometryDef = new GeometryDefClass();
             geometryDef.GeometryType_2 = sourceFeatureClass.ShapeType;
             geometryDef.HasZ_2 = false;
             geometryDef.HasM_2 = false;
+
+            // 复制源要素类的空间参考
+            IGeoDataset sourceGeoDataset = (IGeoDataset)sourceFeatureClass;
+            if (sourceGeoDataset.SpatialReference != null)
+            {
+                geometryDef.SpatialReference_2 = sourceGeoDataset.SpatialReference;
+            }
+
             shapeField.GeometryDef_2 = geometryDef;
-            
             outputFields.AddField(shapeField);
 
             // 添加映射的字段
             IFields sourceFields = sourceFeatureClass.Fields;
-            
+
             foreach (var mapping in fieldMappings)
             {
                 string targetFieldName = mapping.Key;
@@ -137,20 +161,20 @@ namespace ForestResourcePlugin
                     IFieldEdit targetField = new FieldClass();
 
                     // 设置目标字段属性
-                    targetField.Name_2 = targetFieldName;
+                    targetField.Name_2 = ValidateFieldName(targetFieldName);
                     targetField.AliasName_2 = GetFieldDisplayName(targetFieldName);
                     targetField.Type_2 = sourceField.Type;
-                    
+
                     // 复制字段长度和精度
                     if (sourceField.Type == esriFieldType.esriFieldTypeString)
                     {
                         targetField.Length_2 = Math.Max(sourceField.Length, 50); // 确保足够的长度
                     }
-                    else if (sourceField.Type == esriFieldType.esriFieldTypeDouble || 
+                    else if (sourceField.Type == esriFieldType.esriFieldTypeDouble ||
                              sourceField.Type == esriFieldType.esriFieldTypeSingle)
                     {
-                        targetField.Precision_2 = sourceField.Precision;
-                        targetField.Scale_2 = sourceField.Scale;
+                        targetField.Precision_2 = sourceField.Precision > 0 ? sourceField.Precision : 18;
+                        targetField.Scale_2 = sourceField.Scale > 0 ? sourceField.Scale : 8;
                     }
 
                     targetField.IsNullable_2 = true;
@@ -178,40 +202,51 @@ namespace ForestResourcePlugin
 
                 foreach (IFeature sourceFeature in sourceFeatures)
                 {
-                    // 复制几何
-                    featureBuffer.Shape = sourceFeature.ShapeCopy;
-
-                    // 复制属性值
-                    foreach (var mapping in fieldMappings)
+                    try
                     {
-                        string targetFieldName = mapping.Key;
-                        string sourceFieldName = mapping.Value;
-
-                        int sourceFieldIndex = sourceFeatureClass.FindField(sourceFieldName);
-                        int targetFieldIndex = targetFeatureClass.FindField(targetFieldName);
-
-                        if (sourceFieldIndex != -1 && targetFieldIndex != -1)
+                        // 复制几何
+                        if (sourceFeature.Shape != null)
                         {
-                            object sourceValue = sourceFeature.get_Value(sourceFieldIndex);
-                            
-                            // 处理特殊值转换
-                            object targetValue = ConvertFieldValue(sourceValue, targetFieldName, sourceFieldName);
-                            
-                            featureBuffer.set_Value(targetFieldIndex, targetValue);
+                            featureBuffer.Shape = sourceFeature.ShapeCopy;
+                        }
+
+                        // 复制属性值
+                        foreach (var mapping in fieldMappings)
+                        {
+                            string targetFieldName = ValidateFieldName(mapping.Key);
+                            string sourceFieldName = mapping.Value;
+
+                            int sourceFieldIndex = sourceFeatureClass.FindField(sourceFieldName);
+                            int targetFieldIndex = targetFeatureClass.FindField(targetFieldName);
+
+                            if (sourceFieldIndex != -1 && targetFieldIndex != -1)
+                            {
+                                object sourceValue = sourceFeature.get_Value(sourceFieldIndex);
+
+                                // 处理特殊值转换
+                                object targetValue = ConvertFieldValue(sourceValue, targetFieldName, sourceFieldName);
+
+                                featureBuffer.set_Value(targetFieldIndex, targetValue);
+                            }
+                        }
+
+                        // 插入要素
+                        insertCursor.InsertFeature(featureBuffer);
+
+                        processedCount++;
+
+                        // 更新进度
+                        if (processedCount % 10 == 0 || processedCount == totalFeatures)
+                        {
+                            int percentage = 25 + (int)((processedCount / (double)totalFeatures) * 75);
+                            progressCallback?.Invoke(percentage,
+                                $"正在复制要素... ({processedCount}/{totalFeatures})");
                         }
                     }
-
-                    // 插入要素
-                    insertCursor.InsertFeature(featureBuffer);
-
-                    processedCount++;
-                    
-                    // 更新进度
-                    if (processedCount % 10 == 0 || processedCount == totalFeatures)
+                    catch (Exception ex)
                     {
-                        int percentage = 25 + (int)((processedCount / (double)totalFeatures) * 75);
-                        progressCallback?.Invoke(percentage, 
-                            $"正在复制要素... ({processedCount}/{totalFeatures})");
+                        System.Diagnostics.Debug.WriteLine($"复制要素时出错: {ex.Message}");
+                        // 继续处理下一个要素
                     }
                 }
 
@@ -242,35 +277,84 @@ namespace ForestResourcePlugin
                 return null;
             }
 
-            // 土地权属值转换
-            if (targetFieldName.Equals("TDQS", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                string strValue = sourceValue.ToString();
-                switch (strValue)
+                // 土地权属值转换
+                if (targetFieldName.Equals("TDQS", StringComparison.OrdinalIgnoreCase))
                 {
-                    case "1":
-                    case "20":
-                        return "国有";
-                    case "2":
-                    case "30":
-                        return "集体";
-                    default:
-                        return strValue;
+                    string strValue = sourceValue.ToString();
+                    switch (strValue)
+                    {
+                        case "1":
+                        case "20":
+                            return "国有";
+                        case "2":
+                        case "30":
+                            return "集体";
+                        default:
+                            return strValue;
+                    }
                 }
+
+                // 地类名称转换
+                if (targetFieldName.Equals("DLMC", StringComparison.OrdinalIgnoreCase))
+                {
+                    string strValue = sourceValue.ToString();
+                    if (strValue.StartsWith("03"))
+                    {
+                        return "林地";
+                    }
+                    return strValue;
+                }
+
+                // 面积字段处理
+                if (targetFieldName.Equals("MJ", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (sourceValue is double || sourceValue is float || sourceValue is decimal)
+                    {
+                        return Convert.ToDouble(sourceValue);
+                    }
+                    else if (double.TryParse(sourceValue.ToString(), out double mjValue))
+                    {
+                        return mjValue;
+                    }
+                }
+
+                return sourceValue;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"转换字段值时出错: {ex.Message}");
+                return sourceValue; // 转换失败时返回原值
+            }
+        }
+
+        /// <summary>
+        /// 验证并修正字段名称（Shapefile字段名有长度限制）
+        /// </summary>
+        private string ValidateFieldName(string fieldName)
+        {
+            if (string.IsNullOrEmpty(fieldName))
+            {
+                return "Field";
             }
 
-            // 地类名称转换
-            if (targetFieldName.Equals("DLMC", StringComparison.OrdinalIgnoreCase))
+            // Shapefile字段名最大10个字符
+            if (fieldName.Length > 10)
             {
-                string strValue = sourceValue.ToString();
-                if (strValue.StartsWith("03"))
-                {
-                    return "林地";
-                }
-                return strValue;
+                return fieldName.Substring(0, 10);
             }
 
-            return sourceValue;
+            // 移除无效字符
+            string validName = System.Text.RegularExpressions.Regex.Replace(fieldName, @"[^a-zA-Z0-9_]", "_");
+
+            // 确保以字母或下划线开头
+            if (!char.IsLetter(validName[0]) && validName[0] != '_')
+            {
+                validName = "_" + validName.Substring(1);
+            }
+
+            return validName;
         }
 
         /// <summary>
@@ -301,6 +385,9 @@ namespace ForestResourcePlugin
                 // 这里可以根据需要实现坐标系设置
                 // 由于设置坐标系比较复杂，这里暂时跳过
                 // 在实际应用中，可以通过ISpatialReferenceFactory来创建坐标系
+
+                System.Diagnostics.Debug.WriteLine($"坐标系设置请求: {coordinateSystemName}");
+                // 实际项目中可以根据coordinateSystemName创建相应的坐标系
             }
             catch (Exception ex)
             {

@@ -498,6 +498,7 @@ namespace ForestResourcePlugin
             this.btnPreview.Text = "…˙≥…‘§¿¿";
             this.btnPreview.UseVisualStyleBackColor = true;
             this.btnPreview.Click += new System.EventHandler(this.btnPreview_Click);
+            this.btnPreview.MouseCaptureChanged += new System.EventHandler(this.btnPreview_MouseCaptureChanged);
             // 
             // lblPreviewCount
             // 
@@ -667,7 +668,6 @@ namespace ForestResourcePlugin
             this.btnClose.TabIndex = 4;
             this.btnClose.Text = "πÿ±’";
             this.btnClose.UseVisualStyleBackColor = true;
-            //this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
             // Basic
             // 

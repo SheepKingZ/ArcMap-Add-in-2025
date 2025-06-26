@@ -1432,14 +1432,18 @@ namespace ForestResourcePlugin
                 // 2. 构建查询条件
                 string landTypeField = cmbLandTypeField.SelectedItem?.ToString();
                 string landOwnerField = cmbLandOwnerField.SelectedItem?.ToString();
-                
-                string whereClause = BuildWhereClause(landTypeField, landOwnerField);
-                
+
+                if (string.IsNullOrEmpty(landTypeField) || string.IsNullOrEmpty(landOwnerField))
+                {
+                    MessageBox.Show("请选择地类字段和土地权属字段", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 progressBar.Value = 20;
                 UpdateStatus("正在查询符合条件的图斑...");
 
-                // 3. 查询符合条件的要素
-                List<IFeature> filteredFeatures = QueryFilteredFeatures(whereClause);
+                // 3. 使用与 btnPreview 相同的筛选逻辑
+                var filteredFeatures = QueryFilteredFeaturesForExport(landTypeField, landOwnerField);
                 
                 if (filteredFeatures.Count == 0)
                 {
@@ -1482,10 +1486,10 @@ namespace ForestResourcePlugin
                 // 6. 显示结果
                 string resultMessage = $"森林资源资产清查工作范围生成完成！\n\n" +
                     $"处理结果：\n" +
-                    $"- 符合条件的图斑数量：{filteredFeatures.Count}\n" +
-                    $"- 输出文件：{outputShapefilePath}\n" +
-                    $"- 坐标系：{cmbCoordSystem.SelectedItem}\n" +
-                    $"- 字段映射数量：{fieldMappings.Count}";
+                    $"符合条件的图斑数量：{filteredFeatures.Count}\n" +
+                    $"输出文件：{outputShapefilePath}\n" +
+                    $"坐标系：{cmbCoordSystem.SelectedItem}\n" +
+                    $"字段映射数量：{fieldMappings.Count}";
 
                 MessageBox.Show(resultMessage, "处理完成", 
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -1510,6 +1514,130 @@ namespace ForestResourcePlugin
                 btnExecute.Enabled = true;
                 btnCancel.Enabled = false;
             }
+        }
+
+        /// <summary>
+        /// 查询符合条件的要素用于导出 - 使用与 btnPreview 相同的逻辑
+        /// </summary>
+        private List<IFeature> QueryFilteredFeaturesForExport(string landTypeField, string landOwnerField)
+        {
+            var features = new List<IFeature>();
+            IFeatureCursor cursor = null;
+            IFeature feature = null;
+
+            try
+            {
+                // 构建查询条件 - 与 btnPreview 相同的逻辑
+                string whereClause = "";
+                List<string> forestConditions = new List<string>();
+
+                if (chkForestLand.Checked)
+                {
+                    string forestCondition = $"{landTypeField} LIKE '03%'";
+
+                    if (chkStateOwned.Checked)
+                    {
+                        forestConditions.Add($"({forestCondition} AND {landOwnerField} = '20')");
+                    }
+
+                    if (chkCollectiveInBoundary.Checked)
+                    {
+                        forestConditions.Add($"({forestCondition} AND {landOwnerField} = '30')");
+                    }
+                }
+
+                if (forestConditions.Count > 0)
+                {
+                    whereClause = string.Join(" OR ", forestConditions);
+                }
+
+                // 创建查询过滤器
+                IQueryFilter queryFilter = new QueryFilterClass();
+                if (!string.IsNullOrEmpty(whereClause))
+                {
+                    queryFilter.WhereClause = whereClause;
+                }
+
+                cursor = lcxzgxFeatureClass.Search(queryFilter, false);
+
+                // 预先查找字段索引
+                int tdqsIndex = lcxzgxFeatureClass.FindField(landOwnerField);
+                int qsxzIndex = lcxzgxFeatureClass.FindField("QSXZ");
+                
+                if (qsxzIndex == -1 && tdqsIndex != -1)
+                {
+                    qsxzIndex = tdqsIndex;
+                }
+
+                int processedCount = 0;
+                while ((feature = cursor.NextFeature()) != null)
+                {
+                    bool shouldInclude = false;
+
+                    // 获取土地权属值 - 与 btnPreview 相同的逻辑
+                    string ownerValue = "";
+                    if (qsxzIndex != -1)
+                    {
+                        ownerValue = feature.get_Value(qsxzIndex)?.ToString() ?? "";
+                    }
+                    else if (tdqsIndex != -1)
+                    {
+                        ownerValue = feature.get_Value(tdqsIndex)?.ToString() ?? "";
+                    }
+                    
+                    // 国有林地直接添加
+                    if (chkStateOwned.Checked && (ownerValue == "20"))
+                    {
+                        shouldInclude = true;
+                    }
+                    // 集体林地需要检查是否在城镇开发边界内
+                    else if (chkCollectiveInBoundary.Checked && 
+                            (ownerValue == "30") && 
+                            czkfbjFeatureClass != null)
+                    {
+                        if (IsFeatureInBoundary(feature))
+                        {
+                            shouldInclude = true;
+                        }
+                    }
+
+                    if (shouldInclude)
+                    {
+                        // 将要素添加到列表，不释放 COM 对象
+                        features.Add(feature);
+                        feature = null; // 防止在 finally 中释放
+                    }
+                    else if (feature != null)
+                    {
+                        // 释放不需要的要素
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                        feature = null;
+                    }
+
+                    processedCount++;
+                    
+                    // 更新进度
+                    if (processedCount % 100 == 0)
+                    {
+                        UpdateStatus($"正在筛选图斑: 已处理 {processedCount} 条记录...");
+                        Application.DoEvents();
+                    }
+                }
+            }
+            finally
+            {
+                // 确保释放资源
+                if (feature != null)
+                {
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                }
+                if (cursor != null)
+                {
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                }
+            }
+
+            return features;
         }
 
         /// <summary>
@@ -1547,108 +1675,6 @@ namespace ForestResourcePlugin
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// 构建WHERE查询条件
-        /// </summary>
-        private string BuildWhereClause(string landTypeField, string landOwnerField)
-        {
-            var conditions = new List<string>();
-
-            if (chkForestLand.Checked)
-            {
-                string forestCondition = $"{landTypeField} LIKE '03%'";
-
-                if (chkStateOwned.Checked)
-                {
-                    conditions.Add($"({forestCondition} AND {landOwnerField} = '20')");
-                }
-
-                if (chkCollectiveInBoundary.Checked)
-                {
-                    conditions.Add($"({forestCondition} AND {landOwnerField} = '30')");
-                }
-            }
-
-            return conditions.Count > 0 ? string.Join(" OR ", conditions) : "";
-        }
-
-        /// <summary>
-        /// 查询符合条件的要素
-        /// </summary>
-        private List<IFeature> QueryFilteredFeatures(string whereClause)
-        {
-            var features = new List<IFeature>();
-            IFeatureCursor cursor = null;
-            IFeature feature = null;
-
-            try
-            {
-                // 创建查询过滤器
-                IQueryFilter queryFilter = new QueryFilterClass();
-                if (!string.IsNullOrEmpty(whereClause))
-                {
-                    queryFilter.WhereClause = whereClause;
-                }
-
-                cursor = lcxzgxFeatureClass.Search(queryFilter, false);
-
-                while ((feature = cursor.NextFeature()) != null)
-                {
-                    bool shouldInclude = false;
-
-                    // 获取权属值进行进一步筛选
-                    string landOwnerField = cmbLandOwnerField.SelectedItem?.ToString();
-                    int ownerFieldIndex = lcxzgxFeatureClass.FindField(landOwnerField);
-                    
-                    if (ownerFieldIndex != -1)
-                    {
-                        string ownerValue = feature.get_Value(ownerFieldIndex)?.ToString() ?? "";
-
-                        // 国有林地直接包含
-                        if (chkStateOwned.Checked && (ownerValue == "1" || ownerValue == "20"))
-                        {
-                            shouldInclude = true;
-                        }
-                        // 集体林地需要检查是否在城镇开发边界内
-                        else if (chkCollectiveInBoundary.Checked && 
-                                (ownerValue == "2" || ownerValue == "30") && 
-                                czkfbjFeatureClass != null)
-                        {
-                            if (IsFeatureInBoundary(feature))
-                            {
-                                shouldInclude = true;
-                            }
-                        }
-                    }
-
-                    if (shouldInclude)
-                    {
-                        // 克隆要素以避免COM对象释放问题
-                        features.Add(feature);
-                        feature = null; // 防止在finally中重复释放
-                    }
-                    else if (feature != null)
-                    {
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
-                        feature = null;
-                    }
-                }
-            }
-            finally
-            {
-                if (feature != null)
-                {
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
-                }
-                if (cursor != null)
-                {
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
-                }
-            }
-
-            return features;
         }
 
         /// <summary>
@@ -1741,6 +1767,11 @@ namespace ForestResourcePlugin
                 System.Diagnostics.Debug.WriteLine($"处理筛选条件变化时出错: {ex.Message}");
                 UpdateStatus("处理筛选条件变化时出错");
             }
+        }
+
+        private void btnPreview_MouseCaptureChanged(object sender, EventArgs e)
+        {
+
         }
     }
 
