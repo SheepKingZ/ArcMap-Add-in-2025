@@ -101,45 +101,43 @@ namespace TestArcMapAddin2.Forms
 
         private void UpdateButtonStates()
         {
-            bool basicDataReady = SharedWorkflowState.IsBasicDataPrepared;
+            // Remove basic data preparation requirement - all buttons can now be used independently
+            // 移除基础数据准备要求 - 所有按钮现在都可以独立使用
 
-            // 根据基础数据是否准备好启用/禁用各个选项卡中的控件
-            // 在实际场景中，这会更加精细化，取决于前序步骤的完成情况
+            // 森林选项卡按钮 - 移除基础数据依赖，允许独立使用
+            btnForestExtractScope.Enabled = true;
+            btnForestCreateBasemapLinkPrice.Enabled = true; // 移除 forestTasksCompleted["extractScope"] 依赖
+            btnForestSupplementPrice.Enabled = true; // 移除 forestTasksCompleted["createBasemapLink"] 依赖
+            
+            // 启用之前被注释的森林工作流按钮
+            //if (btnForestCalculateValue != null)
+            //    btnForestCalculateValue.Enabled = true;
+            //if (btnForestCleanQA != null)
+            //    btnForestCleanQA.Enabled = true;
+            //if (btnForestBuildDBTables != null)
+            //    btnForestBuildDBTables.Enabled = true;
 
-            // 森林选项卡按钮
-            btnForestExtractScope.Enabled = basicDataReady;
-            btnForestCreateBasemapLinkPrice.Enabled = basicDataReady && forestTasksCompleted["extractScope"];
-            btnForestSupplementPrice.Enabled = basicDataReady && forestTasksCompleted["createBasemapLink"];
-            //btnForestCalculateValue.Enabled = basicDataReady && forestTasksCompleted["supplementPrice"];
-            //btnForestCleanQA.Enabled = basicDataReady && forestTasksCompleted["calculateValue"];
-            //btnForestBuildDBTables.Enabled = basicDataReady && forestTasksCompleted["cleanQA"];
+            // 草地选项卡按钮 - 移除基础数据依赖，允许独立使用
+            btnGrasslandExtractScope.Enabled = true;
+            btnGrasslandCreateBasemapLinkPrice.Enabled = true; // 移除依赖
+            btnGrasslandSupplementPrice.Enabled = true; // 移除依赖
+            btnGrasslandCalculateValue.Enabled = true; // 移除依赖
+            btnGrasslandCleanQA.Enabled = true; // 移除依赖
+            btnGrasslandBuildDBTables.Enabled = true; // 移除依赖
 
-            // 草地选项卡按钮
-            btnGrasslandExtractScope.Enabled = basicDataReady;
-            btnGrasslandCreateBasemapLinkPrice.Enabled = basicDataReady && grasslandTasksCompleted["extractScope"];
-            btnGrasslandSupplementPrice.Enabled = basicDataReady && grasslandTasksCompleted["createBasemapLink"];
-            btnGrasslandCalculateValue.Enabled = basicDataReady && grasslandTasksCompleted["calculateValue"];
-            btnGrasslandCleanQA.Enabled = basicDataReady && grasslandTasksCompleted["cleanQA"];
-            btnGrasslandBuildDBTables.Enabled = basicDataReady && grasslandTasksCompleted["cleanQA"];
+            // 湿地选项卡按钮 - 移除基础数据依赖，允许独立使用
+            btnWetlandExtractScopeBasemap.Enabled = true;
+            btnWetlandCleanQA.Enabled = true; // 移除依赖
+            btnWetlandBuildDBTables.Enabled = true; // 移除依赖
 
-            // 湿地选项卡按钮
-            btnWetlandExtractScopeBasemap.Enabled = basicDataReady;
-            btnWetlandCleanQA.Enabled = basicDataReady && wetlandTasksCompleted["extractScopeBasemap"];
-            btnWetlandBuildDBTables.Enabled = basicDataReady && wetlandTasksCompleted["cleanQA"];
-
-            // 成果输出选项卡按钮
-            bool forestComplete = basicDataReady && forestTasksCompleted["buildDBTables"];
-            bool grasslandComplete = basicDataReady && grasslandTasksCompleted["buildDBTables"];
-            bool wetlandComplete = basicDataReady && wetlandTasksCompleted["buildDBTables"];
-            bool allResourcesComplete = forestComplete && grasslandComplete && wetlandComplete;
-
-            btnOverallQualityCheck.Enabled = allResourcesComplete;
-            btnStatisticalAggregation.Enabled = allResourcesComplete && outputTasksCompleted["overallQualityCheck"];
-            btnDataAnalysis.Enabled = allResourcesComplete && outputTasksCompleted["statisticalAggregation"];
-            btnExportDatasetDB.Enabled = allResourcesComplete && outputTasksCompleted["dataAnalysis"];
-            btnExportSummaryTables.Enabled = allResourcesComplete && outputTasksCompleted["exportDatasetDB"];
-            btnGenerateReport.Enabled = allResourcesComplete && outputTasksCompleted["exportSummaryTables"];
-            btnGenerateThematicMaps.Enabled = allResourcesComplete && outputTasksCompleted["generateReport"];
+            // 成果输出选项卡按钮 - 移除工作流完成依赖，允许独立使用
+            btnOverallQualityCheck.Enabled = true;
+            btnStatisticalAggregation.Enabled = true; // 移除依赖
+            btnDataAnalysis.Enabled = true; // 移除依赖
+            btnExportDatasetDB.Enabled = true; // 移除依赖
+            btnExportSummaryTables.Enabled = true; // 移除依赖
+            btnGenerateReport.Enabled = true; // 移除依赖
+            btnGenerateThematicMaps.Enabled = true; // 移除依赖
         }
 
         private void UpdateWorkflowState()
@@ -211,27 +209,17 @@ namespace TestArcMapAddin2.Forms
         // 森林资源处理程序
         private void BtnForestExtractScope_Click(object sender, EventArgs e)
         {
-            UpdateProgress("正在提取森林工作范围...");
-
-            // 显示流程图
-            forestWorkflowImage.Visible = true;
-
-            // 待实现：实际逻辑
-            forestTasksCompleted["extractScope"] = true;
-            lblForestProcessingStatus.Text = "森林工作范围提取完成";
-            lblForestProcessingStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("森林工作范围提取完成");
-
-            // 更新工作流状态和按钮状态
-            UpdateWorkflowState();
-            UpdateButtonStates();
-
-            // 更新详细结果文本
-            forestResultsTextBox.AppendText("=== 森林工作范围提取 ===\r\n");
-            forestResultsTextBox.AppendText("- 基于林草湿荒普查数据提取范围\r\n");
-            forestResultsTextBox.AppendText("- 包含国有林地及城镇开发边界内集体林地\r\n");
-            forestResultsTextBox.AppendText("- 符合条件图斑数量: 283\r\n");
-            forestResultsTextBox.AppendText("- 总面积: 1265.42公顷\r\n\r\n");
+            try
+            {
+                // Create and show the Basic form as a dialog
+                Basic basicForm = new Basic();
+                basicForm.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打开基础数据窗口时出错: {ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void BtnForestCreateBasemapLinkPrice_Click(object sender, EventArgs e)
@@ -249,12 +237,12 @@ namespace TestArcMapAddin2.Forms
             UpdateButtonStates();
 
             // 更新详细结果文本
-            forestResultsTextBox.AppendText("=== 森林底图与价格关联 ===\r\n");
-            forestResultsTextBox.AppendText("- 工作范围与林地分等数据关联完成\r\n");
-            forestResultsTextBox.AppendText("- 工作范围与林地定级数据关联完成\r\n");
-            forestResultsTextBox.AppendText("- 基准地价与图斑空间挂接完成\r\n");
-            forestResultsTextBox.AppendText("- 关联成功: 256图斑\r\n");
-            forestResultsTextBox.AppendText("- 关联失败: 27图斑\r\n\r\n");
+            //forestResultsTextBox.AppendText("=== 森林底图与价格关联 ===\r\n");
+            //forestResultsTextBox.AppendText("- 工作范围与林地分等数据关联完成\r\n");
+            //forestResultsTextBox.AppendText("- 工作范围与林地定级数据关联完成\r\n");
+            //forestResultsTextBox.AppendText("- 基准地价与图斑空间挂接完成\r\n");
+            //forestResultsTextBox.AppendText("- 关联成功: 256图斑\r\n");
+            //forestResultsTextBox.AppendText("- 关联失败: 27图斑\r\n\r\n");
         }
 
         private void BtnForestSupplementPrice_Click(object sender, EventArgs e)
@@ -530,16 +518,10 @@ namespace TestArcMapAddin2.Forms
 
         private void BtnHelp_Click(object sender, EventArgs e)
         {
-            // 复制自原始 MainProcessForm
+            // 更新帮助文本，移除基础数据准备要求
             string helpText = @"广东省全民所有自然资源（森林、草地、湿地）资产清查工具使用说明
 
-基础数据准备 (通过 '基础数据准备' 窗口完成)
-1. 选择工作空间：选择用于存放清查数据的File Geodatabase (.gdb)。
-2. 选择县区：选择需要进行清查的一个或多个县区。
-3. 加载前提数据：加载必要的背景数据。
-4. 创建县级空表：为选定县区创建数据表结构。
-
---- 以下操作在本窗口进行 ---
+注意：所有功能现在都可以独立使用，无需先完成基础数据准备步骤。
 
 森林资源资产清查
 1. 提取森林工作范围：根据普查数据和开发边界，筛选国有林地及边界内集体林地。
@@ -549,8 +531,14 @@ namespace TestArcMapAddin2.Forms
 5. 森林数据清洗与质检：进行数据清洗和质量检查，确保符合技术规范。
 6. 森林库表构建：构建符合汇交规范的数据集、基础数表和统计表。
 
-草地资源资产清查流程类似于森林资源资产清查。
-湿地资源资产清查仅需进行实物量清查，不进行价值量核算。
+草地资源资产清查
+流程类似于森林资源资产清查，包含相同的六个步骤。
+
+湿地资源资产清查
+1. 制作湿地工作范围与底图：提取湿地范围并制作工作底图。
+2. 湿地数据清洗与质检：进行数据清洗和质量检查。
+3. 湿地库表构建：构建湿地相关数据表。
+注：湿地资源资产清查仅需进行实物量清查，不进行价值量核算。
 
 综合质检、统计与成果输出
 1. 综合质量检查：对森林、草地、湿地清查数据进行全面质检。
@@ -561,9 +549,9 @@ namespace TestArcMapAddin2.Forms
 6. 生成成果报告：生成工作总结报告和数据自检报告。
 7. 生成专题图：生成各类专题图。
 
-注意事项：
-- 请先完成'基础数据准备'窗口中的所有步骤。
-- 请尽量按步骤顺序执行。
+使用说明：
+- 所有按钮现在都可以独立使用，无需按特定顺序执行。
+- 建议按逻辑顺序执行以获得最佳结果，但不再强制要求。
 - 每个操作完成后会有相应提示。
 - 部分操作可能耗时较长，请耐心等待。";
 
@@ -605,17 +593,17 @@ namespace TestArcMapAddin2.Forms
                 "隐藏详细流程说明 ▲" : "显示详细流程说明 ▼";
             
             // Add code to display the Basic.cs window
-            try
-            {
-                // Create and show the Basic form as a dialog
-                Basic basicForm = new Basic();
-                basicForm.ShowDialog();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"打开基础数据窗口时出错: {ex.Message}", "错误", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            //try
+            //{
+            //    // Create and show the Basic form as a dialog
+            //    Basic basicForm = new Basic();
+            //    basicForm.ShowDialog();
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show($"打开基础数据窗口时出错: {ex.Message}", "错误", 
+            //        MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //}
         }
 
         private void forestStepLabel_Click(object sender, EventArgs e)

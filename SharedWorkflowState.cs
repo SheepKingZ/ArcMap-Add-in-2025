@@ -6,7 +6,7 @@ public static class SharedWorkflowState
     // 现有属性
     public static string WorkspacePath { get; set; }
     public static List<string> SelectedCounties { get; set; }
-    public static bool IsBasicDataPrepared { get; set; }
+    //public static bool IsBasicDataPrepared { get; set; }
     public static bool CountyEmptyTablesCreated { get; set; }
 
     // 以前的单个属性
@@ -27,6 +27,6 @@ public static class SharedWorkflowState
         PrerequisiteData1Path = "";
         PrerequisiteData2Path = "";
         CountyEmptyTablesCreated = false;
-        IsBasicDataPrepared = false;
+        //IsBasicDataPrepared = false;
     }
 }

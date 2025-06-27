@@ -681,252 +681,38 @@ namespace ForestResourcePlugin
                     return;
                 }
 
-                string whereClause = "";
-                List<string> forestConditions = new List<string>();
+                // **优化1: 构建更高效的SQL查询条件**
+                string optimizedWhereClause = BuildOptimizedWhereClause(landTypeField, landOwnerField);
+                
+                // **优化2: 设置合理的预览限制**
+                const int MAX_PREVIEW_COUNT = 1000; // 减少预览数量以提高性能
+                const int CHUNK_SIZE = 100; // 分块处理大小
 
-                // 处理筛选条件：
-                // 1. 地类为林地且土地权属为国有的图斑
-                // 2. 地类为林地且土地权属为集体(位于城镇开发边界内的部分由后续空间查询处理)
-                if (chkForestLand.Checked)
-                {
-                    // 构建林地条件
-                    string forestCondition = $"{landTypeField} LIKE '03%'";
-
-                    if (chkStateOwned.Checked)
-                    {
-                        // 条件1：林地且国有
-                        forestConditions.Add($"({forestCondition} AND {landOwnerField} = '20')");
-                    }
-
-                    // 条件2：林地且集体 - 这里先选出所有集体林图斑，后续通过空间查询过滤城镇开发边界内的部分
-                    if (chkCollectiveInBoundary.Checked)
-                    {
-                        forestConditions.Add($"({forestCondition} AND {landOwnerField} = '30')");
-                    }
-                }
-
-                // 将条件组合为SQL语句 - 使用OR连接两个不同子条件
-                if (forestConditions.Count > 0)
-                {
-                    whereClause = string.Join(" OR ", forestConditions);
-                }
-
-                // 创建查询过滤器
-                IQueryFilter queryFilter = new QueryFilterClass();
-                if (!string.IsNullOrEmpty(whereClause))
-                {
-                    queryFilter.WhereClause = whereClause;
-                }
-
+                UpdateStatus("正在执行优化查询...");
                 progressBar.Value = 30;
-                UpdateStatus("正在执行查询...");
 
-                // 创建数据表
-                previewData = new DataTable();
-                previewData.Columns.Add("图斑编号");
-                previewData.Columns.Add("地类");
-                previewData.Columns.Add("土地权属");
-                previewData.Columns.Add("面积(公顷)"); // 将字段名更改为更明确的标识
+                // **优化3: 使用优化后的查询和处理方法**
+                var previewResults = ExecuteOptimizedQuery(
+                    optimizedWhereClause, 
+                    landTypeField, 
+                    landOwnerField, 
+                    MAX_PREVIEW_COUNT, 
+                    CHUNK_SIZE
+                );
 
-                // 设置最大预览记录数
-                const int MAX_PREVIEW_COUNT = 5000;
-                int totalCount = 0; // 总记录数
-                int processedCount = 0; // 已处理记录数
-
-                // 执行查询
-                IFeatureCursor cursor = null;
-                IFeature feature = null;
-
-                try
-                {
-                    cursor = lcxzgxFeatureClass.Search(queryFilter, false);
-
-                    progressBar.Value = 50;
-                    UpdateStatus("正在加载预览数据...");
-
-                    // 预先查找字段索引，避免重复查找
-                    int tbdhIndex = lcxzgxFeatureClass.FindField("TBDH");
-                    if (tbdhIndex == -1) tbdhIndex = lcxzgxFeatureClass.FindField("BSM");
-                    if (tbdhIndex == -1) tbdhIndex = lcxzgxFeatureClass.FindField("OBJECTID");
-
-                    int dlmcIndex = lcxzgxFeatureClass.FindField(landTypeField);
-                    int tdqsIndex = lcxzgxFeatureClass.FindField(landOwnerField);
-                    
-                    // 使用指定的字段名查找图斑面积和土地权属
-                    int tbmjIndex = lcxzgxFeatureClass.FindField("TBMJ");
-                    int qsxzIndex = lcxzgxFeatureClass.FindField("QSXZ");
-                    
-                    // 如果找不到指定的面积字段，尝试使用其他常用字段名
-                    if (tbmjIndex == -1)
-                    {
-                        tbmjIndex = lcxzgxFeatureClass.FindField("MJ");
-                        if (tbmjIndex == -1) tbmjIndex = lcxzgxFeatureClass.FindField("AREA");
-                        if (tbmjIndex == -1) tbmjIndex = lcxzgxFeatureClass.FindField("面积");
-                    }
-                    
-                    // 如果找不到指定的权属字段，尝试使用土地权属字段
-                    if (qsxzIndex == -1 && tdqsIndex != -1)
-                    {
-                        qsxzIndex = tdqsIndex;
-                    }
-
-                    while ((feature = cursor.NextFeature()) != null)
-                    {
-                        totalCount++;
-
-                        bool shouldAdd = false;
-
-                        // 获取土地权属值 - 优先使用QSXZ字段
-                        string ownerValue = "";
-                        if (qsxzIndex != -1)
-                        {
-                            ownerValue = feature.get_Value(qsxzIndex)?.ToString() ?? "";
-                        }
-                        else if (tdqsIndex != -1)
-                        {
-                            ownerValue = feature.get_Value(tdqsIndex)?.ToString() ?? "";
-                        }
-                        
-                        // 如果是国有林地，直接添加
-                        if (ownerValue == "1" || ownerValue == "20") // 1和20都可能表示国有
-                        {
-                            shouldAdd = true;
-                        }
-                        // 如果是集体林地且需要检查是否在城镇开发边界内
-                        else if ((ownerValue == "2" || ownerValue == "30") && chkCollectiveInBoundary.Checked && czkfbjFeatureClass != null) // 2和30都可能表示集体
-                        {
-                            // 执行空间查询，检查是否在城镇开发边界内
-                            if (IsFeatureInBoundary(feature))
-                            {
-                                shouldAdd = true;
-                            }
-                        }
-
-                        // 如果符合条件且未超过最大预览数量限制，则添加到预览
-                        if (shouldAdd && processedCount < MAX_PREVIEW_COUNT)
-                        {
-                            DataRow row = previewData.NewRow();
-
-                            // 直接获取字段值，不做计算处理
-                            row["图斑编号"] = tbdhIndex != -1 ? feature.get_Value(tbdhIndex)?.ToString() ?? feature.OID.ToString() : feature.OID.ToString();
-                            row["地类"] = dlmcIndex != -1 ? feature.get_Value(dlmcIndex)?.ToString() ?? "" : "";
-
-                            // 土地权属字段 - 优先使用QSXZ字段
-                            string qsValue = ownerValue;
-
-                            // 土地权属代码转换 - 保留简单的转换逻辑以提高可读性
-                            switch (qsValue)
-                            {
-                                case "1":
-                                case "20":
-                                    row["土地权属"] = "国有";
-                                    break;
-                                case "2":
-                                case "30":
-                                    row["土地权属"] = "集体";
-                                    break;
-                                default:
-                                    row["土地权属"] = qsValue;
-                                    break;
-                            }
-
-                            // 面积 - 直接使用TBMJ字段
-                            if (tbmjIndex != -1)
-                            {
-                                object mjValue = feature.get_Value(tbmjIndex);
-                                if (mjValue != null)
-                                {
-                                    // 处理面积值，确保它是有效的数字
-                                    if (mjValue is double || mjValue is float || mjValue is decimal)
-                                    {
-                                        // 直接显示字段值，假设单位已经是公顷
-                                        row["面积(公顷)"] = Convert.ToDouble(mjValue).ToString("F2");
-                                    }
-                                    else
-                                    {
-                                        // 尝试解析为数字
-                                        if (double.TryParse(mjValue.ToString(), out double mjDouble))
-                                        {
-                                            row["面积(公顷)"] = mjDouble.ToString("F2");
-                                        }
-                                        else
-                                        {
-                                            row["面积(公顷)"] = mjValue.ToString();
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    row["面积(公顷)"] = "";
-                                }
-                            }
-                            else
-                            {
-                                row["面积(公顷)"] = "";
-                            }
-
-                            previewData.Rows.Add(row);
-                            processedCount++;
-                        }
-
-                        // 释放COM对象
-                        if (feature != null)
-                        {
-                            System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
-                            feature = null;
-                        }
-
-                        // 每处理100条记录更新一次进度
-                        if (totalCount % 100 == 0)
-                        {
-                            progressBar.Value = 50 + Math.Min((totalCount / 100), 40);
-                            UpdateStatus($"正在加载数据: 已处理 {totalCount} 条记录...");
-                            Application.DoEvents();
-                        }
-
-                        // 如果已经超过最大预览数量且找到了足够满足条件的记录，则提前结束循环
-                        if (totalCount > MAX_PREVIEW_COUNT * 2 && processedCount >= MAX_PREVIEW_COUNT)
-                        {
-                            break;
-                        }
-                    }
-                }
-                finally
-                {
-                    // 确保释放资源
-                    if (feature != null)
-                    {
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
-                    }
-                    if (cursor != null)
-                    {
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
-                    }
-                }
-
-                // 显示数据
-                dgvPreview.DataSource = previewData;
-
-                // 更新显示信息
-                if (totalCount > processedCount)
-                {
-                    lblPreviewCount.Text = $"预览结果：{processedCount}/{totalCount} 个图斑 (仅显示前 {MAX_PREVIEW_COUNT} 个)";
-                }
-                else
-                {
-                    lblPreviewCount.Text = $"预览结果：{processedCount} 个图斑";
-                }
+                // 显示结果
+                DisplayPreviewResults(previewResults, MAX_PREVIEW_COUNT);
 
                 progressBar.Value = 100;
                 UpdateStatus("预览生成完成");
 
-                // 强制垃圾回收
+                // **优化4: 主动内存管理**
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }
             catch (OutOfMemoryException ex)
             {
-                MessageBox.Show($"内存不足，无法处理此数量的图斑。请减少筛选范围后重试。\n\n错误详情: {ex.Message}",
+                MessageBox.Show($"内存不足，已减少预览数量。请检查筛选条件。\n\n错误详情: {ex.Message}",
                     "内存不足", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 UpdateStatus("预览生成失败 - 内存不足");
                 progressBar.Value = 0;
@@ -940,28 +726,444 @@ namespace ForestResourcePlugin
             }
         }
 
-        // 检查要素是否在城镇开发边界内
-        private bool IsFeatureInBoundary(IFeature feature)
+        // **新增方法: 构建优化的WHERE子句**
+        private string BuildOptimizedWhereClause(string landTypeField, string landOwnerField)
+        {
+            var conditions = new List<string>();
+
+            if (chkForestLand.Checked)
+            {
+                // 优化: 使用单一条件而不是多个OR条件
+                var subconditions = new List<string>();
+                
+                if (chkStateOwned.Checked)
+                {
+                    subconditions.Add($"{landOwnerField} = '20'");
+                }
+                
+                if (chkCollectiveInBoundary.Checked)
+                {
+                    subconditions.Add($"{landOwnerField} = '30'");
+                }
+
+                if (subconditions.Count > 0)
+                {
+                    string ownerCondition = subconditions.Count == 1 ? 
+                        subconditions[0] : 
+                        $"({string.Join(" OR ", subconditions)})";
+                    
+                    conditions.Add($"{landTypeField} LIKE '03%' AND {ownerCondition}");
+                }
+            }
+
+            return conditions.Count > 0 ? string.Join(" OR ", conditions) : "";
+        }
+
+        // **新增方法: 执行优化查询**
+        private PreviewQueryResult ExecuteOptimizedQuery(
+            string whereClause, 
+            string landTypeField, 
+            string landOwnerField, 
+            int maxCount, 
+            int chunkSize)
+        {
+            var result = new PreviewQueryResult();
+            
+            // 创建查询过滤器
+            IQueryFilter queryFilter = new QueryFilterClass();
+            if (!string.IsNullOrEmpty(whereClause))
+            {
+                queryFilter.WhereClause = whereClause;
+            }
+
+            // **优化: 预先获取字段索引**
+            var fieldIndices = GetFieldIndices(landTypeField, landOwnerField);
+            
+            // **优化: 缓存空间过滤器以提高性能**
+            ISpatialFilter cachedSpatialFilter = null;
+            if (chkCollectiveInBoundary.Checked && czkfbjFeatureClass != null)
+            {
+                cachedSpatialFilter = new SpatialFilterClass();
+                cachedSpatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
+            }
+
+            IFeatureCursor cursor = null;
+            try
+            {
+                cursor = lcxzgxFeatureClass.Search(queryFilter, false);
+                result = ProcessFeaturesInChunks(cursor, fieldIndices, cachedSpatialFilter, maxCount, chunkSize);
+            }
+            finally
+            {
+                if (cursor != null)
+                {
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                }
+            }
+
+            return result;
+        }
+
+        // **新增方法: 分块处理要素**
+        private PreviewQueryResult ProcessFeaturesInChunks(
+            IFeatureCursor cursor, 
+            FieldIndices fieldIndices, 
+            ISpatialFilter spatialFilter, 
+            int maxCount, 
+            int chunkSize)
+        {
+            var result = new PreviewQueryResult
+            {
+                PreviewData = new DataTable()
+            };
+
+            // 初始化数据表结构
+            result.PreviewData.Columns.Add("图斑编号");
+            result.PreviewData.Columns.Add("地类");
+            result.PreviewData.Columns.Add("土地权属");
+            result.PreviewData.Columns.Add("面积(公顷)");
+
+            var featuresBatch = new List<IFeature>();
+            IFeature feature = null;
+            int processedInCurrentChunk = 0;
+
+            try
+            {
+                while ((feature = cursor.NextFeature()) != null && result.ProcessedCount < maxCount)
+                {
+                    result.TotalCount++;
+                    featuresBatch.Add(feature);
+                    processedInCurrentChunk++;
+
+                    // **优化: 当达到块大小时批量处理**
+                    if (processedInCurrentChunk >= chunkSize)
+                    {
+                        ProcessFeatureBatch(featuresBatch, fieldIndices, spatialFilter, result);
+                        
+                        // 清理当前批次
+                        foreach (var f in featuresBatch)
+                        {
+                            if (f != null)
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(f);
+                        }
+                        featuresBatch.Clear();
+                        processedInCurrentChunk = 0;
+
+                        // **优化: 更新进度**
+                        int progress = Math.Min(90, 50 + (result.TotalCount * 40 / maxCount));
+                        progressBar.Value = progress;
+                        UpdateStatus($"正在处理数据: 已处理 {result.TotalCount} 条，符合条件 {result.ProcessedCount} 条");
+                        Application.DoEvents();
+
+                        // **优化: 提前终止条件**
+                        if (result.ProcessedCount >= maxCount)
+                            break;
+                    }
+
+                    feature = null; // 防止在finally中重复释放
+                }
+
+                // 处理最后一批
+                if (featuresBatch.Count > 0)
+                {
+                    ProcessFeatureBatch(featuresBatch, fieldIndices, spatialFilter, result);
+                }
+            }
+            finally
+            {
+                // 清理资源
+                foreach (var f in featuresBatch)
+                {
+                    if (f != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(f);
+                }
+                if (feature != null)
+                {
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                }
+            }
+
+            return result;
+        }
+
+        // **新增方法: 批量处理要素**
+        private void ProcessFeatureBatch(
+            List<IFeature> features, 
+            FieldIndices fieldIndices, 
+            ISpatialFilter spatialFilter, 
+            PreviewQueryResult result)
+        {
+            foreach (var feature in features)
+            {
+                if (result.ProcessedCount >= 1000) // 硬性限制
+                    break;
+
+                if (ShouldIncludeFeature(feature, fieldIndices, spatialFilter))
+                {
+                    var row = CreateDataRow(feature, fieldIndices, result.PreviewData);
+                    result.PreviewData.Rows.Add(row);
+                    result.ProcessedCount++;
+                }
+            }
+        }
+
+        // **新增方法: 判断是否应包含要素**
+        private bool ShouldIncludeFeature(IFeature feature, FieldIndices fieldIndices, ISpatialFilter spatialFilter)
+        {
+            // 获取土地权属值
+            string ownerValue = GetFieldValue(feature, fieldIndices.QsxzIndex, fieldIndices.TdqsIndex);
+            
+            // 国有林地直接添加
+            if (chkStateOwned.Checked && (ownerValue == "1" || ownerValue == "20"))
+            {
+                return true;
+            }
+            
+            // 集体林地需要检查是否在城镇开发边界内
+            if (chkCollectiveInBoundary.Checked && 
+                (ownerValue == "2" || ownerValue == "30") && 
+                czkfbjFeatureClass != null)
+            {
+                return IsFeatureInBoundaryOptimized(feature, spatialFilter);
+            }
+
+            return false;
+        }
+
+        // **优化的空间查询方法**
+        private bool IsFeatureInBoundaryOptimized(IFeature feature, ISpatialFilter spatialFilter)
         {
             try
             {
-                // 空间过滤器
-                ISpatialFilter spatialFilter = new SpatialFilterClass();
+                if (spatialFilter == null)
+                    return false;
+
+                // **优化: 复用空间过滤器对象**
                 spatialFilter.Geometry = feature.Shape;
-                spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
-
-                // 查询城镇开发边界
-                IFeatureCursor boundaryCursor = czkfbjFeatureClass.Search(spatialFilter, false);
-                IFeature boundaryFeature = boundaryCursor.NextFeature();
-
-                // 如果找到任何相交的边界要素，则返回true
-                return boundaryFeature != null;
+                
+                // **优化: 使用计数查询而不是获取要素**
+                int count = czkfbjFeatureClass.FeatureCount(spatialFilter);
+                return count > 0;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"空间查询出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"优化空间查询出错: {ex.Message}");
                 return false;
             }
+        }
+
+        // **新增辅助类和方法**
+        private FieldIndices GetFieldIndices(string landTypeField, string landOwnerField)
+        {
+            var indices = new FieldIndices();
+            
+            // 缓存字段索引以避免重复查找
+            indices.TbdhIndex = lcxzgxFeatureClass.FindField("TBDH");
+            if (indices.TbdhIndex == -1) indices.TbdhIndex = lcxzgxFeatureClass.FindField("BSM");
+            if (indices.TbdhIndex == -1) indices.TbdhIndex = lcxzgxFeatureClass.FindField("OBJECTID");
+
+            indices.DlmcIndex = lcxzgxFeatureClass.FindField(landTypeField);
+            indices.TdqsIndex = lcxzgxFeatureClass.FindField(landOwnerField);
+            indices.TbmjIndex = lcxzgxFeatureClass.FindField("TBMJ");
+            indices.QsxzIndex = lcxzgxFeatureClass.FindField("QSXZ");
+            
+            // 备选面积字段
+            if (indices.TbmjIndex == -1)
+            {
+                indices.TbmjIndex = lcxzgxFeatureClass.FindField("MJ");
+                if (indices.TbmjIndex == -1) indices.TbmjIndex = lcxzgxFeatureClass.FindField("AREA");
+                if (indices.TbmjIndex == -1) indices.TbmjIndex = lcxzgxFeatureClass.FindField("面积");
+            }
+            
+            if (indices.QsxzIndex == -1 && indices.TdqsIndex != -1)
+            {
+                indices.QsxzIndex = indices.TdqsIndex;
+            }
+
+            return indices;
+        }
+
+        private string GetFieldValue(IFeature feature, int primaryIndex, int fallbackIndex)
+        {
+            if (primaryIndex != -1)
+            {
+                return feature.get_Value(primaryIndex)?.ToString() ?? "";
+            }
+            else if (fallbackIndex != -1)
+            {
+                return feature.get_Value(fallbackIndex)?.ToString() ?? "";
+            }
+            return "";
+        }
+
+        private DataRow CreateDataRow(IFeature feature, FieldIndices fieldIndices, DataTable dataTable)
+        {
+            DataRow row = dataTable.NewRow();
+
+            // 图斑编号
+            row["图斑编号"] = fieldIndices.TbdhIndex != -1 ? 
+                feature.get_Value(fieldIndices.TbdhIndex)?.ToString() ?? feature.OID.ToString() : 
+                feature.OID.ToString();
+
+            // 地类
+            row["地类"] = fieldIndices.DlmcIndex != -1 ? 
+                feature.get_Value(fieldIndices.DlmcIndex)?.ToString() ?? "" : "";
+
+            // 土地权属
+            string ownerValue = GetFieldValue(feature, fieldIndices.QsxzIndex, fieldIndices.TdqsIndex);
+            row["土地权属"] = TranslateOwnershipCode(ownerValue);
+
+            // 面积
+            if (fieldIndices.TbmjIndex != -1)
+            {
+                object mjValue = feature.get_Value(fieldIndices.TbmjIndex);
+                if (mjValue != null && double.TryParse(mjValue.ToString(), out double mjDouble))
+                {
+                    row["面积(公顷)"] = mjDouble.ToString("F2");
+                }
+                else
+                {
+                    row["面积(公顷)"] = mjValue?.ToString() ?? "";
+                }
+            }
+            else
+            {
+                row["面积(公顷)"] = "";
+            }
+
+            return row;
+        }
+
+        private string TranslateOwnershipCode(string ownerValue)
+        {
+            switch (ownerValue)
+            {
+                case "1":
+                case "20":
+                    return "国有";
+                case "2":
+                case "30":
+                    return "集体";
+                default:
+                    return ownerValue;
+            }
+        }
+
+        private void DisplayPreviewResults(PreviewQueryResult result, int maxCount)
+        {
+            // 显示数据
+            dgvPreview.DataSource = result.PreviewData;
+
+            // 更新显示信息
+            if (result.TotalCount > result.ProcessedCount)
+            {
+                lblPreviewCount.Text = $"预览结果：{result.ProcessedCount}/{result.TotalCount} 个图斑 (仅显示前 {maxCount} 个)";
+            }
+            else
+            {
+                lblPreviewCount.Text = $"预览结果：{result.ProcessedCount} 个图斑";
+            }
+        }
+
+        // **新增辅助类**
+        private class FieldIndices
+        {
+            public int TbdhIndex { get; set; } = -1;
+            public int DlmcIndex { get; set; } = -1;
+            public int TdqsIndex { get; set; } = -1;
+            public int TbmjIndex { get; set; } = -1;
+            public int QsxzIndex { get; set; } = -1;
+        }
+
+        private class PreviewQueryResult
+        {
+            public DataTable PreviewData { get; set; }
+            public int TotalCount { get; set; } = 0;
+            public int ProcessedCount { get; set; } = 0;
+        }
+
+        private List<IFeature> QueryFilteredFeaturesForExport(string landTypeField, string landOwnerField)
+        {
+            var features = new List<IFeature>();
+            
+            try
+            {
+                // **优化: 使用相同的优化查询逻辑**
+                string optimizedWhereClause = BuildOptimizedWhereClause(landTypeField, landOwnerField);
+                
+                IQueryFilter queryFilter = new QueryFilterClass();
+                if (!string.IsNullOrEmpty(optimizedWhereClause))
+                {
+                    queryFilter.WhereClause = optimizedWhereClause;
+                }
+
+                var fieldIndices = GetFieldIndices(landTypeField, landOwnerField);
+                
+                // **优化: 缓存空间过滤器**
+                ISpatialFilter cachedSpatialFilter = null;
+                if (chkCollectiveInBoundary.Checked && czkfbjFeatureClass != null)
+                {
+                    cachedSpatialFilter = new SpatialFilterClass();
+                    cachedSpatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
+                }
+
+                IFeatureCursor cursor = null;
+                IFeature feature = null;
+                int processedCount = 0;
+
+                try
+                {
+                    cursor = lcxzgxFeatureClass.Search(queryFilter, false);
+
+                    while ((feature = cursor.NextFeature()) != null)
+                    {
+                        if (ShouldIncludeFeature(feature, fieldIndices, cachedSpatialFilter))
+                        {
+                            features.Add(feature);
+                            feature = null; // 防止在 finally 中释放
+                        }
+                        else if (feature != null)
+                        {
+                            System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                            feature = null;
+                        }
+
+                        processedCount++;
+                        
+                        // **优化: 减少UI更新频率**
+                        if (processedCount % 500 == 0)
+                        {
+                            UpdateStatus($"正在筛选图斑: 已处理 {processedCount} 条记录...");
+                            Application.DoEvents();
+                        }
+                    }
+                }
+                finally
+                {
+                    if (feature != null)
+                    {
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                    }
+                    if (cursor != null)
+                    {
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"查询导出要素时出错: {ex.Message}");
+                // 清理已分配的要素
+                foreach (var f in features)
+                {
+                    if (f != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(f);
+                }
+                features.Clear();
+                throw;
+            }
+
+            return features;
         }
 
         // 在地图上高亮显示筛选出的要素
@@ -1514,130 +1716,6 @@ namespace ForestResourcePlugin
                 btnExecute.Enabled = true;
                 btnCancel.Enabled = false;
             }
-        }
-
-        /// <summary>
-        /// 查询符合条件的要素用于导出 - 使用与 btnPreview 相同的逻辑
-        /// </summary>
-        private List<IFeature> QueryFilteredFeaturesForExport(string landTypeField, string landOwnerField)
-        {
-            var features = new List<IFeature>();
-            IFeatureCursor cursor = null;
-            IFeature feature = null;
-
-            try
-            {
-                // 构建查询条件 - 与 btnPreview 相同的逻辑
-                string whereClause = "";
-                List<string> forestConditions = new List<string>();
-
-                if (chkForestLand.Checked)
-                {
-                    string forestCondition = $"{landTypeField} LIKE '03%'";
-
-                    if (chkStateOwned.Checked)
-                    {
-                        forestConditions.Add($"({forestCondition} AND {landOwnerField} = '20')");
-                    }
-
-                    if (chkCollectiveInBoundary.Checked)
-                    {
-                        forestConditions.Add($"({forestCondition} AND {landOwnerField} = '30')");
-                    }
-                }
-
-                if (forestConditions.Count > 0)
-                {
-                    whereClause = string.Join(" OR ", forestConditions);
-                }
-
-                // 创建查询过滤器
-                IQueryFilter queryFilter = new QueryFilterClass();
-                if (!string.IsNullOrEmpty(whereClause))
-                {
-                    queryFilter.WhereClause = whereClause;
-                }
-
-                cursor = lcxzgxFeatureClass.Search(queryFilter, false);
-
-                // 预先查找字段索引
-                int tdqsIndex = lcxzgxFeatureClass.FindField(landOwnerField);
-                int qsxzIndex = lcxzgxFeatureClass.FindField("QSXZ");
-                
-                if (qsxzIndex == -1 && tdqsIndex != -1)
-                {
-                    qsxzIndex = tdqsIndex;
-                }
-
-                int processedCount = 0;
-                while ((feature = cursor.NextFeature()) != null)
-                {
-                    bool shouldInclude = false;
-
-                    // 获取土地权属值 - 与 btnPreview 相同的逻辑
-                    string ownerValue = "";
-                    if (qsxzIndex != -1)
-                    {
-                        ownerValue = feature.get_Value(qsxzIndex)?.ToString() ?? "";
-                    }
-                    else if (tdqsIndex != -1)
-                    {
-                        ownerValue = feature.get_Value(tdqsIndex)?.ToString() ?? "";
-                    }
-                    
-                    // 国有林地直接添加
-                    if (chkStateOwned.Checked && (ownerValue == "20"))
-                    {
-                        shouldInclude = true;
-                    }
-                    // 集体林地需要检查是否在城镇开发边界内
-                    else if (chkCollectiveInBoundary.Checked && 
-                            (ownerValue == "30") && 
-                            czkfbjFeatureClass != null)
-                    {
-                        if (IsFeatureInBoundary(feature))
-                        {
-                            shouldInclude = true;
-                        }
-                    }
-
-                    if (shouldInclude)
-                    {
-                        // 将要素添加到列表，不释放 COM 对象
-                        features.Add(feature);
-                        feature = null; // 防止在 finally 中释放
-                    }
-                    else if (feature != null)
-                    {
-                        // 释放不需要的要素
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
-                        feature = null;
-                    }
-
-                    processedCount++;
-                    
-                    // 更新进度
-                    if (processedCount % 100 == 0)
-                    {
-                        UpdateStatus($"正在筛选图斑: 已处理 {processedCount} 条记录...");
-                        Application.DoEvents();
-                    }
-                }
-            }
-            finally
-            {
-                // 确保释放资源
-                if (feature != null)
-                {
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
-                }
-                if (cursor != null)
-                {
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
-                }
-            }
-
-            return features;
         }
 
         /// <summary>
