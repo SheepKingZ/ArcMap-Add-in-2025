@@ -58,6 +58,9 @@ namespace ForestResourcePlugin
 
             // 加载地图图层
             LoadMapLayers();
+
+            // 尝试加载之前查找到的数据源
+            LoadSharedDataSources();
         }
 
         // 改进的加载地图图层方法
@@ -65,71 +68,19 @@ namespace ForestResourcePlugin
         {
             try
             {
-                UpdateStatus("正在检查ArcMap连接状态...");
-                progressBar.Value = 5;
+                // 设置下拉框为仅使用文件模式
+                SetupDropdownsForFileMode();
                 
-                // 首先检查ArcMap是否正在运行
-                if (!MapLayerUtilities.IsArcMapRunning())
-                {
-                    UpdateStatus("未检测到运行中的ArcMap，请确保ArcMap已启动并加载了地图文档");
-                    SetupDropdownsForFileMode();
-                    return;
-                }
+                // 尝试从SharedDataManager加载已经找到的文件
+                LoadSharedDataSources();
                 
-                UpdateStatus("正在获取地图图层...");
-                progressBar.Value = 10;
-                
-                // 清空下拉框
-                cmbLCXZGXPath.Items.Clear();
-                cmbCZKFBJPath.Items.Clear();
-                
-                // 添加提示选项
-                cmbLCXZGXPath.Items.Add("-- 请选择林草现状图层 --");
-                cmbCZKFBJPath.Items.Add("-- 请选择城镇开发边界图层 --");
-                
-                // 选择默认值
-                cmbLCXZGXPath.SelectedIndex = 0;
-                cmbCZKFBJPath.SelectedIndex = 0;
-                
-                progressBar.Value = 30;
-                
-                // 获取地图图层 - 优先获取多边形图层
-                mapLayers = MapLayerUtilities.GetPolygonLayers();
-                
-                progressBar.Value = 60;
-                
-                if (mapLayers != null && mapLayers.Count > 0)
-                {
-                    UpdateStatus($"成功获取到 {mapLayers.Count} 个多边形图层");
-                    
-                    // 添加所有图层到下拉列表
-                    foreach (LayerInfo layer in mapLayers)
-                    {
-                        cmbLCXZGXPath.Items.Add(layer);
-                        cmbCZKFBJPath.Items.Add(layer);
-                        System.Diagnostics.Debug.WriteLine($"添加图层到下拉框: {layer.Name} ({layer.GeometryType})");
-                    }
-                    
-                    // 尝试智能匹配图层
-                    AutoMatchLayers();
-                    
-                    progressBar.Value = 100;
-                    UpdateStatus($"已加载 {mapLayers.Count} 个地图图层");
-                }
-                else
-                {
-                    // 如果没有获取到图层，提供文件模式选项
-                    SetupDropdownsForFileMode();
-                    UpdateStatus("未找到合适的多边形图层，请使用浏览按钮选择文件或检查ArcMap中的图层");
-                }
+                UpdateStatus("已准备好使用共享数据源");
+                progressBar.Value = 100;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"加载地图图层出错: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"堆栈跟踪: {ex.StackTrace}");
-                
-                UpdateStatus($"加载地图图层失败: {ex.Message}");
-                SetupDropdownsForFileMode();
+                System.Diagnostics.Debug.WriteLine($"初始化数据源失败: {ex.Message}");
+                UpdateStatus("初始化数据源失败");
                 progressBar.Value = 0;
             }
         }
@@ -145,17 +96,9 @@ namespace ForestResourcePlugin
                 cmbLCXZGXPath.Items.Clear();
                 cmbCZKFBJPath.Items.Clear();
                 
-                // 添加文件模式提示
-                if (MapLayerUtilities.IsArcMapRunning())
-                {
-                    cmbLCXZGXPath.Items.Add("-- 未找到合适的多边形图层，请使用浏览按钮选择文件 --");
-                    cmbCZKFBJPath.Items.Add("-- 未找到合适的多边形图层，请使用浏览按钮选择文件 --");
-                }
-                else
-                {
-                    cmbLCXZGXPath.Items.Add("-- ArcMap未运行，请使用浏览按钮选择文件 --");
-                    cmbCZKFBJPath.Items.Add("-- ArcMap未运行，请使用浏览按钮选择文件 --");
-                }
+                // 添加提示项
+                cmbLCXZGXPath.Items.Add("-- 请选择林草现状图层 --");
+                cmbCZKFBJPath.Items.Add("-- 请选择城镇开发边界图层 --");
                 
                 cmbLCXZGXPath.SelectedIndex = 0;
                 cmbCZKFBJPath.SelectedIndex = 0;
@@ -165,83 +108,7 @@ namespace ForestResourcePlugin
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"设置文件模式失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 智能匹配图层名称
-        /// </summary>
-        private void AutoMatchLayers()
-        {
-            try
-            {
-                if (mapLayers == null || mapLayers.Count == 0) return;
-
-                System.Diagnostics.Debug.WriteLine("开始智能匹配图层...");
-
-                // 林草现状图层的名称模式
-                string[] lcxzgxPatterns = { "林草现状", "LCXZGX", "LCXZ", "现状", "Forest", "林地", "草地" };
-                // 城镇开发边界图层的名称模式
-                string[] czkfbjPatterns = { "城镇开发边界", "CZKFBJ", "开发边界", "Urban", "Development", "边界", "城镇" };
-
-                // 尝试匹配林草现状图层
-                LayerInfo lcxzgxMatch = null;
-                foreach (var pattern in lcxzgxPatterns)
-                {
-                    lcxzgxMatch = mapLayers.FirstOrDefault(layer => 
-                        layer.Name.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0);
-                    if (lcxzgxMatch != null)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"智能匹配林草现状图层: {lcxzgxMatch.Name} (匹配模式: {pattern})");
-                        break;
-                    }
-                }
-
-                if (lcxzgxMatch != null)
-                {
-                    // 在下拉框中选择匹配的图层
-                    for (int i = 1; i < cmbLCXZGXPath.Items.Count; i++)
-                    {
-                        if (cmbLCXZGXPath.Items[i] is LayerInfo layer && layer.Name == lcxzgxMatch.Name)
-                        {
-                            cmbLCXZGXPath.SelectedIndex = i;
-                            break;
-                        }
-                    }
-                }
-
-                // 尝试匹配城镇开发边界图层
-                LayerInfo czkfbjMatch = null;
-                foreach (var pattern in czkfbjPatterns)
-                {
-                    czkfbjMatch = mapLayers.FirstOrDefault(layer => 
-                        layer.Name.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0);
-                    if (czkfbjMatch != null)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"智能匹配城镇开发边界图层: {czkfbjMatch.Name} (匹配模式: {pattern})");
-                        break;
-                    }
-                }
-
-                if (czkfbjMatch != null)
-                {
-                    // 在下拉框中选择匹配的图层
-                    for (int i = 1; i < cmbCZKFBJPath.Items.Count; i++)
-                    {
-                        if (cmbCZKFBJPath.Items[i] is LayerInfo layer && layer.Name == czkfbjMatch.Name)
-                        {
-                            cmbCZKFBJPath.SelectedIndex = i;
-                            break;
-                        }
-                    }
-                }
-
-                System.Diagnostics.Debug.WriteLine("智能匹配完成");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"智能匹配图层出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"设置下拉框失败: {ex.Message}");
             }
         }
 
@@ -301,7 +168,7 @@ namespace ForestResourcePlugin
 
         private void btnRefreshLayers_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("用户点击刷新图层按钮");
+            System.Diagnostics.Debug.WriteLine("用户点击刷新按钮");
             
             // 显示刷新状态
             btnRefreshLayers.Enabled = false;
@@ -309,38 +176,28 @@ namespace ForestResourcePlugin
             
             try
             {
-                LoadMapLayers();
+                // 只刷新共享数据源
+                LoadSharedDataSources();
+                UpdateStatus("共享数据源已刷新");
             }
             finally
             {
                 // 恢复按钮状态
                 btnRefreshLayers.Enabled = true;
-                btnRefreshLayers.Text = "刷新地图图层";
+                btnRefreshLayers.Text = "刷新数据源";
             }
         }
 
         private void cmbLCXZGXPath_DropDown(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("林草现状图层下拉框打开");
-            
-            // 当下拉框打开时，如果地图图层为空或者只有提示项，则重新加载地图图层
-            if (mapLayers == null || mapLayers.Count == 0 || cmbLCXZGXPath.Items.Count <= 1)
-            {
-                System.Diagnostics.Debug.WriteLine("检测到图层列表为空，重新加载图层");
-                LoadMapLayers();
-            }
+            // 不再执行重新加载ArcMap图层的操作
         }
 
         private void cmbCZKFBJPath_DropDown(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("城镇开发边界图层下拉框打开");
-            
-            // 当下拉框打开时，如果地图图层为空或者只有提示项，则重新加载地图图层
-            if (mapLayers == null || mapLayers.Count == 0 || cmbCZKFBJPath.Items.Count <= 1)
-            {
-                System.Diagnostics.Debug.WriteLine("检测到图层列表为空，重新加载图层");
-                LoadMapLayers();
-            }
+            // 不再执行重新加载ArcMap图层的操作
         }
 
         // 林草现状图层下拉框选择改变事件
@@ -362,23 +219,12 @@ namespace ForestResourcePlugin
                 object selectedItem = cmbLCXZGXPath.SelectedItem;
                 System.Diagnostics.Debug.WriteLine($"选择的项类型: {selectedItem?.GetType().Name}");
                 
-                if (selectedItem is LayerInfo layerInfo)
+                if (selectedItem is ForestResourcePlugin.LCXZGXFileInfo fileInfo)
                 {
-                    System.Diagnostics.Debug.WriteLine($"从地图图层加载: {layerInfo.Name}");
-                    
-                    // 验证图层是否为多边形类型
-                    if (!MapLayerUtilities.IsPolygonLayer(layerInfo))
-                    {
-                        MessageBox.Show($"选择的图层 '{layerInfo.Name}' 不是多边形图层，请选择多边形图层", 
-                            "图层类型错误", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        cmbLCXZGXPath.SelectedIndex = 0;
-                        return;
-                    }
-                    
-                    // 从地图图层加载
-                    lcxzgxFeatureClass = layerInfo.FeatureClass;
-                    LoadFieldsFromFeatureClass(lcxzgxFeatureClass);
-                    UpdateStatus($"已选择地图图层: {layerInfo.Name} ({layerInfo.GeometryType})");
+                    System.Diagnostics.Debug.WriteLine($"从共享数据源加载: {fileInfo.DisplayName}");
+                    // 将路径设置到下拉框文本中，这样现有的加载代码可以处理
+                    cmbLCXZGXPath.Text = fileInfo.FullPath;
+                    LoadLCXZGXFields(); // 调用现有的加载方法
                 }
                 else if (selectedItem is string filePath && !string.IsNullOrEmpty(filePath) && File.Exists(filePath))
                 {
@@ -419,22 +265,12 @@ namespace ForestResourcePlugin
                 object selectedItem = cmbCZKFBJPath.SelectedItem;
                 System.Diagnostics.Debug.WriteLine($"选择的项类型: {selectedItem?.GetType().Name}");
                 
-                if (selectedItem is LayerInfo layerInfo)
+                if (selectedItem is ForestResourcePlugin.LCXZGXFileInfo fileInfo)
                 {
-                    System.Diagnostics.Debug.WriteLine($"从地图图层加载: {layerInfo.Name}");
-                    
-                    // 验证图层是否为多边形类型
-                    if (!MapLayerUtilities.IsPolygonLayer(layerInfo))
-                    {
-                        MessageBox.Show($"选择的图层 '{layerInfo.Name}' 不是多边形图层，请选择多边形图层", 
-                            "图层类型错误", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        cmbCZKFBJPath.SelectedIndex = 0;
-                        return;
-                    }
-                    
-                    // 从地图图层加载
-                    czkfbjFeatureClass = layerInfo.FeatureClass;
-                    UpdateStatus($"已选择地图图层: {layerInfo.Name} ({layerInfo.GeometryType})");
+                    System.Diagnostics.Debug.WriteLine($"从共享数据源加载: {fileInfo.DisplayName}");
+                    // 将路径设置到下拉框文本中，这样现有的加载代码可以处理
+                    cmbCZKFBJPath.Text = fileInfo.FullPath;
+                    LoadCZKFBJFromPath(fileInfo.FullPath); // 调用现有的加载方法
                 }
                 else if (selectedItem is string filePath && !string.IsNullOrEmpty(filePath) && File.Exists(filePath))
                 {
@@ -540,19 +376,56 @@ namespace ForestResourcePlugin
                 cmbLandTypeField.Items.Clear();
                 cmbLandOwnerField.Items.Clear();
                 
-                // Check if file exists
-                if (string.IsNullOrEmpty(cmbLCXZGXPath.Text) || !File.Exists(cmbLCXZGXPath.Text))
-                {
-                    MessageBox.Show("选择的Shapefile文件不存在或无效", "读取字段失败", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                
-                UpdateStatus("正在读取Shapefile字段...");
+                UpdateStatus("正在读取图层字段...");
                 progressBar.Value = 30;
                 
-                // 使用ShapefileReader工具类读取字段
-                List<string> fieldNames = ShapefileReader.GetShapefileFieldNames(cmbLCXZGXPath.Text);
+                List<string> fieldNames = new List<string>();
+                
+                // 检查是否已有加载的要素类
+                if (lcxzgxFeatureClass != null)
+                {
+                    // 直接从要素类对象获取字段
+                    System.Diagnostics.Debug.WriteLine("从已加载的要素类对象读取字段");
+                    fieldNames = GeodatabaseUtilities.GetFeatureClassFields(lcxzgxFeatureClass);
+                }
+                else
+                {
+                    // 检查选择项是否为GDB要素类
+                    object selectedItem = cmbLCXZGXPath.SelectedItem;
+                    System.Diagnostics.Debug.WriteLine($"LoadLCXZGXFields: 当前选择项类型 {selectedItem?.GetType().Name ?? "null"}");
+                    
+                    if (selectedItem is ForestResourcePlugin.LCXZGXFileInfo fileInfo && fileInfo.IsGdb)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"从GDB加载字段: {fileInfo.FullPath}, 要素类: {fileInfo.FeatureClassName}");
+                        // 加载林草现状图层
+                        LoadLCXZGXLayer(fileInfo.FullPath);
+                        
+                        // 使用加载后的要素类获取字段
+                        if (lcxzgxFeatureClass != null)
+                        {
+                            fieldNames = GeodatabaseUtilities.GetFeatureClassFields(lcxzgxFeatureClass);
+                        }
+                    }
+                    else
+                    {
+                        // 使用原有的Shapefile读取逻辑
+                        string path = cmbLCXZGXPath.Text;
+                        
+                        // Check if file exists
+                        if (string.IsNullOrEmpty(path) || !File.Exists(path))
+                        {
+                            MessageBox.Show("选择的Shapefile文件不存在或无效", "读取字段失败", 
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return;
+                        }
+                        
+                        // 使用ShapefileReader工具类读取字段
+                        fieldNames = ShapefileReader.GetShapefileFieldNames(path);
+                        
+                        // 加载林草现状图层
+                        LoadLCXZGXLayer(path);
+                    }
+                }
                 
                 // 添加字段到下拉列表
                 foreach (string fieldName in fieldNames)
@@ -569,60 +442,154 @@ namespace ForestResourcePlugin
                     cmbLandTypeField.SelectedIndex = landTypeIndex >= 0 ? landTypeIndex : 0;
                     
                     // 尝试查找与土地权属相关的字段
-                    int landOwnerIndex = FindBestMatchIndex(cmbLandOwnerField.Items, new[] { "权属", "土地权属", "TDQS", "LD_QS", "Ownership", "Owner", "QS" });
+                    int landOwnerIndex = FindBestMatchIndex(cmbLandOwnerField.Items, new[] { "权属", "土地权属", "TDQS", "LD_QS", "Ownership", "Owner", "QS", "QSXZ" });
                     cmbLandOwnerField.SelectedIndex = landOwnerIndex >= 0 ? landOwnerIndex : 0;
                 }
-
-                // 加载林草现状图层
-                LoadLCXZGXLayer(cmbLCXZGXPath.Text);
                 
                 progressBar.Value = 100;
                 UpdateStatus($"已读取 {fieldNames.Count} 个字段");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"读取Shapefile字段时出错: {ex.Message}", "错误", 
+                MessageBox.Show($"读取图层字段时出错: {ex.Message}", "错误", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 UpdateStatus("读取字段失败");
+                System.Diagnostics.Debug.WriteLine($"LoadLCXZGXFields错误: {ex}");
             }
         }
 
         // 加载林草现状图层
-        private void LoadLCXZGXLayer(string shapefilePath)
+        private void LoadLCXZGXLayer(string path)
         {
             try
             {
-                // Get the directory and filename without extension
-                string directory = System.IO.Path.GetDirectoryName(shapefilePath);
-                string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
+                // 检查选择项是否为GDB要素类
+                object selectedItem = cmbLCXZGXPath.SelectedItem;
+                System.Diagnostics.Debug.WriteLine($"LoadLCXZGXLayer: 当前选择项类型 {selectedItem?.GetType().Name ?? "null"}");
+                
+                if (selectedItem is ForestResourcePlugin.LCXZGXFileInfo fileInfo)
+                {
+                    System.Diagnostics.Debug.WriteLine($"LoadLCXZGXLayer: 文件信息 - IsGdb={fileInfo.IsGdb}, Path={fileInfo.FullPath}, FeatureClassName={fileInfo.FeatureClassName}");
+                    
+                    if (fileInfo.IsGdb)
+                    {
+                        // 从GDB加载要素类
+                        System.Diagnostics.Debug.WriteLine($"从GDB加载林草现状图层: {fileInfo.FullPath}, 要素类: {fileInfo.FeatureClassName}");
+                        try
+                        {
+                            lcxzgxFeatureClass = ForestResourcePlugin.GdbFeatureClassFinder.OpenFeatureClassFromGdb(
+                                fileInfo.FullPath, fileInfo.FeatureClassName);
+                            
+                            if (lcxzgxFeatureClass != null)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"成功加载GDB要素类，要素数: {lcxzgxFeatureClass.FeatureCount(null)}");
+                                // 加载字段信息
+                                LoadFieldsFromFeatureClass(lcxzgxFeatureClass);
+                                return;
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine("GDB要素类加载失败: 返回为null");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"GDB要素类加载异常: {ex.Message}");
+                            throw;
+                        }
+                    }
+                }
+                
+                // 如果不是GDB要素类或加载GDB失败，尝试从Shapefile加载
+                System.Diagnostics.Debug.WriteLine($"从Shapefile加载林草现状图层: {path}");
+                string directory = System.IO.Path.GetDirectoryName(path);
+                string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
 
-                // Create a workspace factory and open the shapefile
+                // 创建工作空间工厂并打开Shapefile
                 IWorkspaceFactory workspaceFactory = new ShapefileWorkspaceFactory();
                 IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(directory, 0);
                 lcxzgxFeatureClass = featureWorkspace.OpenFeatureClass(fileName);
+                
+                if (lcxzgxFeatureClass != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"成功加载Shapefile，要素数: {lcxzgxFeatureClass.FeatureCount(null)}");
+                    // 加载字段信息
+                    LoadFieldsFromFeatureClass(lcxzgxFeatureClass);
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Shapefile加载失败: 返回为null");
+                }
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"加载林草现状图层失败: {ex.Message}");
                 throw new Exception($"加载林草现状图层失败: {ex.Message}", ex);
             }
         }
 
         // 从文件路径加载城镇开发边界图层
-        private void LoadCZKFBJFromPath(string shapefilePath)
+        private void LoadCZKFBJFromPath(string path)
         {
             try
             {
-                // Get the directory and filename without extension
-                string directory = System.IO.Path.GetDirectoryName(shapefilePath);
-                string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
+                // 检查选择项是否为GDB要素类
+                object selectedItem = cmbCZKFBJPath.SelectedItem;
+                System.Diagnostics.Debug.WriteLine($"LoadCZKFBJFromPath: 当前选择项类型 {selectedItem?.GetType().Name ?? "null"}");
+                
+                if (selectedItem is ForestResourcePlugin.LCXZGXFileInfo fileInfo)
+                {
+                    System.Diagnostics.Debug.WriteLine($"LoadCZKFBJFromPath: 文件信息 - IsGdb={fileInfo.IsGdb}, Path={fileInfo.FullPath}, FeatureClassName={fileInfo.FeatureClassName}");
+                    
+                    if (fileInfo.IsGdb)
+                    {
+                        // 从GDB加载要素类
+                        System.Diagnostics.Debug.WriteLine($"从GDB加载城镇开发边界图层: {fileInfo.FullPath}, 要素类: {fileInfo.FeatureClassName}");
+                        try
+                        {
+                            czkfbjFeatureClass = ForestResourcePlugin.GdbFeatureClassFinder.OpenFeatureClassFromGdb(
+                                fileInfo.FullPath, fileInfo.FeatureClassName);
+                            
+                            if (czkfbjFeatureClass != null)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"成功加载GDB要素类，要素数: {czkfbjFeatureClass.FeatureCount(null)}");
+                                return;
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine("GDB要素类加载失败: 返回为null");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"GDB要素类加载异常: {ex.Message}");
+                            throw;
+                        }
+                    }
+                }
+                
+                // 如果不是GDB要素类或加载GDB失败，尝试从Shapefile加载
+                System.Diagnostics.Debug.WriteLine($"从Shapefile加载城镇开发边界图层: {path}");
+                string directory = System.IO.Path.GetDirectoryName(path);
+                string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
 
-                // Create a workspace factory and open the shapefile
+                // 创建工作空间工厂并打开Shapefile
                 IWorkspaceFactory workspaceFactory = new ShapefileWorkspaceFactory();
                 IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(directory, 0);
                 czkfbjFeatureClass = featureWorkspace.OpenFeatureClass(fileName);
+                
+                if (czkfbjFeatureClass != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"成功加载Shapefile，要素数: {czkfbjFeatureClass.FeatureCount(null)}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Shapefile加载失败: 返回为null");
+                }
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"加载城镇开发边界图层失败: {ex.Message}");
                 throw new Exception($"加载城镇开发边界图层失败: {ex.Message}", ex);
             }
         }
@@ -1850,6 +1817,104 @@ namespace ForestResourcePlugin
         private void btnPreview_MouseCaptureChanged(object sender, EventArgs e)
         {
 
+        }
+
+        /// <summary>
+        /// 从SharedDataManager加载共享的数据源
+        /// </summary>
+        private void LoadSharedDataSources()
+        {
+            try
+            {
+                // 获取林草现状文件列表
+                var lcxzgxFiles = ForestResourcePlugin.SharedDataManager.GetLCXZGXFiles();
+                System.Diagnostics.Debug.WriteLine($"从SharedDataManager加载 {lcxzgxFiles.Count} 个LCXZGX文件");
+                
+                // 清空下拉框
+                cmbLCXZGXPath.Items.Clear();
+                
+                // 添加提示项
+                cmbLCXZGXPath.Items.Add("-- 请选择林草现状图层 --");
+                
+                // 添加找到的文件
+                if (lcxzgxFiles.Count > 0)
+                {
+                    foreach (var file in lcxzgxFiles)
+                    {
+                        cmbLCXZGXPath.Items.Add(file);
+                        System.Diagnostics.Debug.WriteLine($"添加LCXZGX文件到下拉框: {file.DisplayName} -> {file.FullPath}");
+                    }
+                    
+                    // 如果有文件，选择第一个文件项（索引为1，因为索引0是提示项）
+                    if (cmbLCXZGXPath.Items.Count > 1)
+                    {
+                        cmbLCXZGXPath.SelectedIndex = 1;
+                        System.Diagnostics.Debug.WriteLine($"自动选择第一个LCXZGX文件: {((LCXZGXFileInfo)cmbLCXZGXPath.SelectedItem).DisplayName}");
+                    }
+                    else
+                    {
+                        cmbLCXZGXPath.SelectedIndex = 0;
+                    }
+                }
+                else
+                {
+                    // 没有文件时选择提示项
+                    cmbLCXZGXPath.SelectedIndex = 0;
+                    System.Diagnostics.Debug.WriteLine("没有LCXZGX文件可用");
+                }
+                
+                // 获取城镇开发边界文件列表
+                var czkfbjFiles = ForestResourcePlugin.SharedDataManager.GetCZKFBJFiles();
+                System.Diagnostics.Debug.WriteLine($"从SharedDataManager加载 {czkfbjFiles.Count} 个CZKFBJ文件");
+                
+                // 清空下拉框
+                cmbCZKFBJPath.Items.Clear();
+                
+                // 添加提示项
+                cmbCZKFBJPath.Items.Add("-- 请选择城镇开发边界图层 --");
+                
+                // 添加找到的文件
+                if (czkfbjFiles.Count > 0)
+                {
+                    foreach (var file in czkfbjFiles)
+                    {
+                        cmbCZKFBJPath.Items.Add(file);
+                        System.Diagnostics.Debug.WriteLine($"添加CZKFBJ文件到下拉框: {file.DisplayName} -> {file.FullPath}");
+                    }
+                    
+                    // 如果有文件，选择第一个文件项（索引为1）
+                    if (cmbCZKFBJPath.Items.Count > 1)
+                    {
+                        cmbCZKFBJPath.SelectedIndex = 1;
+                        System.Diagnostics.Debug.WriteLine($"自动选择第一个CZKFBJ文件: {((LCXZGXFileInfo)cmbCZKFBJPath.SelectedItem).DisplayName}");
+                    }
+                    else
+                    {
+                        cmbCZKFBJPath.SelectedIndex = 0;
+                    }
+                }
+                else
+                {
+                    // 没有文件时选择提示项
+                    cmbCZKFBJPath.SelectedIndex = 0;
+                    System.Diagnostics.Debug.WriteLine("没有CZKFBJ文件可用");
+                }
+                
+                // 更新状态提示
+                if (lcxzgxFiles.Count > 0 || czkfbjFiles.Count > 0)
+                {
+                    UpdateStatus($"已加载共享数据源: {lcxzgxFiles.Count}个林草现状文件, {czkfbjFiles.Count}个城镇开发边界文件");
+                }
+                else
+                {
+                    UpdateStatus("未找到共享数据源");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"加载共享数据源时出错: {ex.Message}");
+                UpdateStatus("加载共享数据源失败");
+            }
         }
     }
 
