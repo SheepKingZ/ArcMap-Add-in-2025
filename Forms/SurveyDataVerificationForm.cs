@@ -27,8 +27,66 @@ namespace TestArcMapAddin2.Forms
         public SurveyDataVerificationForm()
         {
             InitializeComponent();
-            // 移除 InitializeCustomControls() 调用，因为控件现在由设计器创建
+            InitializeForm();
         }
+
+        #region 初始化方法
+        private void InitializeForm()
+        {
+            // 初始化进度和状态
+            UpdateProgress(0);
+            UpdateStatus("就绪");
+            
+            // 初始化界面状态
+            btnDataProcess.Enabled = false;
+            btnExport.Enabled = false;
+        }
+        #endregion
+
+        #region 进度和状态更新方法
+        /// <summary>
+        /// 更新进度条
+        /// </summary>
+        /// <param name="value">进度值（0-100）</param>
+        private void UpdateProgress(int value)
+        {
+            if (progressBar.InvokeRequired)
+            {
+                progressBar.Invoke(new Action(() => progressBar.Value = Math.Max(0, Math.Min(100, value))));
+            }
+            else
+            {
+                progressBar.Value = Math.Max(0, Math.Min(100, value));
+            }
+            Application.DoEvents();
+        }
+
+        /// <summary>
+        /// 更新状态标签
+        /// </summary>
+        /// <param name="status">状态信息</param>
+        private void UpdateStatus(string status)
+        {
+            if (lblStatus.InvokeRequired)
+            {
+                lblStatus.Invoke(new Action(() => lblStatus.Text = $"状态：{status}"));
+            }
+            else
+            {
+                lblStatus.Text = $"状态：{status}";
+            }
+            Application.DoEvents();
+        }
+
+        /// <summary>
+        /// 重置进度和状态
+        /// </summary>
+        private void ResetProgress()
+        {
+            UpdateProgress(0);
+            UpdateStatus("就绪");
+        }
+        #endregion
 
         #region 事件处理方法
         private void BtnBrowseSurveyData_Click(object sender, EventArgs e)
@@ -41,10 +99,25 @@ namespace TestArcMapAddin2.Forms
 
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    selectedFilePath = dlg.FileName;
-                    txtSurveyDataPath.Text = selectedFilePath; // 直接使用控件引用
+                    UpdateStatus("正在加载文件...");
+                    UpdateProgress(20);
 
-                    LoadShapefileFields(selectedFilePath);
+                    try
+                    {
+                        selectedFilePath = dlg.FileName;
+                        txtSurveyDataPath.Text = selectedFilePath;
+
+                        LoadShapefileFields(selectedFilePath);
+                        
+                        UpdateProgress(100);
+                        UpdateStatus("文件加载完成");
+                    }
+                    catch (Exception ex)
+                    {
+                        ResetProgress();
+                        UpdateStatus("文件加载失败");
+                        MessageBox.Show($"加载文件时出错: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
         }
@@ -53,12 +126,19 @@ namespace TestArcMapAddin2.Forms
         {
             try
             {
+                UpdateStatus("正在获取地图图层...");
+                UpdateProgress(10);
+
                 var layers = MapLayerUtilities.GetPolygonLayers();
                 if (layers.Count == 0)
                 {
+                    ResetProgress();
+                    UpdateStatus("未找到图层");
                     MessageBox.Show("当前地图中没有找到多边形图层", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
+
+                UpdateProgress(30);
 
                 // 简化版图层选择对话框
                 using (Form layerForm = new Form())
@@ -104,20 +184,33 @@ namespace TestArcMapAddin2.Forms
 
                     if (layerForm.ShowDialog() == DialogResult.OK && listBox.SelectedItem != null)
                     {
+                        UpdateProgress(70);
+                        UpdateStatus("正在加载选择的图层...");
+
                         var selectedLayer = listBox.SelectedItem as LayerInfo;
                         if (selectedLayer != null)
                         {
                             surveyFeatureClass = selectedLayer.FeatureClass;
-                            txtSurveyDataPath.Text = $"当前地图图层: {selectedLayer.Name}"; // 直接使用控件引用
+                            txtSurveyDataPath.Text = $"当前地图图层: {selectedLayer.Name}";
                             selectedFilePath = selectedLayer.Name;
 
                             LoadFeatureClassFields(surveyFeatureClass);
+                            
+                            UpdateProgress(100);
+                            UpdateStatus("图层加载完成");
                         }
+                    }
+                    else
+                    {
+                        ResetProgress();
+                        UpdateStatus("用户取消操作");
                     }
                 }
             }
             catch (Exception ex)
             {
+                ResetProgress();
+                UpdateStatus("加载图层失败");
                 MessageBox.Show($"从当前地图加载数据时出错: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -132,12 +225,14 @@ namespace TestArcMapAddin2.Forms
                     return;
                 }
 
-                // 直接使用控件引用
                 if (cboLandTypeField.SelectedItem == null || cboLandCodeField.SelectedItem == null || cboLandCategoryField.SelectedItem == null)
                 {
                     MessageBox.Show("请选择所有必需的字段", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
+
+                UpdateStatus("正在准备数据校验...");
+                UpdateProgress(5);
 
                 selectedLandTypeField = cboLandTypeField.SelectedItem.ToString();
                 selectedLandCodeField = cboLandCodeField.SelectedItem.ToString();
@@ -148,6 +243,8 @@ namespace TestArcMapAddin2.Forms
             }
             catch (Exception ex)
             {
+                ResetProgress();
+                UpdateStatus("校验失败");
                 MessageBox.Show($"校验过程中出错: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -175,11 +272,15 @@ namespace TestArcMapAddin2.Forms
 
                 if (result == DialogResult.Yes)
                 {
+                    UpdateStatus("正在执行数据处理...");
+                    UpdateProgress(10);
                     PerformDataProcessing();
                 }
             }
             catch (Exception ex)
             {
+                ResetProgress();
+                UpdateStatus("数据处理失败");
                 MessageBox.Show($"数据处理过程中出错: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -203,13 +304,21 @@ namespace TestArcMapAddin2.Forms
 
                     if (dlg.ShowDialog() == DialogResult.OK)
                     {
+                        UpdateStatus("正在导出数据...");
+                        UpdateProgress(20);
+
                         ExportDataTable(filteredDataTable, dlg.FileName);
+                        
+                        UpdateProgress(100);
+                        UpdateStatus("导出完成");
                         MessageBox.Show($"数据已成功导出到: {dlg.FileName}", "导出完成", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
             }
             catch (Exception ex)
             {
+                ResetProgress();
+                UpdateStatus("导出失败");
                 MessageBox.Show($"导出过程中出错: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -221,6 +330,7 @@ namespace TestArcMapAddin2.Forms
             try
             {
                 txtStatisticsResult.Text += "\r\n正在执行数据处理...\r\n";
+                UpdateProgress(20);
                 
                 // 模拟数据处理过程
                 for (int i = 0; i < filteredDataTable.Rows.Count; i++)
@@ -270,7 +380,15 @@ namespace TestArcMapAddin2.Forms
                     {
                         row["处理建议"] = "编码格式异常，建议重新录入";
                     }
+
+                    // 更新进度
+                    int progress = 20 + (i * 70 / filteredDataTable.Rows.Count);
+                    UpdateProgress(progress);
+                    UpdateStatus($"正在处理记录 {i + 1}/{filteredDataTable.Rows.Count}...");
                 }
+                
+                UpdateProgress(95);
+                UpdateStatus("正在刷新显示...");
                 
                 // 刷新预览表格
                 dgvPreview.DataSource = null;
@@ -281,6 +399,9 @@ namespace TestArcMapAddin2.Forms
                 txtStatisticsResult.Text += $"已处理记录数: {filteredDataTable.Rows.Count} 条\r\n";
                 txtStatisticsResult.Text += $"处理时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\r\n";
                 txtStatisticsResult.Text += "所有问题记录已标记并生成处理建议。\r\n";
+                
+                UpdateProgress(100);
+                UpdateStatus("数据处理完成");
                 
                 MessageBox.Show("数据处理完成！已为所有不一致记录生成处理建议。", "处理完成", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -295,6 +416,9 @@ namespace TestArcMapAddin2.Forms
         {
             try
             {
+                UpdateStatus("正在读取文件字段...");
+                UpdateProgress(40);
+
                 // 简化版本：直接通过ArcObjects读取Shapefile字段
                 IWorkspaceFactory workspaceFactory = new ShapefileWorkspaceFactory();
                 IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(
@@ -303,11 +427,14 @@ namespace TestArcMapAddin2.Forms
                 string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
                 IFeatureClass featureClass = featureWorkspace.OpenFeatureClass(fileName);
                 
+                UpdateProgress(70);
                 LoadFeatureClassFields(featureClass);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"读取Shapefile字段时出错: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ResetProgress();
+                UpdateStatus("读取字段失败");
             }
         }
 
@@ -315,6 +442,8 @@ namespace TestArcMapAddin2.Forms
         {
             try
             {
+                UpdateStatus("正在加载字段信息...");
+                
                 fieldNames.Clear();
                 IFields fields = featureClass.Fields;
                 
@@ -330,10 +459,13 @@ namespace TestArcMapAddin2.Forms
                 }
 
                 PopulateFieldComboBoxes();
+                UpdateStatus($"已加载 {fieldNames.Count} 个字段");
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"读取要素类字段时出错: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ResetProgress();
+                UpdateStatus("加载字段失败");
             }
         }
 
@@ -356,6 +488,9 @@ namespace TestArcMapAddin2.Forms
         {
             try
             {
+                UpdateStatus("正在加载数据...");
+                UpdateProgress(10);
+
                 DataTable allData;
                 
                 if (surveyFeatureClass != null)
@@ -374,12 +509,17 @@ namespace TestArcMapAddin2.Forms
                     allData = ConvertFeatureClassToDataTable(featureClass);
                 }
 
+                UpdateProgress(30);
+                UpdateStatus("正在执行数据比对...");
+
                 // 筛选不一致的记录
                 var inconsistentRecords = new List<DataRow>();
                 var statistics = new Dictionary<string, int>();
 
-                foreach (DataRow row in allData.Rows)
+                int totalRows = allData.Rows.Count;
+                for (int i = 0; i < totalRows; i++)
                 {
+                    DataRow row = allData.Rows[i];
                     var landTypeValue = row[selectedLandTypeField]?.ToString() ?? "";
                     var landCodeValue = row[selectedLandCodeField]?.ToString() ?? "";
 
@@ -399,7 +539,18 @@ namespace TestArcMapAddin2.Forms
                                 statistics[prefix] = 1;
                         }
                     }
+
+                    // 更新进度
+                    if (i % 100 == 0 || i == totalRows - 1)
+                    {
+                        int progress = 30 + (i * 40 / totalRows);
+                        UpdateProgress(progress);
+                        UpdateStatus($"正在比对数据：{i + 1}/{totalRows}");
+                    }
                 }
+
+                UpdateProgress(80);
+                UpdateStatus("正在生成结果...");
 
                 // 显示统计结果
                 DisplayStatistics(inconsistentRecords.Count, statistics);
@@ -407,12 +558,18 @@ namespace TestArcMapAddin2.Forms
                 // 创建预览数据表
                 CreatePreviewDataTable(inconsistentRecords, allData);
 
-                // 启用导出按钮
-                btnExport.Enabled = inconsistentRecords.Count > 0; // 直接使用控件引用
+                // 启用相关按钮
+                btnDataProcess.Enabled = inconsistentRecords.Count > 0;
+                btnExport.Enabled = inconsistentRecords.Count > 0;
+
+                UpdateProgress(100);
+                UpdateStatus($"校验完成，发现 {inconsistentRecords.Count} 条不一致记录");
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"执行校验时出错: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ResetProgress();
+                UpdateStatus("校验失败");
             }
         }
 

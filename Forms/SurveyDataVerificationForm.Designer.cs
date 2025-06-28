@@ -43,6 +43,11 @@ namespace TestArcMapAddin2.Forms
         // µ¼³ö°´Å¥
         private System.Windows.Forms.Button btnExport;
 
+        // ÐÂÔö£º½ø¶ÈÀ¸ºÍ×´Ì¬±êÇ©
+        private System.Windows.Forms.Panel panelProgress;
+        private System.Windows.Forms.ProgressBar progressBar;
+        private System.Windows.Forms.Label lblStatus;
+
         /// <summary>
         /// Clean up any resources being used.
         /// </summary>
@@ -86,11 +91,15 @@ namespace TestArcMapAddin2.Forms
             this.groupBoxPreview = new System.Windows.Forms.GroupBox();
             this.dgvPreview = new System.Windows.Forms.DataGridView();
             this.btnExport = new System.Windows.Forms.Button();
+            this.panelProgress = new System.Windows.Forms.Panel();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
+            this.lblStatus = new System.Windows.Forms.Label();
             this.mainPanel.SuspendLayout();
             this.groupBoxFileSelection.SuspendLayout();
             this.groupBoxFieldSelection.SuspendLayout();
             this.groupBoxStatistics.SuspendLayout();
             this.groupBoxPreview.SuspendLayout();
+            this.panelProgress.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvPreview)).BeginInit();
             this.SuspendLayout();
             // 
@@ -109,7 +118,7 @@ namespace TestArcMapAddin2.Forms
             this.mainPanel.Location = new System.Drawing.Point(0, 0);
             this.mainPanel.Name = "mainPanel";
             this.mainPanel.Padding = new System.Windows.Forms.Padding(10);
-            this.mainPanel.Size = new System.Drawing.Size(1000, 700);
+            this.mainPanel.Size = new System.Drawing.Size(1000, 740);
             this.mainPanel.TabIndex = 0;
             // 
             // titleLabel
@@ -336,12 +345,42 @@ namespace TestArcMapAddin2.Forms
             this.btnExport.UseVisualStyleBackColor = false;
             this.btnExport.Click += new System.EventHandler(this.BtnExport_Click);
             // 
+            // panelProgress
+            // 
+            this.panelProgress.Controls.Add(this.progressBar);
+            this.panelProgress.Controls.Add(this.lblStatus);
+            this.panelProgress.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panelProgress.Location = new System.Drawing.Point(0, 740);
+            this.panelProgress.Name = "panelProgress";
+            this.panelProgress.Size = new System.Drawing.Size(1000, 60);
+            this.panelProgress.TabIndex = 1;
+            // 
+            // progressBar
+            // 
+            this.progressBar.Location = new System.Drawing.Point(18, 12);
+            this.progressBar.Margin = new System.Windows.Forms.Padding(4);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(750, 20);
+            this.progressBar.TabIndex = 0;
+            // 
+            // lblStatus
+            // 
+            this.lblStatus.AutoSize = true;
+            this.lblStatus.Font = new System.Drawing.Font("Î¢ÈíÑÅºÚ", 9F);
+            this.lblStatus.Location = new System.Drawing.Point(18, 38);
+            this.lblStatus.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(68, 17);
+            this.lblStatus.TabIndex = 1;
+            this.lblStatus.Text = "×´Ì¬£º¾ÍÐ÷";
+            // 
             // SurveyDataVerificationForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1000, 700);
+            this.ClientSize = new System.Drawing.Size(1000, 800);
             this.Controls.Add(this.mainPanel);
+            this.Controls.Add(this.panelProgress);
             this.Font = new System.Drawing.Font("Î¢ÈíÑÅºÚ", 9F);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -357,6 +396,8 @@ namespace TestArcMapAddin2.Forms
             this.groupBoxStatistics.ResumeLayout(false);
             this.groupBoxStatistics.PerformLayout();
             this.groupBoxPreview.ResumeLayout(false);
+            this.panelProgress.ResumeLayout(false);
+            this.panelProgress.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvPreview)).EndInit();
             this.ResumeLayout(false);
 
