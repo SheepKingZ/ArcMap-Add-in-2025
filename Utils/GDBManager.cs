@@ -44,7 +44,7 @@ namespace ForestResourcePlugin
                 System.Diagnostics.Debug.WriteLine($"开始创建File GDB: {path}");
                 
                 // 创建父目录（如果需要）
-                string parentDir = Path.GetDirectoryName(path);
+                string parentDir = System.IO.Path.GetDirectoryName(path);
                 if (!Directory.Exists(parentDir))
                 {
                     Directory.CreateDirectory(parentDir);
@@ -69,7 +69,7 @@ namespace ForestResourcePlugin
 
                 // 创建工作空间
                 IWorkspaceName workspaceName = workspaceFactory.Create(
-                    parentDir, Path.GetFileName(path), null, 0);
+                    parentDir, System.IO.Path.GetFileName(path), null, 0);
 
                 if (workspaceName != null)
                 {
