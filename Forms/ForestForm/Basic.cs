@@ -222,7 +222,7 @@ namespace ForestResourcePlugin
                     int landTypeIndex = FindBestMatchIndex(cmbLandTypeField.Items, new[] { "地类", "Y_DLBM", "LandType", "DL", "Land", "Type", "DLDM" });
                     cmbLandTypeField.SelectedIndex = landTypeIndex >= 0 ? landTypeIndex : 0;
 
-                    int landOwnerIndex = FindBestMatchIndex(cmbLandOwnerField.Items, new[] { "权属", "土地权属", "TDQS", "LD_QS", "Ownership", "Owner", "QS", "QSXZ" });
+                    int landOwnerIndex = FindBestMatchIndex(cmbLandOwnerField.Items, new[] {"QSXZ"});
                     cmbLandOwnerField.SelectedIndex = landOwnerIndex >= 0 ? landOwnerIndex : 0;
                 }
 
