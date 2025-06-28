@@ -1516,8 +1516,7 @@ namespace ForestResourcePlugin
                 // 检查必需字段的映射
                 var requiredFields = new Dictionary<string, string>
                 {
-                    { "DLMC", "地类字段" },
-                    { "TDQS", "土地权属字段" }
+
                 };
 
                 var missingFields = new List<string>();
