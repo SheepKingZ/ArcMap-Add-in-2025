@@ -99,8 +99,8 @@ namespace TestArcMapAddin2.Forms
             this.groupBoxFieldSelection.SuspendLayout();
             this.groupBoxStatistics.SuspendLayout();
             this.groupBoxPreview.SuspendLayout();
-            this.panelProgress.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvPreview)).BeginInit();
+            this.panelProgress.SuspendLayout();
             this.SuspendLayout();
             // 
             // mainPanel
@@ -292,7 +292,7 @@ namespace TestArcMapAddin2.Forms
             this.groupBoxStatistics.Font = new System.Drawing.Font("Î¢ÈíÑÅºÚ", 9F, System.Drawing.FontStyle.Bold);
             this.groupBoxStatistics.Location = new System.Drawing.Point(10, 310);
             this.groupBoxStatistics.Name = "groupBoxStatistics";
-            this.groupBoxStatistics.Size = new System.Drawing.Size(950, 120);
+            this.groupBoxStatistics.Size = new System.Drawing.Size(950, 167);
             this.groupBoxStatistics.TabIndex = 5;
             this.groupBoxStatistics.TabStop = false;
             this.groupBoxStatistics.Text = "Í³¼Æ½á¹û";
@@ -306,16 +306,16 @@ namespace TestArcMapAddin2.Forms
             this.txtStatisticsResult.Name = "txtStatisticsResult";
             this.txtStatisticsResult.ReadOnly = true;
             this.txtStatisticsResult.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStatisticsResult.Size = new System.Drawing.Size(920, 80);
+            this.txtStatisticsResult.Size = new System.Drawing.Size(920, 136);
             this.txtStatisticsResult.TabIndex = 0;
             // 
             // groupBoxPreview
             // 
             this.groupBoxPreview.Controls.Add(this.dgvPreview);
             this.groupBoxPreview.Font = new System.Drawing.Font("Î¢ÈíÑÅºÚ", 9F, System.Drawing.FontStyle.Bold);
-            this.groupBoxPreview.Location = new System.Drawing.Point(10, 440);
+            this.groupBoxPreview.Location = new System.Drawing.Point(10, 483);
             this.groupBoxPreview.Name = "groupBoxPreview";
-            this.groupBoxPreview.Size = new System.Drawing.Size(950, 180);
+            this.groupBoxPreview.Size = new System.Drawing.Size(950, 208);
             this.groupBoxPreview.TabIndex = 6;
             this.groupBoxPreview.TabStop = false;
             this.groupBoxPreview.Text = "Êý¾ÝÔ¤ÀÀ";
@@ -325,11 +325,11 @@ namespace TestArcMapAddin2.Forms
             this.dgvPreview.AllowUserToAddRows = false;
             this.dgvPreview.AllowUserToDeleteRows = false;
             this.dgvPreview.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgvPreview.Location = new System.Drawing.Point(15, 25);
+            this.dgvPreview.Location = new System.Drawing.Point(15, 22);
             this.dgvPreview.Name = "dgvPreview";
             this.dgvPreview.ReadOnly = true;
             this.dgvPreview.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvPreview.Size = new System.Drawing.Size(920, 140);
+            this.dgvPreview.Size = new System.Drawing.Size(920, 180);
             this.dgvPreview.TabIndex = 0;
             // 
             // btnExport
@@ -337,7 +337,7 @@ namespace TestArcMapAddin2.Forms
             this.btnExport.BackColor = System.Drawing.Color.LightGreen;
             this.btnExport.Enabled = false;
             this.btnExport.Font = new System.Drawing.Font("Î¢ÈíÑÅºÚ", 9F, System.Drawing.FontStyle.Bold);
-            this.btnExport.Location = new System.Drawing.Point(450, 630);
+            this.btnExport.Location = new System.Drawing.Point(454, 697);
             this.btnExport.Name = "btnExport";
             this.btnExport.Size = new System.Drawing.Size(120, 30);
             this.btnExport.TabIndex = 7;
@@ -396,9 +396,9 @@ namespace TestArcMapAddin2.Forms
             this.groupBoxStatistics.ResumeLayout(false);
             this.groupBoxStatistics.PerformLayout();
             this.groupBoxPreview.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvPreview)).EndInit();
             this.panelProgress.ResumeLayout(false);
             this.panelProgress.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvPreview)).EndInit();
             this.ResumeLayout(false);
 
         }
