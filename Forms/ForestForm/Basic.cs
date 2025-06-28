@@ -816,129 +816,383 @@ namespace ForestResourcePlugin
         /// <summary>
         /// 生成多县预览数据
         /// </summary>
-        //private PreviewQueryResult GenerateMultiCountyPreview(string landTypeField, string landOwnerField)
-        //{
-        //    var combinedResult = new PreviewQueryResult
-        //    {
-        //        PreviewData = new DataTable()
-        //    };
+        private PreviewQueryResult GenerateMultiCountyPreview(string landTypeField, string landOwnerField)
+        {
+            var combinedResult = new PreviewQueryResult
+            {
+                PreviewData = new DataTable()
+            };
 
-        //    // 初始化数据表结构（增加县名列）
-        //    combinedResult.PreviewData.Columns.Add("县名");
-        //    combinedResult.PreviewData.Columns.Add("图斑编号");
-        //    combinedResult.PreviewData.Columns.Add("地类");
-        //    combinedResult.PreviewData.Columns.Add("土地权属");
-        //    combinedResult.PreviewData.Columns.Add("面积(公顷)");
+            // 初始化数据表结构（增加县名列）
+            combinedResult.PreviewData.Columns.Add("县名");
+            combinedResult.PreviewData.Columns.Add("图斑编号");
+            combinedResult.PreviewData.Columns.Add("地类");
+            combinedResult.PreviewData.Columns.Add("土地权属");
+            combinedResult.PreviewData.Columns.Add("面积(公顷)");
 
-        //    int countyIndex = 0;
-        //    foreach (var countyInfo in selectedCountyData)
-        //    {
-        //        try
-        //        {
-        //            if (countyInfo.LCXZGXFile == null)
-        //            {
-        //                System.Diagnostics.Debug.WriteLine($"县 {countyInfo.CountyName} 没有林草现状数据，跳过");
-        //                continue;
-        //            }
+            int countyIndex = 0;
+            foreach (var countyInfo in selectedCountyData)
+            {
+                try
+                {
+                    if (countyInfo.LCXZGXFile == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"县 {countyInfo.CountyName} 没有林草现状数据，跳过");
+                        continue;
+                    }
 
-        //            countyIndex++;
-        //            UpdateStatus($"正在处理县 {countyInfo.CountyName} ({countyIndex}/{selectedCountyData.Count})...");
+                    countyIndex++;
+                    UpdateStatus($"正在处理县 {countyInfo.CountyName} ({countyIndex}/{selectedCountyData.Count})...");
 
-        //            // 计算进度
-        //            int baseProgress = 20 + (countyIndex - 1) * 60 / selectedCountyData.Count;
-        //            progressBar.Value = baseProgress;
+                    // 计算进度
+                    int baseProgress = 20 + (countyIndex - 1) * 60 / selectedCountyData.Count;
+                    progressBar.Value = baseProgress;
 
-        //            // 处理单个县的数据
-        //            var countyResult = ProcessSingleCountyPreview(countyInfo, landTypeField, landOwnerField);
+                    // 处理单个县的数据
+                    var countyResult = ProcessSingleCountyPreview(countyInfo, landTypeField, landOwnerField);
 
-        //            // 合并结果
-        //            foreach (DataRow row in countyResult.PreviewData.Rows)
-        //            {
-        //                var newRow = combinedResult.PreviewData.NewRow();
-        //                newRow["县名"] = countyInfo.CountyName;
-        //                newRow["图斑编号"] = row["图斑编号"];
-        //                newRow["地类"] = row["地类"];
-        //                newRow["土地权属"] = row["土地权属"];
-        //                newRow["面积(公顷)"] = row["面积(公顷)"];
+                    // 合并结果
+                    foreach (DataRow row in countyResult.PreviewData.Rows)
+                    {
+                        var newRow = combinedResult.PreviewData.NewRow();
+                        newRow["县名"] = countyInfo.CountyName;
+                        newRow["图斑编号"] = row["图斑编号"];
+                        newRow["地类"] = row["地类"];
+                        newRow["土地权属"] = row["土地权属"];
+                        newRow["面积(公顷)"] = row["面积(公顷)"];
 
-        //                combinedResult.PreviewData.Rows.Add(newRow);
-        //            }
+                        combinedResult.PreviewData.Rows.Add(newRow);
+                    }
 
-        //            combinedResult.TotalCount += countyResult.TotalCount;
-        //            combinedResult.ProcessedCount += countyResult.ProcessedCount;
+                    combinedResult.TotalCount += countyResult.TotalCount;
+                    combinedResult.ProcessedCount += countyResult.ProcessedCount;
 
-        //            // 限制预览数量
-        //            if (combinedResult.ProcessedCount >= 1000)
-        //            {
-        //                break;
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            System.Diagnostics.Debug.WriteLine($"处理县 {countyInfo.CountyName} 时出错: {ex.Message}");
-        //            continue;
-        //        }
-        //    }
+                    // 限制预览数量
+                    if (combinedResult.ProcessedCount >= 1000)
+                    {
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"处理县 {countyInfo.CountyName} 时出错: {ex.Message}");
+                    continue;
+                }
+            }
 
-        //    return combinedResult;
-        //}
+            return combinedResult;
+        }
 
         /// <summary>
         /// 处理单个县的预览数据
         /// </summary>
-        //private PreviewQueryResult ProcessSingleCountyPreview(CountyDataInfo countyInfo, string landTypeField, string landOwnerField)
-        //{
-        //    var result = new PreviewQueryResult
-        //    {
-        //        PreviewData = new DataTable()
-        //    };
+        private PreviewQueryResult ProcessSingleCountyPreview(CountyDataInfo countyInfo, string landTypeField, string landOwnerField)
+        {
+            var result = new PreviewQueryResult
+            {
+                PreviewData = new DataTable()
+            };
 
-        //    // 初始化数据表结构（不包含县名列）
-        //    result.PreviewData.Columns.Add("图斑编号");
-        //    result.PreviewData.Columns.Add("地类");
-        //    result.PreviewData.Columns.Add("土地权属");
-        //    result.PreviewData.Columns.Add("面积(公顷)");
+            // 初始化数据表结构（不包含县名列）
+            result.PreviewData.Columns.Add("图斑编号");
+            result.PreviewData.Columns.Add("地类");
+            result.PreviewData.Columns.Add("土地权属");
+            result.PreviewData.Columns.Add("面积(公顷)");
 
-        //    try
-        //    {
-        //        // 加载要素类
-        //        IFeatureClass lcxzgxFeatureClass = LoadFeatureClass(countyInfo.LCXZGXFile);
-        //        IFeatureClass czkfbjFeatureClass = null;
+            try
+            {
+                // 加载要素类
+                IFeatureClass lcxzgxFeatureClass = LoadFeatureClass(countyInfo.LCXZGXFile);
+                IFeatureClass czkfbjFeatureClass = null;
 
-        //        if (countyInfo.CZKFBJFile != null && chkCollectiveInBoundary.Checked)
-        //        {
-        //            czkfbjFeatureClass = LoadFeatureClass(countyInfo.CZKFBJFile);
-        //        }
+                if (countyInfo.CZKFBJFile != null && chkCollectiveInBoundary.Checked)
+                {
+                    czkfbjFeatureClass = LoadFeatureClass(countyInfo.CZKFBJFile);
+                }
 
-        //        if (lcxzgxFeatureClass == null)
-        //        {
-        //            System.Diagnostics.Debug.WriteLine($"无法加载县 {countyInfo.CountyName} 的林草现状数据");
-        //            return result;
-        //        }
+                if (lcxzgxFeatureClass == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"无法加载县 {countyInfo.CountyName} 的林草现状数据");
+                    return result;
+                }
 
-        //        // 使用现有的查询逻辑处理单个要素类
-        //        string optimizedWhereClause = BuildOptimizedWhereClause(landTypeField, landOwnerField);
-        //        result = ExecuteOptimizedQueryForFeatureClass(
-        //            lcxzgxFeatureClass,
-        //            czkfbjFeatureClass,
-        //            optimizedWhereClause,
-        //            landTypeField,
-        //            landOwnerField,
-        //            200); // 每个县最多200条记录用于预览
+                // 使用现有的查询逻辑处理单个要素类
+                string optimizedWhereClause = BuildOptimizedWhereClause(landTypeField, landOwnerField);
+                result = ExecuteOptimizedQueryForFeatureClass(
+                    lcxzgxFeatureClass,
+                    czkfbjFeatureClass,
+                    optimizedWhereClause,
+                    landTypeField,
+                    landOwnerField,
+                    200); // 每个县最多200条记录用于预览
 
-        //        // 清理COM对象
-        //        if (lcxzgxFeatureClass != null)
-        //            System.Runtime.InteropServices.Marshal.ReleaseComObject(lcxzgxFeatureClass);
-        //        if (czkfbjFeatureClass != null)
-        //            System.Runtime.InteropServices.Marshal.ReleaseComObject(czkfbjFeatureClass);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        System.Diagnostics.Debug.WriteLine($"处理县 {countyInfo.CountyName} 预览时出错: {ex.Message}");
-        //    }
+                // 清理COM对象
+                if (lcxzgxFeatureClass != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(lcxzgxFeatureClass);
+                if (czkfbjFeatureClass != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(czkfbjFeatureClass);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"处理县 {countyInfo.CountyName} 预览时出错: {ex.Message}");
+            }
 
-        //    return result;
-        //}
+            return result;
+        }
+
+        /// <summary>
+        /// 为单个要素类执行优化查询
+        /// </summary>
+        private PreviewQueryResult ExecuteOptimizedQueryForFeatureClass(
+            IFeatureClass lcxzgxFeatureClass,
+            IFeatureClass czkfbjFeatureClass,
+            string whereClause,
+            string landTypeField,
+            string landOwnerField,
+            int maxCount)
+        {
+            var result = new PreviewQueryResult
+            {
+                PreviewData = new DataTable()
+            };
+
+            // 初始化数据表结构
+            result.PreviewData.Columns.Add("图斑编号");
+            result.PreviewData.Columns.Add("地类");
+            result.PreviewData.Columns.Add("土地权属");
+            result.PreviewData.Columns.Add("面积(公顷)");
+
+            try
+            {
+                // 创建查询过滤器
+                IQueryFilter queryFilter = new QueryFilterClass();
+                if (!string.IsNullOrEmpty(whereClause))
+                {
+                    queryFilter.WhereClause = whereClause;
+                }
+
+                // 获取字段索引
+                var fieldIndices = GetFieldIndicesForFeatureClass(lcxzgxFeatureClass, landTypeField, landOwnerField);
+
+                // 空间过滤器
+                ISpatialFilter cachedSpatialFilter = null;
+                if (chkCollectiveInBoundary.Checked && czkfbjFeatureClass != null)
+                {
+                    cachedSpatialFilter = new SpatialFilterClass();
+                    cachedSpatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
+                }
+
+                IFeatureCursor cursor = null;
+                IFeature feature = null;
+
+                try
+                {
+                    cursor = lcxzgxFeatureClass.Search(queryFilter, false);
+
+                    while ((feature = cursor.NextFeature()) != null && result.ProcessedCount < maxCount)
+                    {
+                        result.TotalCount++;
+
+                        if (ShouldIncludeFeatureForCounty(feature, fieldIndices, cachedSpatialFilter, czkfbjFeatureClass))
+                        {
+                            var row = CreateDataRowForFeatureClass(feature, fieldIndices, result.PreviewData);
+                            result.PreviewData.Rows.Add(row);
+                            result.ProcessedCount++;
+                        }
+
+                        // 释放当前要素
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                        feature = null;
+                    }
+                }
+                finally
+                {
+                    if (feature != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                    if (cursor != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"执行查询时出错: {ex.Message}");
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 为特定要素类获取字段索引
+        /// </summary>
+        private FieldIndices GetFieldIndicesForFeatureClass(IFeatureClass featureClass, string landTypeField, string landOwnerField)
+        {
+            var indices = new FieldIndices();
+
+            // 缓存字段索引以避免重复查找
+            indices.TbdhIndex = featureClass.FindField("TBDH");
+            if (indices.TbdhIndex == -1) indices.TbdhIndex = featureClass.FindField("BSM");
+            if (indices.TbdhIndex == -1) indices.TbdhIndex = featureClass.FindField("OBJECTID");
+
+            indices.DlmcIndex = featureClass.FindField(landTypeField);
+            indices.TdqsIndex = featureClass.FindField(landOwnerField);
+            indices.TbmjIndex = featureClass.FindField("TBMJ");
+            indices.QsxzIndex = featureClass.FindField("QSXZ");
+
+            // 备选面积字段
+            if (indices.TbmjIndex == -1)
+            {
+                indices.TbmjIndex = featureClass.FindField("MJ");
+                if (indices.TbmjIndex == -1) indices.TbmjIndex = featureClass.FindField("AREA");
+                if (indices.TbmjIndex == -1) indices.TbmjIndex = featureClass.FindField("面积");
+            }
+
+            if (indices.QsxzIndex == -1 && indices.TdqsIndex != -1)
+            {
+                indices.QsxzIndex = indices.TdqsIndex;
+            }
+
+            return indices;
+        }
+
+        /// <summary>
+        /// 判断是否应包含要素（针对特定县）
+        /// </summary>
+        private bool ShouldIncludeFeatureForCounty(IFeature feature, FieldIndices fieldIndices, ISpatialFilter spatialFilter, IFeatureClass czkfbjFeatureClass)
+        {
+            // 获取土地权属值
+            string ownerValue = GetFieldValue(feature, fieldIndices.QsxzIndex, fieldIndices.TdqsIndex);
+
+            // 国有林地直接添加
+            if (chkStateOwned.Checked && (ownerValue == "1" || ownerValue == "20"))
+            {
+                return true;
+            }
+
+            // 集体林地需要检查是否在城镇开发边界内
+            if (chkCollectiveInBoundary.Checked &&
+                (ownerValue == "2" || ownerValue == "30") &&
+                czkfbjFeatureClass != null)
+            {
+                return IsFeatureInBoundaryForCounty(feature, spatialFilter, czkfbjFeatureClass);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 检查要素是否在边界内（针对特定县）
+        /// </summary>
+        private bool IsFeatureInBoundaryForCounty(IFeature feature, ISpatialFilter spatialFilter, IFeatureClass czkfbjFeatureClass)
+        {
+            try
+            {
+                if (spatialFilter == null || czkfbjFeatureClass == null)
+                    return false;
+
+                spatialFilter.Geometry = feature.Shape;
+                int count = czkfbjFeatureClass.FeatureCount(spatialFilter);
+                return count > 0;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"空间查询出错: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 为特定要素类创建数据行
+        /// </summary>
+        private DataRow CreateDataRowForFeatureClass(IFeature feature, FieldIndices fieldIndices, DataTable dataTable)
+        {
+            DataRow row = dataTable.NewRow();
+
+            // 图斑编号
+            row["图斑编号"] = fieldIndices.TbdhIndex != -1 ?
+                feature.get_Value(fieldIndices.TbdhIndex)?.ToString() ?? feature.OID.ToString() :
+                feature.OID.ToString();
+
+            // 地类
+            row["地类"] = fieldIndices.DlmcIndex != -1 ?
+                feature.get_Value(fieldIndices.DlmcIndex)?.ToString() ?? "" : "";
+
+            // 土地权属
+            string ownerValue = GetFieldValue(feature, fieldIndices.QsxzIndex, fieldIndices.TdqsIndex);
+            row["土地权属"] = TranslateOwnershipCode(ownerValue);
+
+            // 面积
+            if (fieldIndices.TbmjIndex != -1)
+            {
+                object mjValue = feature.get_Value(fieldIndices.TbmjIndex);
+                if (mjValue != null && double.TryParse(mjValue.ToString(), out double mjDouble))
+                {
+                    row["面积(公顷)"] = mjDouble.ToString("F2");
+                }
+                else
+                {
+                    row["面积(公顷)"] = mjValue?.ToString() ?? "";
+                }
+            }
+            else
+            {
+                row["面积(公顷)"] = "";
+            }
+
+            return row;
+        }
+
+        private void btnPreview_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 验证输入
+                var selectedCounties = GetSelectedCounties();
+                if (selectedCounties.Count == 0)
+                {
+                    MessageBox.Show("请至少选择一个县", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (selectedCountyData == null || selectedCountyData.Count == 0)
+                {
+                    MessageBox.Show("县数据未正确加载，请重新选择", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                string landTypeField = cmbLandTypeField.SelectedItem?.ToString();
+                string landOwnerField = cmbLandOwnerField.SelectedItem?.ToString();
+
+                if (string.IsNullOrEmpty(landTypeField) || string.IsNullOrEmpty(landOwnerField))
+                {
+                    MessageBox.Show("请选择地类字段和土地权属字段", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                UpdateStatus("正在生成预览...");
+                progressBar.Value = 10;
+
+                // 生成多县预览数据
+                var allPreviewData = GenerateMultiCountyPreview(landTypeField, landOwnerField);
+
+                // 显示结果
+                DisplayPreviewResults(allPreviewData);
+
+                progressBar.Value = 100;
+                UpdateStatus("预览生成完成");
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"生成预览时出错: {ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                UpdateStatus("预览生成失败");
+                progressBar.Value = 0;
+                System.Diagnostics.Debug.WriteLine($"btnPreview_Click错误: {ex}");
+            }
+        }
+
         private bool ValidateInputs()
         {
             var selectedCounties = GetSelectedCounties();
@@ -1010,57 +1264,527 @@ namespace ForestResourcePlugin
                 return null;
             }
         }
-        //private void btnPreview_Click(object sender, EventArgs e)
-        //{
-        //    try
-        //    {
-        //        // 验证输入
-        //        var selectedCounties = GetSelectedCounties();
-        //        if (selectedCounties.Count == 0)
-        //        {
-        //            MessageBox.Show("请至少选择一个县", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        //            return;
-        //        }
+        private void ExecuteProcessing()
+        {
+            btnExecute.Enabled = false;
+            btnCancel.Enabled = true;
+            progressBar.Value = 0;
 
-        //        if (selectedCountyData == null || selectedCountyData.Count == 0)
-        //        {
-        //            MessageBox.Show("县数据未正确加载，请重新选择", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        //            return;
-        //        }
+            try
+            {
+                UpdateStatus("开始处理数据...");
+                progressBar.Value = 5;
 
-        //        string landTypeField = cmbLandTypeField.SelectedItem?.ToString();
-        //        string landOwnerField = cmbLandOwnerField.SelectedItem?.ToString();
+                // 1. 验证输入
+                if (!ValidateInputs())
+                {
+                    return;
+                }
 
-        //        if (string.IsNullOrEmpty(landTypeField) || string.IsNullOrEmpty(landOwnerField))
-        //        {
-        //            MessageBox.Show("请选择地类字段和土地权属字段", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        //            return;
-        //        }
+                // 2. 验证字段映射
+                if (!ValidateFieldMapping())
+                {
+                    return;
+                }
 
-        //        UpdateStatus("正在生成预览...");
-        //        progressBar.Value = 10;
+                progressBar.Value = 10;
+                UpdateStatus("正在构建查询条件...");
 
-        //        // 生成多县预览数据
-        //        var allPreviewData = GenerateMultiCountyPreview(landTypeField, landOwnerField);
+                // 3. 获取字段信息
+                string landTypeField = cmbLandTypeField.SelectedItem?.ToString();
+                string landOwnerField = cmbLandOwnerField.SelectedItem?.ToString();
 
-        //        // 显示结果
-        //        DisplayPreviewResults(allPreviewData);
+                if (string.IsNullOrEmpty(landTypeField) || string.IsNullOrEmpty(landOwnerField))
+                {
+                    MessageBox.Show("请选择地类字段和土地权属字段", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
-        //        progressBar.Value = 100;
-        //        UpdateStatus("预览生成完成");
+                progressBar.Value = 20;
+                UpdateStatus("开始批量处理县数据...");
 
-        //        GC.Collect();
-        //        GC.WaitForPendingFinalizers();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show($"生成预览时出错: {ex.Message}", "错误",
-        //            MessageBoxButtons.OK, MessageBoxIcon.Error);
-        //        UpdateStatus("预览生成失败");
-        //        progressBar.Value = 0;
-        //        System.Diagnostics.Debug.WriteLine($"btnPreview_Click错误: {ex}");
-        //    }
-        //}
+                // 4. 执行多县批量处理
+                var batchResults = ExecuteMultiCountyBatchProcessing(landTypeField, landOwnerField);
+
+                progressBar.Value = 90;
+                UpdateStatus("正在生成处理报告...");
+
+                // 5. 显示批量处理结果
+                DisplayBatchProcessingResults(batchResults);
+
+                progressBar.Value = 100;
+                UpdateStatus("批量处理完成！");
+
+                // 6. 询问是否打开输出文件夹
+                if (MessageBox.Show("是否打开输出文件夹？", "处理完成",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    System.Diagnostics.Process.Start("explorer.exe", txtOutputPath.Text);
+                }
+            }
+            catch (Exception ex)
+            {
+                progressBar.Value = 0;
+                UpdateStatus("处理失败");
+                MessageBox.Show($"处理过程中发生错误：\n{ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Debug.WriteLine($"ExecuteProcessing错误: {ex}");
+            }
+            finally
+            {
+                btnExecute.Enabled = true;
+                btnCancel.Enabled = false;
+            }
+        }
+
+        /// <summary>
+        /// 执行多县批量处理
+        /// </summary>
+        private List<CountyProcessingResult> ExecuteMultiCountyBatchProcessing(string landTypeField, string landOwnerField)
+        {
+            var results = new List<CountyProcessingResult>();
+            var selectedCounties = GetSelectedCounties();
+            int totalCounties = selectedCounties.Count;
+            int processedCounties = 0;
+
+            foreach (var countyName in selectedCounties)
+            {
+                try
+                {
+                    processedCounties++;
+                    UpdateStatus($"正在处理县 {countyName} ({processedCounties}/{totalCounties})...");
+
+                    // 计算进度（20-90之间分配给批量处理）
+                    int baseProgress = 20 + (processedCounties - 1) * 70 / totalCounties;
+                    progressBar.Value = baseProgress;
+
+                    // 查找县数据
+                    var countyInfo = selectedCountyData.FirstOrDefault(c => c.CountyName == countyName);
+                    if (countyInfo?.LCXZGXFile == null)
+                    {
+                        results.Add(new CountyProcessingResult
+                        {
+                            CountyName = countyName,
+                            Success = false,
+                            ErrorMessage = "未找到该县的林草现状数据"
+                        });
+                        continue;
+                    }
+
+                    // 处理单个县
+                    var countyResult = ProcessSingleCounty(countyInfo, landTypeField, landOwnerField);
+                    results.Add(countyResult);
+
+                    // 更新进度
+                    progressBar.Value = baseProgress + (70 / totalCounties);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"处理县 {countyName} 时出错: {ex.Message}");
+                    results.Add(new CountyProcessingResult
+                    {
+                        CountyName = countyName,
+                        Success = false,
+                        ErrorMessage = ex.Message
+                    });
+                }
+            }
+
+            return results;
+        }
+        /// <summary>
+        /// 从映射表格获取字段映射配置
+        /// </summary>
+        private Dictionary<string, string> GetFieldMappingsFromGrid()
+        {
+            var fieldMappings = new Dictionary<string, string>();
+
+            try
+            {
+                if (mappingData != null && mappingData.Rows.Count > 0)
+                {
+                    foreach (DataRow row in mappingData.Rows)
+                    {
+                        string targetField = row["目标字段"]?.ToString();
+                        string sourceField = row["源字段"]?.ToString();
+                        string status = row["映射状态"]?.ToString();
+
+                        // 只添加已映射且有效的字段
+                        if (!string.IsNullOrEmpty(targetField) &&
+                            !string.IsNullOrEmpty(sourceField) &&
+                            status == "已映射")
+                        {
+                            fieldMappings[targetField] = sourceField;
+                        }
+                    }
+                }
+
+                // 如果映射表格为空或没有有效映射，使用默认映射
+                if (fieldMappings.Count == 0)
+                {
+                    fieldMappings = GetDefaultFieldMappings();
+                }
+
+                System.Diagnostics.Debug.WriteLine($"获取字段映射配置完成，共 {fieldMappings.Count} 个映射");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"获取字段映射时出错: {ex.Message}");
+                // 返回默认映射
+                fieldMappings = GetDefaultFieldMappings();
+            }
+
+            return fieldMappings;
+        }
+
+        /// <summary>
+        /// 获取默认字段映射配置
+        /// </summary>
+        private Dictionary<string, string> GetDefaultFieldMappings()
+        {
+            var defaultMappings = new Dictionary<string, string>();
+
+            try
+            {
+                // 获取当前选择的字段
+                string landTypeField = cmbLandTypeField.SelectedItem?.ToString();
+                string landOwnerField = cmbLandOwnerField.SelectedItem?.ToString();
+
+                // 基本字段映射
+                if (!string.IsNullOrEmpty(landTypeField))
+                {
+                    defaultMappings["DLMC"] = landTypeField;
+                }
+
+                if (!string.IsNullOrEmpty(landOwnerField))
+                {
+                    defaultMappings["TDQS"] = landOwnerField;
+                    defaultMappings["QSXZ"] = landOwnerField;
+                }
+
+                // 其他常用字段映射
+                var fieldNames = GetAvailableSourceFields();
+
+                // 图斑编号
+                string tbdhField = fieldNames.FirstOrDefault(f =>
+                    f.Equals("TBDH", StringComparison.OrdinalIgnoreCase) ||
+                    f.Equals("BSM", StringComparison.OrdinalIgnoreCase) ||
+                    f.Equals("图斑编号", StringComparison.OrdinalIgnoreCase));
+                if (!string.IsNullOrEmpty(tbdhField))
+                {
+                    defaultMappings["TBDH"] = tbdhField;
+                }
+
+                // 面积字段
+                string mjField = fieldNames.FirstOrDefault(f =>
+                    f.Equals("TBMJ", StringComparison.OrdinalIgnoreCase) ||
+                    f.Equals("MJ", StringComparison.OrdinalIgnoreCase) ||
+                    f.Equals("AREA", StringComparison.OrdinalIgnoreCase) ||
+                    f.Equals("面积", StringComparison.OrdinalIgnoreCase));
+                if (!string.IsNullOrEmpty(mjField))
+                {
+                    defaultMappings["MJ"] = mjField;
+                    defaultMappings["TBMJ"] = mjField;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"生成默认字段映射，共 {defaultMappings.Count} 个映射");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"生成默认字段映射时出错: {ex.Message}");
+            }
+
+            return defaultMappings;
+        }
+
+        /// <summary>
+        /// 验证字段映射配置
+        /// </summary>
+        private bool ValidateFieldMapping()
+        {
+            try
+            {
+                var fieldMappings = GetFieldMappingsFromGrid();
+
+                if (fieldMappings == null || fieldMappings.Count == 0)
+                {
+                    MessageBox.Show("字段映射配置为空，请配置字段映射或确保已选择相关字段",
+                        "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+
+                // 检查必需字段的映射
+                var requiredFields = new Dictionary<string, string>
+                {
+                    { "DLMC", "地类字段" },
+                    { "TDQS", "土地权属字段" }
+                };
+
+                var missingFields = new List<string>();
+
+                foreach (var required in requiredFields)
+                {
+                    if (!fieldMappings.ContainsKey(required.Key) ||
+                        string.IsNullOrEmpty(fieldMappings[required.Key]))
+                    {
+                        missingFields.Add(required.Value);
+                    }
+                }
+
+                if (missingFields.Count > 0)
+                {
+                    string message = $"以下必需字段缺少映射配置：\n{string.Join("\n", missingFields)}\n\n请在字段映射表格中配置这些字段的映射关系。";
+                    MessageBox.Show(message, "字段映射验证失败",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+
+                // 验证源字段是否存在
+                var availableFields = GetAvailableSourceFields();
+                var invalidMappings = new List<string>();
+
+                foreach (var mapping in fieldMappings)
+                {
+                    if (!availableFields.Contains(mapping.Value))
+                    {
+                        invalidMappings.Add($"{mapping.Key} -> {mapping.Value}");
+                    }
+                }
+
+                if (invalidMappings.Count > 0)
+                {
+                    string message = $"以下字段映射的源字段不存在：\n{string.Join("\n", invalidMappings)}\n\n请检查并修正字段映射配置。";
+                    MessageBox.Show(message, "字段映射验证失败",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+
+                System.Diagnostics.Debug.WriteLine("字段映射验证通过");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"验证字段映射时出错: {ex.Message}");
+                MessageBox.Show($"验证字段映射时出错: {ex.Message}", "验证错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+        /// <summary>
+        /// 处理单个县
+        /// </summary>
+        private CountyProcessingResult ProcessSingleCounty(CountyDataInfo countyInfo, string landTypeField, string landOwnerField)
+        {
+            var result = new CountyProcessingResult
+            {
+                CountyName = countyInfo.CountyName,
+                Success = false
+            };
+
+            try
+            {
+                // 加载要素类
+                IFeatureClass lcxzgxFeatureClass = LoadFeatureClass(countyInfo.LCXZGXFile);
+                IFeatureClass czkfbjFeatureClass = null;
+
+                if (countyInfo.CZKFBJFile != null && chkCollectiveInBoundary.Checked)
+                {
+                    czkfbjFeatureClass = LoadFeatureClass(countyInfo.CZKFBJFile);
+                }
+
+                if (lcxzgxFeatureClass == null)
+                {
+                    result.ErrorMessage = "无法加载林草现状数据";
+                    return result;
+                }
+
+                // 查询符合条件的要素
+                var filteredFeatures = QueryFilteredFeaturesForCounty(
+                    lcxzgxFeatureClass, 
+                    czkfbjFeatureClass, 
+                    landTypeField, 
+                    landOwnerField);
+
+                if (filteredFeatures.Count == 0)
+                {
+                    result.Success = true;
+                    result.ProcessedFeatureCount = 0;
+                    result.OutputPath = "无符合条件的图斑";
+                    return result;
+                }
+
+                // 创建县级输出文件
+                string countyOutputPath = System.IO.Path.Combine(txtOutputPath.Text, countyInfo.CountyName);
+                if (!Directory.Exists(countyOutputPath))
+                {
+                    Directory.CreateDirectory(countyOutputPath);
+                }
+
+                string outputShapefilePath = System.IO.Path.Combine(countyOutputPath,
+                    $"{countyInfo.CountyName}_ForestScope_{DateTime.Now:yyyyMMdd_HHmmss}.shp");
+
+                // 导出数据
+                var exporter = new ShapefileExporter();
+                var fieldMappings = GetFieldMappingsFromGrid();
+
+                exporter.ExportToShapefile(
+                    filteredFeatures,
+                    lcxzgxFeatureClass,
+                    outputShapefilePath,
+                    fieldMappings,
+                    cmbCoordSystem.SelectedItem?.ToString(),
+                    null); // 不需要进度回调，因为在批量处理中
+
+                result.Success = true;
+                result.ProcessedFeatureCount = filteredFeatures.Count;
+                result.OutputPath = outputShapefilePath;
+
+                // 清理COM对象
+                foreach (var feature in filteredFeatures)
+                {
+                    if (feature != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                }
+
+                if (lcxzgxFeatureClass != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(lcxzgxFeatureClass);
+                if (czkfbjFeatureClass != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(czkfbjFeatureClass);
+            }
+            catch (Exception ex)
+            {
+                result.ErrorMessage = ex.Message;
+                System.Diagnostics.Debug.WriteLine($"处理县 {countyInfo.CountyName} 时出错: {ex.Message}");
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 为特定县查询符合条件的要素
+        /// </summary>
+        private List<IFeature> QueryFilteredFeaturesForCounty(
+            IFeatureClass lcxzgxFeatureClass,
+            IFeatureClass czkfbjFeatureClass,
+            string landTypeField,
+            string landOwnerField)
+        {
+            var features = new List<IFeature>();
+
+            try
+            {
+                string optimizedWhereClause = BuildOptimizedWhereClause(landTypeField, landOwnerField);
+
+                IQueryFilter queryFilter = new QueryFilterClass();
+                if (!string.IsNullOrEmpty(optimizedWhereClause))
+                {
+                    queryFilter.WhereClause = optimizedWhereClause;
+                }
+
+                var fieldIndices = GetFieldIndicesForFeatureClass(lcxzgxFeatureClass, landTypeField, landOwnerField);
+
+                ISpatialFilter cachedSpatialFilter = null;
+                if (chkCollectiveInBoundary.Checked && czkfbjFeatureClass != null)
+                {
+                    cachedSpatialFilter = new SpatialFilterClass();
+                    cachedSpatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
+                }
+
+                IFeatureCursor cursor = null;
+                IFeature feature = null;
+
+                try
+                {
+                    cursor = lcxzgxFeatureClass.Search(queryFilter, false);
+
+                    while ((feature = cursor.NextFeature()) != null)
+                    {
+                        if (ShouldIncludeFeatureForCounty(feature, fieldIndices, cachedSpatialFilter, czkfbjFeatureClass))
+                        {
+                            features.Add(feature);
+                            feature = null; // 防止在 finally 中释放
+                        }
+                        else if (feature != null)
+                        {
+                            System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                            feature = null;
+                        }
+                    }
+                }
+                finally
+                {
+                    if (feature != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                    if (cursor != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"查询要素时出错: {ex.Message}");
+                // 清理已分配的要素
+                foreach (var f in features)
+                {
+                    if (f != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(f);
+                }
+                features.Clear();
+                throw;
+            }
+
+            return features;
+        }
+
+        /// <summary>
+        /// 显示批量处理结果
+        /// </summary>
+        private void DisplayBatchProcessingResults(List<CountyProcessingResult> results)
+        {
+            var successful = results.Where(r => r.Success).ToList();
+            var failed = results.Where(r => !r.Success).ToList();
+
+            string resultMessage = $"多县批量处理完成！\n\n";
+            resultMessage += $"处理结果统计：\n";
+            resultMessage += $"总县数：{results.Count}\n";
+            resultMessage += $"成功处理：{successful.Count} 个县\n";
+            resultMessage += $"处理失败：{failed.Count} 个县\n\n";
+
+            if (successful.Count > 0)
+            {
+                resultMessage += "成功处理的县：\n";
+                foreach (var result in successful)
+                {
+                    resultMessage += $"- {result.CountyName}: {result.ProcessedFeatureCount} 个图斑\n";
+                }
+                resultMessage += "\n";
+            }
+
+            if (failed.Count > 0)
+            {
+                resultMessage += "处理失败的县：\n";
+                foreach (var result in failed)
+                {
+                    resultMessage += $"- {result.CountyName}: {result.ErrorMessage}\n";
+                }
+            }
+
+            resultMessage += $"\n输出路径：{txtOutputPath.Text}";
+
+            MessageBox.Show(resultMessage, "批量处理完成",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        /// <summary>
+        /// 县处理结果类
+        /// </summary>
+        private class CountyProcessingResult
+        {
+            public string CountyName { get; set; }
+            public bool Success { get; set; }
+            public int ProcessedFeatureCount { get; set; }
+            public string OutputPath { get; set; }
+            public string ErrorMessage { get; set; }
+        }
 
         // **新增方法: 构建优化的WHERE子句**
         private string BuildOptimizedWhereClause(string landTypeField, string landOwnerField)
@@ -1924,172 +2648,6 @@ namespace ForestResourcePlugin
             }
         }
 
-        private void ExecuteProcessing()
-        {
-            btnExecute.Enabled = false;
-            btnCancel.Enabled = true;
-            progressBar.Value = 0;
-
-            try
-            {
-                UpdateStatus("开始处理数据...");
-                progressBar.Value = 5;
-
-                // 1. 验证字段映射
-                if (!ValidateFieldMapping())
-                {
-                    return;
-                }
-
-                progressBar.Value = 10;
-                UpdateStatus("正在构建查询条件...");
-
-                // 2. 构建查询条件
-                string landTypeField = cmbLandTypeField.SelectedItem?.ToString();
-                string landOwnerField = cmbLandOwnerField.SelectedItem?.ToString();
-
-                if (string.IsNullOrEmpty(landTypeField) || string.IsNullOrEmpty(landOwnerField))
-                {
-                    MessageBox.Show("请选择地类字段和土地权属字段", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                progressBar.Value = 20;
-                UpdateStatus("正在查询符合条件的图斑...");
-
-                // 3. 使用与 btnPreview 相同的筛选逻辑
-                var filteredFeatures = QueryFilteredFeaturesForExport(landTypeField, landOwnerField);
-                
-                if (filteredFeatures.Count == 0)
-                {
-                    MessageBox.Show("没有找到符合筛选条件的图斑", "处理结果", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-                progressBar.Value = 40;
-                UpdateStatus($"找到 {filteredFeatures.Count} 个符合条件的图斑，正在创建输出文件...");
-
-                // 4. 创建输出Shapefile
-                string outputShapefilePath = System.IO.Path.Combine(txtOutputPath.Text, 
-                    $"ForestScope_{DateTime.Now:yyyyMMdd_HHmmss}.shp");
-
-                var exporter = new ShapefileExporter();
-                var fieldMappings = GetFieldMappingsFromGrid();
-
-                progressBar.Value = 50;
-                UpdateStatus("正在创建输出Shapefile结构...");
-
-                // 5. 执行导出
-                exporter.ExportToShapefile(
-                    filteredFeatures,
-                    lcxzgxFeatureClass,
-                    outputShapefilePath,
-                    fieldMappings,
-                    cmbCoordSystem.SelectedItem?.ToString(),
-                    (progress, message) => {
-                        this.Invoke(new Action(() => {
-                            progressBar.Value = 50 + (progress / 2); // 50-100的进度
-                            UpdateStatus(message);
-                        }));
-                    }
-                );
-
-                progressBar.Value = 100;
-                UpdateStatus("处理完成！");
-
-                // 6. 显示结果
-                string resultMessage = $"森林资源资产清查工作范围生成完成！\n\n" +
-                    $"处理结果：\n" +
-                    $"符合条件的图斑数量：{filteredFeatures.Count}\n" +
-                    $"输出文件：{outputShapefilePath}\n" +
-                    $"坐标系：{cmbCoordSystem.SelectedItem}\n" +
-                    $"字段映射数量：{fieldMappings.Count}";
-
-                MessageBox.Show(resultMessage, "处理完成", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                // 询问是否打开输出文件夹
-                if (MessageBox.Show("是否打开输出文件夹？", "处理完成", 
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                {
-                    System.Diagnostics.Process.Start("explorer.exe", txtOutputPath.Text);
-                }
-            }
-            catch (Exception ex)
-            {
-                progressBar.Value = 0;
-                UpdateStatus("处理失败");
-                MessageBox.Show($"处理过程中发生错误：\n{ex.Message}", "错误", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                System.Diagnostics.Debug.WriteLine($"ExecuteProcessing错误: {ex}");
-            }
-            finally
-            {
-                btnExecute.Enabled = true;
-                btnCancel.Enabled = false;
-            }
-        }
-
-        /// <summary>
-        /// 验证字段映射配置
-        /// </summary>
-        private bool ValidateFieldMapping()
-        {
-            if (mappingData == null || mappingData.Rows.Count == 0)
-            {
-                MessageBox.Show("请先配置字段映射", "验证失败", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
-
-            // 检查是否有必需字段未映射
-            var unmappedRequired = new List<string>();
-            foreach (DataRow row in mappingData.Rows)
-            {
-                string targetField = row["目标字段"].ToString();
-                string sourceField = row["源字段"].ToString();
-                string status = row["映射状态"].ToString();
-
-                if (IsRequiredField(targetField) && 
-                    (string.IsNullOrEmpty(sourceField) || status == "未映射"))
-                {
-                    unmappedRequired.Add(targetField);
-                }
-            }
-
-            if (unmappedRequired.Count > 0)
-            {
-                MessageBox.Show($"以下必需字段未映射：\n{string.Join(", ", unmappedRequired)}", 
-                    "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// 从映射表格获取字段映射配置
-        /// </summary>
-        private Dictionary<string, string> GetFieldMappingsFromGrid()
-        {
-            var mappings = new Dictionary<string, string>();
-
-            foreach (DataRow row in mappingData.Rows)
-            {
-                string targetField = row["目标字段"].ToString();
-                string sourceField = row["源字段"].ToString();
-                string status = row["映射状态"].ToString();
-
-                if (!string.IsNullOrEmpty(sourceField) && status == "已映射")
-                {
-                    mappings[targetField] = sourceField;
-                }
-            }
-
-            return mappings;
-        }
-
         private void btnCancel_Click(object sender, EventArgs e)
         {
             // 取消处理逻辑
@@ -2264,15 +2822,232 @@ namespace ForestResourcePlugin
         }
 
         // 新增方法：加载县列表
+        /// <summary>
+        /// 加载县列表 - 从文件夹结构中提取县名
+        /// </summary>
         private void LoadCounties()
         {
-            // Example county list
-            var counties = new List<string> { "CountyA", "CountyB", "CountyC" };
-
-            chkListCounties.Items.Clear();
-            foreach (var county in counties)
+            try
             {
-                chkListCounties.Items.Add(county, false);
+                // 从SharedDataManager获取县名列表
+                var countyNames = GetCountyNamesFromDataSources();
+
+                chkListCounties.Items.Clear();
+
+                if (countyNames.Count > 0)
+                {
+                    // 按字母顺序排序县名
+                    var sortedCounties = countyNames.OrderBy(name => name).ToList();
+
+                    foreach (var countyName in sortedCounties)
+                    {
+                        chkListCounties.Items.Add(countyName, false); // 默认不选中
+                    }
+
+                    UpdateStatus($"已加载 {countyNames.Count} 个县");
+                    System.Diagnostics.Debug.WriteLine($"LoadCounties完成: {string.Join(", ", sortedCounties)}");
+                }
+                else
+                {
+                    UpdateStatus("未找到县数据，请先在基础数据准备中选择数据源");
+                    System.Diagnostics.Debug.WriteLine("LoadCounties: 未找到任何县数据");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"LoadCounties出错: {ex.Message}");
+                UpdateStatus("加载县列表失败");
+                MessageBox.Show($"加载县列表时出错: {ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// 从数据源中获取所有唯一的县名
+        /// </summary>
+        private HashSet<string> GetCountyNamesFromDataSources()
+        {
+            var countyNames = new HashSet<string>();
+
+            try
+            {
+                // 获取林草现状文件列表
+                var lcxzgxFiles = ForestResourcePlugin.SharedDataManager.GetLCXZGXFiles();
+                System.Diagnostics.Debug.WriteLine($"获取到 {lcxzgxFiles.Count} 个林草现状文件");
+
+                // 从林草现状文件中提取县名
+                foreach (var file in lcxzgxFiles)
+                {
+                    if (!string.IsNullOrEmpty(file.DisplayName))
+                    {
+                        countyNames.Add(file.DisplayName);
+                        System.Diagnostics.Debug.WriteLine($"林草现状文件县名: {file.DisplayName}");
+                    }
+                }
+
+                // 获取城镇开发边界文件列表
+                var czkfbjFiles = ForestResourcePlugin.SharedDataManager.GetCZKFBJFiles();
+                System.Diagnostics.Debug.WriteLine($"获取到 {czkfbjFiles.Count} 个城镇开发边界文件");
+
+                // 从城镇开发边界文件中提取县名
+                foreach (var file in czkfbjFiles)
+                {
+                    if (!string.IsNullOrEmpty(file.DisplayName))
+                    {
+                        countyNames.Add(file.DisplayName);
+                        System.Diagnostics.Debug.WriteLine($"城镇开发边界文件县名: {file.DisplayName}");
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"共找到 {countyNames.Count} 个唯一县名: {string.Join(", ", countyNames)}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"获取县名时出错: {ex.Message}");
+            }
+
+            return countyNames;
+        }
+
+        /// <summary>
+        /// 直接从文件夹结构中提取县名（备用方法）
+        /// </summary>
+        private HashSet<string> ExtractCountyNamesFromFolderStructure(string rootPath)
+        {
+            var countyNames = new HashSet<string>();
+
+            try
+            {
+                if (string.IsNullOrEmpty(rootPath) || !Directory.Exists(rootPath))
+                {
+                    System.Diagnostics.Debug.WriteLine($"根目录不存在或为空: {rootPath}");
+                    return countyNames;
+                }
+
+                // 获取根目录下的第一级子目录
+                var firstLevelDirs = Directory.GetDirectories(rootPath);
+                System.Diagnostics.Debug.WriteLine($"第一级目录数量: {firstLevelDirs.Length}");
+
+                foreach (var firstLevelDir in firstLevelDirs)
+                {
+                    // 获取每个第一级目录下的第二级子目录
+                    if (Directory.Exists(firstLevelDir))
+                    {
+                        var secondLevelDirs = Directory.GetDirectories(firstLevelDir);
+                        System.Diagnostics.Debug.WriteLine($"在 {System.IO.Path.GetFileName(firstLevelDir)} 中找到 {secondLevelDirs.Length} 个第二级目录");
+
+                        foreach (var secondLevelDir in secondLevelDirs)
+                        {
+                            string countyName = System.IO.Path.GetFileName(secondLevelDir);
+                            if (!string.IsNullOrEmpty(countyName))
+                            {
+                                countyNames.Add(countyName);
+                                System.Diagnostics.Debug.WriteLine($"提取县名: {countyName} (路径: {secondLevelDir})");
+                            }
+                        }
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"从文件夹结构提取到 {countyNames.Count} 个县名");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"提取县名时出错: {ex.Message}");
+            }
+
+            return countyNames;
+        }
+
+        /// <summary>
+        /// 验证县数据完整性
+        /// </summary>
+        private bool ValidateCountyData(string countyName)
+        {
+            try
+            {
+                // 检查该县是否有林草现状数据
+                var lcxzgxFiles = ForestResourcePlugin.SharedDataManager.GetLCXZGXFiles();
+                bool hasLCXZGX = lcxzgxFiles.Any(f => f.DisplayName == countyName);
+
+                // 检查该县是否有城镇开发边界数据
+                var czkfbjFiles = ForestResourcePlugin.SharedDataManager.GetCZKFBJFiles();
+                bool hasCZKFBJ = czkfbjFiles.Any(f => f.DisplayName == countyName);
+
+                System.Diagnostics.Debug.WriteLine($"县 {countyName} 数据完整性: 林草现状={hasLCXZGX}, 城镇开发边界={hasCZKFBJ}");
+
+                // 至少需要有林草现状数据
+                return hasLCXZGX;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"验证县 {countyName} 数据时出错: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 刷新县列表
+        /// </summary>
+        private void RefreshCountyList()
+        {
+            try
+            {
+                // 保存当前选中状态
+                var selectedCounties = GetSelectedCounties();
+
+                // 重新加载县列表
+                LoadCounties();
+
+                // 恢复选中状态
+                RestoreCountySelection(selectedCounties);
+
+                UpdateStatus("县列表已刷新");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"刷新县列表时出错: {ex.Message}");
+                UpdateStatus("刷新县列表失败");
+            }
+        }
+
+        /// <summary>
+        /// 恢复县选中状态
+        /// </summary>
+        private void RestoreCountySelection(List<string> selectedCounties)
+        {
+            try
+            {
+                for (int i = 0; i < chkListCounties.Items.Count; i++)
+                {
+                    string countyName = chkListCounties.Items[i].ToString();
+                    bool shouldBeChecked = selectedCounties.Contains(countyName);
+                    chkListCounties.SetItemChecked(i, shouldBeChecked);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"恢复县选中状态时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 全选/取消全选县列表
+        /// </summary>
+        private void ToggleAllCounties(bool selectAll)
+        {
+            try
+            {
+                for (int i = 0; i < chkListCounties.Items.Count; i++)
+                {
+                    chkListCounties.SetItemChecked(i, selectAll);
+                }
+
+                string action = selectAll ? "全选" : "取消全选";
+                UpdateStatus($"已{action} {chkListCounties.Items.Count} 个县");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"切换县选择状态时出错: {ex.Message}");
             }
         }
     }
