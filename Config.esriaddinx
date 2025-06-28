@@ -27,6 +27,13 @@
                 category="自然资源资产清查"
                 tooltip="打开主处理工具界面，进行核心数据处理。">
         </Button>
+        <Button id="TestArcMapAddin2_OpenSurveyDataVerificationFormCmd"
+                class="TestArcMapAddin2.Commands.OpenSurveyDataVerificationFormCmd"
+                image="Images\Verify.png"
+                caption="普查数据核对处理"
+                category="自然资源资产清查"
+                tooltip="打开普查数据地类核对与编辑界面，通过地类编码对普查数据进行核对处理。">
+        </Button>
       </Commands>
       <Toolbars>
         <Toolbar id="TestArcMapAddin2_NR_Asset_Tools_Toolbar"
@@ -36,6 +43,7 @@
           <Items>
             <Button refID="TestArcMapAddin2_OpenBasicDataFormCmd" />
             <Button refID="TestArcMapAddin2_OpenMainProcessingTabsFormCmd" />
+            <Button refID="TestArcMapAddin2_OpenSurveyDataVerificationFormCmd" />
           </Items>
         </Toolbar>
       </Toolbars>
