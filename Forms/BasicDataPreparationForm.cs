@@ -13,9 +13,8 @@ namespace TestArcMapAddin2.Forms
 {
     public partial class BasicDataPreparationForm : Form
     {
-        // 新增私有字段存储路径
-        private string forestSurveyDataPath = "";
-        private string urbanBoundaryDataPath = "";
+        // 修改私有字段 - 合并林草湿荒普查数据和城镇开发边界数据路径为一个
+        private string dataSourcePath = "";
         private string outputGDBPath = "";
 
         public BasicDataPreparationForm()
@@ -30,27 +29,16 @@ namespace TestArcMapAddin2.Forms
             lblWorkspace.Text = string.IsNullOrEmpty(SharedWorkflowState.WorkspacePath) ? "未选择工作空间" : SharedWorkflowState.WorkspacePath;
             lblWorkspace.ForeColor = string.IsNullOrEmpty(SharedWorkflowState.WorkspacePath) ? Color.Black : Color.DarkGreen;
 
-            // 初始化新增数据源路径状态
-            if (!string.IsNullOrEmpty(forestSurveyDataPath))
+            // 初始化合并后的数据源路径状态
+            if (!string.IsNullOrEmpty(dataSourcePath))
             {
-                txtForestSurveyDataPath.Text = forestSurveyDataPath;
-                txtForestSurveyDataPath.ForeColor = Color.DarkGreen;
+                txtDataPath.Text = dataSourcePath;
+                txtDataPath.ForeColor = Color.DarkGreen;
             }
             else
             {
-                txtForestSurveyDataPath.Text = "请选择林草湿荒普查数据源文件夹";
-                txtForestSurveyDataPath.ForeColor = Color.Gray;
-            }
-
-            if (!string.IsNullOrEmpty(urbanBoundaryDataPath))
-            {
-                txtUrbanBoundaryDataPath.Text = urbanBoundaryDataPath;
-                txtUrbanBoundaryDataPath.ForeColor = Color.DarkGreen;
-            }
-            else
-            {
-                txtUrbanBoundaryDataPath.Text = "请选择城镇开发边界数据源文件夹";
-                txtUrbanBoundaryDataPath.ForeColor = Color.Gray;
+                txtDataPath.Text = "请选择包含林草湿荒普查与城镇开发边界数据的文件夹";
+                txtDataPath.ForeColor = Color.Gray;
             }
 
             if (!string.IsNullOrEmpty(outputGDBPath))
@@ -70,17 +58,15 @@ namespace TestArcMapAddin2.Forms
         private void UpdateButtonStates()
         {
             bool hasWorkspace = !string.IsNullOrEmpty(SharedWorkflowState.WorkspacePath);
-            bool hasForestSurveyData = !string.IsNullOrEmpty(forestSurveyDataPath);
-            bool hasUrbanBoundaryData = !string.IsNullOrEmpty(urbanBoundaryDataPath);
+            bool hasDataSource = !string.IsNullOrEmpty(dataSourcePath);
             bool hasOutputGDB = !string.IsNullOrEmpty(outputGDBPath);
 
             // 基础数据源选择按钮始终启用
-            btnBrowseForestSurveyData.Enabled = true;
-            btnBrowseUrbanBoundaryData.Enabled = true;
+            btnBrowseData.Enabled = true;
             btnBrowseOutputGDB.Enabled = true;
 
             // OK按钮需要所有必要信息都完成后才启用
-            bool allDataSourcesSelected = hasWorkspace && hasForestSurveyData && hasUrbanBoundaryData && hasOutputGDB;
+            bool allDataSourcesSelected = hasWorkspace && hasDataSource && hasOutputGDB;
             
             btnOK.Enabled = allDataSourcesSelected;
         }
@@ -114,79 +100,57 @@ namespace TestArcMapAddin2.Forms
             UpdateButtonStates();
         }
 
-        // 新增事件处理方法：林草湿荒普查数据源浏览
-        private void BtnBrowseForestSurveyData_Click(object sender, EventArgs e)
+        // 新的合并后的数据源浏览方法
+        private void BtnBrowseData_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
-                dialog.Description = "选择林草湿荒普查数据源文件夹";
-                if (!string.IsNullOrEmpty(forestSurveyDataPath))
+                dialog.Description = "选择包含林草湿荒普查与城镇开发边界数据的文件夹";
+                if (!string.IsNullOrEmpty(dataSourcePath))
                 {
-                    dialog.SelectedPath = forestSurveyDataPath;
+                    dialog.SelectedPath = dataSourcePath;
                 }
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    forestSurveyDataPath = dialog.SelectedPath;
-                    txtForestSurveyDataPath.Text = forestSurveyDataPath;
-                    txtForestSurveyDataPath.ForeColor = Color.DarkGreen;
+                    dataSourcePath = dialog.SelectedPath;
+                    txtDataPath.Text = dataSourcePath;
+                    txtDataPath.ForeColor = Color.DarkGreen;
                     
-                    // 查找包含LCXZGX_P的文件
-                    List<ForestResourcePlugin.LCXZGXFileInfo> lcxzgxFiles = FindFilesWithPattern(forestSurveyDataPath, "LCXZGX_P");
+                    // 保存到共享状态中
+                    SharedWorkflowState.DataSourcePath = dataSourcePath;
+                    
+                    // 查找包含LCXZGX_P的文件（林草湿荒普查数据）
+                    List<ForestResourcePlugin.LCXZGXFileInfo> lcxzgxFiles = FindFilesWithPattern(dataSourcePath, "LCXZGX_P");
                     
                     // 保存到共享数据管理器
                     ForestResourcePlugin.SharedDataManager.SetLCXZGXFiles(lcxzgxFiles);
                     
-                    if (lcxzgxFiles.Count > 0)
-                    {
-                        MessageBox.Show($"已找到 {lcxzgxFiles.Count} 个包含LCXZGX_P的文件。", "文件搜索结果", 
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    
-                    MessageBox.Show("林草湿荒普查数据源选择完成。", "成功", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    UpdateButtonStates();
-                }
-            }
-        }
-
-        // 新增事件处理方法：城镇开发边界数据源浏览
-        private void BtnBrowseUrbanBoundaryData_Click(object sender, EventArgs e)
-        {
-            using (FolderBrowserDialog dialog = new FolderBrowserDialog())
-            {
-                dialog.Description = "选择城镇开发边界数据源文件夹";
-                if (!string.IsNullOrEmpty(urbanBoundaryDataPath))
-                {
-                    dialog.SelectedPath = urbanBoundaryDataPath;
-                }
-
-                if (dialog.ShowDialog() == DialogResult.OK)
-                {
-                    urbanBoundaryDataPath = dialog.SelectedPath;
-                    txtUrbanBoundaryDataPath.Text = urbanBoundaryDataPath;
-                    txtUrbanBoundaryDataPath.ForeColor = Color.DarkGreen;
-                    
-                    // 查找包含CZKFBJ的文件
-                    List<ForestResourcePlugin.LCXZGXFileInfo> czkfbjFiles = FindFilesWithPattern(urbanBoundaryDataPath, "CZKFBJ");
+                    // 查找包含CZKFBJ的文件（城镇开发边界数据）
+                    List<ForestResourcePlugin.LCXZGXFileInfo> czkfbjFiles = FindFilesWithPattern(dataSourcePath, "CZKFBJ");
                     
                     // 保存到共享数据管理器
                     ForestResourcePlugin.SharedDataManager.SetCZKFBJFiles(czkfbjFiles);
                     
-                    if (czkfbjFiles.Count > 0)
+                    // 显示文件搜索结果
+                    int totalFiles = lcxzgxFiles.Count + czkfbjFiles.Count;
+                    if (totalFiles > 0)
                     {
-                        MessageBox.Show($"已找到 {czkfbjFiles.Count} 个包含CZKFBJ的文件。", "文件搜索结果", 
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show($"在同一文件夹中找到：\n- {lcxzgxFiles.Count} 个林草湿荒普查数据文件\n- {czkfbjFiles.Count} 个城镇开发边界数据文件", 
+                            "文件搜索结果", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("未找到相关数据文件，请确认选择的文件夹是否正确。", "提示", 
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                     
-                    MessageBox.Show("城镇开发边界数据源选择完成。", "成功", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
                     UpdateButtonStates();
                 }
             }
         }
 
-        // 新增事件处理方法：输出GDB路径浏览
+        // 输出GDB路径浏览方法保持不变
         private void BtnBrowseOutputGDB_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -202,6 +166,9 @@ namespace TestArcMapAddin2.Forms
                     outputGDBPath = dialog.SelectedPath;
                     txtOutputGDBPath.Text = outputGDBPath;
                     txtOutputGDBPath.ForeColor = Color.DarkGreen;
+                    
+                    // 保存到共享状态
+                    SharedWorkflowState.OutputGDBPath = outputGDBPath;
                     
                     MessageBox.Show("输出结果GDB路径选择完成。", "成功", 
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -219,15 +186,9 @@ namespace TestArcMapAddin2.Forms
                 return;
             }
 
-            if (string.IsNullOrEmpty(forestSurveyDataPath))
+            if (string.IsNullOrEmpty(dataSourcePath))
             {
-                MessageBox.Show("请选择林草湿荒普查数据源。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            if (string.IsNullOrEmpty(urbanBoundaryDataPath))
-            {
-                MessageBox.Show("请选择城镇开发边界数据源。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("请选择数据源文件夹。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -242,8 +203,7 @@ namespace TestArcMapAddin2.Forms
             {
                 MessageBox.Show($"准备为每个县创建文件夹并生成结果表格。\n" +
                               $"工作空间：{SharedWorkflowState.WorkspacePath}\n" +
-                              $"林草湿荒普查数据源：{forestSurveyDataPath}\n" +
-                              $"城镇开发边界数据源：{urbanBoundaryDataPath}\n" +
+                              $"数据源文件夹：{dataSourcePath}\n" +
                               $"输出GDB路径：{outputGDBPath}", 
                               "处理确认", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -258,9 +218,8 @@ namespace TestArcMapAddin2.Forms
             this.Close();
         }
 
-        // 公共属性，供外部访问选择的路径
-        public string ForestSurveyDataPath => forestSurveyDataPath;
-        public string UrbanBoundaryDataPath => urbanBoundaryDataPath;
+        // 更新公共属性，供外部访问选择的路径
+        public string DataSourcePath => dataSourcePath;
         public string OutputGDBPath => outputGDBPath;
         public bool CreateCountyFolders => chkCreateCountyFolders.Checked;
 
