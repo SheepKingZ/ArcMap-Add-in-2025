@@ -14,6 +14,57 @@ namespace ForestResourcePlugin
     public static class GdbFeatureClassFinder
     {
         /// <summary>
+        /// 从GDB路径提取县名（第一级文件夹名称）
+        /// </summary>
+        /// <param name="gdbPath">GDB文件路径</param>
+        /// <param name="rootDir">根目录路径</param>
+        /// <returns>县名</returns>
+        private static string ExtractCountyNameFromGdbPath(string gdbPath, string rootDir)
+        {
+            try
+            {
+                // 规范化路径
+                string normalizedRoot = System.IO.Path.GetFullPath(rootDir).TrimEnd('\\', '/');
+                string normalizedGdb = System.IO.Path.GetFullPath(gdbPath);
+                
+                // 计算相对路径
+                string relativePath = "";
+                if (normalizedGdb.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase))
+                {
+                    relativePath = normalizedGdb.Substring(normalizedRoot.Length).TrimStart('\\', '/');
+                }
+                else
+                {
+                    // 如果路径不匹配，尝试从GDB父目录提取
+                    System.Diagnostics.Debug.WriteLine($"警告: GDB路径 {normalizedGdb} 不在根目录 {normalizedRoot} 下");
+                    return System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(gdbPath));
+                }
+                
+                // 分割路径并获取第一级目录名称（县名）
+                string[] pathParts = relativePath.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
+                if (pathParts.Length >= 1)
+                {
+                    // 返回第一级目录名称，这应该是县名
+                    string countyName = pathParts[0];
+                    System.Diagnostics.Debug.WriteLine($"从GDB路径 {relativePath} 提取县名: {countyName}");
+                    return countyName;
+                }
+                else
+                {
+                    // 兜底方案：使用GDB文件夹的父目录名
+                    string fallbackName = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(gdbPath));
+                    System.Diagnostics.Debug.WriteLine($"警告: 无法从GDB路径提取县名，使用父目录名: {fallbackName}");
+                    return fallbackName;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"从GDB路径提取县名时出错: {ex.Message}");
+                return System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(gdbPath));
+            }
+        }
+
+        /// <summary>
         /// 查找目录中的所有GDB并找出包含指定模式名称的要素类
         /// </summary>
         /// <param name="rootDir">根目录</param>
@@ -135,20 +186,20 @@ namespace ForestResourcePlugin
                                     int featureCount = featureClass.FeatureCount(null);
                                     System.Diagnostics.Debug.WriteLine($"要素类 {dataset.Name} 包含 {featureCount} 个要素");
                                     
-                                    // 创建信息对象
-                                    string displayName = System.IO.Path.GetFileNameWithoutExtension(gdbPath) + " - " + dataset.Name;
+                                    // 提取县名（第一级文件夹名称）
+                                    string countyName = ExtractCountyNameFromGdbPath(gdbPath, rootDir);
                                     
                                     var fileInfo = new LCXZGXFileInfo
                                     {
                                         FullPath = gdbPath,
-                                        DisplayName = displayName,
+                                        DisplayName = countyName, // 使用县名作为显示名称
                                         IsGdb = true,
                                         FeatureClassName = dataset.Name,
                                         GeometryType = featureClass.ShapeType
                                     };
                                     
                                     result.Add(fileInfo);
-                                    System.Diagnostics.Debug.WriteLine($"找到匹配的GDB要素类: {displayName}, 路径: {gdbPath}, 几何类型: {featureClass.ShapeType}");
+                                    System.Diagnostics.Debug.WriteLine($"找到匹配的GDB要素类: 县名={countyName}, GDB路径={gdbPath}, 要素类名={dataset.Name}, 几何类型={featureClass.ShapeType}");
                                     
                                     // 释放要素类资源
                                     System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);

@@ -229,6 +229,57 @@ namespace TestArcMapAddin2.Forms
         }
 
         /// <summary>
+        /// 提取路径中的第一级文件夹名称（县名）
+        /// </summary>
+        /// <param name="filePath">文件路径</param>
+        /// <param name="rootDir">根目录</param>
+        /// <returns>第一级文件夹名称（县名）</returns>
+        private string ExtractCountyNameFromPath(string filePath, string rootDir)
+        {
+            try
+            {
+                // 规范化路径
+                string normalizedRoot = System.IO.Path.GetFullPath(rootDir).TrimEnd('\\', '/');
+                string normalizedFile = System.IO.Path.GetFullPath(filePath);
+                
+                // 计算相对路径
+                string relativePath = "";
+                if (normalizedFile.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase))
+                {
+                    relativePath = normalizedFile.Substring(normalizedRoot.Length).TrimStart('\\', '/');
+                }
+                else
+                {
+                    // 路径不匹配，尝试从完整路径提取
+                    System.Diagnostics.Debug.WriteLine($"警告: 文件路径 {normalizedFile} 不在根目录 {normalizedRoot} 下");
+                    return System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(filePath));
+                }
+                
+                // 分割路径并获取第一级目录名称（县名）
+                string[] pathParts = relativePath.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
+                if (pathParts.Length >= 1)
+                {
+                    // 返回第一级目录名称，这应该是县名
+                    string countyName = pathParts[0];
+                    System.Diagnostics.Debug.WriteLine($"从路径 {relativePath} 提取县名: {countyName}");
+                    return countyName;
+                }
+                else
+                {
+                    // 兜底方案：如果路径解析失败，使用文件名
+                    string fallbackName = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                    System.Diagnostics.Debug.WriteLine($"警告: 无法从路径提取县名，使用文件名: {fallbackName}");
+                    return fallbackName;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"提取县名时出错: {ex.Message}");
+                return System.IO.Path.GetFileNameWithoutExtension(filePath);
+            }
+        }
+
+        /// <summary>
         /// 查找指定目录下名称包含特定字符串的文件
         /// </summary>
         /// <param name="rootDir">根目录</param>
@@ -266,19 +317,19 @@ namespace TestArcMapAddin2.Forms
                     {
                         if (filePath.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
-                            // 提取第二级文件夹名称作为显示名称
-                            string displayName = ExtractSecondLevelFolderName(filePath, rootDir);
+                            // 提取县名（第一级文件夹名称）
+                            string countyName = ExtractCountyNameFromPath(filePath, rootDir);
                             
                             result.Add(new ForestResourcePlugin.LCXZGXFileInfo 
                             { 
                                 FullPath = filePath,
-                                DisplayName = displayName,
+                                DisplayName = countyName,
                                 IsGdb = false,
                                 GeometryType = ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon // 假设为面
                             });
                             
                             matchCount++;
-                            System.Diagnostics.Debug.WriteLine($"找到匹配的Shapefile文件[{matchCount}]: {filePath}, 显示名称: {displayName}");
+                            System.Diagnostics.Debug.WriteLine($"找到匹配的Shapefile文件[{matchCount}]: {filePath}, 县名: {countyName}");
                         }
                     }
                 }
@@ -312,48 +363,12 @@ namespace TestArcMapAddin2.Forms
         /// <param name="filePath">文件路径</param>
         /// <param name="rootDir">根目录</param>
         /// <returns>第二级文件夹名称</returns>
+        [Obsolete("此方法已过时，请使用 ExtractCountyNameFromPath 方法")]
         private string ExtractSecondLevelFolderName(string filePath, string rootDir)
         {
-            try
-            {
-                // 规范化路径
-                string normalizedRoot = System.IO.Path.GetFullPath(rootDir).TrimEnd('\\', '/');
-                string normalizedFile = System.IO.Path.GetFullPath(filePath);
-                
-                // 计算相对路径
-                string relativePath = "";
-                if (normalizedFile.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase))
-                {
-                    relativePath = normalizedFile.Substring(normalizedRoot.Length).TrimStart('\\', '/');
-                }
-                else
-                {
-                    // 路径不匹配，使用完整路径的文件夹
-                    return System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(filePath));
-                }
-                
-                // 分割路径并获取第二级目录名称
-                string[] pathParts = relativePath.Split('\\', '/');
-                if (pathParts.Length >= 2)
-                {
-                    return pathParts[1]; // 第二级目录
-                }
-                else if (pathParts.Length == 1)
-                {
-                    // 如果没有第二级目录，返回文件名（不含扩展名）
-                    return System.IO.Path.GetFileNameWithoutExtension(filePath);
-                }
-                else
-                {
-                    // 兜底方案
-                    return System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(filePath));
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"提取文件夹名称时出错: {ex.Message}");
-                return System.IO.Path.GetFileNameWithoutExtension(filePath);
-            }
+            // 保留原方法以维持向后兼容性，但标记为过时
+            // 现在调用新的县名提取方法
+            return ExtractCountyNameFromPath(filePath, rootDir);
         }
     }
 }
