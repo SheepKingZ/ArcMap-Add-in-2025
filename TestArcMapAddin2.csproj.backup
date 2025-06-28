@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -46,12 +46,6 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="ESRI.ArcGIS.DataSourcesFile, Version=10.8.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="ESRI.ArcGIS.DataSourcesGDB, Version=10.8.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="ESRI.ArcGIS.DataSourcesOleDB, Version=10.8.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="ESRI.ArcGIS.Desktop.AddIns">
@@ -154,14 +148,9 @@
     <Compile Include="obj\Release\.NETFramework,Version=v4.6.1.AssemblyAttributes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SharedWorkflowState.cs" />
-    <Compile Include="Utils\GdbFeatureClassFinder.cs" />
-    <Compile Include="Utils\GDBManager.cs" />
-    <Compile Include="Utils\GeodatabaseUtilities.cs" />
     <Compile Include="Utils\MapLayerUtilities.cs" />
     <Compile Include="Utils\ShapefileExporter.cs" />
     <Compile Include="Utils\ShapefileReader.cs" />
-    <Compile Include="Utils\SharedDataManager.cs" />
-    <Compile Include="Utils\SharedWorkflowState.cs" />
   </ItemGroup>
   <ItemGroup>
     <AddInContent Include="Config.esriaddinx">
@@ -173,7 +162,6 @@
     <AddInContent Include="Images\Data.png" />
     <AddInContent Include="Images\OpenMainProcessFormCommand.png" />
     <AddInContent Include="Images\TestArcMapAddin2.png" />
-    <AddInContent Include="Images\Verify.png" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ESRI.ArcGIS.ArcMapUI">
@@ -204,9 +192,6 @@
     <Content Include="XML\Field.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Forms\BasicDataPreparationForm.resx">
-      <DependentUpon>BasicDataPreparationForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Forms\ForestForm\AssetValueCalculationForm.resx">
       <DependentUpon>AssetValueCalculationForm.cs</DependentUpon>
     </EmbeddedResource>
