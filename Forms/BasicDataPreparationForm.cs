@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using TestArcMapAddin2.Forms; // 用于CountySelectionForm
 using System.IO;
+using ESRI.ArcGIS.Geodatabase;
 
 namespace TestArcMapAddin2.Forms
 {
@@ -201,12 +202,30 @@ namespace TestArcMapAddin2.Forms
             // 可以在这里实现具体的业务逻辑，比如开始处理数据
             if (chkCreateCountyFolders.Checked)
             {
+
                 MessageBox.Show($"准备为每个县创建文件夹并生成结果表格。\n" +
                               $"工作空间：{SharedWorkflowState.WorkspacePath}\n" +
                               $"数据源文件夹：{dataSourcePath}\n" +
                               $"输出GDB路径：{outputGDBPath}", 
                               "处理确认", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+
+            //为每个县创建数据库及其成果表
+          /*  if (!String.IsNullOrEmpty(dataSourcePath))
+            {
+                System.IO.DirectoryInfo theFolder = new System.IO.DirectoryInfo(dataSourcePath);
+                System.IO.DirectoryInfo[] dir_Countries = theFolder.GetDirectories();
+                foreach (System.IO.DirectoryInfo dirInfo in dir_Countries) {
+                    String curDir = dirInfo.FullName;
+                    String countryName = curDir.Substring(curDir.LastIndexOf('\\')+1);
+                    if(!CreateTable4Country(outputGDBPath, countryName))
+                    {
+                        MessageBox.Show("创建"+countryName+"数据库失败");
+                    }
+                }
+            }*/
+            
+
 
             this.DialogResult = DialogResult.OK;
             this.Close();
@@ -369,6 +388,133 @@ namespace TestArcMapAddin2.Forms
             // 保留原方法以维持向后兼容性，但标记为过时
             // 现在调用新的县名提取方法
             return ExtractCountyNameFromPath(filePath, rootDir);
+        }
+
+        private Boolean CreateTable4Country(String path, String countryName)
+        {
+            if (!String.IsNullOrEmpty(path) && !String.IsNullOrEmpty(countryName))
+            {
+                DirectoryInfo sourceFolder = new DirectoryInfo(path);
+                DirectoryInfo countryFolder =  sourceFolder.CreateSubdirectory(countryName);
+                if (countryFolder.Exists)
+                {
+                    Type factoryType = Type.GetTypeFromProgID("esriDataSourcesGDB.FileGDBWorkspaceFactory");
+                    IWorkspaceFactory workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+                    
+                    IWorkspaceName workspaceName = workspaceFactory.Create(countryFolder.FullName,countryName+".gdb", null, 0);
+
+                    // Cast the workspace name object to the IName interface and open the workspace.
+                    ESRI.ArcGIS.esriSystem.IName name = (ESRI.ArcGIS.esriSystem.IName)workspaceName;
+                    IWorkspace workspace = (IWorkspace)name.Open();
+
+                    if (!CreateResultTable("LCXZGX", workspace))
+                    {
+                        MessageBox.Show("创建现状要素类失败");
+                        return false;
+                    }
+                    if (!CreateResultTable("SLZYZC", workspace))
+                    {
+                        MessageBox.Show("创建清查成果要素类失败");
+                        return false;
+                    }
+                    if (!CreateResultTable("SLZYZC_DLTB", workspace))
+                    {
+                        MessageBox.Show("创建清查林地要素类失败");
+                        return false;
+                    }
+                    return true;
+                }                
+            }
+            return false;
+        }
+
+        //根据成果表名创建表
+        private Boolean CreateResultTable(String TableName, IWorkspace workspace)
+        {
+            String featureClassName = TableName;
+            IFeatureClass featureClass = null;
+            IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspace;
+
+            ESRI.ArcGIS.esriSystem.UID CLSID = new ESRI.ArcGIS.esriSystem.UIDClass();
+            CLSID.Value = "esriGeoDatabase.Feature";
+
+            IObjectClassDescription objectClassDescription = new FeatureClassDescriptionClass();
+            IFields fields = objectClassDescription.RequiredFields;
+            IFieldsEdit fieldsEdit = (IFieldsEdit)fields;
+            switch (featureClassName)
+            {
+                case "LCXZGX":
+                    FeatureClassFieldsTemplate.GenerateLcxzgxFields(fieldsEdit);
+                    break;
+                case "SLZYZC":
+                    FeatureClassFieldsTemplate.GenerateSlzyzcFields(fieldsEdit);
+                    break;
+                case "SLZYZC_DLTB":
+                    FeatureClassFieldsTemplate.GenerateSlzyzc_dltbFields(fieldsEdit);
+                    break;
+            }
+            
+            fields = (IFields)fieldsEdit;
+            String strShapeField = "";
+            for (int j = 0; j < fields.FieldCount; j++)
+            {
+                if (fields.get_Field(j).Type == esriFieldType.esriFieldTypeGeometry)
+                {
+                    strShapeField = fields.get_Field(j).Name;
+                    break;
+                }
+            }
+
+            // Use IFieldChecker to create a validated fields collection.
+            IFieldChecker fieldChecker = new FieldCheckerClass();
+            IEnumFieldError enumFieldError = null;
+            IFields validatedFields = null;
+            fieldChecker.ValidateWorkspace = (IWorkspace)workspace;
+            fieldChecker.Validate(fields, out enumFieldError, out validatedFields);
+            if (enumFieldError != null)
+            {
+                MessageBox.Show("字段校验失败：" + featureClassName);
+                return false;
+            }
+            featureClass = featureWorkspace.CreateFeatureClass(featureClassName, validatedFields, CLSID, null, esriFeatureType.esriFTSimple, strShapeField, "");
+            if (featureClass == null)
+            {
+                MessageBox.Show("为" + featureClassName + "创建要素类失败");
+                return false;
+            }
+            return true;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
+            folderBrowser.Description = "请选择数据总目录";
+            // folderBrowser.ShowNewFolderButton = true;
+            if (folderBrowser.ShowDialog() == DialogResult.OK)
+            {
+                dataSourcePath = folderBrowser.SelectedPath;
+            }
+
+            if (!String.IsNullOrEmpty(dataSourcePath))
+            {
+                System.IO.DirectoryInfo theFolder = new System.IO.DirectoryInfo(dataSourcePath);
+                System.IO.DirectoryInfo[] dir_Countries = theFolder.GetDirectories();
+                foreach (System.IO.DirectoryInfo dirInfo in dir_Countries)
+                {
+                    String curDir = dirInfo.FullName;
+                    String countryName = curDir.Substring(curDir.LastIndexOf('\\') + 1);
+                    if (!CreateTable4Country(outputGDBPath, countryName))
+                    {
+                        MessageBox.Show("创建" + countryName + "数据库失败");
+                        return;
+                    }
+                }
+                MessageBox.Show("已建立成果数据库及表结构");
+            }
+            else
+            {
+                MessageBox.Show("源路径为空");
+            }
         }
     }
 }

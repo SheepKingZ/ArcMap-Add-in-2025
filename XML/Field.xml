@@ -658,13 +658,13 @@
     </Mapping>
 
     <!-- 树种组成 -->
-    <!--Mapping>
+    <Mapping>
       <TargetField>shuzhong_zc</TargetField>
       <SourceField>SHUZHONG_ZC</SourceField>
       <FieldType>String</FieldType>
       <Required>false</Required>
       <Description>树种组成表达式（选填）</Description>
-    </Mapping-->
+    </Mapping>
 
     <!-- 事权等级 -->
     <Mapping>
