@@ -9,6 +9,9 @@ using System.Windows.Forms;
 using TestArcMapAddin2.Forms; // 用于CountySelectionForm
 using System.IO;
 using ESRI.ArcGIS.Geodatabase;
+using ESRI.ArcGIS.Geometry; // 新增：用于空间参考系统
+using ESRI.ArcGIS.esriSystem; // 新增：用于空间参考系统
+using System.Reflection; // 新增：用于反射调用
 
 namespace TestArcMapAddin2.Forms
 {
@@ -17,6 +20,11 @@ namespace TestArcMapAddin2.Forms
         // 修改私有字段 - 合并林草湿荒普查数据和城镇开发边界数据路径为一个
         private string dataSourcePath = "";
         private string outputGDBPath = "";
+
+        /// <summary>
+        /// CGCS2000坐标系WKT定义
+        /// </summary>
+        private const string CGCS2000_WKT = @"GEOGCS[""GCS_China_Geodetic_Coordinate_System_2000"",DATUM[""D_China_2000"",SPHEROID[""CGCS2000"",6378137.0,298.257222101]],PRIMEM[""Greenwich"",0.0],UNIT[""Degree"",0.0174532925199433]]";
 
         public BasicDataPreparationForm()
         {
@@ -68,7 +76,7 @@ namespace TestArcMapAddin2.Forms
 
             // OK按钮需要所有必要信息都完成后才启用
             bool allDataSourcesSelected = hasWorkspace && hasDataSource && hasOutputGDB;
-            
+
             btnOK.Enabled = allDataSourcesSelected;
         }
 
@@ -117,35 +125,35 @@ namespace TestArcMapAddin2.Forms
                     dataSourcePath = dialog.SelectedPath;
                     txtDataPath.Text = dataSourcePath;
                     txtDataPath.ForeColor = Color.DarkGreen;
-                    
+
                     // 保存到共享状态中
                     SharedWorkflowState.DataSourcePath = dataSourcePath;
-                    
+
                     // 查找包含LCXZGX_P的文件（林草湿荒普查数据）
                     List<ForestResourcePlugin.LCXZGXFileInfo> lcxzgxFiles = FindFilesWithPattern(dataSourcePath, "LCXZGX_P");
-                    
+
                     // 保存到共享数据管理器
                     ForestResourcePlugin.SharedDataManager.SetLCXZGXFiles(lcxzgxFiles);
-                    
+
                     // 查找包含CZKFBJ的文件（城镇开发边界数据）
                     List<ForestResourcePlugin.LCXZGXFileInfo> czkfbjFiles = FindFilesWithPattern(dataSourcePath, "CZKFBJ");
-                    
+
                     // 保存到共享数据管理器
                     ForestResourcePlugin.SharedDataManager.SetCZKFBJFiles(czkfbjFiles);
-                    
+
                     // 显示文件搜索结果
                     int totalFiles = lcxzgxFiles.Count + czkfbjFiles.Count;
                     if (totalFiles > 0)
                     {
-                        MessageBox.Show($"在同一文件夹中找到：\n- {lcxzgxFiles.Count} 个林草湿荒普查数据文件\n- {czkfbjFiles.Count} 个城镇开发边界数据文件", 
+                        MessageBox.Show($"在同一文件夹中找到：\n- {lcxzgxFiles.Count} 个林草湿荒普查数据文件\n- {czkfbjFiles.Count} 个城镇开发边界数据文件",
                             "文件搜索结果", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     else
                     {
-                        MessageBox.Show("未找到相关数据文件，请确认选择的文件夹是否正确。", "提示", 
+                        MessageBox.Show("未找到相关数据文件，请确认选择的文件夹是否正确。", "提示",
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
-                    
+
                     UpdateButtonStates();
                 }
             }
@@ -167,11 +175,11 @@ namespace TestArcMapAddin2.Forms
                     outputGDBPath = dialog.SelectedPath;
                     txtOutputGDBPath.Text = outputGDBPath;
                     txtOutputGDBPath.ForeColor = Color.DarkGreen;
-                    
+
                     // 保存到共享状态
                     SharedWorkflowState.OutputGDBPath = outputGDBPath;
-                    
-                    MessageBox.Show("输出结果GDB路径选择完成。", "成功", 
+
+                    MessageBox.Show("输出结果GDB路径选择完成。", "成功",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                     UpdateButtonStates();
                 }
@@ -206,25 +214,25 @@ namespace TestArcMapAddin2.Forms
                 MessageBox.Show($"准备为每个县创建文件夹并生成结果表格。\n" +
                               $"工作空间：{SharedWorkflowState.WorkspacePath}\n" +
                               $"数据源文件夹：{dataSourcePath}\n" +
-                              $"输出GDB路径：{outputGDBPath}", 
+                              $"输出GDB路径：{outputGDBPath}",
                               "处理确认", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
             //为每个县创建数据库及其成果表
-          /*  if (!String.IsNullOrEmpty(dataSourcePath))
-            {
-                System.IO.DirectoryInfo theFolder = new System.IO.DirectoryInfo(dataSourcePath);
-                System.IO.DirectoryInfo[] dir_Countries = theFolder.GetDirectories();
-                foreach (System.IO.DirectoryInfo dirInfo in dir_Countries) {
-                    String curDir = dirInfo.FullName;
-                    String countryName = curDir.Substring(curDir.LastIndexOf('\\')+1);
-                    if(!CreateTable4Country(outputGDBPath, countryName))
-                    {
-                        MessageBox.Show("创建"+countryName+"数据库失败");
-                    }
-                }
-            }*/
-            
+            /*  if (!String.IsNullOrEmpty(dataSourcePath))
+              {
+                  System.IO.DirectoryInfo theFolder = new System.IO.DirectoryInfo(dataSourcePath);
+                  System.IO.DirectoryInfo[] dir_Countries = theFolder.GetDirectories();
+                  foreach (System.IO.DirectoryInfo dirInfo in dir_Countries) {
+                      String curDir = dirInfo.FullName;
+                      String countryName = curDir.Substring(curDir.LastIndexOf('\\')+1);
+                      if(!CreateTable4Country(outputGDBPath, countryName))
+                      {
+                          MessageBox.Show("创建"+countryName+"数据库失败");
+                      }
+                  }
+              }*/
+
 
 
             this.DialogResult = DialogResult.OK;
@@ -260,7 +268,7 @@ namespace TestArcMapAddin2.Forms
                 // 规范化路径
                 string normalizedRoot = System.IO.Path.GetFullPath(rootDir).TrimEnd('\\', '/');
                 string normalizedFile = System.IO.Path.GetFullPath(filePath);
-                
+
                 // 计算相对路径
                 string relativePath = "";
                 if (normalizedFile.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase))
@@ -273,7 +281,7 @@ namespace TestArcMapAddin2.Forms
                     System.Diagnostics.Debug.WriteLine($"警告: 文件路径 {normalizedFile} 不在根目录 {normalizedRoot} 下");
                     return System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(filePath));
                 }
-                
+
                 // 分割路径并获取第一级目录名称（县名）
                 string[] pathParts = relativePath.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
                 if (pathParts.Length >= 1)
@@ -307,29 +315,29 @@ namespace TestArcMapAddin2.Forms
         private List<ForestResourcePlugin.LCXZGXFileInfo> FindFilesWithPattern(string rootDir, string pattern)
         {
             var result = new List<ForestResourcePlugin.LCXZGXFileInfo>();
-            
+
             try
             {
                 System.Diagnostics.Debug.WriteLine($"开始在 {rootDir} 目录下查找包含 {pattern} 的文件");
-                
+
                 // 1. 首先查找GDB要素类
                 System.Diagnostics.Debug.WriteLine("第1步：查找GDB要素类...");
                 var gdbFeatureClasses = ForestResourcePlugin.GdbFeatureClassFinder.FindFeatureClassesWithPattern(
                     rootDir, pattern, ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon);
-                
+
                 // 将找到的GDB要素类添加到结果中
                 result.AddRange(gdbFeatureClasses);
                 System.Diagnostics.Debug.WriteLine($"找到 {gdbFeatureClasses.Count} 个GDB要素类");
-                
+
                 // 2. 再查找Shapefile文件
                 System.Diagnostics.Debug.WriteLine("第2步：查找Shapefile文件...");
-                
+
                 // 确保目录存在
                 if (Directory.Exists(rootDir))
                 {
                     string[] files = System.IO.Directory.GetFiles(rootDir, "*.shp", System.IO.SearchOption.AllDirectories);
                     System.Diagnostics.Debug.WriteLine($"在 {rootDir} 目录下找到 {files.Length} 个Shapefile文件");
-                    
+
                     // 筛选包含指定模式的Shapefile
                     int matchCount = 0;
                     foreach (string filePath in files)
@@ -338,15 +346,15 @@ namespace TestArcMapAddin2.Forms
                         {
                             // 提取县名（第一级文件夹名称）
                             string countyName = ExtractCountyNameFromPath(filePath, rootDir);
-                            
-                            result.Add(new ForestResourcePlugin.LCXZGXFileInfo 
-                            { 
+
+                            result.Add(new ForestResourcePlugin.LCXZGXFileInfo
+                            {
                                 FullPath = filePath,
                                 DisplayName = countyName,
                                 IsGdb = false,
                                 GeometryType = ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon // 假设为面
                             });
-                            
+
                             matchCount++;
                             System.Diagnostics.Debug.WriteLine($"找到匹配的Shapefile文件[{matchCount}]: {filePath}, 县名: {countyName}");
                         }
@@ -356,14 +364,14 @@ namespace TestArcMapAddin2.Forms
                 {
                     System.Diagnostics.Debug.WriteLine($"警告: 目录 {rootDir} 不存在");
                 }
-                
+
                 System.Diagnostics.Debug.WriteLine($"共找到 {result.Count} 个匹配文件 (GDB要素类: {gdbFeatureClasses.Count}, Shapefile: {result.Count - gdbFeatureClasses.Count})");
-                
+
                 // 输出详细的结果信息
                 for (int i = 0; i < result.Count; i++)
                 {
                     var item = result[i];
-                    System.Diagnostics.Debug.WriteLine($"结果[{i+1}]: {item.DisplayName}, 路径: {item.FullPath}, 类型: {(item.IsGdb ? "GDB要素类" : "Shapefile")}");
+                    System.Diagnostics.Debug.WriteLine($"结果[{i + 1}]: {item.DisplayName}, 路径: {item.FullPath}, 类型: {(item.IsGdb ? "GDB要素类" : "Shapefile")}");
                 }
             }
             catch (Exception ex)
@@ -372,7 +380,7 @@ namespace TestArcMapAddin2.Forms
                 System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
                 MessageBox.Show($"查找文件时出错: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            
+
             return result;
         }
 
@@ -395,13 +403,13 @@ namespace TestArcMapAddin2.Forms
             if (!String.IsNullOrEmpty(path) && !String.IsNullOrEmpty(countryName))
             {
                 DirectoryInfo sourceFolder = new DirectoryInfo(path);
-                DirectoryInfo countryFolder =  sourceFolder.CreateSubdirectory(countryName);
+                DirectoryInfo countryFolder = sourceFolder.CreateSubdirectory(countryName);
                 if (countryFolder.Exists)
                 {
                     Type factoryType = Type.GetTypeFromProgID("esriDataSourcesGDB.FileGDBWorkspaceFactory");
                     IWorkspaceFactory workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
-                    
-                    IWorkspaceName workspaceName = workspaceFactory.Create(countryFolder.FullName,countryName+".gdb", null, 0);
+
+                    IWorkspaceName workspaceName = workspaceFactory.Create(countryFolder.FullName, countryName + ".gdb", null, 0);
 
                     // Cast the workspace name object to the IName interface and open the workspace.
                     ESRI.ArcGIS.esriSystem.IName name = (ESRI.ArcGIS.esriSystem.IName)workspaceName;
@@ -423,7 +431,7 @@ namespace TestArcMapAddin2.Forms
                         return false;
                     }
                     return true;
-                }                
+                }
             }
             return false;
         }
@@ -435,54 +443,263 @@ namespace TestArcMapAddin2.Forms
             IFeatureClass featureClass = null;
             IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspace;
 
-            ESRI.ArcGIS.esriSystem.UID CLSID = new ESRI.ArcGIS.esriSystem.UIDClass();
-            CLSID.Value = "esriGeoDatabase.Feature";
-
-            IObjectClassDescription objectClassDescription = new FeatureClassDescriptionClass();
-            IFields fields = objectClassDescription.RequiredFields;
-            IFieldsEdit fieldsEdit = (IFieldsEdit)fields;
-            switch (featureClassName)
+            try
             {
-                case "LCXZGX":
-                    FeatureClassFieldsTemplate.GenerateLcxzgxFields(fieldsEdit);
-                    break;
-                case "SLZYZC":
-                    FeatureClassFieldsTemplate.GenerateSlzyzcFields(fieldsEdit);
-                    break;
-                case "SLZYZC_DLTB":
-                    FeatureClassFieldsTemplate.GenerateSlzyzc_dltbFields(fieldsEdit);
-                    break;
-            }
-            
-            fields = (IFields)fieldsEdit;
-            String strShapeField = "";
-            for (int j = 0; j < fields.FieldCount; j++)
-            {
-                if (fields.get_Field(j).Type == esriFieldType.esriFieldTypeGeometry)
+                // 检查要素类是否已存在
+                bool featureClassExists = false;
+                try
                 {
-                    strShapeField = fields.get_Field(j).Name;
-                    break;
+                    featureClass = featureWorkspace.OpenFeatureClass(featureClassName);
+                    featureClassExists = true;
+                    System.Diagnostics.Debug.WriteLine($"要素类{featureClassName}已存在，将设置CGCS2000坐标系");
+
+                    // 为已存在的要素类设置CGCS2000坐标系
+                    SetCoordinateSystemForExistingFeatureClass(featureClass, featureClassName);
+
+                    return true;
+                }
+                catch
+                {
+                    // 要素类不存在，继续创建
+                    featureClassExists = false;
+                }
+
+                if (!featureClassExists)
+                {
+                    System.Diagnostics.Debug.WriteLine($"开始创建{featureClassName}要素类并设置CGCS2000坐标系");
+
+                    ESRI.ArcGIS.esriSystem.UID CLSID = new ESRI.ArcGIS.esriSystem.UIDClass();
+                    CLSID.Value = "esriGeoDatabase.Feature";
+
+                    IObjectClassDescription objectClassDescription = new FeatureClassDescriptionClass();
+                    IFields fields = objectClassDescription.RequiredFields;
+                    IFieldsEdit fieldsEdit = (IFieldsEdit)fields;
+
+                    // 根据表名生成相应的字段
+                    switch (featureClassName)
+                    {
+                        case "LCXZGX":
+                            FeatureClassFieldsTemplate.GenerateLcxzgxFields(fieldsEdit);
+                            break;
+                        case "SLZYZC":
+                            FeatureClassFieldsTemplate.GenerateSlzyzcFields(fieldsEdit);
+                            break;
+                        case "SLZYZC_DLTB":
+                            FeatureClassFieldsTemplate.GenerateSlzyzc_dltbFields(fieldsEdit);
+                            break;
+                    }
+
+                    fields = (IFields)fieldsEdit;
+
+                    // 查找几何字段并设置CGCS2000坐标系
+                    String strShapeField = "";
+                    for (int j = 0; j < fields.FieldCount; j++)
+                    {
+                        IField field = fields.get_Field(j);
+                        if (field.Type == esriFieldType.esriFieldTypeGeometry)
+                        {
+                            strShapeField = field.Name;
+
+                            // 获取几何字段定义
+                            IGeometryDef geometryDef = field.GeometryDef;
+                            IGeometryDefEdit geometryDefEdit = (IGeometryDefEdit)geometryDef;
+
+                            // 创建并设置CGCS2000空间参考系统
+                            ISpatialReference cgcs2000SpatialRef = CreateCGCS2000SpatialReference();
+                            if (cgcs2000SpatialRef != null)
+                            {
+                                geometryDefEdit.SpatialReference_2 = cgcs2000SpatialRef;
+                                System.Diagnostics.Debug.WriteLine($"为{featureClassName}的几何字段{strShapeField}设置CGCS2000坐标系");
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine($"警告：无法为{featureClassName}设置CGCS2000坐标系，将使用默认坐标系");
+                            }
+                            break;
+                        }
+                    }
+
+                    // Use IFieldChecker to create a validated fields collection.
+                    IFieldChecker fieldChecker = new FieldCheckerClass();
+                    IEnumFieldError enumFieldError = null;
+                    IFields validatedFields = null;
+                    fieldChecker.ValidateWorkspace = (IWorkspace)workspace;
+                    fieldChecker.Validate(fields, out enumFieldError, out validatedFields);
+
+                    if (enumFieldError != null)
+                    {
+                        MessageBox.Show("字段校验失败：" + featureClassName);
+                        return false;
+                    }
+
+                    // 创建要素类
+                    featureClass = featureWorkspace.CreateFeatureClass(featureClassName, validatedFields, CLSID, null, esriFeatureType.esriFTSimple, strShapeField, "");
+
+                    if (featureClass == null)
+                    {
+                        MessageBox.Show("为" + featureClassName + "创建要素类失败");
+                        return false;
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"成功创建{featureClassName}要素类并设置CGCS2000坐标系");
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"创建/设置{featureClassName}要素类时出错: {ex.Message}");
+                MessageBox.Show($"创建/设置{featureClassName}要素类时出错: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            finally
+            {
+                // 释放COM对象
+                if (featureClass != null)
+                {
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);
                 }
             }
+        }
 
-            // Use IFieldChecker to create a validated fields collection.
-            IFieldChecker fieldChecker = new FieldCheckerClass();
-            IEnumFieldError enumFieldError = null;
-            IFields validatedFields = null;
-            fieldChecker.ValidateWorkspace = (IWorkspace)workspace;
-            fieldChecker.Validate(fields, out enumFieldError, out validatedFields);
-            if (enumFieldError != null)
+        /// <summary>
+        /// 创建CGCS2000空间参考系统
+        /// </summary>
+        /// <returns>CGCS2000空间参考系统对象</returns>
+        /// <summary>
+        /// 创建CGCS2000空间参考系统
+        /// </summary>
+        /// <returns>CGCS2000空间参考系统对象</returns>
+        /// <summary>
+        /// 创建CGCS2000空间参考系统
+        /// </summary>
+        /// <returns>CGCS2000空间参考系统对象</returns>
+        private ISpatialReference CreateCGCS2000SpatialReference()
+        {
+            try
             {
-                MessageBox.Show("字段校验失败：" + featureClassName);
-                return false;
+                // 方法1：尝试使用EPSG代码4490创建CGCS2000地理坐标系
+                try
+                {
+                    // 创建空间参考系统环境接口
+                    Type spatialRefEnvType = Type.GetTypeFromProgID("esriGeometry.SpatialReferenceEnvironment");
+                    object spatialRefEnvObj = Activator.CreateInstance(spatialRefEnvType);
+                    ISpatialReferenceFactory spatialRefFactory = spatialRefEnvObj as ISpatialReferenceFactory;
+
+                    if (spatialRefFactory != null)
+                    {
+                        // 使用EPSG代码4490创建CGCS2000地理坐标系
+                        IGeographicCoordinateSystem geographicCS = spatialRefFactory.CreateGeographicCoordinateSystem(4490);
+                        if (geographicCS != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine("成功使用EPSG 4490创建CGCS2000空间参考系统");
+                            return geographicCS as ISpatialReference;
+                        }
+                    }
+                }
+                catch (Exception ex1)
+                {
+                    System.Diagnostics.Debug.WriteLine($"使用EPSG 4490创建CGCS2000失败: {ex1.Message}");
+                }
+
+                // 方法2：备用方案 - 尝试从WKT字符串创建
+                try
+                {
+                    Type spatialRefEnvType = Type.GetTypeFromProgID("esriGeometry.SpatialReferenceEnvironment");
+                    object spatialRefEnvObj = Activator.CreateInstance(spatialRefEnvType);
+
+                    // 使用反射调用CreateESRISpatialReferenceFromPRJString方法
+                    System.Reflection.MethodInfo createFromPrjMethod = spatialRefEnvType.GetMethod("CreateESRISpatialReferenceFromPRJString");
+                    if (createFromPrjMethod != null)
+                    {
+                        object[] parameters = new object[] { CGCS2000_WKT, null, null };
+                        object result = createFromPrjMethod.Invoke(spatialRefEnvObj, parameters);
+
+                        if (result != null && result is ISpatialReference)
+                        {
+                            System.Diagnostics.Debug.WriteLine("成功使用WKT字符串创建CGCS2000空间参考系统");
+                            return result as ISpatialReference;
+                        }
+                    }
+                }
+                catch (Exception ex2)
+                {
+                    System.Diagnostics.Debug.WriteLine($"使用WKT字符串创建CGCS2000失败: {ex2.Message}");
+                }
+
+                // 方法3：最后的备用方案 - 创建一个通用的地理坐标系
+                try
+                {
+                    Type spatialRefEnvType = Type.GetTypeFromProgID("esriGeometry.SpatialReferenceEnvironment");
+                    object spatialRefEnvObj = Activator.CreateInstance(spatialRefEnvType);
+                    ISpatialReferenceFactory spatialRefFactory = spatialRefEnvObj as ISpatialReferenceFactory;
+
+                    if (spatialRefFactory != null)
+                    {
+                        // 创建WGS84地理坐标系作为备用
+                        IGeographicCoordinateSystem wgs84CS = spatialRefFactory.CreateGeographicCoordinateSystem((int)esriSRGeoCSType.esriSRGeoCS_WGS1984);
+                        if (wgs84CS != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine("警告：使用WGS84坐标系作为备用方案");
+                            return wgs84CS as ISpatialReference;
+                        }
+                    }
+                }
+                catch (Exception ex3)
+                {
+                    System.Diagnostics.Debug.WriteLine($"创建备用坐标系也失败: {ex3.Message}");
+                }
+
+                System.Diagnostics.Debug.WriteLine("所有创建CGCS2000空间参考系统的方法都失败了");
+                return null;
             }
-            featureClass = featureWorkspace.CreateFeatureClass(featureClassName, validatedFields, CLSID, null, esriFeatureType.esriFTSimple, strShapeField, "");
-            if (featureClass == null)
+            catch (Exception ex)
             {
-                MessageBox.Show("为" + featureClassName + "创建要素类失败");
-                return false;
+                System.Diagnostics.Debug.WriteLine($"创建CGCS2000空间参考系统时出现意外错误: {ex.Message}");
+                return null;
             }
-            return true;
+        }
+
+        /// <summary>
+        /// 为已存在的要素类设置CGCS2000坐标系
+        /// </summary>
+        /// <param name="featureClass">要素类</param>
+        /// <param name="featureClassName">要素类名称</param>
+        private void SetCoordinateSystemForExistingFeatureClass(IFeatureClass featureClass, string featureClassName)
+        {
+            try
+            {
+                // 创建CGCS2000空间参考系统
+                ISpatialReference cgcs2000SpatialRef = CreateCGCS2000SpatialReference();
+                if (cgcs2000SpatialRef == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"无法为{featureClassName}设置坐标系：空间参考系统创建失败");
+                    return;
+                }
+
+                // 从要素类获取地理数据集对象
+                IGeoDataset geoDataset = (IGeoDataset)featureClass;
+
+                // 检查当前坐标系
+                ISpatialReference currentSpatialRef = geoDataset.SpatialReference;
+                if (currentSpatialRef != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"{featureClassName}当前已有坐标系，准备更改为CGCS2000");
+                }
+
+                // 转换为IGeoDatasetSchemaEdit对象以修改坐标系
+                IGeoDatasetSchemaEdit schemaEdit = (IGeoDatasetSchemaEdit)geoDataset;
+
+                // 为要素类定义CGCS2000坐标系
+                schemaEdit.AlterSpatialReference(cgcs2000SpatialRef);
+
+                System.Diagnostics.Debug.WriteLine($"成功为{featureClassName}要素类设置CGCS2000坐标系");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"为{featureClassName}设置坐标系时出错: {ex.Message}");
+                // 不抛出异常，确保其他处理流程继续
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)

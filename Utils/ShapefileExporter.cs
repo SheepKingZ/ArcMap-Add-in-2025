@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using ESRI.ArcGIS.Geodatabase;
 using ESRI.ArcGIS.Geometry;
+using ESRI.ArcGIS.esriSystem;
 
 namespace ForestResourcePlugin
 {
@@ -12,6 +13,11 @@ namespace ForestResourcePlugin
     /// </summary>
     public class ShapefileExporter
     {
+        /// <summary>
+        /// CGCS2000坐标系WKT定义
+        /// </summary>
+        private const string CGCS2000_WKT = @"GEOGCS[""GCS_China_Geodetic_Coordinate_System_2000"",DATUM[""D_China_2000"",SPHEROID[""CGCS2000"",6378137.0,298.257222101]],PRIMEM[""Greenwich"",0.0],UNIT[""Degree"",0.0174532925199433]]";
+
         /// <summary>
         /// 进度回调委托 - 用于向UI层报告处理进度
         /// </summary>
@@ -81,7 +87,7 @@ namespace ForestResourcePlugin
                 progressCallback?.Invoke(25, $"开始向{countyName}的LCXZGX表写入数据...");
 
                 // 执行数据写入操作 - 使用批量插入提高性能
-                WriteFeaturesToDatabase(processedFeatures, sourceFeatureClass, lcxzgxFeatureClass, 
+                WriteFeaturesToDatabase(processedFeatures, sourceFeatureClass, lcxzgxFeatureClass,
                     fieldMappings, countyName, progressCallback);
 
                 progressCallback?.Invoke(80, $"成功将 {processedFeatures.Count} 个要素写入到{countyName}的LCXZGX表");
@@ -230,11 +236,11 @@ namespace ForestResourcePlugin
 
                     // 为每个县输出数据到数据库（包含自动转换）
                     // 注意：不传递子进度回调以避免进度报告混乱
-                    ExportToDatabase(countyFeatures, sourceFeatureClass, countyName, outputGDBPath, 
+                    ExportToDatabase(countyFeatures, sourceFeatureClass, countyName, outputGDBPath,
                         fieldMappings, null);
 
                     processedCounties++;
-                    
+
                     System.Diagnostics.Debug.WriteLine($"县{countyName}数据输出和转换完成 ({processedCounties}/{totalCounties})");
                 }
                 catch (Exception ex)
@@ -262,7 +268,7 @@ namespace ForestResourcePlugin
             {
                 // 构建县级数据库路径 - 标准路径结构：基础路径\县名\县名.gdb
                 string countyGDBPath = System.IO.Path.Combine(outputGDBPath, countyName, countyName + ".gdb");
-                
+
                 // 验证目录结构的存在性
                 if (!Directory.Exists(System.IO.Path.GetDirectoryName(countyGDBPath)))
                 {
@@ -281,7 +287,7 @@ namespace ForestResourcePlugin
 
                 // 打开工作空间 - 参数0表示以读写模式打开
                 IWorkspace workspace = workspaceFactory.OpenFromFile(countyGDBPath, 0);
-                
+
                 System.Diagnostics.Debug.WriteLine($"成功打开{countyName}的数据库: {countyGDBPath}");
                 return workspace;
             }
@@ -304,10 +310,10 @@ namespace ForestResourcePlugin
             {
                 // 将工作空间转换为要素工作空间以访问要素类
                 IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspace;
-                
+
                 // 打开LCXZGX要素类 - 这是预定义的表名
                 IFeatureClass lcxzgxFeatureClass = featureWorkspace.OpenFeatureClass("LCXZGX");
-                
+
                 System.Diagnostics.Debug.WriteLine("成功获取LCXZGX要素类");
                 return lcxzgxFeatureClass;
             }
@@ -363,7 +369,7 @@ namespace ForestResourcePlugin
                         }
 
                         // 复制属性值并执行字段映射转换
-                        CopyFeatureAttributesForDatabase(sourceFeature, sourceFeatureClass, featureBuffer, 
+                        CopyFeatureAttributesForDatabase(sourceFeature, sourceFeatureClass, featureBuffer,
                             targetFeatureClass, fieldMappings, countyName);
 
                         // 执行要素插入操作
@@ -393,7 +399,7 @@ namespace ForestResourcePlugin
                 // 提交所有插入操作到数据库
                 // Flush确保所有缓存的操作都被写入磁盘
                 insertCursor.Flush();
-                
+
                 System.Diagnostics.Debug.WriteLine($"{countyName}数据写入完成: 成功{successCount}个, 失败{errorCount}个");
             }
             finally
@@ -453,7 +459,7 @@ namespace ForestResourcePlugin
                         object sourceValue = sourceFeature.get_Value(sourceFieldIndex);
 
                         // 执行特殊的字段值转换以符合数据库要求
-                        object targetValue = ConvertFieldValueForDatabase(sourceValue, targetFieldName, 
+                        object targetValue = ConvertFieldValueForDatabase(sourceValue, targetFieldName,
                             sourceFieldName, countyName);
 
                         targetFeatureBuffer.set_Value(targetFieldIndex, targetValue);
@@ -506,7 +512,7 @@ namespace ForestResourcePlugin
         /// <param name="sourceFieldName">源字段名</param>
         /// <param name="countyName">县名</param>
         /// <returns>转换后的字段值</returns>
-        private object ConvertFieldValueForDatabase(object sourceValue, string targetFieldName, 
+        private object ConvertFieldValueForDatabase(object sourceValue, string targetFieldName,
             string sourceFieldName, string countyName)
         {
             // 处理空值情况
@@ -523,19 +529,19 @@ namespace ForestResourcePlugin
                 {
                     case "QSXZ":  // 权属性质转换 - 将数字编码转换为中文描述
                         return ConvertPropertyRights(sourceValue);
-                        
+
                     case "DLMC":  // 地类名称转换 - 根据地类编码确定名称
                         return ConvertLandTypeName(sourceValue);
-                        
+
                     case "TBMJ":  // 图斑面积处理 - 确保数值类型正确
                         return ConvertAreaValue(sourceValue);
-                        
+
                     case "ZLDWMC": // 坐落单位名称 - 默认使用县名
                         return string.IsNullOrEmpty(sourceValue?.ToString()) ? countyName : sourceValue.ToString();
-                        
+
                     case "QSDWMC": // 权属单位名称 - 默认使用县政府
                         return ConvertPropertyOwner(sourceValue, countyName);
-                        
+
                     default:
                         return sourceValue; // 其他字段保持原值
                 }
@@ -582,7 +588,7 @@ namespace ForestResourcePlugin
         private string ConvertLandTypeName(object value)
         {
             string strValue = value?.ToString() ?? "";
-            
+
             // 根据国家土地分类标准GB/T 21010-2017进行转换
             if (strValue.StartsWith("03"))
             {
