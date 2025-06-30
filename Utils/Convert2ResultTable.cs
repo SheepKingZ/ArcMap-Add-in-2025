@@ -577,6 +577,16 @@ namespace ForestResourcePlugin
         /// <param name="sourceFieldName">源字段名（或特殊规则描述）</param>
         /// <param name="countyName">县名</param>
         /// <returns>转换后的字段值</returns>
+        /// <summary>
+        /// 处理特殊的字段映射规则
+        /// 包括字段合并、计算等复杂映射逻辑
+        /// </summary>
+        /// <param name="sourceFeature">源要素</param>
+        /// <param name="sourceFeatureClass">源要素类</param>
+        /// <param name="targetFieldName">目标字段名</param>
+        /// <param name="sourceFieldName">源字段名（或特殊规则描述）</param>
+        /// <param name="countyName">县名</param>
+        /// <returns>转换后的字段值</returns>
         private object ProcessSpecialFieldMapping(
             IFeature sourceFeature,
             IFeatureClass sourceFeatureClass,
@@ -599,6 +609,14 @@ namespace ForestResourcePlugin
                         return CalculateFieldProduct(sourceFeature, sourceFeatureClass,
                             "xbmj", GetFieldByIndex(sourceFeatureClass, 65));
 
+                    case "XZQMC":
+                        // 直接使用县名参数，确保包含"县"字
+                        return EnsureCountySuffix(countyName);
+
+                    case "CZKFBJMJ":
+                        // 这个字段在ConvertFeatures方法中通过特殊计算处理
+                        return 0.0; // 默认值，实际值在主处理循环中设置
+
                     default:
                         // 普通字段映射
                         if (!string.IsNullOrEmpty(sourceFieldName))
@@ -620,6 +638,28 @@ namespace ForestResourcePlugin
                 System.Diagnostics.Debug.WriteLine($"处理特殊字段映射 {targetFieldName} 时出错: {ex.Message}");
                 return null;
             }
+        }
+
+        /// <summary>
+        /// 确保县名以"县"字结尾
+        /// </summary>
+        /// <param name="countyName">原始县名</param>
+        /// <returns>确保带有"县"字的县名</returns>
+        private string EnsureCountySuffix(string countyName)
+        {
+            if (string.IsNullOrEmpty(countyName))
+            {
+                return string.Empty;
+            }
+
+            // 如果县名不以"县"结尾，添加"县"字
+            if (!countyName.EndsWith("县") && !countyName.EndsWith("市") &&
+                !countyName.EndsWith("区") && !countyName.EndsWith("旗"))
+            {
+                return countyName + "县";
+            }
+
+            return countyName; // 已经包含行政区单位名称，直接返回
         }
 
         /// <summary>
@@ -729,7 +769,8 @@ namespace ForestResourcePlugin
             // 基础字段映射
             result.Add("YSDM", "ysdm");            // 要素代码
             result.Add("XZQDM", "xian");           // 行政区代码
-            result.Add("GTDCTBBM", "bsm");         // 国土调查图斑编码
+            result.Add("XZQMC", "SPECIAL_COUNTY");           // 行政区名称
+            result.Add("GTDCTBBSM", "bsm");         // 国土调查图斑编码
             result.Add("GTDCTBBH", "tbbh");        // 国土调查图斑编号
             result.Add("GTDCDLBM", "dlbm");        // 国土调查地类编码
             result.Add("GTDCDLMC", "dlmc");        // 国土调查地类名称
@@ -740,7 +781,7 @@ namespace ForestResourcePlugin
             result.Add("GTDCTBMJ", "tbmj");        // 国土调查图斑面积
             result.Add("LYJ", "lin_ye_ju");        // 林业局
             result.Add("LC", "lin_chang");         // 林场
-            result.Add("PCDL", "di_lie");          // 排次地类
+            result.Add("PCDL", "di_lei");          // 普查地类
             result.Add("ZTBMJ", "xbmj");           // 株数图斑面积
             result.Add("GTDCTDQS", "qsxz");        // 国土调查土地权属
             result.Add("LM_SUOYQ", "lmqs");        // 林木所有权
@@ -754,6 +795,7 @@ namespace ForestResourcePlugin
             result.Add("PJXJ", "pingjun_xj");      // 平均胸径
             result.Add("MGQZS", "mei_gq_zs");      // 每公顷株数
             result.Add("FRDBS", "frdbs");          // 发育地被层
+            result.Add("CZKFBJMJ", "SPECIAL_CZKFBJ"); // 城镇开发边界面积 - 特殊处理
 
             // 特殊字段映射 - 这些字段有特殊的处理逻辑
             result.Add("PCTBBM", "xian+lin_ban+xiao_ban");  // 字段合并
