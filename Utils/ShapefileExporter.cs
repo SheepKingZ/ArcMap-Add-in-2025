@@ -115,6 +115,12 @@ namespace ForestResourcePlugin
         /// <param name="countyName">县名</param>
         /// <param name="outputGDBPath">数据库基础路径</param>
         /// <param name="progressCallback">进度回调</param>
+        /// <summary>
+        /// 执行自动转换 - 在LCXZGX数据插入完成后自动转换为SLZYZC和SLZYZC_DLTB
+        /// </summary>
+        /// <param name="countyName">县名</param>
+        /// <param name="outputGDBPath">数据库基础路径</param>
+        /// <param name="progressCallback">进度回调</param>
         private void PerformAutoConversion(string countyName, string outputGDBPath, ProgressCallback progressCallback)
         {
             try
@@ -124,26 +130,52 @@ namespace ForestResourcePlugin
                 // 创建转换器实例
                 var converter = new Convert2ResultTable();
 
-                // 执行转换 - 使用子进度回调来更新转换进度
+                // 执行第一次转换 - LCXZGX转换为SLZYZC
                 bool conversionSuccess = converter.ConvertLCXZGXToSLZYZC(
                     countyName,
                     outputGDBPath,
                     null, // 使用默认字段映射
                     (subPercentage, subMessage) =>
                     {
-                        // 将转换进度映射到总进度的85%-95%区间
-                        int totalPercentage = 85 + (subPercentage * 10 / 100);
+                        // 将转换进度映射到总进度的85%-90%区间
+                        int totalPercentage = 85 + (subPercentage * 5 / 100);
                         progressCallback?.Invoke(totalPercentage, $"{countyName}: {subMessage}");
                     });
 
                 if (conversionSuccess)
                 {
                     System.Diagnostics.Debug.WriteLine($"县{countyName}的LCXZGX数据已成功自动转换为SLZYZC表");
-                    progressCallback?.Invoke(95, $"{countyName}的数据转换成功完成");
+                    progressCallback?.Invoke(90, $"{countyName}的SLZYZC数据转换成功完成");
+
+                    // 继续执行第二次转换 - SLZYZC转换为SLZYZC_DLTB
+                    System.Diagnostics.Debug.WriteLine($"开始自动转换县{countyName}的数据从SLZYZC到SLZYZC_DLTB");
+                    var converter3 = new Convert3ResultTable();
+
+                    bool conversion3Success = converter3.ConvertSLZYZCToDLTB(
+                        countyName,
+                        outputGDBPath,
+                        null, // 使用默认字段映射
+                        (subPercentage, subMessage) =>
+                        {
+                            // 将转换进度映射到总进度的90%-95%区间
+                            int totalPercentage = 90 + (subPercentage * 5 / 100);
+                            progressCallback?.Invoke(totalPercentage, $"{countyName}: {subMessage}");
+                        });
+
+                    if (conversion3Success)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"县{countyName}的SLZYZC数据已成功自动转换为SLZYZC_DLTB表");
+                        progressCallback?.Invoke(95, $"{countyName}的数据全部转换成功完成");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"县{countyName}的SLZYZC_DLTB数据转换失败");
+                        progressCallback?.Invoke(95, $"{countyName}的SLZYZC_DLTB数据转换失败，但SLZYZC数据已成功保存");
+                    }
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"县{countyName}的数据转换失败");
+                    System.Diagnostics.Debug.WriteLine($"县{countyName}的SLZYZC数据转换失败");
                     progressCallback?.Invoke(95, $"{countyName}的数据转换失败，但LCXZGX数据已成功保存");
                 }
             }
@@ -152,7 +184,7 @@ namespace ForestResourcePlugin
                 // 转换失败不应影响主要的数据插入流程
                 System.Diagnostics.Debug.WriteLine($"自动转换县{countyName}数据时出错: {ex.Message}");
                 progressCallback?.Invoke(95, $"{countyName}的数据转换出错: {ex.Message}");
-                
+
                 // 记录错误但不抛出异常，确保主流程继续
                 System.Diagnostics.Debug.WriteLine($"转换错误详情: {ex}");
             }
