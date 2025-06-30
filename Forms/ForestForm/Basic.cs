@@ -1629,28 +1629,36 @@ namespace ForestResourcePlugin
                 // 构建县级数据库路径 - 假设输出路径是数据库的基础路径
                 string countyDatabasePath = txtOutputPath.Text;
 
+                // 执行数据库导出操作
+                // 使用ShapefileExporter将筛选后的林草现状要素写入到对应县的数据库LCXZGX表中
                 exporter.ExportToDatabase(
-                    filteredFeatures,
-                    lcxzgxFeatureClass,
-                    countyInfo.CountyName,
-                    countyDatabasePath,
-                    fieldMappings,
-                    (percentage, message) => {
-                        // 进度回调处理
+                    filteredFeatures,          // 已筛选的符合条件的要素列表（国有林地和集体林地）
+                    lcxzgxFeatureClass,        // 源林草现状要素类，用于获取字段定义和要素数据
+                    countyInfo.CountyName,     // 当前处理的县名，用于确定目标数据库路径
+                    countyDatabasePath,        // 县级数据库基础路径，最终会拼接为：{countyDatabasePath}/{县名}/{县名}.gdb
+                    fieldMappings,             // 字段映射配置，定义源字段与目标字段的对应关系
+                    (percentage, message) => { // 进度回调函数，用于实时更新处理进度和状态信息
+                        // 进度回调处理：更新界面进度条和状态显示
                         try
                         {
+                            // 确保进度值不超过100，更新进度条显示
                             progressBar.Value = Math.Min(percentage, 100);
+                            // 更新状态标签显示当前操作信息
                             UpdateStatus(message);
+                            // 处理Windows消息队列，保持界面响应
                             Application.DoEvents();
                         }
                         catch (Exception ex)
                         {
+                            // 记录进度更新过程中的异常，不影响主要的导出流程
                             System.Diagnostics.Debug.WriteLine($"更新进度时出错: {ex.Message}");
                         }
                     });
 
-                result.Success = true;
-                result.ProcessedFeatureCount = filteredFeatures.Count;
+                // 导出成功后设置处理结果
+                result.Success = true;                              // 标记县处理成功
+                result.ProcessedFeatureCount = filteredFeatures.Count;  // 记录实际处理的要素数量
+                // 构建输出数据库的完整路径：{基础路径}/{县名}/{县名}.gdb
                 result.OutputPath = System.IO.Path.Combine(countyDatabasePath, countyInfo.CountyName, $"{countyInfo.CountyName}.gdb");
 
                 // 清理COM对象
