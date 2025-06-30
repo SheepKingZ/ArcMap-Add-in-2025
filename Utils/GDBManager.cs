@@ -3,7 +3,6 @@ using System.IO;
 using ESRI.ArcGIS.Geodatabase;
 using ESRI.ArcGIS.DataSourcesGDB;
 using ESRI.ArcGIS.Geometry;
-using System.IO;
 
 namespace ForestResourcePlugin
 {

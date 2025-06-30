@@ -1622,21 +1622,36 @@ namespace ForestResourcePlugin
                 string outputShapefilePath = System.IO.Path.Combine(countyOutputPath,
                     $"{countyInfo.CountyName}_ForestScope_{DateTime.Now:yyyyMMdd_HHmmss}.shp");
 
-                // 导出数据
+                // 导出数据到数据库
                 var exporter = new ShapefileExporter();
                 var fieldMappings = GetFieldMappingsFromGrid();
 
-                exporter.ExportToShapefile(
+                // 构建县级数据库路径 - 假设输出路径是数据库的基础路径
+                string countyDatabasePath = txtOutputPath.Text;
+
+                exporter.ExportToDatabase(
                     filteredFeatures,
                     lcxzgxFeatureClass,
-                    outputShapefilePath,
+                    countyInfo.CountyName,
+                    countyDatabasePath,
                     fieldMappings,
-                    cmbCoordSystem.SelectedItem?.ToString(),
-                    null); // 不需要进度回调，因为在批量处理中
+                    (percentage, message) => {
+                        // 进度回调处理
+                        try
+                        {
+                            progressBar.Value = Math.Min(percentage, 100);
+                            UpdateStatus(message);
+                            Application.DoEvents();
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"更新进度时出错: {ex.Message}");
+                        }
+                    });
 
                 result.Success = true;
                 result.ProcessedFeatureCount = filteredFeatures.Count;
-                result.OutputPath = outputShapefilePath;
+                result.OutputPath = System.IO.Path.Combine(countyDatabasePath, countyInfo.CountyName, $"{countyInfo.CountyName}.gdb");
 
                 // 清理COM对象
                 foreach (var feature in filteredFeatures)

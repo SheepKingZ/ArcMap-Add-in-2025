@@ -7,9 +7,9 @@ using ESRI.ArcGIS.Geometry;
 namespace ForestResourcePlugin
 {
     /// <summary>
-    /// 数据库导出工具类 - 将处理结果写入到button1创建的数据库中
+    /// 数据库输出管理器 - 将处理结果写入到button1创建的数据库中
     /// </summary>
-    public class ShapefileExporter
+    public class DatabaseOutputManager
     {
         public delegate void ProgressCallback(int percentage, string message);
 
@@ -22,7 +22,7 @@ namespace ForestResourcePlugin
         /// <param name="outputGDBPath">输出数据库路径</param>
         /// <param name="fieldMappings">字段映射配置</param>
         /// <param name="progressCallback">进度回调</param>
-        public void ExportToDatabase(
+        public void OutputToDatabase(
             List<IFeature> processedFeatures,
             IFeatureClass sourceFeatureClass,
             string countyName,
@@ -93,60 +93,6 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 批量输出多个县的数据到各自的数据库
-        /// </summary>
-        /// <param name="countyFeaturesMap">县级要素映射（县名 -> 要素列表）</param>
-        /// <param name="sourceFeatureClass">源要素类</param>
-        /// <param name="outputGDBPath">输出数据库基础路径</param>
-        /// <param name="fieldMappings">字段映射配置</param>
-        /// <param name="progressCallback">进度回调</param>
-        public void BatchExportToDatabase(
-            Dictionary<string, List<IFeature>> countyFeaturesMap,
-            IFeatureClass sourceFeatureClass,
-            string outputGDBPath,
-            Dictionary<string, string> fieldMappings,
-            ProgressCallback progressCallback = null)
-        {
-            if (countyFeaturesMap == null || countyFeaturesMap.Count == 0)
-            {
-                throw new ArgumentException("县级要素映射不能为空");
-            }
-
-            int totalCounties = countyFeaturesMap.Count;
-            int processedCounties = 0;
-
-            progressCallback?.Invoke(0, $"开始批量处理{totalCounties}个县的数据...");
-
-            foreach (var countyData in countyFeaturesMap)
-            {
-                string countyName = countyData.Key;
-                List<IFeature> countyFeatures = countyData.Value;
-
-                try
-                {
-                    int overallProgress = (processedCounties * 100) / totalCounties;
-                    progressCallback?.Invoke(overallProgress, $"正在处理县: {countyName} ({processedCounties + 1}/{totalCounties})");
-
-                    // 为每个县输出数据到数据库，不传递子进度回调以避免混乱
-                    ExportToDatabase(countyFeatures, sourceFeatureClass, countyName, outputGDBPath, 
-                        fieldMappings, null);
-
-                    processedCounties++;
-                    
-                    System.Diagnostics.Debug.WriteLine($"县{countyName}数据输出完成 ({processedCounties}/{totalCounties})");
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"输出县{countyName}数据时出错: {ex.Message}");
-                    // 继续处理下一个县
-                    processedCounties++;
-                }
-            }
-
-            progressCallback?.Invoke(100, $"所有县的数据输出完成 ({processedCounties}/{totalCounties})");
-        }
-
-        /// <summary>
         /// 打开县级数据库
         /// </summary>
         private IWorkspace OpenCountyDatabase(string outputGDBPath, string countyName)
@@ -154,11 +100,11 @@ namespace ForestResourcePlugin
             try
             {
                 // 构建县级数据库路径
-                string countyGDBPath = System.IO.Path.Combine(outputGDBPath, countyName, countyName + ".gdb");
+                string countyGDBPath = Path.Combine(outputGDBPath, countyName, countyName + ".gdb");
                 
-                if (!Directory.Exists(System.IO.Path.GetDirectoryName(countyGDBPath)))
+                if (!Directory.Exists(Path.GetDirectoryName(countyGDBPath)))
                 {
-                    throw new DirectoryNotFoundException($"县级目录不存在: {System.IO.Path.GetDirectoryName(countyGDBPath)}");
+                    throw new DirectoryNotFoundException($"县级目录不存在: {Path.GetDirectoryName(countyGDBPath)}");
                 }
 
                 if (!Directory.Exists(countyGDBPath))
@@ -237,7 +183,7 @@ namespace ForestResourcePlugin
                         }
 
                         // 复制属性值并进行字段映射
-                        CopyFeatureAttributesForDatabase(sourceFeature, sourceFeatureClass, featureBuffer, 
+                        CopyFeatureAttributes(sourceFeature, sourceFeatureClass, featureBuffer, 
                             targetFeatureClass, fieldMappings, countyName);
 
                         // 插入要素
@@ -282,9 +228,9 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 复制要素属性并进行字段映射（数据库版本）
+        /// 复制要素属性并进行字段映射
         /// </summary>
-        private void CopyFeatureAttributesForDatabase(
+        private void CopyFeatureAttributes(
             IFeature sourceFeature,
             IFeatureClass sourceFeatureClass,
             IFeatureBuffer targetFeatureBuffer,
@@ -295,7 +241,7 @@ namespace ForestResourcePlugin
             // 默认字段映射（如果没有提供自定义映射）
             if (fieldMappings == null || fieldMappings.Count == 0)
             {
-                fieldMappings = GetDefaultDatabaseFieldMappings();
+                fieldMappings = GetDefaultFieldMappings();
             }
 
             foreach (var mapping in fieldMappings)
@@ -328,9 +274,9 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 获取默认数据库字段映射
+        /// 获取默认字段映射
         /// </summary>
-        private Dictionary<string, string> GetDefaultDatabaseFieldMappings()
+        private Dictionary<string, string> GetDefaultFieldMappings()
         {
             return new Dictionary<string, string>
             {
@@ -469,6 +415,53 @@ namespace ForestResourcePlugin
                 return $"{countyName}人民政府"; // 默认权属单位
             }
             return strValue;
+        }
+
+        /// <summary>
+        /// 批量输出多个县的数据到各自的数据库
+        /// </summary>
+        public void BatchOutputToDatabase(
+            Dictionary<string, List<IFeature>> countyFeaturesMap,
+            IFeatureClass sourceFeatureClass,
+            string outputGDBPath,
+            Dictionary<string, string> fieldMappings,
+            ProgressCallback progressCallback = null)
+        {
+            if (countyFeaturesMap == null || countyFeaturesMap.Count == 0)
+            {
+                throw new ArgumentException("县级要素映射不能为空");
+            }
+
+            int totalCounties = countyFeaturesMap.Count;
+            int processedCounties = 0;
+
+            foreach (var countyData in countyFeaturesMap)
+            {
+                string countyName = countyData.Key;
+                List<IFeature> countyFeatures = countyData.Value;
+
+                try
+                {
+                    progressCallback?.Invoke(
+                        (processedCounties * 100) / totalCounties,
+                        $"正在处理县: {countyName} ({processedCounties + 1}/{totalCounties})");
+
+                    OutputToDatabase(countyFeatures, sourceFeatureClass, countyName, outputGDBPath, 
+                        fieldMappings, null); // 不传递子进度回调以避免混乱
+
+                    processedCounties++;
+                    
+                    System.Diagnostics.Debug.WriteLine($"县{countyName}数据输出完成 ({processedCounties}/{totalCounties})");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"输出县{countyName}数据时出错: {ex.Message}");
+                    // 继续处理下一个县
+                    processedCounties++;
+                }
+            }
+
+            progressCallback?.Invoke(100, $"所有县的数据输出完成 ({processedCounties}/{totalCounties})");
         }
     }
 }
