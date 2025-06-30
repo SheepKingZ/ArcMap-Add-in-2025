@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.IO;
 using ESRI.ArcGIS.Geodatabase;
@@ -7,47 +7,47 @@ using ESRI.ArcGIS.Geometry;
 namespace ForestResourcePlugin
 {
     /// <summary>
-    /// ½á¹û±í×ª»»¹¤¾ßÀà - ½«ÏØ¼¶LCXZGX±í×ª»»ÎªSLZYZC±í
-    /// SLZYZC±íÊÇÉ­ÁÖ×ÊÔ´µ÷²é³É¹û±í£¬ÓÃÓÚ´æ´¢×ª»»ºóµÄÁÖµØµ÷²éÊı¾İ
+    /// ç»“æœè¡¨è½¬æ¢å·¥å…·ç±» - å°†å¿çº§LCXZGXè¡¨è½¬æ¢ä¸ºSLZYZCè¡¨
+    /// SLZYZCè¡¨æ˜¯æ£®æ—èµ„æºè°ƒæŸ¥æˆæœè¡¨ï¼Œç”¨äºå­˜å‚¨è½¬æ¢åçš„æ—åœ°è°ƒæŸ¥æ•°æ®
     /// </summary>
     public class Convert2ResultTable
     {
         /// <summary>
-        /// ½ø¶È»Øµ÷Î¯ÍĞ - ÓÃÓÚÏòUI²ã±¨¸æ´¦Àí½ø¶È
+        /// è¿›åº¦å›è°ƒå§”æ‰˜ - ç”¨äºå‘UIå±‚æŠ¥å‘Šå¤„ç†è¿›åº¦
         /// </summary>
-        /// <param name="percentage">Íê³É°Ù·Ö±È (0-100)</param>
-        /// <param name="message">µ±Ç°²Ù×÷ÃèÊöĞÅÏ¢</param>
+        /// <param name="percentage">å®Œæˆç™¾åˆ†æ¯” (0-100)</param>
+        /// <param name="message">å½“å‰æ“ä½œæè¿°ä¿¡æ¯</param>
         public delegate void ProgressCallback(int percentage, string message);
 
         /// <summary>
-        /// ½«ÏØ¼¶LCXZGX±í×ª»»ÎªSLZYZC±í
-        /// Ö´ĞĞÊı¾İ×ª»»¡¢×Ö¶ÎÓ³ÉäºÍÒµÎñ¹æÔò´¦Àí
+        /// å°†å¿çº§LCXZGXè¡¨è½¬æ¢ä¸ºSLZYZCè¡¨
+        /// æ‰§è¡Œæ•°æ®è½¬æ¢ã€å­—æ®µæ˜ å°„å’Œä¸šåŠ¡è§„åˆ™å¤„ç†
         /// </summary>
-        /// <param name="countyName">ÏØÃû</param>
-        /// <param name="databasePath">ÏØ¼¶Êı¾İ¿âÂ·¾¶</param>
-        /// <param name="fieldMappings">×Ö¶ÎÓ³ÉäÅäÖÃ£¨SLZYZC×Ö¶ÎÃû -> LCXZGX×Ö¶ÎÃû£©</param>
-        /// <param name="progressCallback">½ø¶È»Øµ÷</param>
-        /// <returns>×ª»»ÊÇ·ñ³É¹¦</returns>
+        /// <param name="countyName">å¿å</param>
+        /// <param name="databasePath">å¿çº§æ•°æ®åº“è·¯å¾„</param>
+        /// <param name="fieldMappings">å­—æ®µæ˜ å°„é…ç½®ï¼ˆSLZYZCå­—æ®µå -> LCXZGXå­—æ®µåï¼‰</param>
+        /// <param name="progressCallback">è¿›åº¦å›è°ƒ</param>
+        /// <returns>è½¬æ¢æ˜¯å¦æˆåŠŸ</returns>
         public bool ConvertLCXZGXToSLZYZC(
             string countyName,
             string databasePath,
             Dictionary<string, string> fieldMappings,
             ProgressCallback progressCallback = null)
         {
-            // ²ÎÊıÑéÖ¤ - È·±£ÊäÈëÊı¾İµÄÓĞĞ§ĞÔ
+            // å‚æ•°éªŒè¯ - ç¡®ä¿è¾“å…¥æ•°æ®çš„æœ‰æ•ˆæ€§
             if (string.IsNullOrEmpty(countyName))
             {
-                throw new ArgumentException("ÏØÃû²»ÄÜÎª¿Õ");
+                throw new ArgumentException("å¿åä¸èƒ½ä¸ºç©º");
             }
 
             if (string.IsNullOrEmpty(databasePath))
             {
-                throw new ArgumentException("Êı¾İ¿âÂ·¾¶²»ÄÜÎª¿Õ");
+                throw new ArgumentException("æ•°æ®åº“è·¯å¾„ä¸èƒ½ä¸ºç©º");
             }
 
-            progressCallback?.Invoke(5, $"ÕıÔÚÁ¬½Óµ½{countyName}Êı¾İ¿â...");
+            progressCallback?.Invoke(5, $"æ­£åœ¨è¿æ¥åˆ°{countyName}æ•°æ®åº“...");
 
-            // COM¶ÔÏóÉùÃ÷ - ĞèÒªÔÚfinally¿éÖĞÏÔÊ½ÊÍ·ÅÒÔ±ÜÃâÄÚ´æĞ¹Â©
+            // COMå¯¹è±¡å£°æ˜ - éœ€è¦åœ¨finallyå—ä¸­æ˜¾å¼é‡Šæ”¾ä»¥é¿å…å†…å­˜æ³„æ¼
             IWorkspace workspace = null;
             IFeatureClass lcxzgxFeatureClass = null;
             IFeatureClass slzyzcFeatureClass = null;
@@ -55,50 +55,50 @@ namespace ForestResourcePlugin
 
             try
             {
-                // ´ò¿ªÏØ¼¶Êı¾İ¿â
+                // æ‰“å¼€å¿çº§æ•°æ®åº“
                 workspace = OpenCountyDatabase(databasePath, countyName);
                 if (workspace == null)
                 {
-                    throw new Exception($"ÎŞ·¨´ò¿ª{countyName}µÄÊı¾İ¿â");
+                    throw new Exception($"æ— æ³•æ‰“å¼€{countyName}çš„æ•°æ®åº“");
                 }
 
-                progressCallback?.Invoke(15, $"ÕıÔÚ·ÃÎÊ{countyName}µÄLCXZGX±í...");
+                progressCallback?.Invoke(15, $"æ­£åœ¨è®¿é—®{countyName}çš„LCXZGXè¡¨...");
 
-                // »ñÈ¡Ô´±í - LCXZGXÒªËØÀà
+                // è·å–æºè¡¨ - LCXZGXè¦ç´ ç±»
                 lcxzgxFeatureClass = GetFeatureClass(workspace, "LCXZGX");
                 if (lcxzgxFeatureClass == null)
                 {
-                    throw new Exception($"ÎŞ·¨ÕÒµ½{countyName}Êı¾İ¿âÖĞµÄLCXZGX±í");
+                    throw new Exception($"æ— æ³•æ‰¾åˆ°{countyName}æ•°æ®åº“ä¸­çš„LCXZGXè¡¨");
                 }
 
-                progressCallback?.Invoke(25, $"ÕıÔÚ·ÃÎÊ{countyName}µÄSLZYZC±í...");
+                progressCallback?.Invoke(25, $"æ­£åœ¨è®¿é—®{countyName}çš„SLZYZCè¡¨...");
 
-                // »ñÈ¡Ä¿±ê±í - SLZYZCÒªËØÀà
+                // è·å–ç›®æ ‡è¡¨ - SLZYZCè¦ç´ ç±»
                 slzyzcFeatureClass = GetFeatureClass(workspace, "SLZYZC");
                 if (slzyzcFeatureClass == null)
                 {
-                    throw new Exception($"ÎŞ·¨ÕÒµ½{countyName}Êı¾İ¿âÖĞµÄSLZYZC±í");
+                    throw new Exception($"æ— æ³•æ‰¾åˆ°{countyName}æ•°æ®åº“ä¸­çš„SLZYZCè¡¨");
                 }
 
-                progressCallback?.Invoke(30, $"ÕıÔÚ·ÃÎÊ{countyName}µÄ³ÇÕò¿ª·¢±ß½çÊı¾İ...");
+                progressCallback?.Invoke(30, $"æ­£åœ¨è®¿é—®{countyName}çš„åŸé•‡å¼€å‘è¾¹ç•Œæ•°æ®...");
 
-                // »ñÈ¡³ÇÕò¿ª·¢±ß½çÒªËØÀà - CZKFBJ
+                // è·å–åŸé•‡å¼€å‘è¾¹ç•Œè¦ç´ ç±» - CZKFBJ
                 try
                 {
                     czkfbjFeatureClass = GetFeatureClass(workspace, "CZKFBJ");
                     if (czkfbjFeatureClass == null)
                     {
-                        System.Diagnostics.Debug.WriteLine($"¾¯¸æ: Î´ÕÒµ½{countyName}µÄCZKFBJ±í£¬CZKFBJMJ½«¼ÆËãÎª0");
+                        System.Diagnostics.Debug.WriteLine($"è­¦å‘Š: æœªæ‰¾åˆ°{countyName}çš„CZKFBJè¡¨ï¼ŒCZKFBJMJå°†è®¡ç®—ä¸º0");
                     }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"»ñÈ¡{countyName}µÄCZKFBJ±íÊ±³ö´í: {ex.Message}£¬CZKFBJMJ½«¼ÆËãÎª0");
+                    System.Diagnostics.Debug.WriteLine($"è·å–{countyName}çš„CZKFBJè¡¨æ—¶å‡ºé”™: {ex.Message}ï¼ŒCZKFBJMJå°†è®¡ç®—ä¸º0");
                 }
 
-                progressCallback?.Invoke(35, $"¿ªÊ¼×ª»»{countyName}µÄÊı¾İ...");
+                progressCallback?.Invoke(35, $"å¼€å§‹è½¬æ¢{countyName}çš„æ•°æ®...");
 
-                // Ö´ĞĞÊı¾İ×ª»»²Ù×÷
+                // æ‰§è¡Œæ•°æ®è½¬æ¢æ“ä½œ
                 int convertedCount = ConvertFeatures(
                     lcxzgxFeatureClass,
                     slzyzcFeatureClass,
@@ -107,21 +107,21 @@ namespace ForestResourcePlugin
                     countyName,
                     progressCallback);
 
-                progressCallback?.Invoke(100, $"³É¹¦×ª»» {convertedCount} ¸öÒªËØµ½{countyName}µÄSLZYZC±í");
+                progressCallback?.Invoke(100, $"æˆåŠŸè½¬æ¢ {convertedCount} ä¸ªè¦ç´ åˆ°{countyName}çš„SLZYZCè¡¨");
 
-                System.Diagnostics.Debug.WriteLine($"ÏØ{countyName}µÄLCXZGXÊı¾İÒÑ³É¹¦×ª»»ÎªSLZYZC±í");
+                System.Diagnostics.Debug.WriteLine($"å¿{countyName}çš„LCXZGXæ•°æ®å·²æˆåŠŸè½¬æ¢ä¸ºSLZYZCè¡¨");
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"×ª»»{countyName}Êı¾İÊ±³ö´í: {ex.Message}");
-                progressCallback?.Invoke(0, $"×ª»»{countyName}Êı¾İÊ§°Ü: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"è½¬æ¢{countyName}æ•°æ®æ—¶å‡ºé”™: {ex.Message}");
+                progressCallback?.Invoke(0, $"è½¬æ¢{countyName}æ•°æ®å¤±è´¥: {ex.Message}");
                 throw;
             }
             finally
             {
-                // ÖØÒª£ºÊÍ·ÅArcGIS COM¶ÔÏó£¬·ÀÖ¹ÄÚ´æĞ¹Â©
-                // ArcGIS COM¶ÔÏóĞèÒªÏÔÊ½ÊÍ·Å£¬·ñÔò»áµ¼ÖÂÄÚ´æÕ¼ÓÃ³ÖĞøÔö³¤
+                // é‡è¦ï¼šé‡Šæ”¾ArcGIS COMå¯¹è±¡ï¼Œé˜²æ­¢å†…å­˜æ³„æ¼
+                // ArcGIS COMå¯¹è±¡éœ€è¦æ˜¾å¼é‡Šæ”¾ï¼Œå¦åˆ™ä¼šå¯¼è‡´å†…å­˜å ç”¨æŒç»­å¢é•¿
                 if (lcxzgxFeatureClass != null)
                 {
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(lcxzgxFeatureClass);
@@ -142,13 +142,13 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// ÅúÁ¿×ª»»¶à¸öÏØµÄLCXZGX±íÎªSLZYZC±í
-        /// Ìá¹©Åú´¦Àí¹¦ÄÜ£¬Ìá¸ß¶àÏØÊı¾İ´¦ÀíµÄĞ§ÂÊ
+        /// æ‰¹é‡è½¬æ¢å¤šä¸ªå¿çš„LCXZGXè¡¨ä¸ºSLZYZCè¡¨
+        /// æä¾›æ‰¹å¤„ç†åŠŸèƒ½ï¼Œæé«˜å¤šå¿æ•°æ®å¤„ç†çš„æ•ˆç‡
         /// </summary>
-        /// <param name="countyDatabasePaths">ÏØ¼¶Êı¾İ¿âÂ·¾¶Ó³Éä£¨ÏØÃû -> Êı¾İ¿âÂ·¾¶£©</param>
-        /// <param name="fieldMappings">×Ö¶ÎÓ³ÉäÅäÖÃ</param>
-        /// <param name="progressCallback">½ø¶È»Øµ÷</param>
-        /// <returns>ÅúÁ¿×ª»»½á¹û£¨ÏØÃû -> ÊÇ·ñ³É¹¦£©</returns>
+        /// <param name="countyDatabasePaths">å¿çº§æ•°æ®åº“è·¯å¾„æ˜ å°„ï¼ˆå¿å -> æ•°æ®åº“è·¯å¾„ï¼‰</param>
+        /// <param name="fieldMappings">å­—æ®µæ˜ å°„é…ç½®</param>
+        /// <param name="progressCallback">è¿›åº¦å›è°ƒ</param>
+        /// <returns>æ‰¹é‡è½¬æ¢ç»“æœï¼ˆå¿å -> æ˜¯å¦æˆåŠŸï¼‰</returns>
         public Dictionary<string, bool> BatchConvertLCXZGXToSLZYZC(
             Dictionary<string, string> countyDatabasePaths,
             Dictionary<string, string> fieldMappings,
@@ -156,16 +156,16 @@ namespace ForestResourcePlugin
         {
             if (countyDatabasePaths == null || countyDatabasePaths.Count == 0)
             {
-                throw new ArgumentException("ÏØ¼¶Êı¾İ¿âÂ·¾¶Ó³Éä²»ÄÜÎª¿Õ");
+                throw new ArgumentException("å¿çº§æ•°æ®åº“è·¯å¾„æ˜ å°„ä¸èƒ½ä¸ºç©º");
             }
 
             var results = new Dictionary<string, bool>();
             int totalCounties = countyDatabasePaths.Count;
             int processedCounties = 0;
 
-            progressCallback?.Invoke(0, $"¿ªÊ¼ÅúÁ¿×ª»»{totalCounties}¸öÏØµÄÊı¾İ...");
+            progressCallback?.Invoke(0, $"å¼€å§‹æ‰¹é‡è½¬æ¢{totalCounties}ä¸ªå¿çš„æ•°æ®...");
 
-            // ±éÀúÃ¿¸öÏØµÄÊı¾İ½øĞĞ×ª»»
+            // éå†æ¯ä¸ªå¿çš„æ•°æ®è¿›è¡Œè½¬æ¢
             foreach (var countyData in countyDatabasePaths)
             {
                 string countyName = countyData.Key;
@@ -173,114 +173,114 @@ namespace ForestResourcePlugin
 
                 try
                 {
-                    // ¼ÆËã×ÜÌå½ø¶È - »ùÓÚÒÑ´¦ÀíµÄÏØÊıÁ¿
+                    // è®¡ç®—æ€»ä½“è¿›åº¦ - åŸºäºå·²å¤„ç†çš„å¿æ•°é‡
                     int overallProgress = (processedCounties * 100) / totalCounties;
-                    progressCallback?.Invoke(overallProgress, $"ÕıÔÚ×ª»»ÏØ: {countyName} ({processedCounties + 1}/{totalCounties})");
+                    progressCallback?.Invoke(overallProgress, $"æ­£åœ¨è½¬æ¢å¿: {countyName} ({processedCounties + 1}/{totalCounties})");
 
-                    // ÎªÃ¿¸öÏØÖ´ĞĞ×ª»»
-                    // ×¢Òâ£º²»´«µİ×Ó½ø¶È»Øµ÷ÒÔ±ÜÃâ½ø¶È±¨¸æ»ìÂÒ
+                    // ä¸ºæ¯ä¸ªå¿æ‰§è¡Œè½¬æ¢
+                    // æ³¨æ„ï¼šä¸ä¼ é€’å­è¿›åº¦å›è°ƒä»¥é¿å…è¿›åº¦æŠ¥å‘Šæ··ä¹±
                     bool success = ConvertLCXZGXToSLZYZC(countyName, databasePath, fieldMappings, null);
                     results[countyName] = success;
 
                     processedCounties++;
 
-                    System.Diagnostics.Debug.WriteLine($"ÏØ{countyName}Êı¾İ×ª»»Íê³É ({processedCounties}/{totalCounties})");
+                    System.Diagnostics.Debug.WriteLine($"å¿{countyName}æ•°æ®è½¬æ¢å®Œæˆ ({processedCounties}/{totalCounties})");
                 }
                 catch (Exception ex)
                 {
-                    // ´íÎó´¦Àí²ßÂÔ£º¼ÇÂ¼´íÎóµ«¼ÌĞø´¦ÀíÆäËûÏØ
-                    // ÕâÑù¿ÉÒÔÈ·±£Ò»¸öÏØµÄ´íÎó²»»áÓ°ÏìÆäËûÏØµÄÊı¾İ´¦Àí
-                    System.Diagnostics.Debug.WriteLine($"×ª»»ÏØ{countyName}Êı¾İÊ±³ö´í: {ex.Message}");
+                    // é”™è¯¯å¤„ç†ç­–ç•¥ï¼šè®°å½•é”™è¯¯ä½†ç»§ç»­å¤„ç†å…¶ä»–å¿
+                    // è¿™æ ·å¯ä»¥ç¡®ä¿ä¸€ä¸ªå¿çš„é”™è¯¯ä¸ä¼šå½±å“å…¶ä»–å¿çš„æ•°æ®å¤„ç†
+                    System.Diagnostics.Debug.WriteLine($"è½¬æ¢å¿{countyName}æ•°æ®æ—¶å‡ºé”™: {ex.Message}");
                     results[countyName] = false;
                     processedCounties++;
                 }
             }
 
-            progressCallback?.Invoke(100, $"ËùÓĞÏØµÄÊı¾İ×ª»»Íê³É ({processedCounties}/{totalCounties})");
+            progressCallback?.Invoke(100, $"æ‰€æœ‰å¿çš„æ•°æ®è½¬æ¢å®Œæˆ ({processedCounties}/{totalCounties})");
             return results;
         }
 
         /// <summary>
-        /// ´ò¿ªÏØ¼¶Êı¾İ¿â
-        /// Ê¹ÓÃArcGIS File Geodatabase¹¤³§´´½¨Êı¾İ¿âÁ¬½Ó
+        /// æ‰“å¼€å¿çº§æ•°æ®åº“
+        /// ä½¿ç”¨ArcGIS File Geodatabaseå·¥å‚åˆ›å»ºæ•°æ®åº“è¿æ¥
         /// </summary>
-        /// <param name="basePath">Êı¾İ¿â»ù´¡Â·¾¶</param>
-        /// <param name="countyName">ÏØÃû</param>
-        /// <returns>Êı¾İ¿â¹¤×÷¿Õ¼ä½Ó¿Ú</returns>
+        /// <param name="basePath">æ•°æ®åº“åŸºç¡€è·¯å¾„</param>
+        /// <param name="countyName">å¿å</param>
+        /// <returns>æ•°æ®åº“å·¥ä½œç©ºé—´æ¥å£</returns>
         private IWorkspace OpenCountyDatabase(string basePath, string countyName)
         {
             try
             {
-                // ¹¹½¨ÏØ¼¶Êı¾İ¿âÂ·¾¶ - ±ê×¼Â·¾¶½á¹¹£º»ù´¡Â·¾¶\ÏØÃû\ÏØÃû.gdb
+                // æ„å»ºå¿çº§æ•°æ®åº“è·¯å¾„ - æ ‡å‡†è·¯å¾„ç»“æ„ï¼šåŸºç¡€è·¯å¾„\å¿å\å¿å.gdb
                 string countyGDBPath = System.IO.Path.Combine(basePath, countyName, countyName + ".gdb");
 
-                // ÑéÖ¤Êı¾İ¿âÂ·¾¶µÄ´æÔÚĞÔ
+                // éªŒè¯æ•°æ®åº“è·¯å¾„çš„å­˜åœ¨æ€§
                 if (!Directory.Exists(System.IO.Path.GetDirectoryName(countyGDBPath)))
                 {
-                    throw new DirectoryNotFoundException($"ÏØ¼¶Ä¿Â¼²»´æÔÚ: {System.IO.Path.GetDirectoryName(countyGDBPath)}");
+                    throw new DirectoryNotFoundException($"å¿çº§ç›®å½•ä¸å­˜åœ¨: {System.IO.Path.GetDirectoryName(countyGDBPath)}");
                 }
 
                 if (!Directory.Exists(countyGDBPath))
                 {
-                    throw new DirectoryNotFoundException($"ÏØ¼¶Êı¾İ¿â²»´æÔÚ: {countyGDBPath}");
+                    throw new DirectoryNotFoundException($"å¿çº§æ•°æ®åº“ä¸å­˜åœ¨: {countyGDBPath}");
                 }
 
-                // Ê¹ÓÃProgID´´½¨File Geodatabase¹¤³§
-                // ÕâÊÇArcGIS COM¶ÔÏóµÄ±ê×¼´´½¨·½Ê½
+                // ä½¿ç”¨ProgIDåˆ›å»ºFile Geodatabaseå·¥å‚
+                // è¿™æ˜¯ArcGIS COMå¯¹è±¡çš„æ ‡å‡†åˆ›å»ºæ–¹å¼
                 Type factoryType = Type.GetTypeFromProgID("esriDataSourcesGDB.FileGDBWorkspaceFactory");
                 IWorkspaceFactory workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
 
-                // ´ò¿ª¹¤×÷¿Õ¼ä - ²ÎÊı0±íÊ¾ÒÔ¶ÁĞ´Ä£Ê½´ò¿ª
+                // æ‰“å¼€å·¥ä½œç©ºé—´ - å‚æ•°0è¡¨ç¤ºä»¥è¯»å†™æ¨¡å¼æ‰“å¼€
                 IWorkspace workspace = workspaceFactory.OpenFromFile(countyGDBPath, 0);
 
-                System.Diagnostics.Debug.WriteLine($"³É¹¦´ò¿ª{countyName}µÄÊı¾İ¿â: {countyGDBPath}");
+                System.Diagnostics.Debug.WriteLine($"æˆåŠŸæ‰“å¼€{countyName}çš„æ•°æ®åº“: {countyGDBPath}");
                 return workspace;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"´ò¿ª{countyName}Êı¾İ¿âÊ±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"æ‰“å¼€{countyName}æ•°æ®åº“æ—¶å‡ºé”™: {ex.Message}");
                 throw;
             }
         }
 
         /// <summary>
-        /// »ñÈ¡Ö¸¶¨Ãû³ÆµÄÒªËØÀà
-        /// Í¨ÓÃ·½·¨£¬¿ÉÓÃÓÚ»ñÈ¡LCXZGX¡¢SLZYZCµÈÒªËØÀà
+        /// è·å–æŒ‡å®šåç§°çš„è¦ç´ ç±»
+        /// é€šç”¨æ–¹æ³•ï¼Œå¯ç”¨äºè·å–LCXZGXã€SLZYZCç­‰è¦ç´ ç±»
         /// </summary>
-        /// <param name="workspace">Êı¾İ¿â¹¤×÷¿Õ¼ä</param>
-        /// <param name="featureClassName">ÒªËØÀàÃû³Æ</param>
-        /// <returns>ÒªËØÀà½Ó¿Ú</returns>
+        /// <param name="workspace">æ•°æ®åº“å·¥ä½œç©ºé—´</param>
+        /// <param name="featureClassName">è¦ç´ ç±»åç§°</param>
+        /// <returns>è¦ç´ ç±»æ¥å£</returns>
         private IFeatureClass GetFeatureClass(IWorkspace workspace, string featureClassName)
         {
             try
             {
-                // ½«¹¤×÷¿Õ¼ä×ª»»ÎªÒªËØ¹¤×÷¿Õ¼äÒÔ·ÃÎÊÒªËØÀà
+                // å°†å·¥ä½œç©ºé—´è½¬æ¢ä¸ºè¦ç´ å·¥ä½œç©ºé—´ä»¥è®¿é—®è¦ç´ ç±»
                 IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspace;
 
-                // ´ò¿ªÖ¸¶¨µÄÒªËØÀà
+                // æ‰“å¼€æŒ‡å®šçš„è¦ç´ ç±»
                 IFeatureClass featureClass = featureWorkspace.OpenFeatureClass(featureClassName);
 
-                System.Diagnostics.Debug.WriteLine($"³É¹¦»ñÈ¡{featureClassName}ÒªËØÀà");
+                System.Diagnostics.Debug.WriteLine($"æˆåŠŸè·å–{featureClassName}è¦ç´ ç±»");
                 return featureClass;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"»ñÈ¡{featureClassName}ÒªËØÀàÊ±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"è·å–{featureClassName}è¦ç´ ç±»æ—¶å‡ºé”™: {ex.Message}");
                 throw;
             }
         }
 
         /// <summary>
-        /// Ö´ĞĞÒªËØ×ª»»²Ù×÷
-        /// ´ÓLCXZGX±í¶ÁÈ¡Êı¾İ£¬×ª»»ºóĞ´ÈëSLZYZC±í
+        /// æ‰§è¡Œè¦ç´ è½¬æ¢æ“ä½œ
+        /// ä»LCXZGXè¡¨è¯»å–æ•°æ®ï¼Œè½¬æ¢åå†™å…¥SLZYZCè¡¨
         /// </summary>
-        /// <param name="sourceFeatureClass">Ô´ÒªËØÀà£¨LCXZGX£©</param>
-        /// <param name="targetFeatureClass">Ä¿±êÒªËØÀà£¨SLZYZC£©</param>
-        /// <param name="czkfbjFeatureClass">³ÇÕò¿ª·¢±ß½çÒªËØÀà</param>
-        /// <param name="fieldMappings">×Ö¶ÎÓ³ÉäÅäÖÃ</param>
-        /// <param name="countyName">ÏØÃû</param>
-        /// <param name="progressCallback">½ø¶È»Øµ÷</param>
-        /// <returns>×ª»»µÄÒªËØÊıÁ¿</returns>
+        /// <param name="sourceFeatureClass">æºè¦ç´ ç±»ï¼ˆLCXZGXï¼‰</param>
+        /// <param name="targetFeatureClass">ç›®æ ‡è¦ç´ ç±»ï¼ˆSLZYZCï¼‰</param>
+        /// <param name="czkfbjFeatureClass">åŸé•‡å¼€å‘è¾¹ç•Œè¦ç´ ç±»</param>
+        /// <param name="fieldMappings">å­—æ®µæ˜ å°„é…ç½®</param>
+        /// <param name="countyName">å¿å</param>
+        /// <param name="progressCallback">è¿›åº¦å›è°ƒ</param>
+        /// <returns>è½¬æ¢çš„è¦ç´ æ•°é‡</returns>
         private int ConvertFeatures(
             IFeatureClass sourceFeatureClass,
             IFeatureClass targetFeatureClass,
@@ -289,59 +289,59 @@ namespace ForestResourcePlugin
             string countyName,
             ProgressCallback progressCallback)
         {
-            // ´´½¨ÒªËØ»º³åÇøºÍ²åÈëÓÎ±ê
-            // Ê¹ÓÃÅúÁ¿²åÈëÄ£Ê½(true²ÎÊı)Ìá¸ß²åÈëĞÔÄÜ
+            // åˆ›å»ºè¦ç´ ç¼“å†²åŒºå’Œæ’å…¥æ¸¸æ ‡
+            // ä½¿ç”¨æ‰¹é‡æ’å…¥æ¨¡å¼(trueå‚æ•°)æé«˜æ’å…¥æ€§èƒ½
             IFeatureBuffer featureBuffer = targetFeatureClass.CreateFeatureBuffer();
             IFeatureCursor insertCursor = targetFeatureClass.Insert(true);
             IFeatureCursor sourceCursor = null;
 
             try
             {
-                // »ñÈ¡Ô´Êı¾İ×ÜÊı
+                // è·å–æºæ•°æ®æ€»æ•°
                 int totalFeatures = sourceFeatureClass.FeatureCount(null);
                 int processedCount = 0;
                 int successCount = 0;
                 int errorCount = 0;
 
-                System.Diagnostics.Debug.WriteLine($"¿ªÊ¼×ª»»{countyName}µÄÊı¾İ£º{totalFeatures}¸öÒªËØ´ÓLCXZGXµ½SLZYZC");
+                System.Diagnostics.Debug.WriteLine($"å¼€å§‹è½¬æ¢{countyName}çš„æ•°æ®ï¼š{totalFeatures}ä¸ªè¦ç´ ä»LCXZGXåˆ°SLZYZC");
 
-                // ´´½¨²éÑ¯ÓÎ±ê¶ÁÈ¡ËùÓĞÔ´ÒªËØ
+                // åˆ›å»ºæŸ¥è¯¢æ¸¸æ ‡è¯»å–æ‰€æœ‰æºè¦ç´ 
                 sourceCursor = sourceFeatureClass.Search(null, false);
                 IFeature sourceFeature;
 
-                // Èç¹ûÃ»ÓĞÌá¹©×Ô¶¨ÒåÓ³Éä£¬Ê¹ÓÃÄ¬ÈÏµÄ×Ö¶ÎÓ³ÉäÅäÖÃ
+                // å¦‚æœæ²¡æœ‰æä¾›è‡ªå®šä¹‰æ˜ å°„ï¼Œä½¿ç”¨é»˜è®¤çš„å­—æ®µæ˜ å°„é…ç½®
                 if (fieldMappings == null || fieldMappings.Count == 0)
                 {
                     fieldMappings = CreateXZ2SLZYZCFieldsMap();
                 }
 
-                // »ñÈ¡CZKFBJMJ×Ö¶ÎµÄË÷Òı
+                // è·å–CZKFBJMJå­—æ®µçš„ç´¢å¼•
                 int czkfbjmjIndex = targetFeatureClass.FindField("CZKFBJMJ");
                 if (czkfbjmjIndex == -1)
                 {
-                    System.Diagnostics.Debug.WriteLine($"¾¯¸æ: Ä¿±ê±íÖĞÎ´ÕÒµ½CZKFBJMJ×Ö¶Î");
+                    System.Diagnostics.Debug.WriteLine($"è­¦å‘Š: ç›®æ ‡è¡¨ä¸­æœªæ‰¾åˆ°CZKFBJMJå­—æ®µ");
                 }
 
-                // »ñÈ¡È¨ÊôĞÔÖÊ×Ö¶ÎµÄË÷Òı
+                // è·å–æƒå±æ€§è´¨å­—æ®µçš„ç´¢å¼•
                 int qsxzIndex = sourceFeatureClass.FindField("qsxz");
                 if (qsxzIndex == -1)
                 {
-                    // ³¢ÊÔ±¸ÓÃ×Ö¶ÎÃû
+                    // å°è¯•å¤‡ç”¨å­—æ®µå
                     qsxzIndex = sourceFeatureClass.FindField("QSXZ");
                 }
 
-                // Öğ¸ö´¦ÀíÒªËØ
+                // é€ä¸ªå¤„ç†è¦ç´ 
                 while ((sourceFeature = sourceCursor.NextFeature()) != null)
                 {
                     try
                     {
-                        // ¸´ÖÆ¼¸ºÎ¶ÔÏó - Ê¹ÓÃShapeCopy´´½¨¼¸ºÎµÄ¸±±¾
+                        // å¤åˆ¶å‡ ä½•å¯¹è±¡ - ä½¿ç”¨ShapeCopyåˆ›å»ºå‡ ä½•çš„å‰¯æœ¬
                         if (sourceFeature.Shape != null)
                         {
                             featureBuffer.Shape = sourceFeature.ShapeCopy;
                         }
 
-                        // ¸´ÖÆÊôĞÔÖµ²¢Ö´ĞĞ×Ö¶ÎÓ³Éä×ª»»
+                        // å¤åˆ¶å±æ€§å€¼å¹¶æ‰§è¡Œå­—æ®µæ˜ å°„è½¬æ¢
                         CopyAndConvertFeatureAttributes(
                             sourceFeature,
                             sourceFeatureClass,
@@ -350,58 +350,53 @@ namespace ForestResourcePlugin
                             fieldMappings,
                             countyName);
 
-                        // ´¦ÀíCZKFBJMJ×Ö¶Î - ¼ÆËã¼¯ÌåÍÁµØÓë³ÇÕò¿ª·¢±ß½çµÄ½»¼¯Ãæ»ı
+                        // å¤„ç†CZKFBJMJå­—æ®µ - è®¡ç®—é›†ä½“åœŸåœ°ä¸åŸé•‡å¼€å‘è¾¹ç•Œçš„äº¤é›†é¢ç§¯
                         if (czkfbjmjIndex != -1)
                         {
                             double intersectionArea = 0;
 
-                            // ÅĞ¶ÏÊÇ·ñÎª¼¯ÌåÍÁµØ
-                            bool isCollectiveLand = false;
-                            if (qsxzIndex != -1)
-                            {
-                                object qsxzValue = sourceFeature.get_Value(qsxzIndex);
-                                string qsxzStr = qsxzValue?.ToString() ?? "";
-
-                                // ¼ì²éÊÇ·ñÎª¼¯ÌåÍÁµØµÄ¶àÖÖ¿ÉÄÜ±àÂë
-                                isCollectiveLand = qsxzStr == "2" || qsxzStr == "30" ||
-                                                  qsxzStr.Contains("¼¯Ìå") || qsxzStr.Contains("¼¯Ğİ");
-                            }
-
-                            // Èç¹ûÊÇ¼¯ÌåÍÁµØÇÒ³ÇÕò¿ª·¢±ß½çÒªËØÀà´æÔÚ£¬¼ÆËã½»¼¯Ãæ»ı
-                            if (isCollectiveLand && czkfbjFeatureClass != null && sourceFeature.Shape != null)
+                            // ğŸ”¥ ä¿®æ”¹ï¼šç§»é™¤æƒå±æ€§è´¨åˆ¤æ–­ï¼Œä¸ºæ‰€æœ‰å›¾æ–‘è®¡ç®—ä¸åŸé•‡å¼€å‘è¾¹ç•Œçš„äº¤é›†é¢ç§¯
+                            // æ— è®ºæ˜¯å›½æœ‰åœŸåœ°è¿˜æ˜¯é›†ä½“åœŸåœ°ï¼Œéƒ½éœ€è¦è®¡ç®—ä¸åŸé•‡å¼€å‘è¾¹ç•Œçš„äº¤é›†é¢ç§¯
+                            if (czkfbjFeatureClass != null && sourceFeature.Shape != null)
                             {
                                 intersectionArea = CalculateIntersectionArea(sourceFeature.Shape, czkfbjFeatureClass);
+
+                                // è¾“å‡ºè°ƒè¯•ä¿¡æ¯ï¼Œè®°å½•æ¯ä¸ªå›¾æ–‘çš„äº¤é›†é¢ç§¯è®¡ç®—ç»“æœ
+                                if (intersectionArea > 0)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"å›¾æ–‘ä¸åŸé•‡å¼€å‘è¾¹ç•Œäº¤é›†é¢ç§¯: {intersectionArea:F2} å¹³æ–¹ç±³");
+                                }
                             }
 
-                            // ÉèÖÃCZKFBJMJ×Ö¶ÎÖµ
+                            // è®¾ç½®CZKFBJMJå­—æ®µå€¼ï¼ˆæ‰€æœ‰å›¾æ–‘éƒ½è®¾ç½®ï¼ŒåŒ…æ‹¬å›½æœ‰å’Œé›†ä½“åœŸåœ°ï¼‰
                             featureBuffer.set_Value(czkfbjmjIndex, intersectionArea);
                         }
 
-                        // Ö´ĞĞÒªËØ²åÈë²Ù×÷
+                        // æ‰§è¡Œè¦ç´ æ’å…¥æ“ä½œ
                         insertCursor.InsertFeature(featureBuffer);
                         successCount++;
 
                         processedCount++;
 
-                        // ¶¨ÆÚ¸üĞÂ½ø¶È - Ã¿50¸öÒªËØ»ò×îºóÒ»¸öÒªËØÊ±±¨¸æ½ø¶È
-                        // ½ø¶È·¶Î§£º35%-95%£¬Îª×îÖÕ²Ù×÷±£Áô5%
+                        // å®šæœŸæ›´æ–°è¿›åº¦ - æ¯50ä¸ªè¦ç´ æˆ–æœ€åä¸€ä¸ªè¦ç´ æ—¶æŠ¥å‘Šè¿›åº¦
+                        // è¿›åº¦èŒƒå›´ï¼š35%-95%ï¼Œä¸ºæœ€ç»ˆæ“ä½œä¿ç•™5%
                         if (processedCount % 50 == 0 || processedCount == totalFeatures)
                         {
                             int percentage = 35 + (int)((processedCount / (double)totalFeatures) * 60);
                             progressCallback?.Invoke(percentage,
-                                $"ÕıÔÚ×ª»»{countyName}µÄÊı¾İ... ({processedCount}/{totalFeatures})");
+                                $"æ­£åœ¨è½¬æ¢{countyName}çš„æ•°æ®... ({processedCount}/{totalFeatures})");
                         }
                     }
                     catch (Exception ex)
                     {
                         errorCount++;
-                        System.Diagnostics.Debug.WriteLine($"×ª»»{countyName}ÒªËØÊ±³ö´í: {ex.Message}");
-                        // ´íÎó´¦Àí£º¼ÇÂ¼´íÎóµ«¼ÌĞø´¦ÀíÏÂÒ»¸öÒªËØ
-                        // ÕâÑù¿ÉÒÔ×î´ó»¯Êı¾İµÄ³É¹¦×ª»»ÂÊ
+                        System.Diagnostics.Debug.WriteLine($"è½¬æ¢{countyName}è¦ç´ æ—¶å‡ºé”™: {ex.Message}");
+                        // é”™è¯¯å¤„ç†ï¼šè®°å½•é”™è¯¯ä½†ç»§ç»­å¤„ç†ä¸‹ä¸€ä¸ªè¦ç´ 
+                        // è¿™æ ·å¯ä»¥æœ€å¤§åŒ–æ•°æ®çš„æˆåŠŸè½¬æ¢ç‡
                     }
                     finally
                     {
-                        // ÊÍ·Åµ±Ç°ÒªËØ¶ÔÏó
+                        // é‡Šæ”¾å½“å‰è¦ç´ å¯¹è±¡
                         if (sourceFeature != null)
                         {
                             System.Runtime.InteropServices.Marshal.ReleaseComObject(sourceFeature);
@@ -409,17 +404,17 @@ namespace ForestResourcePlugin
                     }
                 }
 
-                // Ìá½»ËùÓĞ²åÈë²Ù×÷µ½Êı¾İ¿â
-                // FlushÈ·±£ËùÓĞ»º´æµÄ²Ù×÷¶¼±»Ğ´Èë´ÅÅÌ
+                // æäº¤æ‰€æœ‰æ’å…¥æ“ä½œåˆ°æ•°æ®åº“
+                // Flushç¡®ä¿æ‰€æœ‰ç¼“å­˜çš„æ“ä½œéƒ½è¢«å†™å…¥ç£ç›˜
                 insertCursor.Flush();
 
-                System.Diagnostics.Debug.WriteLine($"{countyName}Êı¾İ×ª»»Íê³É: ³É¹¦{successCount}¸ö, Ê§°Ü{errorCount}¸ö");
+                System.Diagnostics.Debug.WriteLine($"{countyName}æ•°æ®è½¬æ¢å®Œæˆ: æˆåŠŸ{successCount}ä¸ª, å¤±è´¥{errorCount}ä¸ª");
                 return successCount;
             }
             finally
             {
-                // ÖØÒª£ºÊÍ·ÅArcGIS COM¶ÔÏó
-                // ÓÎ±êºÍ»º³åÇø¶¼ÊÇCOM¶ÔÏó£¬±ØĞëÏÔÊ½ÊÍ·Å
+                // é‡è¦ï¼šé‡Šæ”¾ArcGIS COMå¯¹è±¡
+                // æ¸¸æ ‡å’Œç¼“å†²åŒºéƒ½æ˜¯COMå¯¹è±¡ï¼Œå¿…é¡»æ˜¾å¼é‡Šæ”¾
                 if (sourceCursor != null)
                 {
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(sourceCursor);
@@ -436,11 +431,18 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// ¼ÆËã¼¸ºÎ¶ÔÏóÓë³ÇÕò¿ª·¢±ß½çµÄ½»¼¯Ãæ»ı
+        /// è®¡ç®—å‡ ä½•å¯¹è±¡ä¸åŸé•‡å¼€å‘è¾¹ç•Œçš„äº¤é›†é¢ç§¯
         /// </summary>
-        /// <param name="geometry">Òª¼ÆËãµÄ¼¸ºÎ¶ÔÏó</param>
-        /// <param name="czkfbjFeatureClass">³ÇÕò¿ª·¢±ß½çÒªËØÀà</param>
-        /// <returns>½»¼¯Ãæ»ı£¨Æ½·½Ã×£©</returns>
+        /// <param name="geometry">è¦è®¡ç®—çš„å‡ ä½•å¯¹è±¡</param>
+        /// <param name="czkfbjFeatureClass">åŸé•‡å¼€å‘è¾¹ç•Œè¦ç´ ç±»</param>
+        /// <returns>äº¤é›†é¢ç§¯ï¼ˆå¹³æ–¹ç±³ï¼‰</returns>
+        /// <summary>
+        /// è®¡ç®—å‡ ä½•å¯¹è±¡ä¸åŸé•‡å¼€å‘è¾¹ç•Œçš„äº¤é›†é¢ç§¯
+        /// é€‚ç”¨äºæ‰€æœ‰æƒå±æ€§è´¨çš„åœŸåœ°ï¼ˆå›½æœ‰ã€é›†ä½“ç­‰ï¼‰
+        /// </summary>
+        /// <param name="geometry">è¦è®¡ç®—çš„å‡ ä½•å¯¹è±¡</param>
+        /// <param name="czkfbjFeatureClass">åŸé•‡å¼€å‘è¾¹ç•Œè¦ç´ ç±»</param>
+        /// <returns>äº¤é›†é¢ç§¯ï¼ˆå¹³æ–¹ç±³ï¼‰</returns>
         private double CalculateIntersectionArea(IGeometry geometry, IFeatureClass czkfbjFeatureClass)
         {
             if (geometry == null || czkfbjFeatureClass == null)
@@ -453,41 +455,44 @@ namespace ForestResourcePlugin
 
             try
             {
-                // ´´½¨¿Õ¼ä²éÑ¯¹ıÂËÆ÷£¬Ö»²éÑ¯Óëµ±Ç°¼¸ºÎ¶ÔÏóÏà½»µÄ³ÇÕò¿ª·¢±ß½ç  
+                // åˆ›å»ºç©ºé—´æŸ¥è¯¢è¿‡æ»¤å™¨ï¼ŒåªæŸ¥è¯¢ä¸å½“å‰å‡ ä½•å¯¹è±¡ç›¸äº¤çš„åŸé•‡å¼€å‘è¾¹ç•Œ  
                 ISpatialFilter spatialFilter = new SpatialFilterClass();
                 spatialFilter.Geometry = geometry;
                 spatialFilter.GeometryField = czkfbjFeatureClass.ShapeFieldName;
                 spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
 
-                // ²éÑ¯Ïà½»µÄ³ÇÕò¿ª·¢±ß½çÒªËØ  
+                // æŸ¥è¯¢ç›¸äº¤çš„åŸé•‡å¼€å‘è¾¹ç•Œè¦ç´   
                 czkfbjCursor = czkfbjFeatureClass.Search(spatialFilter, false);
                 IFeature czkfbjFeature;
 
-                // ÀÛ¼ÆËùÓĞÏà½»ÇøÓòµÄÃæ»ı  
+                // ç´¯è®¡æ‰€æœ‰ç›¸äº¤åŒºåŸŸçš„é¢ç§¯  
                 while ((czkfbjFeature = czkfbjCursor.NextFeature()) != null)
                 {
                     try
                     {
                         if (czkfbjFeature.Shape != null)
                         {
-                            // ¼ÆËã½»¼¯ÇøÓò  
+                            // è®¡ç®—äº¤é›†åŒºåŸŸ  
                             ITopologicalOperator topoOperator = (ITopologicalOperator)geometry;
                             IGeometry intersectionGeometry = topoOperator.Intersect(czkfbjFeature.Shape, esriGeometryDimension.esriGeometry2Dimension);
 
-                            // ¼ÆËã½»¼¯Ãæ»ı  
+                            // è®¡ç®—äº¤é›†é¢ç§¯  
                             if (intersectionGeometry != null && !intersectionGeometry.IsEmpty)
                             {
                                 IArea area = (IArea)intersectionGeometry;
-                                totalIntersectionArea += area.Area;
+                                double currentArea = area.Area;
+                                totalIntersectionArea += currentArea;
 
-                                // ÊÍ·Å½»¼¯¼¸ºÎ¶ÔÏó  
+                                System.Diagnostics.Debug.WriteLine($"å½“å‰äº¤é›†åŒºåŸŸé¢ç§¯: {currentArea:F2} å¹³æ–¹ç±³ï¼Œç´¯è®¡: {totalIntersectionArea:F2} å¹³æ–¹ç±³");
+
+                                // é‡Šæ”¾äº¤é›†å‡ ä½•å¯¹è±¡  
                                 System.Runtime.InteropServices.Marshal.ReleaseComObject(intersectionGeometry);
                             }
                         }
                     }
                     finally
                     {
-                        // ÊÍ·Åµ±Ç°³ÇÕò¿ª·¢±ß½çÒªËØ  
+                        // é‡Šæ”¾å½“å‰åŸé•‡å¼€å‘è¾¹ç•Œè¦ç´   
                         if (czkfbjFeature != null)
                         {
                             System.Runtime.InteropServices.Marshal.ReleaseComObject(czkfbjFeature);
@@ -499,12 +504,12 @@ namespace ForestResourcePlugin
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"¼ÆËã½»¼¯Ãæ»ıÊ±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"è®¡ç®—äº¤é›†é¢ç§¯æ—¶å‡ºé”™: {ex.Message}");
                 return 0;
             }
             finally
             {
-                // ÊÍ·ÅÓÎ±ê¶ÔÏó  
+                // é‡Šæ”¾æ¸¸æ ‡å¯¹è±¡  
                 if (czkfbjCursor != null)
                 {
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(czkfbjCursor);
@@ -513,15 +518,15 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// ¸´ÖÆÒªËØÊôĞÔ²¢½øĞĞ×Ö¶ÎÓ³Éä×ª»»
-        /// ´¦ÀíLCXZGX±íµ½SLZYZC±íµÄ×Ö¶ÎÓ³ÉäºÍÊı¾İ×ª»»
+        /// å¤åˆ¶è¦ç´ å±æ€§å¹¶è¿›è¡Œå­—æ®µæ˜ å°„è½¬æ¢
+        /// å¤„ç†LCXZGXè¡¨åˆ°SLZYZCè¡¨çš„å­—æ®µæ˜ å°„å’Œæ•°æ®è½¬æ¢
         /// </summary>
-        /// <param name="sourceFeature">Ô´ÒªËØ£¨LCXZGX£©</param>
-        /// <param name="sourceFeatureClass">Ô´ÒªËØÀà</param>
-        /// <param name="targetFeatureBuffer">Ä¿±êÒªËØ»º³åÇø£¨SLZYZC£©</param>
-        /// <param name="targetFeatureClass">Ä¿±êÒªËØÀà</param>
-        /// <param name="fieldMappings">×Ö¶ÎÓ³ÉäÅäÖÃ</param>
-        /// <param name="countyName">ÏØÃû</param>
+        /// <param name="sourceFeature">æºè¦ç´ ï¼ˆLCXZGXï¼‰</param>
+        /// <param name="sourceFeatureClass">æºè¦ç´ ç±»</param>
+        /// <param name="targetFeatureBuffer">ç›®æ ‡è¦ç´ ç¼“å†²åŒºï¼ˆSLZYZCï¼‰</param>
+        /// <param name="targetFeatureClass">ç›®æ ‡è¦ç´ ç±»</param>
+        /// <param name="fieldMappings">å­—æ®µæ˜ å°„é…ç½®</param>
+        /// <param name="countyName">å¿å</param>
         private void CopyAndConvertFeatureAttributes(
             IFeature sourceFeature,
             IFeatureClass sourceFeatureClass,
@@ -530,23 +535,23 @@ namespace ForestResourcePlugin
             Dictionary<string, string> fieldMappings,
             string countyName)
         {
-            // ±éÀúËùÓĞ×Ö¶ÎÓ³Éä½øĞĞÊı¾İ¸´ÖÆºÍ×ª»»
+            // éå†æ‰€æœ‰å­—æ®µæ˜ å°„è¿›è¡Œæ•°æ®å¤åˆ¶å’Œè½¬æ¢
             foreach (var mapping in fieldMappings)
             {
-                string targetFieldName = mapping.Key;    // SLZYZC±í×Ö¶ÎÃû
-                string sourceFieldName = mapping.Value;  // LCXZGX±í×Ö¶ÎÃû
+                string targetFieldName = mapping.Key;    // SLZYZCè¡¨å­—æ®µå
+                string sourceFieldName = mapping.Value;  // LCXZGXè¡¨å­—æ®µå
 
                 try
                 {
-                    // »ñÈ¡Ä¿±ê×Ö¶ÎµÄË÷Òı
+                    // è·å–ç›®æ ‡å­—æ®µçš„ç´¢å¼•
                     int targetFieldIndex = targetFeatureClass.FindField(targetFieldName);
                     if (targetFieldIndex == -1)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Ä¿±ê×Ö¶Î {targetFieldName} ÔÚSLZYZC±íÖĞ²»´æÔÚ");
+                        System.Diagnostics.Debug.WriteLine($"ç›®æ ‡å­—æ®µ {targetFieldName} åœ¨SLZYZCè¡¨ä¸­ä¸å­˜åœ¨");
                         continue;
                     }
 
-                    // ´¦ÀíÌØÊâµÄ×Ö¶ÎÓ³Éä¹æÔò
+                    // å¤„ç†ç‰¹æ®Šçš„å­—æ®µæ˜ å°„è§„åˆ™
                     object targetValue = ProcessSpecialFieldMapping(
                         sourceFeature,
                         sourceFeatureClass,
@@ -561,32 +566,32 @@ namespace ForestResourcePlugin
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"×ª»»{countyName}×Ö¶Î{targetFieldName}Ê±³ö´í: {ex.Message}");
-                    // ×Ö¶Î×ª»»´íÎó²»Ó°ÏìÆäËû×Ö¶ÎµÄ´¦Àí
+                    System.Diagnostics.Debug.WriteLine($"è½¬æ¢{countyName}å­—æ®µ{targetFieldName}æ—¶å‡ºé”™: {ex.Message}");
+                    // å­—æ®µè½¬æ¢é”™è¯¯ä¸å½±å“å…¶ä»–å­—æ®µçš„å¤„ç†
                 }
             }
         }
 
         /// <summary>
-        /// ´¦ÀíÌØÊâµÄ×Ö¶ÎÓ³Éä¹æÔò
-        /// °üÀ¨×Ö¶ÎºÏ²¢¡¢¼ÆËãµÈ¸´ÔÓÓ³ÉäÂß¼­
+        /// å¤„ç†ç‰¹æ®Šçš„å­—æ®µæ˜ å°„è§„åˆ™
+        /// åŒ…æ‹¬å­—æ®µåˆå¹¶ã€è®¡ç®—ç­‰å¤æ‚æ˜ å°„é€»è¾‘
         /// </summary>
-        /// <param name="sourceFeature">Ô´ÒªËØ</param>
-        /// <param name="sourceFeatureClass">Ô´ÒªËØÀà</param>
-        /// <param name="targetFieldName">Ä¿±ê×Ö¶ÎÃû</param>
-        /// <param name="sourceFieldName">Ô´×Ö¶ÎÃû£¨»òÌØÊâ¹æÔòÃèÊö£©</param>
-        /// <param name="countyName">ÏØÃû</param>
-        /// <returns>×ª»»ºóµÄ×Ö¶ÎÖµ</returns>
+        /// <param name="sourceFeature">æºè¦ç´ </param>
+        /// <param name="sourceFeatureClass">æºè¦ç´ ç±»</param>
+        /// <param name="targetFieldName">ç›®æ ‡å­—æ®µå</param>
+        /// <param name="sourceFieldName">æºå­—æ®µåï¼ˆæˆ–ç‰¹æ®Šè§„åˆ™æè¿°ï¼‰</param>
+        /// <param name="countyName">å¿å</param>
+        /// <returns>è½¬æ¢åçš„å­—æ®µå€¼</returns>
         /// <summary>
-        /// ´¦ÀíÌØÊâµÄ×Ö¶ÎÓ³Éä¹æÔò
-        /// °üÀ¨×Ö¶ÎºÏ²¢¡¢¼ÆËãµÈ¸´ÔÓÓ³ÉäÂß¼­
+        /// å¤„ç†ç‰¹æ®Šçš„å­—æ®µæ˜ å°„è§„åˆ™
+        /// åŒ…æ‹¬å­—æ®µåˆå¹¶ã€è®¡ç®—ç­‰å¤æ‚æ˜ å°„é€»è¾‘
         /// </summary>
-        /// <param name="sourceFeature">Ô´ÒªËØ</param>
-        /// <param name="sourceFeatureClass">Ô´ÒªËØÀà</param>
-        /// <param name="targetFieldName">Ä¿±ê×Ö¶ÎÃû</param>
-        /// <param name="sourceFieldName">Ô´×Ö¶ÎÃû£¨»òÌØÊâ¹æÔòÃèÊö£©</param>
-        /// <param name="countyName">ÏØÃû</param>
-        /// <returns>×ª»»ºóµÄ×Ö¶ÎÖµ</returns>
+        /// <param name="sourceFeature">æºè¦ç´ </param>
+        /// <param name="sourceFeatureClass">æºè¦ç´ ç±»</param>
+        /// <param name="targetFieldName">ç›®æ ‡å­—æ®µå</param>
+        /// <param name="sourceFieldName">æºå­—æ®µåï¼ˆæˆ–ç‰¹æ®Šè§„åˆ™æè¿°ï¼‰</param>
+        /// <param name="countyName">å¿å</param>
+        /// <returns>è½¬æ¢åçš„å­—æ®µå€¼</returns>
         private object ProcessSpecialFieldMapping(
             IFeature sourceFeature,
             IFeatureClass sourceFeatureClass,
@@ -596,29 +601,29 @@ namespace ForestResourcePlugin
         {
             try
             {
-                // ´¦ÀíÌØÊâµÄ×Ö¶ÎÓ³Éä¹æÔò
+                // å¤„ç†ç‰¹æ®Šçš„å­—æ®µæ˜ å°„è§„åˆ™
                 switch (targetFieldName)
                 {
                     case "PCTBBM":
-                        // ×Ö¶ÎºÏ²¢£ºxian + lin_ban + xiao_ban
+                        // å­—æ®µåˆå¹¶ï¼šxian + lin_ban + xiao_ban
                         return CombineFields(sourceFeature, sourceFeatureClass,
                             new[] { "xian", "lin_ban", "xiao_ban" });
 
                     case "ZTBXJ":
-                        // ×Ö¶Î¼ÆËã£ºxbmj * µÚ65¸ö×Ö¶Î
+                        // å­—æ®µè®¡ç®—ï¼šxbmj * ç¬¬65ä¸ªå­—æ®µ
                         return CalculateFieldProduct(sourceFeature, sourceFeatureClass,
                             "xbmj", GetFieldByIndex(sourceFeatureClass, 65));
 
                     case "XZQMC":
-                        // Ö±½ÓÊ¹ÓÃÏØÃû²ÎÊı£¬È·±£°üº¬"ÏØ"×Ö
+                        // ç›´æ¥ä½¿ç”¨å¿åå‚æ•°ï¼Œç¡®ä¿åŒ…å«"å¿"å­—
                         return EnsureCountySuffix(countyName);
 
                     case "CZKFBJMJ":
-                        // Õâ¸ö×Ö¶ÎÔÚConvertFeatures·½·¨ÖĞÍ¨¹ıÌØÊâ¼ÆËã´¦Àí
-                        return 0.0; // Ä¬ÈÏÖµ£¬Êµ¼ÊÖµÔÚÖ÷´¦ÀíÑ­»·ÖĞÉèÖÃ
+                        // è¿™ä¸ªå­—æ®µåœ¨ConvertFeaturesæ–¹æ³•ä¸­é€šè¿‡ç‰¹æ®Šè®¡ç®—å¤„ç†
+                        return null; // é»˜è®¤å€¼ï¼Œå®é™…å€¼åœ¨ä¸»å¤„ç†å¾ªç¯ä¸­è®¾ç½®
 
                     default:
-                        // ÆÕÍ¨×Ö¶ÎÓ³Éä
+                        // æ™®é€šå­—æ®µæ˜ å°„
                         if (!string.IsNullOrEmpty(sourceFieldName))
                         {
                             int sourceFieldIndex = sourceFeatureClass.FindField(sourceFieldName);
@@ -635,16 +640,16 @@ namespace ForestResourcePlugin
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"´¦ÀíÌØÊâ×Ö¶ÎÓ³Éä {targetFieldName} Ê±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"å¤„ç†ç‰¹æ®Šå­—æ®µæ˜ å°„ {targetFieldName} æ—¶å‡ºé”™: {ex.Message}");
                 return null;
             }
         }
 
         /// <summary>
-        /// È·±£ÏØÃûÒÔ"ÏØ"×Ö½áÎ²
+        /// ç¡®ä¿å¿åä»¥"å¿"å­—ç»“å°¾
         /// </summary>
-        /// <param name="countyName">Ô­Ê¼ÏØÃû</param>
-        /// <returns>È·±£´øÓĞ"ÏØ"×ÖµÄÏØÃû</returns>
+        /// <param name="countyName">åŸå§‹å¿å</param>
+        /// <returns>ç¡®ä¿å¸¦æœ‰"å¿"å­—çš„å¿å</returns>
         private string EnsureCountySuffix(string countyName)
         {
             if (string.IsNullOrEmpty(countyName))
@@ -652,23 +657,23 @@ namespace ForestResourcePlugin
                 return string.Empty;
             }
 
-            // Èç¹ûÏØÃû²»ÒÔ"ÏØ"½áÎ²£¬Ìí¼Ó"ÏØ"×Ö
-            if (!countyName.EndsWith("ÏØ") && !countyName.EndsWith("ÊĞ") &&
-                !countyName.EndsWith("Çø") && !countyName.EndsWith("Æì"))
+            // å¦‚æœå¿åä¸ä»¥"å¿"ç»“å°¾ï¼Œæ·»åŠ "å¿"å­—
+            if (!countyName.EndsWith("å¿") && !countyName.EndsWith("å¸‚") &&
+                !countyName.EndsWith("åŒº") && !countyName.EndsWith("æ——"))
             {
-                return countyName + "ÏØ";
+                return countyName + "å¿";
             }
 
-            return countyName; // ÒÑ¾­°üº¬ĞĞÕşÇøµ¥Î»Ãû³Æ£¬Ö±½Ó·µ»Ø
+            return countyName; // å·²ç»åŒ…å«è¡Œæ”¿åŒºå•ä½åç§°ï¼Œç›´æ¥è¿”å›
         }
 
         /// <summary>
-        /// ºÏ²¢¶à¸ö×Ö¶ÎµÄÖµ
+        /// åˆå¹¶å¤šä¸ªå­—æ®µçš„å€¼
         /// </summary>
-        /// <param name="sourceFeature">Ô´ÒªËØ</param>
-        /// <param name="sourceFeatureClass">Ô´ÒªËØÀà</param>
-        /// <param name="fieldNames">ÒªºÏ²¢µÄ×Ö¶ÎÃûÊı×é</param>
-        /// <returns>ºÏ²¢ºóµÄ×Ö·û´®</returns>
+        /// <param name="sourceFeature">æºè¦ç´ </param>
+        /// <param name="sourceFeatureClass">æºè¦ç´ ç±»</param>
+        /// <param name="fieldNames">è¦åˆå¹¶çš„å­—æ®µåæ•°ç»„</param>
+        /// <returns>åˆå¹¶åçš„å­—ç¬¦ä¸²</returns>
         private string CombineFields(IFeature sourceFeature, IFeatureClass sourceFeatureClass, string[] fieldNames)
         {
             var values = new List<string>();
@@ -683,7 +688,7 @@ namespace ForestResourcePlugin
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"×Ö¶Î {fieldName} ÔÚÔ´±íÖĞ²»´æÔÚ");
+                    System.Diagnostics.Debug.WriteLine($"å­—æ®µ {fieldName} åœ¨æºè¡¨ä¸­ä¸å­˜åœ¨");
                     values.Add("");
                 }
             }
@@ -692,13 +697,13 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// ¼ÆËãÁ½¸ö×Ö¶ÎµÄ³Ë»ı
+        /// è®¡ç®—ä¸¤ä¸ªå­—æ®µçš„ä¹˜ç§¯
         /// </summary>
-        /// <param name="sourceFeature">Ô´ÒªËØ</param>
-        /// <param name="sourceFeatureClass">Ô´ÒªËØÀà</param>
-        /// <param name="field1Name">µÚÒ»¸ö×Ö¶ÎÃû</param>
-        /// <param name="field2Name">µÚ¶ş¸ö×Ö¶ÎÃû</param>
-        /// <returns>¼ÆËã½á¹û</returns>
+        /// <param name="sourceFeature">æºè¦ç´ </param>
+        /// <param name="sourceFeatureClass">æºè¦ç´ ç±»</param>
+        /// <param name="field1Name">ç¬¬ä¸€ä¸ªå­—æ®µå</param>
+        /// <param name="field2Name">ç¬¬äºŒä¸ªå­—æ®µå</param>
+        /// <returns>è®¡ç®—ç»“æœ</returns>
         private double? CalculateFieldProduct(IFeature sourceFeature, IFeatureClass sourceFeatureClass,
             string field1Name, string field2Name)
         {
@@ -709,7 +714,7 @@ namespace ForestResourcePlugin
 
                 if (field1Index == -1 || field2Index == -1)
                 {
-                    System.Diagnostics.Debug.WriteLine($"¼ÆËã×Ö¶Î³Ë»ıÊ±£¬×Ö¶Î²»´æÔÚ: {field1Name} »ò {field2Name}");
+                    System.Diagnostics.Debug.WriteLine($"è®¡ç®—å­—æ®µä¹˜ç§¯æ—¶ï¼Œå­—æ®µä¸å­˜åœ¨: {field1Name} æˆ– {field2Name}");
                     return null;
                 }
 
@@ -726,17 +731,17 @@ namespace ForestResourcePlugin
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"¼ÆËã×Ö¶Î³Ë»ıÊ±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"è®¡ç®—å­—æ®µä¹˜ç§¯æ—¶å‡ºé”™: {ex.Message}");
                 return null;
             }
         }
 
         /// <summary>
-        /// ¸ù¾İË÷Òı»ñÈ¡×Ö¶ÎÃû
+        /// æ ¹æ®ç´¢å¼•è·å–å­—æ®µå
         /// </summary>
-        /// <param name="featureClass">ÒªËØÀà</param>
-        /// <param name="index">×Ö¶ÎË÷Òı£¨´Ó1¿ªÊ¼£©</param>
-        /// <returns>×Ö¶ÎÃû</returns>
+        /// <param name="featureClass">è¦ç´ ç±»</param>
+        /// <param name="index">å­—æ®µç´¢å¼•ï¼ˆä»1å¼€å§‹ï¼‰</param>
+        /// <returns>å­—æ®µå</returns>
         private string GetFieldByIndex(IFeatureClass featureClass, int index)
         {
             try
@@ -744,82 +749,82 @@ namespace ForestResourcePlugin
                 IFields fields = featureClass.Fields;
                 if (index >= 1 && index <= fields.FieldCount)
                 {
-                    return fields.get_Field(index - 1).Name; // ×ª»»Îª0»ùË÷Òı
+                    return fields.get_Field(index - 1).Name; // è½¬æ¢ä¸º0åŸºç´¢å¼•
                 }
 
-                System.Diagnostics.Debug.WriteLine($"×Ö¶ÎË÷Òı {index} ³¬³ö·¶Î§");
+                System.Diagnostics.Debug.WriteLine($"å­—æ®µç´¢å¼• {index} è¶…å‡ºèŒƒå›´");
                 return null;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"¸ù¾İË÷Òı»ñÈ¡×Ö¶ÎÃûÊ±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"æ ¹æ®ç´¢å¼•è·å–å­—æ®µåæ—¶å‡ºé”™: {ex.Message}");
                 return null;
             }
         }
 
         /// <summary>
-        /// ´´½¨LCXZGXµ½SLZYZCµÄ×Ö¶ÎÓ³ÉäÅäÖÃ
-        /// »ùÓÚÄúÌá¹©µÄ×Ö¶ÎÓ³ÉäÄ£°å
+        /// åˆ›å»ºLCXZGXåˆ°SLZYZCçš„å­—æ®µæ˜ å°„é…ç½®
+        /// åŸºäºæ‚¨æä¾›çš„å­—æ®µæ˜ å°„æ¨¡æ¿
         /// </summary>
-        /// <returns>×Ö¶ÎÓ³Éä×Öµä£¨SLZYZC×Ö¶ÎÃû -> LCXZGX×Ö¶ÎÃû£©</returns>
+        /// <returns>å­—æ®µæ˜ å°„å­—å…¸ï¼ˆSLZYZCå­—æ®µå -> LCXZGXå­—æ®µåï¼‰</returns>
         public static Dictionary<string, string> CreateXZ2SLZYZCFieldsMap()
         {
             Dictionary<string, string> result = new Dictionary<string, string>();
 
-            // »ù´¡×Ö¶ÎÓ³Éä
-            result.Add("YSDM", "ysdm");            // ÒªËØ´úÂë
-            result.Add("XZQDM", "xian");           // ĞĞÕşÇø´úÂë
-            result.Add("XZQMC", "SPECIAL_COUNTY");           // ĞĞÕşÇøÃû³Æ
-            result.Add("GTDCTBBSM", "bsm");         // ¹úÍÁµ÷²éÍ¼°ß±àÂë
-            result.Add("GTDCTBBH", "tbbh");        // ¹úÍÁµ÷²éÍ¼°ß±àºÅ
-            result.Add("GTDCDLBM", "dlbm");        // ¹úÍÁµ÷²éµØÀà±àÂë
-            result.Add("GTDCDLMC", "dlmc");        // ¹úÍÁµ÷²éµØÀàÃû³Æ
-            result.Add("QSDWDM", "qsdwdm");        // È¨Êôµ¥Î»´úÂë
-            result.Add("QSDWMC", "qsdwmc");        // È¨Êôµ¥Î»Ãû³Æ
-            result.Add("ZLDWDM", "zldwdm");        // ×øÂäµ¥Î»´úÂë
-            result.Add("ZLDWMC", "zldwmc");        // ×øÂäµ¥Î»Ãû³Æ
-            result.Add("GTDCTBMJ", "tbmj");        // ¹úÍÁµ÷²éÍ¼°ßÃæ»ı
-            result.Add("LYJ", "lin_ye_ju");        // ÁÖÒµ¾Ö
-            result.Add("LC", "lin_chang");         // ÁÖ³¡
-            result.Add("PCDL", "di_lei");          // ÆÕ²éµØÀà
-            result.Add("ZTBMJ", "xbmj");           // ÖêÊıÍ¼°ßÃæ»ı
-            result.Add("GTDCTDQS", "qsxz");        // ¹úÍÁµ÷²éÍÁµØÈ¨Êô
-            result.Add("LM_SUOYQ", "lmqs");        // ÁÖÄ¾ËùÓĞÈ¨
-            result.Add("LZ", "lin_zhong");         // ÁÖÖÖ
-            result.Add("YSSZ", "you_shi_sz");      // ÓÅÊÆÊ÷ÖÖ
-            result.Add("QY", "qi_yuan");           // ÆğÔ´
-            result.Add("YBD", "yu_bi_du");         // Óô±Õ¶È
-            result.Add("PJNL", "pingjun_nl");      // Æ½¾ùÄêÁä
-            result.Add("LING_ZU", "ling_zu");      // Áä×é
-            result.Add("PJSG", "pingjun_sg");      // Æ½¾ùÊ÷¸ß
-            result.Add("PJXJ", "pingjun_xj");      // Æ½¾ùĞØ¾¶
-            result.Add("MGQZS", "mei_gq_zs");      // Ã¿¹«ÇêÖêÊı
-            result.Add("FRDBS", "frdbs");          // ·¢ÓıµØ±»²ã
-            result.Add("CZKFBJMJ", "SPECIAL_CZKFBJ"); // ³ÇÕò¿ª·¢±ß½çÃæ»ı - ÌØÊâ´¦Àí
+            // åŸºç¡€å­—æ®µæ˜ å°„
+            result.Add("YSDM", "ysdm");            // è¦ç´ ä»£ç 
+            result.Add("XZQDM", "xian");           // è¡Œæ”¿åŒºä»£ç 
+            result.Add("XZQMC", "SPECIAL_COUNTY");           // è¡Œæ”¿åŒºåç§°
+            result.Add("GTDCTBBSM", "bsm");         // å›½åœŸè°ƒæŸ¥å›¾æ–‘ç¼–ç 
+            result.Add("GTDCTBBH", "tbbh");        // å›½åœŸè°ƒæŸ¥å›¾æ–‘ç¼–å·
+            result.Add("GTDCDLBM", "dlbm");        // å›½åœŸè°ƒæŸ¥åœ°ç±»ç¼–ç 
+            result.Add("GTDCDLMC", "dlmc");        // å›½åœŸè°ƒæŸ¥åœ°ç±»åç§°
+            result.Add("QSDWDM", "qsdwdm");        // æƒå±å•ä½ä»£ç 
+            result.Add("QSDWMC", "qsdwmc");        // æƒå±å•ä½åç§°
+            result.Add("ZLDWDM", "zldwdm");        // åè½å•ä½ä»£ç 
+            result.Add("ZLDWMC", "zldwmc");        // åè½å•ä½åç§°
+            result.Add("GTDCTBMJ", "tbmj");        // å›½åœŸè°ƒæŸ¥å›¾æ–‘é¢ç§¯
+            result.Add("LYJ", "lin_ye_ju");        // æ—ä¸šå±€
+            result.Add("LC", "lin_chang");         // æ—åœº
+            result.Add("PCDL", "di_lei");          // æ™®æŸ¥åœ°ç±»
+            result.Add("ZTBMJ", "xbmj");           // æ ªæ•°å›¾æ–‘é¢ç§¯
+            result.Add("GTDCTDQS", "qsxz");        // å›½åœŸè°ƒæŸ¥åœŸåœ°æƒå±
+            result.Add("LM_SUOYQ", "lmqs");        // æ—æœ¨æ‰€æœ‰æƒ
+            result.Add("LZ", "lin_zhong");         // æ—ç§
+            result.Add("YSSZ", "you_shi_sz");      // ä¼˜åŠ¿æ ‘ç§
+            result.Add("QY", "qi_yuan");           // èµ·æº
+            result.Add("YBD", "yu_bi_du");         // éƒé—­åº¦
+            result.Add("PJNL", "pingjun_nl");      // å¹³å‡å¹´é¾„
+            result.Add("LING_ZU", "ling_zu");      // é¾„ç»„
+            result.Add("PJSG", "pingjun_sg");      // å¹³å‡æ ‘é«˜
+            result.Add("PJXJ", "pingjun_xj");      // å¹³å‡èƒ¸å¾„
+            result.Add("MGQZS", "mei_gq_zs");      // æ¯å…¬é¡·æ ªæ•°
+            result.Add("FRDBS", "frdbs");          // å‘è‚²åœ°è¢«å±‚
+            result.Add("CZKFBJMJ", "SPECIAL_CZKFBJ"); // åŸé•‡å¼€å‘è¾¹ç•Œé¢ç§¯ - ä¸ºæ‰€æœ‰å›¾æ–‘è®¡ç®—äº¤é›†é¢ç§¯
 
-            // ÌØÊâ×Ö¶ÎÓ³Éä - ÕâĞ©×Ö¶ÎÓĞÌØÊâµÄ´¦ÀíÂß¼­
-            result.Add("PCTBBM", "xian+lin_ban+xiao_ban");  // ×Ö¶ÎºÏ²¢
-            result.Add("ZTBXJ", "xbmj*field65");             // ×Ö¶Î¼ÆËã
+            // ç‰¹æ®Šå­—æ®µæ˜ å°„ - è¿™äº›å­—æ®µæœ‰ç‰¹æ®Šçš„å¤„ç†é€»è¾‘
+            result.Add("PCTBBM", "xian+lin_ban+xiao_ban");  // å­—æ®µåˆå¹¶
+            result.Add("ZTBXJ", "xbmj*field65");             // å­—æ®µè®¡ç®—
 
             return result;
         }
 
         /// <summary>
-        /// ×ª»»×Ö¶ÎÖµÒÔÊÊÅäSLZYZC±í
-        /// ¸ù¾İSLZYZC±íµÄÒµÎñ¹æÔòºÍÊı¾İÒªÇó½øĞĞ×Ö¶ÎÖµ×ª»»
+        /// è½¬æ¢å­—æ®µå€¼ä»¥é€‚é…SLZYZCè¡¨
+        /// æ ¹æ®SLZYZCè¡¨çš„ä¸šåŠ¡è§„åˆ™å’Œæ•°æ®è¦æ±‚è¿›è¡Œå­—æ®µå€¼è½¬æ¢
         /// </summary>
-        /// <param name="sourceValue">Ô´×Ö¶ÎÖµ</param>
-        /// <param name="targetFieldName">Ä¿±ê×Ö¶ÎÃû£¨SLZYZC±í£©</param>
-        /// <param name="sourceFieldName">Ô´×Ö¶ÎÃû£¨LCXZGX±í£©</param>
-        /// <param name="countyName">ÏØÃû</param>
-        /// <returns>×ª»»ºóµÄ×Ö¶ÎÖµ</returns>
+        /// <param name="sourceValue">æºå­—æ®µå€¼</param>
+        /// <param name="targetFieldName">ç›®æ ‡å­—æ®µåï¼ˆSLZYZCè¡¨ï¼‰</param>
+        /// <param name="sourceFieldName">æºå­—æ®µåï¼ˆLCXZGXè¡¨ï¼‰</param>
+        /// <param name="countyName">å¿å</param>
+        /// <returns>è½¬æ¢åçš„å­—æ®µå€¼</returns>
         private object ConvertFieldValueForSLZYZC(
             object sourceValue,
             string targetFieldName,
             string sourceFieldName,
             string countyName)
         {
-            // ´¦Àí¿ÕÖµÇé¿ö
+            // å¤„ç†ç©ºå€¼æƒ…å†µ
             if (sourceValue == null || sourceValue == DBNull.Value)
             {
                 return null;
@@ -827,16 +832,16 @@ namespace ForestResourcePlugin
 
             try
             {
-                // ¸ù¾İSLZYZC±íµÄ×Ö¶ÎÒªÇó½øĞĞÌØÊâ×ª»»
+                // æ ¹æ®SLZYZCè¡¨çš„å­—æ®µè¦æ±‚è¿›è¡Œç‰¹æ®Šè½¬æ¢
                 switch (targetFieldName.ToUpper())
                 {
                     case "XZQDM":
-                        // ĞĞÕşÇø´úÂë¿ÉÄÜĞèÒªÌØÊâ´¦Àí
+                        // è¡Œæ”¿åŒºä»£ç å¯èƒ½éœ€è¦ç‰¹æ®Šå¤„ç†
                         return sourceValue.ToString();
 
                     case "GTDCTBMJ":
                     case "ZTBMJ":
-                        // Ãæ»ı×Ö¶ÎÈ·±£ÎªÊıÖµÀàĞÍ
+                        // é¢ç§¯å­—æ®µç¡®ä¿ä¸ºæ•°å€¼ç±»å‹
                         if (double.TryParse(sourceValue.ToString(), out double area))
                         {
                             return area;
@@ -844,7 +849,7 @@ namespace ForestResourcePlugin
                         return 0.0;
 
                     case "YBD":
-                        // Óô±Õ¶È¿ÉÄÜĞèÒª¸ñÊ½»¯
+                        // éƒé—­åº¦å¯èƒ½éœ€è¦æ ¼å¼åŒ–
                         if (double.TryParse(sourceValue.ToString(), out double canopyClosure))
                         {
                             return Math.Round(canopyClosure, 2);
@@ -852,7 +857,7 @@ namespace ForestResourcePlugin
                         return sourceValue;
 
                     case "PJNL":
-                        // Æ½¾ùÄêÁäÈ·±£ÎªÕûÊı
+                        // å¹³å‡å¹´é¾„ç¡®ä¿ä¸ºæ•´æ•°
                         if (int.TryParse(sourceValue.ToString(), out int age))
                         {
                             return age;
@@ -860,25 +865,25 @@ namespace ForestResourcePlugin
                         return sourceValue;
 
                     default:
-                        // Ä¬ÈÏ±£³ÖÔ­Öµ
+                        // é»˜è®¤ä¿æŒåŸå€¼
                         return sourceValue;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"×ª»»{countyName}×Ö¶Î{targetFieldName}ÖµÊ±³ö´í: {ex.Message}");
-                return sourceValue; // ×ª»»Ê§°ÜÊ±·µ»ØÔ­Öµ£¬È·±£Êı¾İ²»¶ªÊ§
+                System.Diagnostics.Debug.WriteLine($"è½¬æ¢{countyName}å­—æ®µ{targetFieldName}å€¼æ—¶å‡ºé”™: {ex.Message}");
+                return sourceValue; // è½¬æ¢å¤±è´¥æ—¶è¿”å›åŸå€¼ï¼Œç¡®ä¿æ•°æ®ä¸ä¸¢å¤±
             }
         }
 
         /// <summary>
-        /// ÑéÖ¤×ª»»ÅäÖÃµÄÓĞĞ§ĞÔ
-        /// ¼ì²é×Ö¶ÎÓ³Éä¡¢Êı¾İ¿âÁ¬½ÓµÈ×ª»»Ç°µÄ×¼±¸¹¤×÷
+        /// éªŒè¯è½¬æ¢é…ç½®çš„æœ‰æ•ˆæ€§
+        /// æ£€æŸ¥å­—æ®µæ˜ å°„ã€æ•°æ®åº“è¿æ¥ç­‰è½¬æ¢å‰çš„å‡†å¤‡å·¥ä½œ
         /// </summary>
-        /// <param name="countyName">ÏØÃû</param>
-        /// <param name="databasePath">Êı¾İ¿âÂ·¾¶</param>
-        /// <param name="fieldMappings">×Ö¶ÎÓ³ÉäÅäÖÃ</param>
-        /// <returns>ÑéÖ¤ÊÇ·ñÍ¨¹ı</returns>
+        /// <param name="countyName">å¿å</param>
+        /// <param name="databasePath">æ•°æ®åº“è·¯å¾„</param>
+        /// <param name="fieldMappings">å­—æ®µæ˜ å°„é…ç½®</param>
+        /// <returns>éªŒè¯æ˜¯å¦é€šè¿‡</returns>
         public bool ValidateConversionConfiguration(
             string countyName,
             string databasePath,
@@ -886,21 +891,21 @@ namespace ForestResourcePlugin
         {
             try
             {
-                // ÑéÖ¤»ù±¾²ÎÊı
+                // éªŒè¯åŸºæœ¬å‚æ•°
                 if (string.IsNullOrEmpty(countyName) || string.IsNullOrEmpty(databasePath))
                 {
                     return false;
                 }
 
-                // ÑéÖ¤Êı¾İ¿âÂ·¾¶´æÔÚĞÔ
+                // éªŒè¯æ•°æ®åº“è·¯å¾„å­˜åœ¨æ€§
                 string countyGDBPath = System.IO.Path.Combine(databasePath, countyName, countyName + ".gdb");
                 if (!Directory.Exists(countyGDBPath))
                 {
-                    System.Diagnostics.Debug.WriteLine($"ÏØ¼¶Êı¾İ¿â²»´æÔÚ: {countyGDBPath}");
+                    System.Diagnostics.Debug.WriteLine($"å¿çº§æ•°æ®åº“ä¸å­˜åœ¨: {countyGDBPath}");
                     return false;
                 }
 
-                // ÑéÖ¤×Ö¶ÎÓ³ÉäÅäÖÃ
+                // éªŒè¯å­—æ®µæ˜ å°„é…ç½®
                 if (fieldMappings == null)
                 {
                     fieldMappings = CreateXZ2SLZYZCFieldsMap();
@@ -908,16 +913,16 @@ namespace ForestResourcePlugin
 
                 if (fieldMappings.Count == 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("×Ö¶ÎÓ³ÉäÅäÖÃÎª¿Õ");
+                    System.Diagnostics.Debug.WriteLine("å­—æ®µæ˜ å°„é…ç½®ä¸ºç©º");
                     return false;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"×ª»»ÅäÖÃÑéÖ¤Í¨¹ı: {countyName}");
+                System.Diagnostics.Debug.WriteLine($"è½¬æ¢é…ç½®éªŒè¯é€šè¿‡: {countyName}");
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ÑéÖ¤×ª»»ÅäÖÃÊ±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"éªŒè¯è½¬æ¢é…ç½®æ—¶å‡ºé”™: {ex.Message}");
                 return false;
             }
         }

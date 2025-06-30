@@ -26,6 +26,11 @@ namespace TestArcMapAddin2.Forms
         /// </summary>
         private const string CGCS2000_WKT = @"GEOGCS[""GCS_China_Geodetic_Coordinate_System_2000"",DATUM[""D_China_2000"",SPHEROID[""CGCS2000"",6378137.0,298.257222101]],PRIMEM[""Greenwich"",0.0],UNIT[""Degree"",0.0174532925199433]]";
 
+        /// <summary>
+        /// CGCS2000 3度带37带投影坐标系WKT定义
+        /// </summary>
+        private const string CGCS2000_3_DEGREE_GK_ZONE_37_WKT = @"PROJCS[""GCS_China_Geodetic_Coordinate_System_2000_3_Degree_GK_Zone_37"",GEOGCS[""GCS_China_Geodetic_Coordinate_System_2000"",DATUM[""D_China_2000"",SPHEROID[""CGCS2000"",6378137.0,298.257222101]],PRIMEM[""Greenwich"",0.0],UNIT[""Degree"",0.0174532925199433]],PROJECTION[""Gauss_Kruger""],PARAMETER[""False_Easting"",37500000.0],PARAMETER[""False_Northing"",0.0],PARAMETER[""Central_Meridian"",111.0],PARAMETER[""Scale_Factor"",1.0],PARAMETER[""Latitude_Of_Origin"",0.0],UNIT[""Meter"",1.0]]";
+
         public BasicDataPreparationForm()
         {
             InitializeComponent();
@@ -563,18 +568,102 @@ namespace TestArcMapAddin2.Forms
         }
 
         /// <summary>
-        /// 创建CGCS2000空间参考系统
+        /// 创建CGCS2000投影坐标系（优先使用3度带37带投影坐标系）
         /// </summary>
-        /// <returns>CGCS2000空间参考系统对象</returns>
-        /// <summary>
-        /// 创建CGCS2000空间参考系统
-        /// </summary>
-        /// <returns>CGCS2000空间参考系统对象</returns>
-        /// <summary>
-        /// 创建CGCS2000空间参考系统
-        /// </summary>
-        /// <returns>CGCS2000空间参考系统对象</returns>
+        /// <returns>CGCS2000坐标系对象</returns>
         private ISpatialReference CreateCGCS2000SpatialReference()
+        {
+            // 首先尝试创建投影坐标系
+            ISpatialReference projectedSpatialRef = CreateCGCS2000ProjectedSpatialReference();
+            if (projectedSpatialRef != null)
+            {
+                return projectedSpatialRef;
+            }
+
+            // 如果投影坐标系创建失败，使用地理坐标系作为备用
+            return CreateCGCS2000GeographicSpatialReference();
+        }
+
+        /// <summary>
+        /// 创建CGCS2000 3度带37带投影坐标系
+        /// </summary>
+        /// <returns>CGCS2000 3度带37带投影坐标系对象</returns>
+        private ISpatialReference CreateCGCS2000ProjectedSpatialReference()
+        {
+            try
+            {
+                // 方法1：尝试使用自定义EPSG代码创建CGCS2000 3度带37带投影坐标系
+                try
+                {
+                    // 创建空间参考系统环境接口
+                    Type spatialRefEnvType = Type.GetTypeFromProgID("esriGeometry.SpatialReferenceEnvironment");
+                    object spatialRefEnvObj = Activator.CreateInstance(spatialRefEnvType);
+                    ISpatialReferenceFactory spatialRefFactory = spatialRefEnvObj as ISpatialReferenceFactory;
+
+                    if (spatialRefFactory != null)
+                    {
+                        // 尝试使用可能的EPSG代码（CGCS2000 3度带投影坐标系通常以4491+带号的形式）
+                        try
+                        {
+                           
+                            IProjectedCoordinateSystem projectedCS = spatialRefFactory.CreateProjectedCoordinateSystem(4525);
+                            if (projectedCS != null)
+                            {
+                                System.Diagnostics.Debug.WriteLine("成功使用EPSG 4528创建CGCS2000 3度带37带投影坐标系");
+                                return projectedCS as ISpatialReference;
+                            }
+                        }
+                        catch (Exception ex1)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"使用EPSG 4528创建投影坐标系失败: {ex1.Message}");
+                        }
+                    }
+                }
+                catch (Exception ex1)
+                {
+                    System.Diagnostics.Debug.WriteLine($"使用EPSG代码创建CGCS2000投影坐标系失败: {ex1.Message}");
+                }
+
+                // 方法2：使用WKT字符串创建投影坐标系
+                try
+                {
+                    Type spatialRefEnvType = Type.GetTypeFromProgID("esriGeometry.SpatialReferenceEnvironment");
+                    object spatialRefEnvObj = Activator.CreateInstance(spatialRefEnvType);
+
+                    // 使用反射调用CreateESRISpatialReferenceFromPRJString方法
+                    System.Reflection.MethodInfo createFromPrjMethod = spatialRefEnvType.GetMethod("CreateESRISpatialReferenceFromPRJString");
+                    if (createFromPrjMethod != null)
+                    {
+                        object[] parameters = new object[] { CGCS2000_3_DEGREE_GK_ZONE_37_WKT, null, null };
+                        object result = createFromPrjMethod.Invoke(spatialRefEnvObj, parameters);
+
+                        if (result != null && result is ISpatialReference)
+                        {
+                            System.Diagnostics.Debug.WriteLine("成功使用WKT字符串创建CGCS2000 3度带37带投影坐标系");
+                            return result as ISpatialReference;
+                        }
+                    }
+                }
+                catch (Exception ex2)
+                {
+                    System.Diagnostics.Debug.WriteLine($"使用WKT字符串创建CGCS2000投影坐标系失败: {ex2.Message}");
+                }
+
+                System.Diagnostics.Debug.WriteLine("所有投影坐标系创建方法都失败");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"创建CGCS2000投影坐标系时出现意外错误: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 创建CGCS2000地理坐标系（备用方案）
+        /// </summary>
+        /// <returns>CGCS2000地理坐标系对象</returns>
+        private ISpatialReference CreateCGCS2000GeographicSpatialReference()
         {
             try
             {
@@ -592,7 +681,7 @@ namespace TestArcMapAddin2.Forms
                         IGeographicCoordinateSystem geographicCS = spatialRefFactory.CreateGeographicCoordinateSystem(4490);
                         if (geographicCS != null)
                         {
-                            System.Diagnostics.Debug.WriteLine("成功使用EPSG 4490创建CGCS2000空间参考系统");
+                            System.Diagnostics.Debug.WriteLine("成功使用EPSG 4490创建CGCS2000地理坐标系");
                             return geographicCS as ISpatialReference;
                         }
                     }
@@ -617,7 +706,7 @@ namespace TestArcMapAddin2.Forms
 
                         if (result != null && result is ISpatialReference)
                         {
-                            System.Diagnostics.Debug.WriteLine("成功使用WKT字符串创建CGCS2000空间参考系统");
+                            System.Diagnostics.Debug.WriteLine("成功使用WKT字符串创建CGCS2000地理坐标系");
                             return result as ISpatialReference;
                         }
                     }
@@ -650,12 +739,12 @@ namespace TestArcMapAddin2.Forms
                     System.Diagnostics.Debug.WriteLine($"创建备用坐标系也失败: {ex3.Message}");
                 }
 
-                System.Diagnostics.Debug.WriteLine("所有创建CGCS2000空间参考系统的方法都失败了");
+                System.Diagnostics.Debug.WriteLine("所有创建CGCS2000地理坐标系的方法都失败了");
                 return null;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"创建CGCS2000空间参考系统时出现意外错误: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"创建CGCS2000地理坐标系时出现意外错误: {ex.Message}");
                 return null;
             }
         }
