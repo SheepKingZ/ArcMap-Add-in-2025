@@ -1,0 +1,29 @@
+{
+  "timestamp": "2025-06-30T17:37:32.309818",
+  "operation_type": "folder_merge",
+  "folder_a_path": "D:\\桌面\\广东省\\LCSHbj",
+  "folder_b_path": "D:\\桌面\\广东省\\pcsj",
+  "operations": [
+    {
+      "county_code": "123098",
+      "operation_type": "moved_to_existing",
+      "source_path": "D:\\桌面\\广东省\\LCSHbj\\123098",
+      "destination_path": "D:\\桌面\\广东省\\pcsj\\123098htrh\\自然资源林草湿底图成果",
+      "target_county_folder": "123098htrh"
+    },
+    {
+      "county_code": "123453",
+      "operation_type": "moved_to_existing",
+      "source_path": "D:\\桌面\\广东省\\LCSHbj\\123453ahha",
+      "destination_path": "D:\\桌面\\广东省\\pcsj\\123453ahhavxf\\自然资源林草湿底图成果",
+      "target_county_folder": "123453ahhavxf"
+    },
+    {
+      "county_code": "123456",
+      "operation_type": "moved_to_existing",
+      "source_path": "D:\\桌面\\广东省\\LCSHbj\\123456hahaha",
+      "destination_path": "D:\\桌面\\广东省\\pcsj\\123456hahahaafds\\自然资源林草湿底图成果",
+      "target_county_folder": "123456hahahaafds"
+    }
+  ]
+}
