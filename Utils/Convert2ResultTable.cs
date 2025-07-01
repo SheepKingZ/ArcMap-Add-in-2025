@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using ESRI.ArcGIS.esriSystem;
 using ESRI.ArcGIS.Geodatabase;
 using ESRI.ArcGIS.Geometry;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace ForestResourcePlugin
 {
@@ -21,10 +22,11 @@ namespace ForestResourcePlugin
 
         /// <summary>
         /// 将县级LCXZGX表转换为SLZYZC表
-        /// 执行数据转换、字段映射和业务规则处理
+        /// 支持从外部shapefile读取CZKFBJ数据
         /// </summary>
         /// <param name="countyName">县名</param>
         /// <param name="databasePath">县级数据库路径</param>
+        /// <param name="czkfbjShapefilePath">CZKFBJ shapefile路径（可选）</param>
         /// <param name="fieldMappings">字段映射配置（SLZYZC字段名 -> LCXZGX字段名）</param>
         /// <param name="progressCallback">进度回调</param>
         /// <returns>转换是否成功</returns>
@@ -32,7 +34,8 @@ namespace ForestResourcePlugin
             string countyName,
             string databasePath,
             Dictionary<string, string> fieldMappings,
-            ProgressCallback progressCallback = null)
+            ProgressCallback progressCallback = null,
+            string czkfbjShapefilePath = null)
         {
             // 参数验证 - 确保输入数据的有效性
             if (string.IsNullOrEmpty(countyName))
@@ -52,6 +55,7 @@ namespace ForestResourcePlugin
             IFeatureClass lcxzgxFeatureClass = null;
             IFeatureClass slzyzcFeatureClass = null;
             IFeatureClass czkfbjFeatureClass = null;
+            IWorkspace shapefileWorkspace = null;
 
             try
             {
@@ -82,18 +86,52 @@ namespace ForestResourcePlugin
 
                 progressCallback?.Invoke(30, $"正在访问{countyName}的城镇开发边界数据...");
 
-                // 获取城镇开发边界要素类 - CZKFBJ
-                try
+                // 获取城镇开发边界要素类 - 优先从外部shapefile读取
+                progressCallback?.Invoke(30, $"正在访问{countyName}的城镇开发边界数据...");
+
+                // 获取城镇开发边界要素类 - 优先从外部shapefile读取
+                if (!string.IsNullOrEmpty(czkfbjShapefilePath))
                 {
-                    czkfbjFeatureClass = GetFeatureClass(workspace, "CZKFBJ");
-                    if (czkfbjFeatureClass == null)
+                    System.Diagnostics.Debug.WriteLine($"尝试从shapefile加载CZKFBJ: {czkfbjShapefilePath}");
+                    ShapefileOpenResult result = OpenShapefileFeatureClass(czkfbjShapefilePath);
+                    shapefileWorkspace = result.workspace;
+                    czkfbjFeatureClass = result.featureClass;
+                }
+                else
+                {
+                    // 优先尝试从SharedDataManager获取对应县的CZKFBJ shapefile路径
+                    string autoDetectedPath = GetCZKFBJShapefilePath(countyName);
+
+                    if (!string.IsNullOrEmpty(autoDetectedPath))
                     {
-                        System.Diagnostics.Debug.WriteLine($"警告: 未找到{countyName}的CZKFBJ表，CZKFBJMJ将计算为0");
+                        System.Diagnostics.Debug.WriteLine($"自动找到{countyName}的CZKFBJ shapefile: {autoDetectedPath}");
+                        ShapefileOpenResult result = OpenShapefileFeatureClass(autoDetectedPath);
+                        shapefileWorkspace = result.workspace;
+                        czkfbjFeatureClass = result.featureClass;
+                    }
+                    else
+                    {
+                        // 如果SharedDataManager中没有找到，尝试从GDB中获取
+                        System.Diagnostics.Debug.WriteLine($"未找到{countyName}的CZKFBJ shapefile，尝试从GDB获取");
+                        try
+                        {
+                            czkfbjFeatureClass = GetCZKFBJFeatureClass(workspace, countyName);
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"从GDB获取{countyName}的CZKFBJ失败: {ex.Message}");
+                        }
                     }
                 }
-                catch (Exception ex)
+
+                if (czkfbjFeatureClass == null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"获取{countyName}的CZKFBJ表时出错: {ex.Message}，CZKFBJMJ将计算为0");
+                    System.Diagnostics.Debug.WriteLine($"严重警告: 无法获取{countyName}的CZKFBJ数据，所有CZKFBJMJ将为0");
+                }
+                else
+                {
+                    int czkfbjCount = czkfbjFeatureClass.FeatureCount(null);
+                    System.Diagnostics.Debug.WriteLine($"成功加载{countyName}的CZKFBJ数据，包含{czkfbjCount}个边界要素");
                 }
 
                 progressCallback?.Invoke(35, $"开始转换{countyName}的数据...");
@@ -121,7 +159,6 @@ namespace ForestResourcePlugin
             finally
             {
                 // 重要：释放ArcGIS COM对象，防止内存泄漏
-                // ArcGIS COM对象需要显式释放，否则会导致内存占用持续增长
                 if (lcxzgxFeatureClass != null)
                 {
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(lcxzgxFeatureClass);
@@ -134,10 +171,120 @@ namespace ForestResourcePlugin
                 {
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(czkfbjFeatureClass);
                 }
+                if (shapefileWorkspace != null)
+                {
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(shapefileWorkspace);
+                }
                 if (workspace != null)
                 {
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(workspace);
                 }
+            }
+        }
+        /// <summary>
+        /// Shapefile打开结果结构
+        /// </summary>
+        private struct ShapefileOpenResult
+        {
+            public IWorkspace workspace;
+            public IFeatureClass featureClass;
+
+            public ShapefileOpenResult(IWorkspace workspace, IFeatureClass featureClass)
+            {
+                this.workspace = workspace;
+                this.featureClass = featureClass;
+            }
+        }
+
+        /// <summary>
+        /// 打开shapefile要素类
+        /// </summary>
+        /// <param name="shapefilePath">shapefile完整路径（包括.shp文件名）</param>
+        /// <returns>包含工作空间和要素类的结果</returns>
+        private ShapefileOpenResult OpenShapefileFeatureClass(string shapefilePath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(shapefilePath) || !File.Exists(shapefilePath))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Shapefile路径无效或文件不存在: {shapefilePath}");
+                    return new ShapefileOpenResult(null, null);
+                }
+
+                // 获取shapefile所在目录和文件名
+                string shapefileDirectory = System.IO.Path.GetDirectoryName(shapefilePath);
+                string shapefileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
+
+                System.Diagnostics.Debug.WriteLine($"正在打开shapefile: 目录={shapefileDirectory}, 文件名={shapefileName}");
+
+                // 创建shapefile工作空间工厂
+                Type factoryType = Type.GetTypeFromProgID("esriDataSourcesFile.ShapefileWorkspaceFactory");
+                IWorkspaceFactory workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+
+                // 打开shapefile工作空间（目录）
+                IWorkspace shapefileWorkspace = workspaceFactory.OpenFromFile(shapefileDirectory, 0);
+
+                if (shapefileWorkspace == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"无法打开shapefile工作空间: {shapefileDirectory}");
+                    return new ShapefileOpenResult(null, null);
+                }
+
+                // 获取要素工作空间
+                IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)shapefileWorkspace;
+
+                // 打开shapefile要素类
+                IFeatureClass featureClass = featureWorkspace.OpenFeatureClass(shapefileName);
+
+                if (featureClass == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"无法打开shapefile要素类: {shapefileName}");
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(shapefileWorkspace);
+                    return new ShapefileOpenResult(null, null);
+                }
+
+                int featureCount = featureClass.FeatureCount(null);
+                System.Diagnostics.Debug.WriteLine($"成功打开shapefile {shapefileName}，包含 {featureCount} 个要素");
+
+                return new ShapefileOpenResult(shapefileWorkspace, featureClass);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"打开shapefile时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"错误堆栈: {ex.StackTrace}");
+                return new ShapefileOpenResult(null, null);
+            }
+        }
+
+        /// <summary>
+        /// 从SharedDataManager获取CZKFBJ shapefile路径
+        /// </summary>
+        /// <param name="countyName">县名</param>
+        /// <returns>对应县的CZKFBJ shapefile路径，如果没有找到则返回null</returns>
+        public static string GetCZKFBJShapefilePath(string countyName)
+        {
+            try
+            {
+                var czkfbjFiles = SharedDataManager.GetCZKFBJFiles();
+
+                // 查找匹配的县名
+                foreach (var fileInfo in czkfbjFiles)
+                {
+                    if (fileInfo.DisplayName.Equals(countyName, StringComparison.OrdinalIgnoreCase) ||
+                        fileInfo.DisplayName.Contains(countyName))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到{countyName}的CZKFBJ文件: {fileInfo.FullPath}");
+                        return fileInfo.FullPath;
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"未找到{countyName}的CZKFBJ文件");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"获取{countyName}的CZKFBJ shapefile路径时出错: {ex.Message}");
+                return null;
             }
         }
 
@@ -148,11 +295,13 @@ namespace ForestResourcePlugin
         /// <param name="countyDatabasePaths">县级数据库路径映射（县名 -> 数据库路径）</param>
         /// <param name="fieldMappings">字段映射配置</param>
         /// <param name="progressCallback">进度回调</param>
+        /// <param name="czkfbjShapefilePath">CZKFBJ shapefile路径（可选）</param>
         /// <returns>批量转换结果（县名 -> 是否成功）</returns>
         public Dictionary<string, bool> BatchConvertLCXZGXToSLZYZC(
             Dictionary<string, string> countyDatabasePaths,
             Dictionary<string, string> fieldMappings,
-            ProgressCallback progressCallback = null)
+            ProgressCallback progressCallback = null,
+            string czkfbjShapefilePath = null)
         {
             if (countyDatabasePaths == null || countyDatabasePaths.Count == 0)
             {
@@ -177,9 +326,8 @@ namespace ForestResourcePlugin
                     int overallProgress = (processedCounties * 100) / totalCounties;
                     progressCallback?.Invoke(overallProgress, $"正在转换县: {countyName} ({processedCounties + 1}/{totalCounties})");
 
-                    // 为每个县执行转换
-                    // 注意：不传递子进度回调以避免进度报告混乱
-                    bool success = ConvertLCXZGXToSLZYZC(countyName, databasePath, fieldMappings, null);
+                    // 为每个县执行转换，传递CZKFBJ shapefile路径
+                    bool success = ConvertLCXZGXToSLZYZC(countyName, databasePath, fieldMappings, null, czkfbjShapefilePath);
                     results[countyName] = success;
 
                     processedCounties++;
@@ -189,7 +337,6 @@ namespace ForestResourcePlugin
                 catch (Exception ex)
                 {
                     // 错误处理策略：记录错误但继续处理其他县
-                    // 这样可以确保一个县的错误不会影响其他县的数据处理
                     System.Diagnostics.Debug.WriteLine($"转换县{countyName}数据时出错: {ex.Message}");
                     results[countyName] = false;
                     processedCounties++;
@@ -432,12 +579,6 @@ namespace ForestResourcePlugin
 
         /// <summary>
         /// 计算几何对象与城镇开发边界的交集面积
-        /// </summary>
-        /// <param name="geometry">要计算的几何对象</param>
-        /// <param name="czkfbjFeatureClass">城镇开发边界要素类</param>
-        /// <returns>交集面积（平方米）</returns>
-        /// <summary>
-        /// 计算几何对象与城镇开发边界的交集面积
         /// 适用于所有权属性质的土地（国有、集体等）
         /// </summary>
         /// <param name="geometry">要计算的几何对象</param>
@@ -447,52 +588,110 @@ namespace ForestResourcePlugin
         {
             if (geometry == null || czkfbjFeatureClass == null)
             {
+                System.Diagnostics.Debug.WriteLine("计算交集面积失败: 几何对象或CZKFBJ要素类为空");
                 return 0;
             }
 
             double totalIntersectionArea = 0;
             IFeatureCursor czkfbjCursor = null;
+            ISpatialFilter spatialFilter = null;
 
             try
             {
-                // 创建空间查询过滤器，只查询与当前几何对象相交的城镇开发边界  
-                ISpatialFilter spatialFilter = new SpatialFilterClass();
-                spatialFilter.Geometry = geometry;
+                // 验证几何对象的有效性
+                if (geometry.IsEmpty)
+                {
+                    System.Diagnostics.Debug.WriteLine("源几何对象为空，跳过交集计算");
+                    return 0;
+                }
+
+                // 检查CZKFBJ要素类中是否有数据
+                int czkfbjCount = czkfbjFeatureClass.FeatureCount(null);
+                System.Diagnostics.Debug.WriteLine($"CZKFBJ要素类包含{czkfbjCount}个要素");
+
+                if (czkfbjCount == 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("CZKFBJ要素类为空，无法计算交集");
+                    return 0;
+                }
+
+                // 获取空间参考信息进行调试
+                ISpatialReference sourceSR = geometry.SpatialReference;
+                ISpatialReference targetSR = ((IGeoDataset)czkfbjFeatureClass).SpatialReference;
+
+                System.Diagnostics.Debug.WriteLine($"源几何空间参考: {sourceSR?.Name ?? "未定义"}");
+                System.Diagnostics.Debug.WriteLine($"CZKFBJ空间参考: {targetSR?.Name ?? "未定义"}");
+
+                // 如果空间参考不同，进行投影变换
+                IGeometry queryGeometry = geometry;
+                if (sourceSR != null && targetSR != null && !sourceSR.Equals(targetSR))
+                {
+                    System.Diagnostics.Debug.WriteLine("检测到空间参考不匹配，进行投影变换...");
+                    queryGeometry = ((IClone)geometry).Clone() as IGeometry;
+                    queryGeometry.Project(targetSR);
+                }
+
+                // 创建空间查询过滤器
+                spatialFilter = new SpatialFilterClass();
+                spatialFilter.Geometry = queryGeometry;
                 spatialFilter.GeometryField = czkfbjFeatureClass.ShapeFieldName;
                 spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
 
-                // 查询相交的城镇开发边界要素  
+                System.Diagnostics.Debug.WriteLine($"开始空间查询，使用几何字段: {spatialFilter.GeometryField}");
+
+                // 查询相交的城镇开发边界要素
                 czkfbjCursor = czkfbjFeatureClass.Search(spatialFilter, false);
                 IFeature czkfbjFeature;
+                int intersectCount = 0;
 
-                // 累计所有相交区域的面积  
+                // 累计所有相交区域的面积
                 while ((czkfbjFeature = czkfbjCursor.NextFeature()) != null)
                 {
                     try
                     {
-                        if (czkfbjFeature.Shape != null)
-                        {
-                            // 计算交集区域  
-                            ITopologicalOperator topoOperator = (ITopologicalOperator)geometry;
-                            IGeometry intersectionGeometry = topoOperator.Intersect(czkfbjFeature.Shape, esriGeometryDimension.esriGeometry2Dimension);
+                        intersectCount++;
+                        System.Diagnostics.Debug.WriteLine($"处理第{intersectCount}个相交的CZKFBJ要素");
 
-                            // 计算交集面积  
+                        if (czkfbjFeature.Shape != null && !czkfbjFeature.Shape.IsEmpty)
+                        {
+                            // 确保使用相同的空间参考系统进行计算
+                            IGeometry czkfbjGeometry = czkfbjFeature.Shape;
+                            IGeometry calculationGeometry = queryGeometry;
+
+                            // 计算交集区域
+                            ITopologicalOperator topoOperator = (ITopologicalOperator)calculationGeometry;
+                            IGeometry intersectionGeometry = topoOperator.Intersect(czkfbjGeometry, esriGeometryDimension.esriGeometry2Dimension);
+
+                            // 计算交集面积
                             if (intersectionGeometry != null && !intersectionGeometry.IsEmpty)
                             {
                                 IArea area = (IArea)intersectionGeometry;
-                                double currentArea = area.Area;
+                                double currentArea = Math.Abs(area.Area); // 使用绝对值避免负面积
                                 totalIntersectionArea += currentArea;
 
-                                System.Diagnostics.Debug.WriteLine($"当前交集区域面积: {currentArea:F2} 平方米，累计: {totalIntersectionArea:F2} 平方米");
+                                System.Diagnostics.Debug.WriteLine($"第{intersectCount}个相交要素面积: {currentArea:F2} 平方米");
+                                System.Diagnostics.Debug.WriteLine($"累计交集面积: {totalIntersectionArea:F2} 平方米");
 
-                                // 释放交集几何对象  
+                                // 释放交集几何对象
                                 System.Runtime.InteropServices.Marshal.ReleaseComObject(intersectionGeometry);
                             }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine($"第{intersectCount}个要素：交集几何为空");
+                            }
                         }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"第{intersectCount}个CZKFBJ要素的几何为空");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"处理第{intersectCount}个CZKFBJ要素时出错: {ex.Message}");
                     }
                     finally
                     {
-                        // 释放当前城镇开发边界要素  
+                        // 释放当前城镇开发边界要素
                         if (czkfbjFeature != null)
                         {
                             System.Runtime.InteropServices.Marshal.ReleaseComObject(czkfbjFeature);
@@ -500,20 +699,88 @@ namespace ForestResourcePlugin
                     }
                 }
 
+                System.Diagnostics.Debug.WriteLine($"空间查询完成，找到{intersectCount}个相交要素，总交集面积: {totalIntersectionArea:F2} 平方米");
+
+                // 如果进行了投影变换，释放临时几何对象
+                if (queryGeometry != geometry)
+                {
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(queryGeometry);
+                }
+
                 return totalIntersectionArea;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"计算交集面积时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"错误堆栈: {ex.StackTrace}");
                 return 0;
             }
             finally
             {
-                // 释放游标对象  
+                // 释放游标和过滤器对象
                 if (czkfbjCursor != null)
                 {
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(czkfbjCursor);
                 }
+                if (spatialFilter != null)
+                {
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(spatialFilter);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 改进的CZKFBJ要素类获取方法，增强错误诊断
+        /// </summary>
+        /// <param name="workspace">工作空间</param>
+        /// <param name="countyName">县名</param>
+        /// <returns>CZKFBJ要素类或null</returns>
+        private IFeatureClass GetCZKFBJFeatureClass(IWorkspace workspace, string countyName)
+        {
+            try
+            {
+                // 首先尝试标准名称
+                string[] possibleNames = { "CZKFBJ", "czkfbj", "城镇开发边界", "CZKFBJ_POLYGON" };
+
+                IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspace;
+
+                foreach (string name in possibleNames)
+                {
+                    try
+                    {
+                        IFeatureClass featureClass = featureWorkspace.OpenFeatureClass(name);
+                        if (featureClass != null)
+                        {
+                            int featureCount = featureClass.FeatureCount(null);
+                            System.Diagnostics.Debug.WriteLine($"成功获取{countyName}的{name}要素类，包含{featureCount}个要素");
+                            return featureClass;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"尝试打开{name}失败: {ex.Message}");
+                    }
+                }
+
+                // 如果标准名称都失败，列出所有要素类进行诊断
+                System.Diagnostics.Debug.WriteLine($"开始列出{countyName}数据库中的所有要素类:");
+                IEnumDataset enumDataset = workspace.get_Datasets(esriDatasetType.esriDTFeatureClass);
+                enumDataset.Reset();
+                IDataset dataset;
+                while ((dataset = enumDataset.Next()) != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"  发现要素类: {dataset.Name}");
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(dataset);
+                }
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(enumDataset);
+
+                System.Diagnostics.Debug.WriteLine($"警告: 在{countyName}数据库中未找到CZKFBJ相关要素类");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"获取{countyName}的CZKFBJ要素类时发生严重错误: {ex.Message}");
+                return null;
             }
         }
 
@@ -620,7 +887,7 @@ namespace ForestResourcePlugin
 
                     case "CZKFBJMJ":
                         // 这个字段在ConvertFeatures方法中通过特殊计算处理
-                        return null; // 默认值，实际值在主处理循环中设置
+                        return 1; // 默认值，实际值在主处理循环中设置
 
                     default:
                         // 普通字段映射

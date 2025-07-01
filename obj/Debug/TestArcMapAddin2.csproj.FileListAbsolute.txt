@@ -90,3 +90,4 @@ D:\桌面\LDY_Proj\obj\Debug\TestArcMapAddin2.dll
 D:\桌面\LDY_Proj\obj\Debug\TestArcMapAddin2.pdb
 D:\桌面\LDY_Proj\obj\Debug\TestArcMapAddin2.csprojAssemblyReference.cache
 D:\桌面\LDY_Proj\bin\Debug\TestArcMapAddin2.esriAddIn
+D:\桌面\LDY_Proj\obj\Debug\TestArcMapAddin2.csproj.AssemblyReference.cache
