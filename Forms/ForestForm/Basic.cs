@@ -1631,7 +1631,7 @@ namespace ForestResourcePlugin
 
                 // 执行数据库导出操作
                 // 使用ShapefileExporter将筛选后的林草现状要素写入到对应县的数据库LCXZGX表中
-                exporter.ExportToDatabase(
+                exporter.ExportToShapefile(
                     filteredFeatures,          // 已筛选的符合条件的要素列表（国有林地和集体林地）
                     lcxzgxFeatureClass,        // 源林草现状要素类，用于获取字段定义和要素数据
                     countyInfo.CountyName,     // 当前处理的县名，用于确定目标数据库路径
@@ -2926,55 +2926,6 @@ namespace ForestResourcePlugin
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"获取县名时出错: {ex.Message}");
-            }
-
-            return countyNames;
-        }
-
-        /// <summary>
-        /// 直接从文件夹结构中提取县名（备用方法）
-        /// </summary>
-        private HashSet<string> ExtractCountyNamesFromFolderStructure(string rootPath)
-        {
-            var countyNames = new HashSet<string>();
-
-            try
-            {
-                if (string.IsNullOrEmpty(rootPath) || !Directory.Exists(rootPath))
-                {
-                    System.Diagnostics.Debug.WriteLine($"根目录不存在或为空: {rootPath}");
-                    return countyNames;
-                }
-
-                // 获取根目录下的第一级子目录
-                var firstLevelDirs = Directory.GetDirectories(rootPath);
-                System.Diagnostics.Debug.WriteLine($"第一级目录数量: {firstLevelDirs.Length}");
-
-                foreach (var firstLevelDir in firstLevelDirs)
-                {
-                    // 获取每个第一级目录下的第二级子目录
-                    if (Directory.Exists(firstLevelDir))
-                    {
-                        var secondLevelDirs = Directory.GetDirectories(firstLevelDir);
-                        System.Diagnostics.Debug.WriteLine($"在 {System.IO.Path.GetFileName(firstLevelDir)} 中找到 {secondLevelDirs.Length} 个第二级目录");
-
-                        foreach (var secondLevelDir in secondLevelDirs)
-                        {
-                            string countyName = System.IO.Path.GetFileName(secondLevelDir);
-                            if (!string.IsNullOrEmpty(countyName))
-                            {
-                                countyNames.Add(countyName);
-                                System.Diagnostics.Debug.WriteLine($"提取县名: {countyName} (路径: {secondLevelDir})");
-                            }
-                        }
-                    }
-                }
-
-                System.Diagnostics.Debug.WriteLine($"从文件夹结构提取到 {countyNames.Count} 个县名");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"提取县名时出错: {ex.Message}");
             }
 
             return countyNames;

@@ -4,12 +4,13 @@ using System.IO;
 using ESRI.ArcGIS.Geodatabase;
 using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.esriSystem;
+using TestArcMapAddin2;
 
 namespace ForestResourcePlugin
 {
     /// <summary>
-    /// 数据库导出工具类 - 将处理结果写入到button1创建的数据库中
-    /// 负责将处理后的林地要素数据导出到县级文件地理数据库的LCXZGX表中
+    /// 数据库导出工具类 - 将处理结果写入到Shapefile中
+    /// 负责将处理后的林地要素数据导出到县级Shapefile文件中
     /// </summary>
     public class ShapefileExporter
     {
@@ -31,20 +32,19 @@ namespace ForestResourcePlugin
         public delegate void ProgressCallback(int percentage, string message);
 
         /// <summary>
-        /// 将处理后的县级数据输出到数据库LCXZGX表
-        /// LCXZGX表是林地管理中的核心要素表，存储图斑的基本属性信息
+        /// 将处理后的县级数据输出到Shapefile
         /// </summary>
         /// <param name="processedFeatures">处理后的要素列表</param>
         /// <param name="sourceFeatureClass">源要素类</param>
         /// <param name="countyName">县名</param>
-        /// <param name="outputGDBPath">输出数据库路径</param>
+        /// <param name="outputPath">输出路径</param>
         /// <param name="fieldMappings">字段映射配置</param>
         /// <param name="progressCallback">进度回调</param>
-        public void ExportToDatabase(
+        public void ExportToShapefile(
             List<IFeature> processedFeatures,
             IFeatureClass sourceFeatureClass,
             string countyName,
-            string outputGDBPath,
+            string outputPath,
             Dictionary<string, string> fieldMappings,
             ProgressCallback progressCallback = null)
         {
@@ -59,80 +59,76 @@ namespace ForestResourcePlugin
                 throw new ArgumentException("县名不能为空");
             }
 
-            if (string.IsNullOrEmpty(outputGDBPath))
+            if (string.IsNullOrEmpty(outputPath))
             {
-                throw new ArgumentException("输出数据库路径不能为空");
+                throw new ArgumentException("输出路径不能为空");
             }
 
-            progressCallback?.Invoke(5, $"正在连接到{countyName}数据库...");
+            progressCallback?.Invoke(5, $"正在创建{countyName}的Shapefile输出目录...");
 
             // COM对象声明 - 需要在finally块中显式释放以避免内存泄漏
-            IWorkspace targetWorkspace = null;
+            IWorkspace shapefileWorkspace = null;
             IFeatureClass lcxzgxFeatureClass = null;
 
             try
             {
-                // 打开县级数据库 - 每个县都有独立的.gdb文件
-                // 数据库路径结构: outputGDBPath\县名\县名.gdb
-                targetWorkspace = OpenCountyDatabase(outputGDBPath, countyName);
-                if (targetWorkspace == null)
+                // 创建县级Shapefile工作空间
+                shapefileWorkspace = CreateCountyShapefileWorkspace(outputPath, countyName);
+                if (shapefileWorkspace == null)
                 {
-                    throw new Exception($"无法打开{countyName}的数据库");
+                    throw new Exception($"无法创建{countyName}的Shapefile工作空间");
                 }
 
-                progressCallback?.Invoke(15, $"正在访问{countyName}的LCXZGX表...");
+                progressCallback?.Invoke(15, $"正在创建{countyName}的LCXZGX Shapefile...");
 
-                // 获取LCXZGX要素类 - 这是标准的林地管理要素表
-                lcxzgxFeatureClass = GetLCXZGXFeatureClass(targetWorkspace);
+                // 获取几何类型和空间参考
+                esriGeometryType geometryType = sourceFeatureClass.ShapeType;
+                ISpatialReference spatialReference = ((IGeoDataset)sourceFeatureClass).SpatialReference;
+
+                // 创建LCXZGX要素类
+                lcxzgxFeatureClass = CreateLCXZGXShapefile(shapefileWorkspace, geometryType, spatialReference);
                 if (lcxzgxFeatureClass == null)
                 {
-                    throw new Exception($"无法找到{countyName}数据库中的LCXZGX表");
+                    throw new Exception($"无法创建{countyName}的LCXZGX Shapefile");
                 }
 
-                progressCallback?.Invoke(25, $"开始向{countyName}的LCXZGX表写入数据...");
+                progressCallback?.Invoke(25, $"开始向{countyName}的LCXZGX Shapefile写入数据...");
 
-                // 执行数据写入操作 - 使用批量插入提高性能
-                WriteFeaturesToDatabase(processedFeatures, sourceFeatureClass, lcxzgxFeatureClass,
+                // 执行数据写入操作
+                WriteFeaturesToShapefile(processedFeatures, sourceFeatureClass, lcxzgxFeatureClass,
                     fieldMappings, countyName, progressCallback);
 
-                progressCallback?.Invoke(80, $"成功将 {processedFeatures.Count} 个要素写入到{countyName}的LCXZGX表");
+                progressCallback?.Invoke(80, $"成功将 {processedFeatures.Count} 个要素写入到{countyName}的LCXZGX Shapefile");
 
-                System.Diagnostics.Debug.WriteLine($"县{countyName}的数据已成功写入数据库LCXZGX表");
+                System.Diagnostics.Debug.WriteLine($"县{countyName}的数据已成功写入Shapefile");
 
-                // 🔥 新增：数据插入完成后立即执行转换
-                progressCallback?.Invoke(85, $"开始转换{countyName}的LCXZGX数据到SLZYZC表...");
-                PerformAutoConversion(countyName, outputGDBPath, progressCallback);
+                // 执行转换操作
+                progressCallback?.Invoke(85, $"开始转换{countyName}的LCXZGX数据到SLZYZC Shapefile...");
+                PerformAutoConversion(countyName, outputPath, progressCallback);
 
                 progressCallback?.Invoke(100, $"{countyName}的数据导入和转换已全部完成");
             }
             finally
             {
                 // 重要：释放ArcGIS COM对象，防止内存泄漏
-                // ArcGIS COM对象需要显式释放，否则会导致内存占用持续增长
                 if (lcxzgxFeatureClass != null)
                 {
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(lcxzgxFeatureClass);
                 }
-                if (targetWorkspace != null)
+                if (shapefileWorkspace != null)
                 {
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(targetWorkspace);
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(shapefileWorkspace);
                 }
             }
         }
 
         /// <summary>
-        /// 执行自动转换 - 在LCXZGX数据插入完成后自动转换为SLZYZC
-        /// </summary>
-        /// <param name="countyName">县名</param>
-        /// <param name="outputGDBPath">数据库基础路径</param>
-        /// <param name="progressCallback">进度回调</param>
-        /// <summary>
         /// 执行自动转换 - 在LCXZGX数据插入完成后自动转换为SLZYZC和SLZYZC_DLTB
         /// </summary>
         /// <param name="countyName">县名</param>
-        /// <param name="outputGDBPath">数据库基础路径</param>
+        /// <param name="outputPath">输出路径</param>
         /// <param name="progressCallback">进度回调</param>
-        private void PerformAutoConversion(string countyName, string outputGDBPath, ProgressCallback progressCallback)
+        private void PerformAutoConversion(string countyName, string outputPath, ProgressCallback progressCallback)
         {
             try
             {
@@ -144,7 +140,7 @@ namespace ForestResourcePlugin
                 // 执行第一次转换 - LCXZGX转换为SLZYZC
                 bool conversionSuccess = converter.ConvertLCXZGXToSLZYZC(
                     countyName,
-                    outputGDBPath,
+                    outputPath,
                     null, // 使用默认字段映射
                     (subPercentage, subMessage) =>
                     {
@@ -164,7 +160,7 @@ namespace ForestResourcePlugin
 
                     bool conversion3Success = converter3.ConvertSLZYZCToDLTB(
                         countyName,
-                        outputGDBPath,
+                        outputPath,
                         null, // 使用默认字段映射
                         (subPercentage, subMessage) =>
                         {
@@ -202,18 +198,17 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 批量输出多个县的数据到各自的数据库
-        /// 提供批处理功能，提高多县数据处理的效率
+        /// 批量输出多个县的数据到各自的Shapefile
         /// </summary>
         /// <param name="countyFeaturesMap">县级要素映射（县名 -> 要素列表）</param>
         /// <param name="sourceFeatureClass">源要素类</param>
-        /// <param name="outputGDBPath">输出数据库基础路径</param>
+        /// <param name="outputPath">输出路径</param>
         /// <param name="fieldMappings">字段映射配置</param>
         /// <param name="progressCallback">进度回调</param>
-        public void BatchExportToDatabase(
+        public void BatchExportToShapefile(
             Dictionary<string, List<IFeature>> countyFeaturesMap,
             IFeatureClass sourceFeatureClass,
-            string outputGDBPath,
+            string outputPath,
             Dictionary<string, string> fieldMappings,
             ProgressCallback progressCallback = null)
         {
@@ -239,9 +234,8 @@ namespace ForestResourcePlugin
                     int overallProgress = (processedCounties * 100) / totalCounties;
                     progressCallback?.Invoke(overallProgress, $"正在处理县: {countyName} ({processedCounties + 1}/{totalCounties})");
 
-                    // 为每个县输出数据到数据库（包含自动转换）
-                    // 注意：不传递子进度回调以避免进度报告混乱
-                    ExportToDatabase(countyFeatures, sourceFeatureClass, countyName, outputGDBPath,
+                    // 为每个县输出数据到Shapefile
+                    ExportToShapefile(countyFeatures, sourceFeatureClass, countyName, outputPath,
                         fieldMappings, null);
 
                     processedCounties++;
@@ -251,7 +245,6 @@ namespace ForestResourcePlugin
                 catch (Exception ex)
                 {
                     // 错误处理策略：记录错误但继续处理其他县
-                    // 这样可以确保一个县的错误不会影响其他县的数据处理
                     System.Diagnostics.Debug.WriteLine($"输出县{countyName}数据时出错: {ex.Message}");
                     processedCounties++;
                 }
@@ -261,77 +254,127 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 打开县级数据库
-        /// 使用ArcGIS File Geodatabase工厂创建数据库连接
+        /// 创建县级Shapefile工作空间
         /// </summary>
-        /// <param name="outputGDBPath">输出数据库基础路径</param>
+        /// <param name="outputPath">输出路径</param>
         /// <param name="countyName">县名</param>
-        /// <returns>数据库工作空间接口</returns>
-        private IWorkspace OpenCountyDatabase(string outputGDBPath, string countyName)
+        /// <returns>Shapefile工作空间接口</returns>
+        private IWorkspace CreateCountyShapefileWorkspace(string outputPath, string countyName)
         {
             try
             {
-                // 构建县级数据库路径 - 标准路径结构：基础路径\县名\县名.gdb
-                string countyGDBPath = System.IO.Path.Combine(outputGDBPath, countyName, countyName + ".gdb");
+                // 构建县级Shapefile目录路径
+                string countyShapefilePath = System.IO.Path.Combine(outputPath, countyName);
 
-                // 验证目录结构的存在性
-                if (!Directory.Exists(System.IO.Path.GetDirectoryName(countyGDBPath)))
+                // 确保目录存在
+                if (!Directory.Exists(countyShapefilePath))
                 {
-                    throw new DirectoryNotFoundException($"县级目录不存在: {System.IO.Path.GetDirectoryName(countyGDBPath)}");
+                    Directory.CreateDirectory(countyShapefilePath);
+                    System.Diagnostics.Debug.WriteLine($"创建县级目录: {countyShapefilePath}");
                 }
 
-                if (!Directory.Exists(countyGDBPath))
-                {
-                    throw new DirectoryNotFoundException($"县级数据库不存在: {countyGDBPath}");
-                }
-
-                // 使用ProgID创建File Geodatabase工厂
-                // 这是ArcGIS COM对象的标准创建方式
-                Type factoryType = Type.GetTypeFromProgID("esriDataSourcesGDB.FileGDBWorkspaceFactory");
+                // 使用ProgID创建Shapefile工作空间工厂
+                Type factoryType = Type.GetTypeFromProgID("esriDataSourcesFile.ShapefileWorkspaceFactory");
                 IWorkspaceFactory workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
 
-                // 打开工作空间 - 参数0表示以读写模式打开
-                IWorkspace workspace = workspaceFactory.OpenFromFile(countyGDBPath, 0);
+                // 打开工作空间
+                IWorkspace workspace = workspaceFactory.OpenFromFile(countyShapefilePath, 0);
 
-                System.Diagnostics.Debug.WriteLine($"成功打开{countyName}的数据库: {countyGDBPath}");
+                System.Diagnostics.Debug.WriteLine($"成功创建{countyName}的Shapefile工作空间: {countyShapefilePath}");
                 return workspace;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"打开{countyName}数据库时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"创建{countyName}Shapefile工作空间时出错: {ex.Message}");
                 throw;
             }
         }
 
         /// <summary>
-        /// 获取LCXZGX要素类
-        /// LCXZGX是"林地持续行政管理"的简称，是林业管理中的标准要素表
+        /// 创建LCXZGX Shapefile要素类
         /// </summary>
-        /// <param name="workspace">数据库工作空间</param>
+        /// <param name="workspace">Shapefile工作空间</param>
+        /// <param name="geometryType">几何类型</param>
+        /// <param name="spatialReference">空间参考</param>
         /// <returns>LCXZGX要素类接口</returns>
-        private IFeatureClass GetLCXZGXFeatureClass(IWorkspace workspace)
+        private IFeatureClass CreateLCXZGXShapefile(IWorkspace workspace, esriGeometryType geometryType, ISpatialReference spatialReference)
         {
             try
             {
-                // 将工作空间转换为要素工作空间以访问要素类
                 IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspace;
 
-                // 打开LCXZGX要素类 - 这是预定义的表名
-                IFeatureClass lcxzgxFeatureClass = featureWorkspace.OpenFeatureClass("LCXZGX");
+                // 检查要素类是否已存在
+                string featureClassName = "LCXZGX";
+                try
+                {
+                    IFeatureClass existingFeatureClass = featureWorkspace.OpenFeatureClass(featureClassName);
+                    if (existingFeatureClass != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"LCXZGX Shapefile已存在，将直接使用");
+                        return existingFeatureClass;
+                    }
+                }
+                catch
+                {
+                    // 要素类不存在，继续创建
+                }
 
-                System.Diagnostics.Debug.WriteLine("成功获取LCXZGX要素类");
-                return lcxzgxFeatureClass;
+                // 创建字段集合
+                IFields fields = new FieldsClass();
+                IFieldsEdit fieldsEdit = (IFieldsEdit)fields;
+
+                // 添加OID字段
+                IField oidField = new FieldClass();
+                IFieldEdit oidFieldEdit = (IFieldEdit)oidField;
+                oidFieldEdit.Name_2 = "FID";
+                oidFieldEdit.Type_2 = esriFieldType.esriFieldTypeOID;
+                fieldsEdit.AddField(oidField);
+
+                // 添加几何字段
+                IGeometryDef geometryDef = new GeometryDefClass();
+                IGeometryDefEdit geometryDefEdit = (IGeometryDefEdit)geometryDef;
+                geometryDefEdit.GeometryType_2 = geometryType;
+                geometryDefEdit.SpatialReference_2 = spatialReference; // 直接使用传入的空间参考
+
+                IField geometryField = new FieldClass();
+                IFieldEdit geometryFieldEdit = (IFieldEdit)geometryField;
+                geometryFieldEdit.Name_2 = "Shape";
+                geometryFieldEdit.Type_2 = esriFieldType.esriFieldTypeGeometry;
+                geometryFieldEdit.GeometryDef_2 = geometryDef;
+                fieldsEdit.AddField(geometryField);
+
+                // 使用FeatureClassFieldsTemplate添加业务字段
+                FeatureClassFieldsTemplate.GenerateLcxzgxFields(fieldsEdit);
+
+                // 创建要素类
+                IFeatureClass featureClass = featureWorkspace.CreateFeatureClass(
+                    featureClassName,
+                    fields,
+                    null,
+                    null,
+                    esriFeatureType.esriFTSimple,
+                    "Shape",
+                    "");
+
+                System.Diagnostics.Debug.WriteLine($"成功创建LCXZGX Shapefile要素类");
+                return featureClass;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"获取LCXZGX要素类时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"创建LCXZGX Shapefile要素类时出错: {ex.Message}");
                 throw;
             }
         }
 
         /// <summary>
-        /// 将要素写入数据库
-        /// 使用批量插入模式提高性能，并提供详细的进度报告
+        /// 创建默认空间参考系统
+        /// </summary>
+        /// <returns>空间参考系统</returns>
+       
+        
+
+        /// <summary>
+        /// 将要素写入Shapefile
         /// </summary>
         /// <param name="sourceFeatures">源要素列表</param>
         /// <param name="sourceFeatureClass">源要素类</param>
@@ -339,7 +382,7 @@ namespace ForestResourcePlugin
         /// <param name="fieldMappings">字段映射配置</param>
         /// <param name="countyName">县名</param>
         /// <param name="progressCallback">进度回调</param>
-        private void WriteFeaturesToDatabase(
+        private void WriteFeaturesToShapefile(
             List<IFeature> sourceFeatures,
             IFeatureClass sourceFeatureClass,
             IFeatureClass targetFeatureClass,
@@ -348,7 +391,6 @@ namespace ForestResourcePlugin
             ProgressCallback progressCallback)
         {
             // 创建要素缓冲区和插入游标
-            // 使用批量插入模式(true参数)提高插入性能
             IFeatureBuffer featureBuffer = targetFeatureClass.CreateFeatureBuffer();
             IFeatureCursor insertCursor = targetFeatureClass.Insert(true);
 
@@ -360,21 +402,21 @@ namespace ForestResourcePlugin
                 int successCount = 0;
                 int errorCount = 0;
 
-                System.Diagnostics.Debug.WriteLine($"开始向{countyName}的LCXZGX表插入{totalFeatures}个要素");
+                System.Diagnostics.Debug.WriteLine($"开始向{countyName}的LCXZGX Shapefile插入{totalFeatures}个要素");
 
                 // 逐个处理要素
                 foreach (IFeature sourceFeature in sourceFeatures)
                 {
                     try
                     {
-                        // 复制几何对象 - 使用ShapeCopy创建几何的副本
+                        // 复制几何对象
                         if (sourceFeature.Shape != null)
                         {
                             featureBuffer.Shape = sourceFeature.ShapeCopy;
                         }
 
                         // 复制属性值并执行字段映射转换
-                        CopyFeatureAttributesForDatabase(sourceFeature, sourceFeatureClass, featureBuffer,
+                        CopyFeatureAttributesForShapefile(sourceFeature, sourceFeatureClass, featureBuffer,
                             targetFeatureClass, fieldMappings, countyName);
 
                         // 执行要素插入操作
@@ -383,26 +425,22 @@ namespace ForestResourcePlugin
 
                         processedCount++;
 
-                        // 定期更新进度 - 每10个要素或最后一个要素时报告进度
-                        // 进度范围：25%-80%，为转换操作保留15%
+                        // 定期更新进度
                         if (processedCount % 10 == 0 || processedCount == totalFeatures)
                         {
                             int percentage = 25 + (int)((processedCount / (double)totalFeatures) * 55);
                             progressCallback?.Invoke(percentage,
-                                $"正在写入{countyName}的LCXZGX表... ({processedCount}/{totalFeatures})");
+                                $"正在写入{countyName}的LCXZGX Shapefile... ({processedCount}/{totalFeatures})");
                         }
                     }
                     catch (Exception ex)
                     {
                         errorCount++;
                         System.Diagnostics.Debug.WriteLine($"插入{countyName}要素时出错: {ex.Message}");
-                        // 错误处理：记录错误但继续处理下一个要素
-                        // 这样可以最大化数据的成功写入率
                     }
                 }
 
-                // 提交所有插入操作到数据库
-                // Flush确保所有缓存的操作都被写入磁盘
+                // 提交所有插入操作
                 insertCursor.Flush();
 
                 System.Diagnostics.Debug.WriteLine($"{countyName}数据写入完成: 成功{successCount}个, 失败{errorCount}个");
@@ -410,7 +448,6 @@ namespace ForestResourcePlugin
             finally
             {
                 // 重要：释放ArcGIS COM对象
-                // 游标和缓冲区都是COM对象，必须显式释放
                 if (insertCursor != null)
                 {
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(insertCursor);
@@ -423,8 +460,7 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 复制要素属性并进行字段映射（数据库版本）
-        /// 处理源要素类到目标数据库表的字段映射和数据转换
+        /// 复制要素属性并进行字段映射（Shapefile版本）
         /// </summary>
         /// <param name="sourceFeature">源要素</param>
         /// <param name="sourceFeatureClass">源要素类</param>
@@ -432,7 +468,7 @@ namespace ForestResourcePlugin
         /// <param name="targetFeatureClass">目标要素类</param>
         /// <param name="fieldMappings">字段映射配置</param>
         /// <param name="countyName">县名</param>
-        private void CopyFeatureAttributesForDatabase(
+        private void CopyFeatureAttributesForShapefile(
             IFeature sourceFeature,
             IFeatureClass sourceFeatureClass,
             IFeatureBuffer targetFeatureBuffer,
@@ -443,14 +479,14 @@ namespace ForestResourcePlugin
             // 如果没有提供自定义映射，使用默认的字段映射配置
             if (fieldMappings == null || fieldMappings.Count == 0)
             {
-                fieldMappings = GetDefaultDatabaseFieldMappings();
+                fieldMappings = GetDefaultShapefileFieldMappings();
             }
 
             // 遍历所有字段映射进行数据复制
             foreach (var mapping in fieldMappings)
             {
-                string targetFieldName = mapping.Key;    // 目标表字段名
-                string sourceFieldName = mapping.Value;  // 源表字段名
+                string targetFieldName = mapping.Key;    // 目标字段名
+                string sourceFieldName = mapping.Value;  // 源字段名
 
                 try
                 {
@@ -463,8 +499,8 @@ namespace ForestResourcePlugin
                     {
                         object sourceValue = sourceFeature.get_Value(sourceFieldIndex);
 
-                        // 执行特殊的字段值转换以符合数据库要求
-                        object targetValue = ConvertFieldValueForDatabase(sourceValue, targetFieldName,
+                        // 执行特殊的字段值转换以符合Shapefile要求
+                        object targetValue = ConvertFieldValueForShapefile(sourceValue, targetFieldName,
                             sourceFieldName, countyName);
 
                         targetFeatureBuffer.set_Value(targetFieldIndex, targetValue);
@@ -473,105 +509,154 @@ namespace ForestResourcePlugin
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"复制{countyName}字段{targetFieldName}时出错: {ex.Message}");
-                    // 字段复制错误不影响其他字段的处理
                 }
             }
         }
 
         /// <summary>
-        /// 获取默认数据库字段映射
-        /// 定义了源数据到LCXZGX表的标准字段映射关系
-        /// 这些字段是林地管理中的标准字段
+        /// 获取默认Shapefile字段映射
         /// </summary>
         /// <returns>字段映射字典</returns>
-        private Dictionary<string, string> GetDefaultDatabaseFieldMappings()
+        private Dictionary<string, string> GetDefaultShapefileFieldMappings()
         {
             return new Dictionary<string, string>
             {
-                { "BSM", "BSM" },           // 标识码 - 唯一标识符
-                { "YSDM", "YSDM" },         // 要素代码 - 要素类型编码
-                { "TBYBH", "TBYBH" },       // 图斑预编号 - 临时编号
-                { "TBBH", "TBBH" },         // 图斑编号 - 正式编号
-                { "ZLDWDM", "ZLDWDM" },     // 坐落单位代码 - 行政区划代码
-                { "ZLDWMC", "ZLDWMC" },     // 坐落单位名称 - 行政区划名称
-                { "DLBM", "DLBM" },         // 地类编码 - 土地利用类型编码
-                { "DLMC", "DLMC" },         // 地类名称 - 土地利用类型名称
-                { "QSXZ", "QSXZ" },         // 权属性质 - 土地所有权性质
-                { "QSDWDM", "QSDWDM" },     // 权属单位代码 - 权属单位编码
-                { "QSDWMC", "QSDWMC" },     // 权属单位名称 - 权属单位名称
-                { "TBMJ", "TBMJ" },         // 图斑面积 - 以平方米为单位
-                { "KCDLBM", "KCDLBM" },     // 科次地类编码 - 详细分类编码
-                { "KCDLMC", "KCDLMC" },     // 科次地类名称 - 详细分类名称
-                { "KCXS", "KCXS" },         // 科次小数 - 科次系数
-                { "TBDH", "TBDH" },         // 图斑代号 - 图斑标识代号
-                { "BZ", "BZ" }              // 备注 - 附加说明信息
+                { "bsm", "BSM" },           // 标识码
+                { "ysdm", "YSDM" },         // 要素代码
+                { "tbybh", "TBYBH" },       // 图斑预编号
+                { "tbbh", "TBBH" },         // 图斑编号
+                { "dlbm", "DLBM" },         // 地类编码
+                { "dlmc", "DLMC" },         // 地类名称
+                { "qsxz", "QSXZ" },         // 权属性质
+                { "qsdwdm", "QSDWDM" },     // 权属单位代码
+                { "qsdwmc", "QSDWMC" },     // 权属单位名称
+                { "zldwdm", "ZLDWDM" },     // 坐落单位代码
+                { "zldwmc", "ZLDWMC" },     // 坐落单位名称
+                { "tbmj", "TBMJ" },         // 图斑面积
+                { "kcdlbm", "KCDLBM" },     // 扣除地类编码
+                { "kcxs", "KCXS" },         // 扣除地类系数
+                { "kcmj", "KCMJ" },         // 扣除地类面积
+                { "tbdlmj", "TBDLMJ" },     // 图斑地类面积
+                { "bz", "BZ" }              // 备注
             };
         }
 
         /// <summary>
-        /// 转换字段值以适配数据库
-        /// 根据LCXZGX表的业务规则和数据要求进行字段值转换
+        /// 转换字段值以适配Shapefile
         /// </summary>
         /// <param name="sourceValue">源字段值</param>
         /// <param name="targetFieldName">目标字段名</param>
         /// <param name="sourceFieldName">源字段名</param>
         /// <param name="countyName">县名</param>
         /// <returns>转换后的字段值</returns>
-        private object ConvertFieldValueForDatabase(object sourceValue, string targetFieldName,
-            string sourceFieldName, string countyName)
+
+        private object ConvertFieldValueForShapefile(object sourceValue, string targetFieldName,
+    string sourceFieldName, string countyName)
         {
             // 处理空值情况
             if (sourceValue == null || sourceValue == DBNull.Value)
             {
-                return null;
+                return GetDefaultValueForField(targetFieldName);
             }
 
             try
             {
-                // 根据LCXZGX表的字段要求进行特殊转换
-                // 这些转换规则基于林地管理的业务需求
-                switch (targetFieldName.ToUpper())
+                // 直接根据字段名进行特殊处理，不依赖 ShapefileFieldTemplate
+                switch (targetFieldName.ToLower())
                 {
-                    case "QSXZ":  // 权属性质转换 - 将数字编码转换为中文描述
+                    case "qsxz":  // 权属性质转换
                         return ConvertPropertyRights(sourceValue);
 
-                    case "DLMC":  // 地类名称转换 - 根据地类编码确定名称
+                    case "dlmc":  // 地类名称转换
                         return ConvertLandTypeName(sourceValue);
 
-                    case "TBMJ":  // 图斑面积处理 - 确保数值类型正确
+                    case "tbmj":  // 图斑面积处理
+                    case "kcmj":  // 扣除地类面积
+                    case "tbdlmj": // 图斑地类面积
                         return ConvertAreaValue(sourceValue);
 
-                    case "ZLDWMC": // 坐落单位名称 - 默认使用县名
+                    case "kcxs":  // 扣除地类系数 - 浮点型
+                        if (float.TryParse(sourceValue.ToString(), out float floatValue))
+                        {
+                            return floatValue;
+                        }
+                        return 0.0f;
+
+                    case "zldwmc": // 坐落单位名称
                         return string.IsNullOrEmpty(sourceValue?.ToString()) ? countyName : sourceValue.ToString();
 
-                    case "QSDWMC": // 权属单位名称 - 默认使用县政府
+                    case "qsdwmc": // 权属单位名称
                         return ConvertPropertyOwner(sourceValue, countyName);
 
+                    // 字符串类型字段 - 确保长度不超过限制
+                    case "bsm":
+                        return TruncateString(sourceValue?.ToString(), 18);
+                    case "ysdm":
+                        return TruncateString(sourceValue?.ToString(), 10);
+                    case "tbybh":
+                    case "tbbh":
+                        return TruncateString(sourceValue?.ToString(), 8);
+                    case "dlbm":
+                    case "kcdlbm":
+                        return TruncateString(sourceValue?.ToString(), 5);
+                    case "qsdwdm":
+                    case "zldwdm":
+                        return TruncateString(sourceValue?.ToString(), 19);
+                    case "bz":
+                        return TruncateString(sourceValue?.ToString(), 254);
+
                     default:
-                        return sourceValue; // 其他字段保持原值
+                        return sourceValue;
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"转换{countyName}字段{targetFieldName}值时出错: {ex.Message}");
-                return sourceValue; // 转换失败时返回原值，确保数据不丢失
+                return GetDefaultValueForField(targetFieldName);
+            }
+        }
+        /// <summary>
+        /// 截断字符串以符合Shapefile字段长度限制
+        /// </summary>
+        /// <param name="value">原始字符串值</param>
+        /// <param name="maxLength">最大长度</param>
+        /// <returns>截断后的字符串</returns>
+        private string TruncateString(string value, int maxLength)
+        {
+            if (string.IsNullOrEmpty(value))
+                return "";
+
+            return value.Length > maxLength ? value.Substring(0, maxLength) : value;
+        }
+        /// <summary>
+        /// 获取字段的默认值
+        /// </summary>
+        /// <param name="fieldName">字段名</param>
+        /// <returns>默认值</returns>
+        private object GetDefaultValueForField(string fieldName)
+        {
+            // 根据字段名返回合适的默认值
+            switch (fieldName.ToLower())
+            {
+                case "tbmj":
+                case "kcmj":
+                case "tbdlmj":
+                    return 0.0; // 面积字段返回 double 类型默认值
+                case "kcxs":
+                    return 0.0f; // 系数字段返回 float 类型默认值
+                default:
+                    return ""; // 其他字段返回空字符串
             }
         }
 
-        /// <summary>
-        /// 转换权属性质
-        /// 将数字编码转换为标准的中文权属描述
-        /// 支持多种编码体系的兼容性
-        /// </summary>
-        /// <param name="value">权属性质编码</param>
-        /// <returns>权属性质中文描述</returns>
+        // 保持原有的转换方法不变
         private string ConvertPropertyRights(object value)
         {
             string strValue = value?.ToString() ?? "";
             switch (strValue)
             {
-                case "1":   // 第一套编码体系
-                case "20":  // 第二套编码体系
+                case "1":
+                case "20":
                     return "国有";
                 case "2":
                 case "30":
@@ -580,221 +665,53 @@ namespace ForestResourcePlugin
                 case "40":
                     return "其他";
                 default:
-                    return strValue; // 如果是已经是中文或其他格式，保持不变
+                    return strValue;
             }
         }
 
-        /// <summary>
-        /// 转换地类名称
-        /// 根据国家土地分类标准进行地类名称转换
-        /// </summary>
-        /// <param name="value">地类编码或名称</param>
-        /// <returns>标准地类名称</returns>
         private string ConvertLandTypeName(object value)
         {
             string strValue = value?.ToString() ?? "";
 
-            // 根据国家土地分类标准GB/T 21010-2017进行转换
             if (strValue.StartsWith("03"))
             {
-                return "林地"; // 03开头为林地类
+                return "林地";
             }
             else if (strValue.StartsWith("04"))
             {
-                return "草地"; // 04开头为草地类
+                return "草地";
             }
             else if (strValue.StartsWith("11"))
             {
-                return "湿地"; // 11开头为湿地类
+                return "湿地";
             }
-            return strValue; // 其他情况保持原值
+            return strValue;
         }
 
-        /// <summary>
-        /// 转换面积值
-        /// 确保面积值为正确的数值类型，支持多种输入格式
-        /// </summary>
-        /// <param name="value">面积值</param>
-        /// <returns>标准化的面积数值</returns>
         private double? ConvertAreaValue(object value)
         {
             if (value == null || value == DBNull.Value)
                 return null;
 
-            // 处理已经是数值类型的情况
             if (value is double || value is float || value is decimal)
             {
                 return Convert.ToDouble(value);
             }
-            // 尝试从字符串解析数值
             else if (double.TryParse(value.ToString(), out double areaValue))
             {
                 return areaValue;
             }
-            return null; // 无法转换时返回null
+            return null;
         }
 
-        /// <summary>
-        /// 转换权属单位名称
-        /// 为空值提供默认的权属单位名称
-        /// </summary>
-        /// <param name="value">原权属单位名称</param>
-        /// <param name="countyName">县名</param>
-        /// <returns>标准化的权属单位名称</returns>
         private string ConvertPropertyOwner(object value, string countyName)
         {
             string strValue = value?.ToString() ?? "";
             if (string.IsNullOrEmpty(strValue))
             {
-                // 默认权属单位设置为县人民政府
                 return $"{countyName}人民政府";
             }
             return strValue;
-        }
-
-        /// <summary>
-        /// 创建CGCS2000 3度带37带投影坐标系
-        /// </summary>
-        /// <returns>CGCS2000 3度带37带投影坐标系对象</returns>
-        private ISpatialReference CreateCGCS2000ProjectedSpatialReference()
-        {
-            try
-            {
-                // 方法1：尝试使用自定义EPSG代码创建CGCS2000 3度带37带投影坐标系
-                try
-                {
-                    // 创建空间参考系统环境接口
-                    Type spatialRefEnvType = Type.GetTypeFromProgID("esriGeometry.SpatialReferenceEnvironment");
-                    object spatialRefEnvObj = Activator.CreateInstance(spatialRefEnvType);
-                    ISpatialReferenceFactory spatialRefFactory = spatialRefEnvObj as ISpatialReferenceFactory;
-
-                    if (spatialRefFactory != null)
-                    {
-                        // 尝试使用可能的EPSG代码（CGCS2000 3度带投影坐标系通常以4491+带号的形式）
-                        try
-                        {
-                            // CGCS2000 3度带37带的EPSG代码可能是4528
-                            IProjectedCoordinateSystem projectedCS = spatialRefFactory.CreateProjectedCoordinateSystem(4525);
-                            if (projectedCS != null)
-                            {
-                                System.Diagnostics.Debug.WriteLine("成功使用EPSG 4528创建CGCS2000 3度带37带投影坐标系");
-                                return projectedCS as ISpatialReference;
-                            }
-                        }
-                        catch (Exception ex1)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"使用EPSG 4528创建投影坐标系失败: {ex1.Message}");
-                        }
-                    }
-                }
-                catch (Exception ex1)
-                {
-                    System.Diagnostics.Debug.WriteLine($"使用EPSG代码创建CGCS2000投影坐标系失败: {ex1.Message}");
-                }
-
-                // 方法2：使用WKT字符串创建投影坐标系
-                try
-                {
-                    Type spatialRefEnvType = Type.GetTypeFromProgID("esriGeometry.SpatialReferenceEnvironment");
-                    object spatialRefEnvObj = Activator.CreateInstance(spatialRefEnvType);
-
-                    // 使用反射调用CreateESRISpatialReferenceFromPRJString方法
-                    System.Reflection.MethodInfo createFromPrjMethod = spatialRefEnvType.GetMethod("CreateESRISpatialReferenceFromPRJString");
-                    if (createFromPrjMethod != null)
-                    {
-                        object[] parameters = new object[] { CGCS2000_3_DEGREE_GK_ZONE_37_WKT, null, null };
-                        object result = createFromPrjMethod.Invoke(spatialRefEnvObj, parameters);
-
-                        if (result != null && result is ISpatialReference)
-                        {
-                            System.Diagnostics.Debug.WriteLine("成功使用WKT字符串创建CGCS2000 3度带37带投影坐标系");
-                            return result as ISpatialReference;
-                        }
-                    }
-                }
-                catch (Exception ex2)
-                {
-                    System.Diagnostics.Debug.WriteLine($"使用WKT字符串创建CGCS2000投影坐标系失败: {ex2.Message}");
-                }
-
-                
-
-                // 方法4：备用方案 - 回退到地理坐标系
-                System.Diagnostics.Debug.WriteLine("所有投影坐标系创建方法都失败，回退到CGCS2000地理坐标系");
-                return CreateCGCS2000GeographicSpatialReference();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"创建CGCS2000投影坐标系时出现意外错误: {ex.Message}");
-                return CreateCGCS2000GeographicSpatialReference();
-            }
-        }
-
-        /// <summary>
-        /// 创建CGCS2000地理坐标系（备用方案）
-        /// </summary>
-        /// <returns>CGCS2000地理坐标系对象</returns>
-        private ISpatialReference CreateCGCS2000GeographicSpatialReference()
-        {
-            try
-            {
-                // 方法1：尝试使用EPSG代码4490创建CGCS2000地理坐标系
-                try
-                {
-                    // 创建空间参考系统环境接口
-                    Type spatialRefEnvType = Type.GetTypeFromProgID("esriGeometry.SpatialReferenceEnvironment");
-                    object spatialRefEnvObj = Activator.CreateInstance(spatialRefEnvType);
-                    ISpatialReferenceFactory spatialRefFactory = spatialRefEnvObj as ISpatialReferenceFactory;
-
-                    if (spatialRefFactory != null)
-                    {
-                        // 使用EPSG代码4490创建CGCS2000地理坐标系
-                        IGeographicCoordinateSystem geographicCS = spatialRefFactory.CreateGeographicCoordinateSystem(4490);
-                        if (geographicCS != null)
-                        {
-                            System.Diagnostics.Debug.WriteLine("成功使用EPSG 4490创建CGCS2000地理坐标系");
-                            return geographicCS as ISpatialReference;
-                        }
-                    }
-                }
-                catch (Exception ex1)
-                {
-                    System.Diagnostics.Debug.WriteLine($"使用EPSG 4490创建CGCS2000失败: {ex1.Message}");
-                }
-
-                // 方法2：备用方案 - 尝试从WKT字符串创建
-                try
-                {
-                    Type spatialRefEnvType = Type.GetTypeFromProgID("esriGeometry.SpatialReferenceEnvironment");
-                    object spatialRefEnvObj = Activator.CreateInstance(spatialRefEnvType);
-
-                    // 使用反射调用CreateESRISpatialReferenceFromPRJString方法
-                    System.Reflection.MethodInfo createFromPrjMethod = spatialRefEnvType.GetMethod("CreateESRISpatialReferenceFromPRJString");
-                    if (createFromPrjMethod != null)
-                    {
-                        object[] parameters = new object[] { CGCS2000_WKT, null, null };
-                        object result = createFromPrjMethod.Invoke(spatialRefEnvObj, parameters);
-
-                        if (result != null && result is ISpatialReference)
-                        {
-                            System.Diagnostics.Debug.WriteLine("成功使用WKT字符串创建CGCS2000地理坐标系");
-                            return result as ISpatialReference;
-                        }
-                    }
-                }
-                catch (Exception ex2)
-                {
-                    System.Diagnostics.Debug.WriteLine($"使用WKT字符串创建CGCS2000失败: {ex2.Message}");
-                }
-
-                System.Diagnostics.Debug.WriteLine("所有创建CGCS2000地理坐标系的方法都失败了");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"创建CGCS2000地理坐标系时出现意外错误: {ex.Message}");
-                return null;
-            }
         }
     }
 }

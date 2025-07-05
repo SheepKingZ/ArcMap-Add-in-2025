@@ -39,9 +39,7 @@ namespace TestArcMapAddin2.Forms
 
         private void InitializeFormState()
         {
-            // 根据当前共享状态或默认值初始化标签
-            lblWorkspace.Text = string.IsNullOrEmpty(SharedWorkflowState.WorkspacePath) ? "未选择工作空间" : SharedWorkflowState.WorkspacePath;
-            lblWorkspace.ForeColor = string.IsNullOrEmpty(SharedWorkflowState.WorkspacePath) ? Color.Black : Color.DarkGreen;
+     
 
             // 初始化合并后的数据源路径状态
             if (!string.IsNullOrEmpty(dataSourcePath))
@@ -100,8 +98,6 @@ namespace TestArcMapAddin2.Forms
                     if (dialog.SelectedPath.EndsWith(".gdb", StringComparison.OrdinalIgnoreCase) || System.IO.Directory.Exists(dialog.SelectedPath))
                     {
                         SharedWorkflowState.WorkspacePath = dialog.SelectedPath;
-                        lblWorkspace.Text = SharedWorkflowState.WorkspacePath;
-                        lblWorkspace.ForeColor = Color.DarkGreen;
                         InitializeFormState(); // 重新初始化以反映状态变化
                     }
                     else
@@ -212,17 +208,6 @@ namespace TestArcMapAddin2.Forms
                 return;
             }
 
-            // 可以在这里实现具体的业务逻辑，比如开始处理数据
-            if (chkCreateCountyFolders.Checked)
-            {
-
-                MessageBox.Show($"准备为每个县创建文件夹并生成结果表格。\n" +
-                              $"工作空间：{SharedWorkflowState.WorkspacePath}\n" +
-                              $"数据源文件夹：{dataSourcePath}\n" +
-                              $"输出GDB路径：{outputGDBPath}",
-                              "处理确认", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-
             //为每个县创建数据库及其成果表
             /*  if (!String.IsNullOrEmpty(dataSourcePath))
               {
@@ -253,7 +238,6 @@ namespace TestArcMapAddin2.Forms
         // 更新公共属性，供外部访问选择的路径
         public string DataSourcePath => dataSourcePath;
         public string OutputGDBPath => outputGDBPath;
-        public bool CreateCountyFolders => chkCreateCountyFolders.Checked;
 
         private void BasicDataPreparationForm_Load(object sender, EventArgs e)
         {
@@ -403,6 +387,12 @@ namespace TestArcMapAddin2.Forms
             return ExtractCountyNameFromPath(filePath, rootDir);
         }
 
+        /// <summary>
+        /// 为县创建空的Shapefile文件
+        /// </summary>
+        /// <param name="path">输出路径</param>
+        /// <param name="countryName">县名</param>
+        /// <returns>是否成功</returns>
         private Boolean CreateTable4Country(String path, String countryName)
         {
             if (!String.IsNullOrEmpty(path) && !String.IsNullOrEmpty(countryName))
@@ -411,77 +401,114 @@ namespace TestArcMapAddin2.Forms
                 DirectoryInfo countryFolder = sourceFolder.CreateSubdirectory(countryName);
                 if (countryFolder.Exists)
                 {
-                    Type factoryType = Type.GetTypeFromProgID("esriDataSourcesGDB.FileGDBWorkspaceFactory");
-                    IWorkspaceFactory workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
-
-                    IWorkspaceName workspaceName = workspaceFactory.Create(countryFolder.FullName, countryName + ".gdb", null, 0);
-
-                    // Cast the workspace name object to the IName interface and open the workspace.
-                    ESRI.ArcGIS.esriSystem.IName name = (ESRI.ArcGIS.esriSystem.IName)workspaceName;
-                    IWorkspace workspace = (IWorkspace)name.Open();
-
-                    if (!CreateResultTable("LCXZGX", workspace))
+                    try
                     {
-                        MessageBox.Show("创建现状要素类失败");
+                        // 创建Shapefile工作空间
+                        Type factoryType = Type.GetTypeFromProgID("esriDataSourcesFile.ShapefileWorkspaceFactory");
+                        IWorkspaceFactory workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+                        IWorkspace workspace = workspaceFactory.OpenFromFile(countryFolder.FullName, 0);
+
+                        // 创建三个空的Shapefile
+                        if (!CreateEmptyShapefile("LCXZGX", workspace))
+                        {
+                            MessageBox.Show("创建LCXZGX Shapefile失败");
+                            return false;
+                        }
+                        if (!CreateEmptyShapefile("SLZYZC", workspace))
+                        {
+                            MessageBox.Show("创建SLZYZC Shapefile失败");
+                            return false;
+                        }
+                        if (!CreateEmptyShapefile("SLZYZC_DLTB", workspace))
+                        {
+                            MessageBox.Show("创建SLZYZC_DLTB Shapefile失败");
+                            return false;
+                        }
+
+                        System.Diagnostics.Debug.WriteLine($"成功为{countryName}创建三个空的Shapefile");
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"为{countryName}创建Shapefile时出错: {ex.Message}");
+                        MessageBox.Show($"为{countryName}创建Shapefile时出错: {ex.Message}");
                         return false;
                     }
-                    if (!CreateResultTable("SLZYZC", workspace))
-                    {
-                        MessageBox.Show("创建清查成果要素类失败");
-                        return false;
-                    }
-                    if (!CreateResultTable("SLZYZC_DLTB", workspace))
-                    {
-                        MessageBox.Show("创建清查林地要素类失败");
-                        return false;
-                    }
-                    return true;
                 }
             }
             return false;
         }
 
         //根据成果表名创建表
-        private Boolean CreateResultTable(String TableName, IWorkspace workspace)
+        /// <summary>
+        /// 创建空的Shapefile
+        /// </summary>
+        /// <param name="shapefileName">Shapefile名称</param>
+        /// <param name="workspace">Shapefile工作空间</param>
+        /// <returns>是否成功</returns>
+        private Boolean CreateEmptyShapefile(String shapefileName, IWorkspace workspace)
         {
-            String featureClassName = TableName;
             IFeatureClass featureClass = null;
             IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspace;
 
             try
             {
-                // 检查要素类是否已存在
-                bool featureClassExists = false;
+                // 检查Shapefile是否已存在
+                bool shapefileExists = false;
                 try
                 {
-                    featureClass = featureWorkspace.OpenFeatureClass(featureClassName);
-                    featureClassExists = true;
-                    System.Diagnostics.Debug.WriteLine($"要素类{featureClassName}已存在，将设置CGCS2000坐标系");
-
-                    // 为已存在的要素类设置CGCS2000坐标系
-                    SetCoordinateSystemForExistingFeatureClass(featureClass, featureClassName);
-
+                    featureClass = featureWorkspace.OpenFeatureClass(shapefileName);
+                    shapefileExists = true;
+                    System.Diagnostics.Debug.WriteLine($"Shapefile {shapefileName} 已存在");
                     return true;
                 }
                 catch
                 {
-                    // 要素类不存在，继续创建
-                    featureClassExists = false;
+                    // Shapefile不存在，继续创建
+                    shapefileExists = false;
                 }
 
-                if (!featureClassExists)
+                if (!shapefileExists)
                 {
-                    System.Diagnostics.Debug.WriteLine($"开始创建{featureClassName}要素类并设置CGCS2000坐标系");
+                    System.Diagnostics.Debug.WriteLine($"开始创建{shapefileName} Shapefile");
 
-                    ESRI.ArcGIS.esriSystem.UID CLSID = new ESRI.ArcGIS.esriSystem.UIDClass();
-                    CLSID.Value = "esriGeoDatabase.Feature";
-
-                    IObjectClassDescription objectClassDescription = new FeatureClassDescriptionClass();
-                    IFields fields = objectClassDescription.RequiredFields;
+                    // 创建字段集合
+                    IFields fields = new FieldsClass();
                     IFieldsEdit fieldsEdit = (IFieldsEdit)fields;
 
-                    // 根据表名生成相应的字段
-                    switch (featureClassName)
+                    // 添加OID字段
+                    IField oidField = new FieldClass();
+                    IFieldEdit oidFieldEdit = (IFieldEdit)oidField;
+                    oidFieldEdit.Name_2 = "FID";
+                    oidFieldEdit.Type_2 = esriFieldType.esriFieldTypeOID;
+                    fieldsEdit.AddField(oidField);
+
+                    // 添加几何字段
+                    IGeometryDef geometryDef = new GeometryDefClass();
+                    IGeometryDefEdit geometryDefEdit = (IGeometryDefEdit)geometryDef;
+                    geometryDefEdit.GeometryType_2 = esriGeometryType.esriGeometryPolygon;
+
+                    // 创建并设置CGCS2000空间参考系统
+                    ISpatialReference cgcs2000SpatialRef = CreateCGCS2000SpatialReference();
+                    if (cgcs2000SpatialRef != null)
+                    {
+                        geometryDefEdit.SpatialReference_2 = cgcs2000SpatialRef;
+                        System.Diagnostics.Debug.WriteLine($"为{shapefileName}设置CGCS2000坐标系");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"警告：无法为{shapefileName}设置CGCS2000坐标系，将使用默认坐标系");
+                    }
+
+                    IField geometryField = new FieldClass();
+                    IFieldEdit geometryFieldEdit = (IFieldEdit)geometryField;
+                    geometryFieldEdit.Name_2 = "Shape";
+                    geometryFieldEdit.Type_2 = esriFieldType.esriFieldTypeGeometry;
+                    geometryFieldEdit.GeometryDef_2 = geometryDef;
+                    fieldsEdit.AddField(geometryField);
+
+                    // 根据Shapefile名称添加相应的业务字段
+                    switch (shapefileName)
                     {
                         case "LCXZGX":
                             FeatureClassFieldsTemplate.GenerateLcxzgxFields(fieldsEdit);
@@ -496,65 +523,31 @@ namespace TestArcMapAddin2.Forms
 
                     fields = (IFields)fieldsEdit;
 
-                    // 查找几何字段并设置CGCS2000坐标系
-                    String strShapeField = "";
-                    for (int j = 0; j < fields.FieldCount; j++)
-                    {
-                        IField field = fields.get_Field(j);
-                        if (field.Type == esriFieldType.esriFieldTypeGeometry)
-                        {
-                            strShapeField = field.Name;
-
-                            // 获取几何字段定义
-                            IGeometryDef geometryDef = field.GeometryDef;
-                            IGeometryDefEdit geometryDefEdit = (IGeometryDefEdit)geometryDef;
-
-                            // 创建并设置CGCS2000空间参考系统
-                            ISpatialReference cgcs2000SpatialRef = CreateCGCS2000SpatialReference();
-                            if (cgcs2000SpatialRef != null)
-                            {
-                                geometryDefEdit.SpatialReference_2 = cgcs2000SpatialRef;
-                                System.Diagnostics.Debug.WriteLine($"为{featureClassName}的几何字段{strShapeField}设置CGCS2000坐标系");
-                            }
-                            else
-                            {
-                                System.Diagnostics.Debug.WriteLine($"警告：无法为{featureClassName}设置CGCS2000坐标系，将使用默认坐标系");
-                            }
-                            break;
-                        }
-                    }
-
-                    // Use IFieldChecker to create a validated fields collection.
-                    IFieldChecker fieldChecker = new FieldCheckerClass();
-                    IEnumFieldError enumFieldError = null;
-                    IFields validatedFields = null;
-                    fieldChecker.ValidateWorkspace = (IWorkspace)workspace;
-                    fieldChecker.Validate(fields, out enumFieldError, out validatedFields);
-
-                    if (enumFieldError != null)
-                    {
-                        MessageBox.Show("字段校验失败：" + featureClassName);
-                        return false;
-                    }
-
-                    // 创建要素类
-                    featureClass = featureWorkspace.CreateFeatureClass(featureClassName, validatedFields, CLSID, null, esriFeatureType.esriFTSimple, strShapeField, "");
+                    // 创建Shapefile
+                    featureClass = featureWorkspace.CreateFeatureClass(
+                        shapefileName,
+                        fields,
+                        null,
+                        null,
+                        esriFeatureType.esriFTSimple,
+                        "Shape",
+                        "");
 
                     if (featureClass == null)
                     {
-                        MessageBox.Show("为" + featureClassName + "创建要素类失败");
+                        MessageBox.Show($"创建{shapefileName} Shapefile失败");
                         return false;
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"成功创建{featureClassName}要素类并设置CGCS2000坐标系");
+                    System.Diagnostics.Debug.WriteLine($"成功创建{shapefileName} Shapefile");
                 }
 
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"创建/设置{featureClassName}要素类时出错: {ex.Message}");
-                MessageBox.Show($"创建/设置{featureClassName}要素类时出错: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Debug.WriteLine($"创建{shapefileName} Shapefile时出错: {ex.Message}");
+                MessageBox.Show($"创建{shapefileName} Shapefile时出错: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
             finally
@@ -821,6 +814,11 @@ namespace TestArcMapAddin2.Forms
             {
                 MessageBox.Show("源路径为空");
             }
+        }
+
+        private void lblOutputGDBPath_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
