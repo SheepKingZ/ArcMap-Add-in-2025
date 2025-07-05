@@ -97,15 +97,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Config.esriaddinx</DependentUpon>
     </Compile>
-    <Compile Include="Forms\ForestForm\AssetValueCalculationForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\ForestForm\AssetValueCalculationForm.Designer.cs">
-      <DependentUpon>AssetValueCalculationForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\ForestForm\BasePriceSupplementForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="Forms\BasicDataPreparationForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -118,29 +109,11 @@
     <Compile Include="Forms\ForestForm\Basic.Designer.cs">
       <DependentUpon>Basic.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\ForestForm\ForestProcessingFormBase.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\ForestForm\ForestProcessingFormBase.Designer.cs">
-      <DependentUpon>ForestProcessingFormBase.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\ForestForm\LandPriceParametersForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\ForestForm\WorkBaseMapForm.Designer.cs">
-      <DependentUpon>WorkBaseMapForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\LayerSelectionForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="Forms\MainProcessingTabsForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\MainProcessingTabsForm.Designer.cs">
       <DependentUpon>MainProcessingTabsForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\ForestForm\WorkBaseMapForm.cs">
-      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\SurveyDataVerificationForm.cs">
       <SubType>Form</SubType>
@@ -212,17 +185,8 @@
     <EmbeddedResource Include="Forms\BasicDataPreparationForm.resx">
       <DependentUpon>BasicDataPreparationForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\ForestForm\AssetValueCalculationForm.resx">
-      <DependentUpon>AssetValueCalculationForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Forms\ForestForm\Basic.resx">
       <DependentUpon>Basic.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\ForestForm\ForestProcessingFormBase.resx">
-      <DependentUpon>ForestProcessingFormBase.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\ForestForm\WorkBaseMapForm.resx">
-      <DependentUpon>WorkBaseMapForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\MainProcessingTabsForm.resx">
       <DependentUpon>MainProcessingTabsForm.cs</DependentUpon>
