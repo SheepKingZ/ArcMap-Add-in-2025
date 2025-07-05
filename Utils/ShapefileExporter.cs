@@ -5,6 +5,7 @@ using ESRI.ArcGIS.Geodatabase;
 using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.esriSystem;
 using TestArcMapAddin2;
+using TestArcMapAddin2.ShapefileUtils;
 
 namespace ForestResourcePlugin
 {
@@ -128,19 +129,36 @@ namespace ForestResourcePlugin
         /// <param name="countyName">县名</param>
         /// <param name="outputPath">输出路径</param>
         /// <param name="progressCallback">进度回调</param>
+        /// <summary>
+        /// 执行自动转换 - 在LCXZGX数据插入完成后自动转换为SLZYZC和SLZYZC_DLTB
+        /// </summary>
+        /// <param name="countyName">县名</param>
+        /// <param name="outputPath">输出路径</param>
+        /// <param name="progressCallback">进度回调</param>
+        /// <summary>
+        /// 执行自动转换 - 在LCXZGX数据插入完成后自动转换为SLZYZC和SLZYZC_DLTB
+        /// </summary>
+        /// <param name="countyName">县名</param>
+        /// <param name="outputPath">输出路径</param>
+        /// <param name="progressCallback">进度回调</param>
         private void PerformAutoConversion(string countyName, string outputPath, ProgressCallback progressCallback)
         {
             try
             {
                 System.Diagnostics.Debug.WriteLine($"开始自动转换县{countyName}的数据从LCXZGX到SLZYZC");
 
-                // 创建转换器实例
-                var converter = new Convert2ResultTable();
+                // 构建文件路径
+                string countyPath = System.IO.Path.Combine(outputPath, countyName);
+                string lcxzgxShapefilePath = System.IO.Path.Combine(countyPath, "LCXZGX.shp");
+                string slzyzcShapefilePath = System.IO.Path.Combine(countyPath, "SLZYZC.shp");
 
-                // 执行第一次转换 - LCXZGX转换为SLZYZC
+                // 创建转换器实例
+                var converter = new Convert2SLZYZC();
+
+                // 传递正确的参数 - lcxzgxShapefilePath是LCXZGX.shp的完整路径
                 bool conversionSuccess = converter.ConvertLCXZGXToSLZYZC(
                     countyName,
-                    outputPath,
+                    lcxzgxShapefilePath,  // 这是LCXZGX.shp的完整路径，不是目录路径
                     null, // 使用默认字段映射
                     (subPercentage, subMessage) =>
                     {
@@ -156,11 +174,12 @@ namespace ForestResourcePlugin
 
                     // 继续执行第二次转换 - SLZYZC转换为SLZYZC_DLTB
                     System.Diagnostics.Debug.WriteLine($"开始自动转换县{countyName}的数据从SLZYZC到SLZYZC_DLTB");
-                    var converter3 = new Convert3ResultTable();
+                    string slzyzcDltbShapefilePath = System.IO.Path.Combine(countyPath, "SLZYZC_DLTB.shp");
+                    var dltbConverter = new Convert2SLZYZCDLTB();
 
-                    bool conversion3Success = converter3.ConvertSLZYZCToDLTB(
-                        countyName,
-                        outputPath,
+                    bool conversion3Success = dltbConverter.ConvertSLZYZCToDLTB(
+                        slzyzcShapefilePath,
+                        slzyzcDltbShapefilePath,
                         null, // 使用默认字段映射
                         (subPercentage, subMessage) =>
                         {
@@ -370,8 +389,8 @@ namespace ForestResourcePlugin
         /// 创建默认空间参考系统
         /// </summary>
         /// <returns>空间参考系统</returns>
-       
-        
+
+
 
         /// <summary>
         /// 将要素写入Shapefile
