@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -6,28 +6,28 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using TestArcMapAddin2.Forms; // ÓÃÓÚCountySelectionForm
+using TestArcMapAddin2.Forms; // ç”¨äºCountySelectionForm
 using System.IO;
 using ESRI.ArcGIS.Geodatabase;
-using ESRI.ArcGIS.Geometry; // ĞÂÔö£ºÓÃÓÚ¿Õ¼ä²Î¿¼ÏµÍ³
-using ESRI.ArcGIS.esriSystem; // ĞÂÔö£ºÓÃÓÚ¿Õ¼ä²Î¿¼ÏµÍ³
-using System.Reflection; // ĞÂÔö£ºÓÃÓÚ·´Éäµ÷ÓÃ
+using ESRI.ArcGIS.Geometry; // æ–°å¢ï¼šç”¨äºç©ºé—´å‚è€ƒç³»ç»Ÿ
+using ESRI.ArcGIS.esriSystem; // æ–°å¢ï¼šç”¨äºç©ºé—´å‚è€ƒç³»ç»Ÿ
+using System.Reflection; // æ–°å¢ï¼šç”¨äºåå°„è°ƒç”¨
 
 namespace TestArcMapAddin2.Forms
 {
     public partial class BasicDataPreparationForm : Form
     {
-        // ĞŞ¸ÄË½ÓĞ×Ö¶Î - ºÏ²¢ÁÖ²İÊª»ÄÆÕ²éÊı¾İºÍ³ÇÕò¿ª·¢±ß½çÊı¾İÂ·¾¶ÎªÒ»¸ö
+        // ä¿®æ”¹ç§æœ‰å­—æ®µ - åˆå¹¶æ—è‰æ¹¿è’æ™®æŸ¥æ•°æ®å’ŒåŸé•‡å¼€å‘è¾¹ç•Œæ•°æ®è·¯å¾„ä¸ºä¸€ä¸ª
         private string dataSourcePath = "";
         private string outputGDBPath = "";
 
         /// <summary>
-        /// CGCS2000×ø±êÏµWKT¶¨Òå
+        /// CGCS2000åæ ‡ç³»WKTå®šä¹‰
         /// </summary>
         private const string CGCS2000_WKT = @"GEOGCS[""GCS_China_Geodetic_Coordinate_System_2000"",DATUM[""D_China_2000"",SPHEROID[""CGCS2000"",6378137.0,298.257222101]],PRIMEM[""Greenwich"",0.0],UNIT[""Degree"",0.0174532925199433]]";
 
         /// <summary>
-        /// CGCS2000 3¶È´ø37´øÍ¶Ó°×ø±êÏµWKT¶¨Òå
+        /// CGCS2000 3åº¦å¸¦37å¸¦æŠ•å½±åæ ‡ç³»WKTå®šä¹‰
         /// </summary>
         private const string CGCS2000_3_DEGREE_GK_ZONE_37_WKT = @"PROJCS[""GCS_China_Geodetic_Coordinate_System_2000_3_Degree_GK_Zone_37"",GEOGCS[""GCS_China_Geodetic_Coordinate_System_2000"",DATUM[""D_China_2000"",SPHEROID[""CGCS2000"",6378137.0,298.257222101]],PRIMEM[""Greenwich"",0.0],UNIT[""Degree"",0.0174532925199433]],PROJECTION[""Gauss_Kruger""],PARAMETER[""False_Easting"",37500000.0],PARAMETER[""False_Northing"",0.0],PARAMETER[""Central_Meridian"",111.0],PARAMETER[""Scale_Factor"",1.0],PARAMETER[""Latitude_Of_Origin"",0.0],UNIT[""Meter"",1.0]]";
 
@@ -41,7 +41,7 @@ namespace TestArcMapAddin2.Forms
         {
      
 
-            // ³õÊ¼»¯ºÏ²¢ºóµÄÊı¾İÔ´Â·¾¶×´Ì¬
+            // åˆå§‹åŒ–åˆå¹¶åçš„æ•°æ®æºè·¯å¾„çŠ¶æ€
             if (!string.IsNullOrEmpty(dataSourcePath))
             {
                 txtDataPath.Text = dataSourcePath;
@@ -49,7 +49,7 @@ namespace TestArcMapAddin2.Forms
             }
             else
             {
-                txtDataPath.Text = "ÇëÑ¡Ôñ°üº¬ÁÖ²İÊª»ÄÆÕ²éÓë³ÇÕò¿ª·¢±ß½çÊı¾İµÄÎÄ¼ş¼Ğ";
+                txtDataPath.Text = "è¯·é€‰æ‹©åŒ…å«æ—è‰æ¹¿è’æ™®æŸ¥ä¸åŸé•‡å¼€å‘è¾¹ç•Œæ•°æ®çš„æ–‡ä»¶å¤¹";
                 txtDataPath.ForeColor = Color.Gray;
             }
 
@@ -60,7 +60,7 @@ namespace TestArcMapAddin2.Forms
             }
             else
             {
-                txtOutputGDBPath.Text = "ÇëÑ¡ÔñÊä³ö½á¹ûGDBÂ·¾¶";
+                txtOutputGDBPath.Text = "è¯·é€‰æ‹©è¾“å‡ºç»“æœGDBè·¯å¾„";
                 txtOutputGDBPath.ForeColor = Color.Gray;
             }
 
@@ -73,11 +73,11 @@ namespace TestArcMapAddin2.Forms
             bool hasDataSource = !string.IsNullOrEmpty(dataSourcePath);
             bool hasOutputGDB = !string.IsNullOrEmpty(outputGDBPath);
 
-            // »ù´¡Êı¾İÔ´Ñ¡Ôñ°´Å¥Ê¼ÖÕÆôÓÃ
+            // åŸºç¡€æ•°æ®æºé€‰æ‹©æŒ‰é’®å§‹ç»ˆå¯ç”¨
             btnBrowseData.Enabled = true;
             btnBrowseOutputGDB.Enabled = true;
 
-            // OK°´Å¥ĞèÒªËùÓĞ±ØÒªĞÅÏ¢¶¼Íê³Éºó²ÅÆôÓÃ
+            // OKæŒ‰é’®éœ€è¦æ‰€æœ‰å¿…è¦ä¿¡æ¯éƒ½å®Œæˆåæ‰å¯ç”¨
             bool allDataSourcesSelected = hasWorkspace && hasDataSource && hasOutputGDB;
 
             btnOK.Enabled = allDataSourcesSelected;
@@ -87,7 +87,7 @@ namespace TestArcMapAddin2.Forms
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
-                dialog.Description = "Ñ¡ÔñÄ¿±êÊı¾İ¿âÂ·¾¶£¨File Geodatabase .gdb£©";
+                dialog.Description = "é€‰æ‹©ç›®æ ‡æ•°æ®åº“è·¯å¾„ï¼ˆFile Geodatabase .gdbï¼‰";
                 if (!string.IsNullOrEmpty(SharedWorkflowState.WorkspacePath))
                 {
                     dialog.SelectedPath = SharedWorkflowState.WorkspacePath;
@@ -98,11 +98,11 @@ namespace TestArcMapAddin2.Forms
                     if (dialog.SelectedPath.EndsWith(".gdb", StringComparison.OrdinalIgnoreCase) || System.IO.Directory.Exists(dialog.SelectedPath))
                     {
                         SharedWorkflowState.WorkspacePath = dialog.SelectedPath;
-                        InitializeFormState(); // ÖØĞÂ³õÊ¼»¯ÒÔ·´Ó³×´Ì¬±ä»¯
+                        InitializeFormState(); // é‡æ–°åˆå§‹åŒ–ä»¥åæ˜ çŠ¶æ€å˜åŒ–
                     }
                     else
                     {
-                        MessageBox.Show("ÇëÑ¡ÔñÓĞĞ§µÄFile Geodatabase (.gdb) Â·¾¶£¡", "´íÎó",
+                        MessageBox.Show("è¯·é€‰æ‹©æœ‰æ•ˆçš„File Geodatabase (.gdb) è·¯å¾„ï¼", "é”™è¯¯",
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
@@ -110,12 +110,12 @@ namespace TestArcMapAddin2.Forms
             UpdateButtonStates();
         }
 
-        // ĞÂµÄºÏ²¢ºóµÄÊı¾İÔ´ä¯ÀÀ·½·¨
+        // æ–°çš„åˆå¹¶åçš„æ•°æ®æºæµè§ˆæ–¹æ³•
         private void BtnBrowseData_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
-                dialog.Description = "Ñ¡Ôñ°üº¬ÁÖ²İÊª»ÄÆÕ²éÓë³ÇÕò¿ª·¢±ß½çÊı¾İµÄÎÄ¼ş¼Ğ";
+                dialog.Description = "é€‰æ‹©åŒ…å«æ—è‰æ¹¿è’æ™®æŸ¥ä¸åŸé•‡å¼€å‘è¾¹ç•Œæ•°æ®çš„æ–‡ä»¶å¤¹";
                 if (!string.IsNullOrEmpty(dataSourcePath))
                 {
                     dialog.SelectedPath = dataSourcePath;
@@ -127,31 +127,31 @@ namespace TestArcMapAddin2.Forms
                     txtDataPath.Text = dataSourcePath;
                     txtDataPath.ForeColor = Color.DarkGreen;
 
-                    // ±£´æµ½¹²Ïí×´Ì¬ÖĞ
+                    // ä¿å­˜åˆ°å…±äº«çŠ¶æ€ä¸­
                     SharedWorkflowState.DataSourcePath = dataSourcePath;
 
-                    // ²éÕÒ°üº¬LCXZGX_PµÄÎÄ¼ş£¨ÁÖ²İÊª»ÄÆÕ²éÊı¾İ£©
+                    // æŸ¥æ‰¾åŒ…å«LCXZGX_Pçš„æ–‡ä»¶ï¼ˆæ—è‰æ¹¿è’æ™®æŸ¥æ•°æ®ï¼‰
                     List<ForestResourcePlugin.LCXZGXFileInfo> lcxzgxFiles = FindFilesWithPattern(dataSourcePath, "LCXZGX_P");
 
-                    // ±£´æµ½¹²ÏíÊı¾İ¹ÜÀíÆ÷
+                    // ä¿å­˜åˆ°å…±äº«æ•°æ®ç®¡ç†å™¨
                     ForestResourcePlugin.SharedDataManager.SetLCXZGXFiles(lcxzgxFiles);
 
-                    // ²éÕÒ°üº¬CZKFBJµÄÎÄ¼ş£¨³ÇÕò¿ª·¢±ß½çÊı¾İ£©
+                    // æŸ¥æ‰¾åŒ…å«CZKFBJçš„æ–‡ä»¶ï¼ˆåŸé•‡å¼€å‘è¾¹ç•Œæ•°æ®ï¼‰
                     List<ForestResourcePlugin.LCXZGXFileInfo> czkfbjFiles = FindFilesWithPattern(dataSourcePath, "CZKFBJ");
 
-                    // ±£´æµ½¹²ÏíÊı¾İ¹ÜÀíÆ÷
+                    // ä¿å­˜åˆ°å…±äº«æ•°æ®ç®¡ç†å™¨
                     ForestResourcePlugin.SharedDataManager.SetCZKFBJFiles(czkfbjFiles);
 
-                    // ÏÔÊ¾ÎÄ¼şËÑË÷½á¹û
+                    // æ˜¾ç¤ºæ–‡ä»¶æœç´¢ç»“æœ
                     int totalFiles = lcxzgxFiles.Count + czkfbjFiles.Count;
                     if (totalFiles > 0)
                     {
-                        MessageBox.Show($"ÔÚÍ¬Ò»ÎÄ¼ş¼ĞÖĞÕÒµ½£º\n- {lcxzgxFiles.Count} ¸öÁÖ²İÊª»ÄÆÕ²éÊı¾İÎÄ¼ş\n- {czkfbjFiles.Count} ¸ö³ÇÕò¿ª·¢±ß½çÊı¾İÎÄ¼ş",
-                            "ÎÄ¼şËÑË÷½á¹û", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show($"åœ¨åŒä¸€æ–‡ä»¶å¤¹ä¸­æ‰¾åˆ°ï¼š\n- {lcxzgxFiles.Count} ä¸ªæ—è‰æ¹¿è’æ™®æŸ¥æ•°æ®æ–‡ä»¶\n- {czkfbjFiles.Count} ä¸ªåŸé•‡å¼€å‘è¾¹ç•Œæ•°æ®æ–‡ä»¶",
+                            "æ–‡ä»¶æœç´¢ç»“æœ", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     else
                     {
-                        MessageBox.Show("Î´ÕÒµ½Ïà¹ØÊı¾İÎÄ¼ş£¬ÇëÈ·ÈÏÑ¡ÔñµÄÎÄ¼ş¼ĞÊÇ·ñÕıÈ·¡£", "ÌáÊ¾",
+                        MessageBox.Show("æœªæ‰¾åˆ°ç›¸å…³æ•°æ®æ–‡ä»¶ï¼Œè¯·ç¡®è®¤é€‰æ‹©çš„æ–‡ä»¶å¤¹æ˜¯å¦æ­£ç¡®ã€‚", "æç¤º",
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
 
@@ -160,12 +160,12 @@ namespace TestArcMapAddin2.Forms
             }
         }
 
-        // Êä³öGDBÂ·¾¶ä¯ÀÀ·½·¨±£³Ö²»±ä
+        // è¾“å‡ºGDBè·¯å¾„æµè§ˆæ–¹æ³•ä¿æŒä¸å˜
         private void BtnBrowseOutputGDB_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
-                dialog.Description = "Ñ¡ÔñÊä³ö½á¹ûGDBÂ·¾¶";
+                dialog.Description = "é€‰æ‹©è¾“å‡ºç»“æœGDBè·¯å¾„";
                 if (!string.IsNullOrEmpty(outputGDBPath))
                 {
                     dialog.SelectedPath = outputGDBPath;
@@ -177,10 +177,10 @@ namespace TestArcMapAddin2.Forms
                     txtOutputGDBPath.Text = outputGDBPath;
                     txtOutputGDBPath.ForeColor = Color.DarkGreen;
 
-                    // ±£´æµ½¹²Ïí×´Ì¬
+                    // ä¿å­˜åˆ°å…±äº«çŠ¶æ€
                     SharedWorkflowState.OutputGDBPath = outputGDBPath;
 
-                    MessageBox.Show("Êä³ö½á¹ûGDBÂ·¾¶Ñ¡ÔñÍê³É¡£", "³É¹¦",
+                    MessageBox.Show("è¾“å‡ºç»“æœGDBè·¯å¾„é€‰æ‹©å®Œæˆã€‚", "æˆåŠŸ",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                     UpdateButtonStates();
                 }
@@ -189,26 +189,26 @@ namespace TestArcMapAddin2.Forms
 
         private void BtnOK_Click(object sender, EventArgs e)
         {
-            // ÑéÖ¤ËùÓĞ±ØĞèµÄÂ·¾¶¶¼ÒÑÑ¡Ôñ
+            // éªŒè¯æ‰€æœ‰å¿…éœ€çš„è·¯å¾„éƒ½å·²é€‰æ‹©
             if (string.IsNullOrEmpty(SharedWorkflowState.WorkspacePath))
             {
-                MessageBox.Show("ÇëÑ¡Ôñ¹¤×÷¿Õ¼ä¡£", "ÌáÊ¾", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("è¯·é€‰æ‹©å·¥ä½œç©ºé—´ã€‚", "æç¤º", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             if (string.IsNullOrEmpty(dataSourcePath))
             {
-                MessageBox.Show("ÇëÑ¡ÔñÊı¾İÔ´ÎÄ¼ş¼Ğ¡£", "ÌáÊ¾", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("è¯·é€‰æ‹©æ•°æ®æºæ–‡ä»¶å¤¹ã€‚", "æç¤º", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             if (string.IsNullOrEmpty(outputGDBPath))
             {
-                MessageBox.Show("ÇëÑ¡ÔñÊä³ö½á¹ûGDBÂ·¾¶¡£", "ÌáÊ¾", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("è¯·é€‰æ‹©è¾“å‡ºç»“æœGDBè·¯å¾„ã€‚", "æç¤º", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            //ÎªÃ¿¸öÏØ´´½¨Êı¾İ¿â¼°Æä³É¹û±í
+            //ä¸ºæ¯ä¸ªå¿åˆ›å»ºæ•°æ®åº“åŠå…¶æˆæœè¡¨
             /*  if (!String.IsNullOrEmpty(dataSourcePath))
               {
                   System.IO.DirectoryInfo theFolder = new System.IO.DirectoryInfo(dataSourcePath);
@@ -218,7 +218,7 @@ namespace TestArcMapAddin2.Forms
                       String countryName = curDir.Substring(curDir.LastIndexOf('\\')+1);
                       if(!CreateTable4Country(outputGDBPath, countryName))
                       {
-                          MessageBox.Show("´´½¨"+countryName+"Êı¾İ¿âÊ§°Ü");
+                          MessageBox.Show("åˆ›å»º"+countryName+"æ•°æ®åº“å¤±è´¥");
                       }
                   }
               }*/
@@ -235,7 +235,7 @@ namespace TestArcMapAddin2.Forms
             this.Close();
         }
 
-        // ¸üĞÂ¹«¹²ÊôĞÔ£¬¹©Íâ²¿·ÃÎÊÑ¡ÔñµÄÂ·¾¶
+        // æ›´æ–°å…¬å…±å±æ€§ï¼Œä¾›å¤–éƒ¨è®¿é—®é€‰æ‹©çš„è·¯å¾„
         public string DataSourcePath => dataSourcePath;
         public string OutputGDBPath => outputGDBPath;
 
@@ -245,20 +245,20 @@ namespace TestArcMapAddin2.Forms
         }
 
         /// <summary>
-        /// ÌáÈ¡Â·¾¶ÖĞµÄµÚÒ»¼¶ÎÄ¼ş¼ĞÃû³Æ£¨ÏØÃû£©
+        /// æå–è·¯å¾„ä¸­çš„ç¬¬ä¸€çº§æ–‡ä»¶å¤¹åç§°ï¼ˆå¿åï¼‰
         /// </summary>
-        /// <param name="filePath">ÎÄ¼şÂ·¾¶</param>
-        /// <param name="rootDir">¸ùÄ¿Â¼</param>
-        /// <returns>µÚÒ»¼¶ÎÄ¼ş¼ĞÃû³Æ£¨ÏØÃû£©</returns>
+        /// <param name="filePath">æ–‡ä»¶è·¯å¾„</param>
+        /// <param name="rootDir">æ ¹ç›®å½•</param>
+        /// <returns>ç¬¬ä¸€çº§æ–‡ä»¶å¤¹åç§°ï¼ˆå¿åï¼‰</returns>
         private string ExtractCountyNameFromPath(string filePath, string rootDir)
         {
             try
             {
-                // ¹æ·¶»¯Â·¾¶
+                // è§„èŒƒåŒ–è·¯å¾„
                 string normalizedRoot = System.IO.Path.GetFullPath(rootDir).TrimEnd('\\', '/');
                 string normalizedFile = System.IO.Path.GetFullPath(filePath);
 
-                // ¼ÆËãÏà¶ÔÂ·¾¶
+                // è®¡ç®—ç›¸å¯¹è·¯å¾„
                 string relativePath = "";
                 if (normalizedFile.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase))
                 {
@@ -266,74 +266,74 @@ namespace TestArcMapAddin2.Forms
                 }
                 else
                 {
-                    // Â·¾¶²»Æ¥Åä£¬³¢ÊÔ´ÓÍêÕûÂ·¾¶ÌáÈ¡
-                    System.Diagnostics.Debug.WriteLine($"¾¯¸æ: ÎÄ¼şÂ·¾¶ {normalizedFile} ²»ÔÚ¸ùÄ¿Â¼ {normalizedRoot} ÏÂ");
+                    // è·¯å¾„ä¸åŒ¹é…ï¼Œå°è¯•ä»å®Œæ•´è·¯å¾„æå–
+                    System.Diagnostics.Debug.WriteLine($"è­¦å‘Š: æ–‡ä»¶è·¯å¾„ {normalizedFile} ä¸åœ¨æ ¹ç›®å½• {normalizedRoot} ä¸‹");
                     return System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(filePath));
                 }
 
-                // ·Ö¸îÂ·¾¶²¢»ñÈ¡µÚÒ»¼¶Ä¿Â¼Ãû³Æ£¨ÏØÃû£©
+                // åˆ†å‰²è·¯å¾„å¹¶è·å–ç¬¬ä¸€çº§ç›®å½•åç§°ï¼ˆå¿åï¼‰
                 string[] pathParts = relativePath.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
                 if (pathParts.Length >= 1)
                 {
-                    // ·µ»ØµÚÒ»¼¶Ä¿Â¼Ãû³Æ£¬ÕâÓ¦¸ÃÊÇÏØÃû
+                    // è¿”å›ç¬¬ä¸€çº§ç›®å½•åç§°ï¼Œè¿™åº”è¯¥æ˜¯å¿å
                     string countyName = pathParts[0];
-                    System.Diagnostics.Debug.WriteLine($"´ÓÂ·¾¶ {relativePath} ÌáÈ¡ÏØÃû: {countyName}");
+                    System.Diagnostics.Debug.WriteLine($"ä»è·¯å¾„ {relativePath} æå–å¿å: {countyName}");
                     return countyName;
                 }
                 else
                 {
-                    // ¶µµ×·½°¸£ºÈç¹ûÂ·¾¶½âÎöÊ§°Ü£¬Ê¹ÓÃÎÄ¼şÃû
+                    // å…œåº•æ–¹æ¡ˆï¼šå¦‚æœè·¯å¾„è§£æå¤±è´¥ï¼Œä½¿ç”¨æ–‡ä»¶å
                     string fallbackName = System.IO.Path.GetFileNameWithoutExtension(filePath);
-                    System.Diagnostics.Debug.WriteLine($"¾¯¸æ: ÎŞ·¨´ÓÂ·¾¶ÌáÈ¡ÏØÃû£¬Ê¹ÓÃÎÄ¼şÃû: {fallbackName}");
+                    System.Diagnostics.Debug.WriteLine($"è­¦å‘Š: æ— æ³•ä»è·¯å¾„æå–å¿åï¼Œä½¿ç”¨æ–‡ä»¶å: {fallbackName}");
                     return fallbackName;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ÌáÈ¡ÏØÃûÊ±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"æå–å¿åæ—¶å‡ºé”™: {ex.Message}");
                 return System.IO.Path.GetFileNameWithoutExtension(filePath);
             }
         }
 
         /// <summary>
-        /// ²éÕÒÖ¸¶¨Ä¿Â¼ÏÂÃû³Æ°üº¬ÌØ¶¨×Ö·û´®µÄÎÄ¼ş
+        /// æŸ¥æ‰¾æŒ‡å®šç›®å½•ä¸‹åç§°åŒ…å«ç‰¹å®šå­—ç¬¦ä¸²çš„æ–‡ä»¶
         /// </summary>
-        /// <param name="rootDir">¸ùÄ¿Â¼</param>
-        /// <param name="pattern">Ãû³ÆÆ¥ÅäÄ£Ê½</param>
-        /// <returns>ÎÄ¼şĞÅÏ¢ÁĞ±í</returns>
+        /// <param name="rootDir">æ ¹ç›®å½•</param>
+        /// <param name="pattern">åç§°åŒ¹é…æ¨¡å¼</param>
+        /// <returns>æ–‡ä»¶ä¿¡æ¯åˆ—è¡¨</returns>
         private List<ForestResourcePlugin.LCXZGXFileInfo> FindFilesWithPattern(string rootDir, string pattern)
         {
             var result = new List<ForestResourcePlugin.LCXZGXFileInfo>();
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"¿ªÊ¼ÔÚ {rootDir} Ä¿Â¼ÏÂ²éÕÒ°üº¬ {pattern} µÄÎÄ¼ş");
+                System.Diagnostics.Debug.WriteLine($"å¼€å§‹åœ¨ {rootDir} ç›®å½•ä¸‹æŸ¥æ‰¾åŒ…å« {pattern} çš„æ–‡ä»¶");
 
-                // 1. Ê×ÏÈ²éÕÒGDBÒªËØÀà
-                System.Diagnostics.Debug.WriteLine("µÚ1²½£º²éÕÒGDBÒªËØÀà...");
+                // 1. é¦–å…ˆæŸ¥æ‰¾GDBè¦ç´ ç±»
+                System.Diagnostics.Debug.WriteLine("ç¬¬1æ­¥ï¼šæŸ¥æ‰¾GDBè¦ç´ ç±»...");
                 var gdbFeatureClasses = ForestResourcePlugin.GdbFeatureClassFinder.FindFeatureClassesWithPattern(
                     rootDir, pattern, ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon);
 
-                // ½«ÕÒµ½µÄGDBÒªËØÀàÌí¼Óµ½½á¹ûÖĞ
+                // å°†æ‰¾åˆ°çš„GDBè¦ç´ ç±»æ·»åŠ åˆ°ç»“æœä¸­
                 result.AddRange(gdbFeatureClasses);
-                System.Diagnostics.Debug.WriteLine($"ÕÒµ½ {gdbFeatureClasses.Count} ¸öGDBÒªËØÀà");
+                System.Diagnostics.Debug.WriteLine($"æ‰¾åˆ° {gdbFeatureClasses.Count} ä¸ªGDBè¦ç´ ç±»");
 
-                // 2. ÔÙ²éÕÒShapefileÎÄ¼ş
-                System.Diagnostics.Debug.WriteLine("µÚ2²½£º²éÕÒShapefileÎÄ¼ş...");
+                // 2. å†æŸ¥æ‰¾Shapefileæ–‡ä»¶
+                System.Diagnostics.Debug.WriteLine("ç¬¬2æ­¥ï¼šæŸ¥æ‰¾Shapefileæ–‡ä»¶...");
 
-                // È·±£Ä¿Â¼´æÔÚ
+                // ç¡®ä¿ç›®å½•å­˜åœ¨
                 if (Directory.Exists(rootDir))
                 {
                     string[] files = System.IO.Directory.GetFiles(rootDir, "*.shp", System.IO.SearchOption.AllDirectories);
-                    System.Diagnostics.Debug.WriteLine($"ÔÚ {rootDir} Ä¿Â¼ÏÂÕÒµ½ {files.Length} ¸öShapefileÎÄ¼ş");
+                    System.Diagnostics.Debug.WriteLine($"åœ¨ {rootDir} ç›®å½•ä¸‹æ‰¾åˆ° {files.Length} ä¸ªShapefileæ–‡ä»¶");
 
-                    // É¸Ñ¡°üº¬Ö¸¶¨Ä£Ê½µÄShapefile
+                    // ç­›é€‰åŒ…å«æŒ‡å®šæ¨¡å¼çš„Shapefile
                     int matchCount = 0;
                     foreach (string filePath in files)
                     {
                         if (filePath.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
-                            // ÌáÈ¡ÏØÃû£¨µÚÒ»¼¶ÎÄ¼ş¼ĞÃû³Æ£©
+                            // æå–å¿åï¼ˆç¬¬ä¸€çº§æ–‡ä»¶å¤¹åç§°ï¼‰
                             string countyName = ExtractCountyNameFromPath(filePath, rootDir);
 
                             result.Add(new ForestResourcePlugin.LCXZGXFileInfo
@@ -341,58 +341,58 @@ namespace TestArcMapAddin2.Forms
                                 FullPath = filePath,
                                 DisplayName = countyName,
                                 IsGdb = false,
-                                GeometryType = ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon // ¼ÙÉèÎªÃæ
+                                GeometryType = ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon // å‡è®¾ä¸ºé¢
                             });
 
                             matchCount++;
-                            System.Diagnostics.Debug.WriteLine($"ÕÒµ½Æ¥ÅäµÄShapefileÎÄ¼ş[{matchCount}]: {filePath}, ÏØÃû: {countyName}");
+                            System.Diagnostics.Debug.WriteLine($"æ‰¾åˆ°åŒ¹é…çš„Shapefileæ–‡ä»¶[{matchCount}]: {filePath}, å¿å: {countyName}");
                         }
                     }
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"¾¯¸æ: Ä¿Â¼ {rootDir} ²»´æÔÚ");
+                    System.Diagnostics.Debug.WriteLine($"è­¦å‘Š: ç›®å½• {rootDir} ä¸å­˜åœ¨");
                 }
 
-                System.Diagnostics.Debug.WriteLine($"¹²ÕÒµ½ {result.Count} ¸öÆ¥ÅäÎÄ¼ş (GDBÒªËØÀà: {gdbFeatureClasses.Count}, Shapefile: {result.Count - gdbFeatureClasses.Count})");
+                System.Diagnostics.Debug.WriteLine($"å…±æ‰¾åˆ° {result.Count} ä¸ªåŒ¹é…æ–‡ä»¶ (GDBè¦ç´ ç±»: {gdbFeatureClasses.Count}, Shapefile: {result.Count - gdbFeatureClasses.Count})");
 
-                // Êä³öÏêÏ¸µÄ½á¹ûĞÅÏ¢
+                // è¾“å‡ºè¯¦ç»†çš„ç»“æœä¿¡æ¯
                 for (int i = 0; i < result.Count; i++)
                 {
                     var item = result[i];
-                    System.Diagnostics.Debug.WriteLine($"½á¹û[{i + 1}]: {item.DisplayName}, Â·¾¶: {item.FullPath}, ÀàĞÍ: {(item.IsGdb ? "GDBÒªËØÀà" : "Shapefile")}");
+                    System.Diagnostics.Debug.WriteLine($"ç»“æœ[{i + 1}]: {item.DisplayName}, è·¯å¾„: {item.FullPath}, ç±»å‹: {(item.IsGdb ? "GDBè¦ç´ ç±»" : "Shapefile")}");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"²éÕÒÎÄ¼şÊ±³ö´í: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Òì³£ÏêÇé: {ex}");
-                MessageBox.Show($"²éÕÒÎÄ¼şÊ±³ö´í: {ex.Message}", "´íÎó", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Debug.WriteLine($"æŸ¥æ‰¾æ–‡ä»¶æ—¶å‡ºé”™: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"å¼‚å¸¸è¯¦æƒ…: {ex}");
+                MessageBox.Show($"æŸ¥æ‰¾æ–‡ä»¶æ—¶å‡ºé”™: {ex.Message}", "é”™è¯¯", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             return result;
         }
 
         /// <summary>
-        /// ÌáÈ¡Â·¾¶ÖĞµÄµÚ¶ş¼¶ÎÄ¼ş¼ĞÃû³Æ
+        /// æå–è·¯å¾„ä¸­çš„ç¬¬äºŒçº§æ–‡ä»¶å¤¹åç§°
         /// </summary>
-        /// <param name="filePath">ÎÄ¼şÂ·¾¶</param>
-        /// <param name="rootDir">¸ùÄ¿Â¼</param>
-        /// <returns>µÚ¶ş¼¶ÎÄ¼ş¼ĞÃû³Æ</returns>
-        [Obsolete("´Ë·½·¨ÒÑ¹ıÊ±£¬ÇëÊ¹ÓÃ ExtractCountyNameFromPath ·½·¨")]
+        /// <param name="filePath">æ–‡ä»¶è·¯å¾„</param>
+        /// <param name="rootDir">æ ¹ç›®å½•</param>
+        /// <returns>ç¬¬äºŒçº§æ–‡ä»¶å¤¹åç§°</returns>
+        [Obsolete("æ­¤æ–¹æ³•å·²è¿‡æ—¶ï¼Œè¯·ä½¿ç”¨ ExtractCountyNameFromPath æ–¹æ³•")]
         private string ExtractSecondLevelFolderName(string filePath, string rootDir)
         {
-            // ±£ÁôÔ­·½·¨ÒÔÎ¬³ÖÏòºó¼æÈİĞÔ£¬µ«±ê¼ÇÎª¹ıÊ±
-            // ÏÖÔÚµ÷ÓÃĞÂµÄÏØÃûÌáÈ¡·½·¨
+            // ä¿ç•™åŸæ–¹æ³•ä»¥ç»´æŒå‘åå…¼å®¹æ€§ï¼Œä½†æ ‡è®°ä¸ºè¿‡æ—¶
+            // ç°åœ¨è°ƒç”¨æ–°çš„å¿åæå–æ–¹æ³•
             return ExtractCountyNameFromPath(filePath, rootDir);
         }
 
         /// <summary>
-        /// ÎªÏØ´´½¨¿ÕµÄShapefileÎÄ¼ş
+        /// ä¸ºå¿åˆ›å»ºç©ºçš„Shapefileæ–‡ä»¶
         /// </summary>
-        /// <param name="path">Êä³öÂ·¾¶</param>
-        /// <param name="countryName">ÏØÃû</param>
-        /// <returns>ÊÇ·ñ³É¹¦</returns>
+        /// <param name="path">è¾“å‡ºè·¯å¾„</param>
+        /// <param name="countryName">å¿å</param>
+        /// <returns>æ˜¯å¦æˆåŠŸ</returns>
         private Boolean CreateTable4Country(String path, String countryName)
         {
             if (!String.IsNullOrEmpty(path) && !String.IsNullOrEmpty(countryName))
@@ -403,35 +403,35 @@ namespace TestArcMapAddin2.Forms
                 {
                     try
                     {
-                        // ´´½¨Shapefile¹¤×÷¿Õ¼ä
+                        // åˆ›å»ºShapefileå·¥ä½œç©ºé—´
                         Type factoryType = Type.GetTypeFromProgID("esriDataSourcesFile.ShapefileWorkspaceFactory");
                         IWorkspaceFactory workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
                         IWorkspace workspace = workspaceFactory.OpenFromFile(countryFolder.FullName, 0);
 
-                        // ´´½¨Èı¸ö¿ÕµÄShapefile
+                        // åˆ›å»ºä¸‰ä¸ªç©ºçš„Shapefile
                         if (!CreateEmptyShapefile("LCXZGX", workspace))
                         {
-                            MessageBox.Show("´´½¨LCXZGX ShapefileÊ§°Ü");
+                            MessageBox.Show("åˆ›å»ºLCXZGX Shapefileå¤±è´¥");
                             return false;
                         }
                         if (!CreateEmptyShapefile("SLZYZC", workspace))
                         {
-                            MessageBox.Show("´´½¨SLZYZC ShapefileÊ§°Ü");
+                            MessageBox.Show("åˆ›å»ºSLZYZC Shapefileå¤±è´¥");
                             return false;
                         }
                         if (!CreateEmptyShapefile("SLZYZC_DLTB", workspace))
                         {
-                            MessageBox.Show("´´½¨SLZYZC_DLTB ShapefileÊ§°Ü");
+                            MessageBox.Show("åˆ›å»ºSLZYZC_DLTB Shapefileå¤±è´¥");
                             return false;
                         }
 
-                        System.Diagnostics.Debug.WriteLine($"³É¹¦Îª{countryName}´´½¨Èı¸ö¿ÕµÄShapefile");
+                        System.Diagnostics.Debug.WriteLine($"æˆåŠŸä¸º{countryName}åˆ›å»ºä¸‰ä¸ªç©ºçš„Shapefile");
                         return true;
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Îª{countryName}´´½¨ShapefileÊ±³ö´í: {ex.Message}");
-                        MessageBox.Show($"Îª{countryName}´´½¨ShapefileÊ±³ö´í: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"ä¸º{countryName}åˆ›å»ºShapefileæ—¶å‡ºé”™: {ex.Message}");
+                        MessageBox.Show($"ä¸º{countryName}åˆ›å»ºShapefileæ—¶å‡ºé”™: {ex.Message}");
                         return false;
                     }
                 }
@@ -439,13 +439,13 @@ namespace TestArcMapAddin2.Forms
             return false;
         }
 
-        //¸ù¾İ³É¹û±íÃû´´½¨±í
+        //æ ¹æ®æˆæœè¡¨ååˆ›å»ºè¡¨
         /// <summary>
-        /// ´´½¨¿ÕµÄShapefile
+        /// åˆ›å»ºç©ºçš„Shapefile
         /// </summary>
-        /// <param name="shapefileName">ShapefileÃû³Æ</param>
-        /// <param name="workspace">Shapefile¹¤×÷¿Õ¼ä</param>
-        /// <returns>ÊÇ·ñ³É¹¦</returns>
+        /// <param name="shapefileName">Shapefileåç§°</param>
+        /// <param name="workspace">Shapefileå·¥ä½œç©ºé—´</param>
+        /// <returns>æ˜¯å¦æˆåŠŸ</returns>
         private Boolean CreateEmptyShapefile(String shapefileName, IWorkspace workspace)
         {
             IFeatureClass featureClass = null;
@@ -453,51 +453,51 @@ namespace TestArcMapAddin2.Forms
 
             try
             {
-                // ¼ì²éShapefileÊÇ·ñÒÑ´æÔÚ
+                // æ£€æŸ¥Shapefileæ˜¯å¦å·²å­˜åœ¨
                 bool shapefileExists = false;
                 try
                 {
                     featureClass = featureWorkspace.OpenFeatureClass(shapefileName);
                     shapefileExists = true;
-                    System.Diagnostics.Debug.WriteLine($"Shapefile {shapefileName} ÒÑ´æÔÚ");
+                    System.Diagnostics.Debug.WriteLine($"Shapefile {shapefileName} å·²å­˜åœ¨");
                     return true;
                 }
                 catch
                 {
-                    // Shapefile²»´æÔÚ£¬¼ÌĞø´´½¨
+                    // Shapefileä¸å­˜åœ¨ï¼Œç»§ç»­åˆ›å»º
                     shapefileExists = false;
                 }
 
                 if (!shapefileExists)
                 {
-                    System.Diagnostics.Debug.WriteLine($"¿ªÊ¼´´½¨{shapefileName} Shapefile");
+                    System.Diagnostics.Debug.WriteLine($"å¼€å§‹åˆ›å»º{shapefileName} Shapefile");
 
-                    // ´´½¨×Ö¶Î¼¯ºÏ
+                    // åˆ›å»ºå­—æ®µé›†åˆ
                     IFields fields = new FieldsClass();
                     IFieldsEdit fieldsEdit = (IFieldsEdit)fields;
 
-                    // Ìí¼ÓOID×Ö¶Î
+                    // æ·»åŠ OIDå­—æ®µ
                     IField oidField = new FieldClass();
                     IFieldEdit oidFieldEdit = (IFieldEdit)oidField;
                     oidFieldEdit.Name_2 = "FID";
                     oidFieldEdit.Type_2 = esriFieldType.esriFieldTypeOID;
                     fieldsEdit.AddField(oidField);
 
-                    // Ìí¼Ó¼¸ºÎ×Ö¶Î
+                    // æ·»åŠ å‡ ä½•å­—æ®µ
                     IGeometryDef geometryDef = new GeometryDefClass();
                     IGeometryDefEdit geometryDefEdit = (IGeometryDefEdit)geometryDef;
                     geometryDefEdit.GeometryType_2 = esriGeometryType.esriGeometryPolygon;
 
-                    // ´´½¨²¢ÉèÖÃCGCS2000¿Õ¼ä²Î¿¼ÏµÍ³
+                    // åˆ›å»ºå¹¶è®¾ç½®CGCS2000ç©ºé—´å‚è€ƒç³»ç»Ÿ
                     ISpatialReference cgcs2000SpatialRef = CreateCGCS2000SpatialReference();
                     if (cgcs2000SpatialRef != null)
                     {
                         geometryDefEdit.SpatialReference_2 = cgcs2000SpatialRef;
-                        System.Diagnostics.Debug.WriteLine($"Îª{shapefileName}ÉèÖÃCGCS2000×ø±êÏµ");
+                        System.Diagnostics.Debug.WriteLine($"ä¸º{shapefileName}è®¾ç½®CGCS2000åæ ‡ç³»");
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"¾¯¸æ£ºÎŞ·¨Îª{shapefileName}ÉèÖÃCGCS2000×ø±êÏµ£¬½«Ê¹ÓÃÄ¬ÈÏ×ø±êÏµ");
+                        System.Diagnostics.Debug.WriteLine($"è­¦å‘Šï¼šæ— æ³•ä¸º{shapefileName}è®¾ç½®CGCS2000åæ ‡ç³»ï¼Œå°†ä½¿ç”¨é»˜è®¤åæ ‡ç³»");
                     }
 
                     IField geometryField = new FieldClass();
@@ -507,7 +507,7 @@ namespace TestArcMapAddin2.Forms
                     geometryFieldEdit.GeometryDef_2 = geometryDef;
                     fieldsEdit.AddField(geometryField);
 
-                    // ¸ù¾İShapefileÃû³ÆÌí¼ÓÏàÓ¦µÄÒµÎñ×Ö¶Î
+                    // æ ¹æ®Shapefileåç§°æ·»åŠ ç›¸åº”çš„ä¸šåŠ¡å­—æ®µ
                     switch (shapefileName)
                     {
                         case "LCXZGX":
@@ -523,7 +523,7 @@ namespace TestArcMapAddin2.Forms
 
                     fields = (IFields)fieldsEdit;
 
-                    // ´´½¨Shapefile
+                    // åˆ›å»ºShapefile
                     featureClass = featureWorkspace.CreateFeatureClass(
                         shapefileName,
                         fields,
@@ -535,24 +535,24 @@ namespace TestArcMapAddin2.Forms
 
                     if (featureClass == null)
                     {
-                        MessageBox.Show($"´´½¨{shapefileName} ShapefileÊ§°Ü");
+                        MessageBox.Show($"åˆ›å»º{shapefileName} Shapefileå¤±è´¥");
                         return false;
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"³É¹¦´´½¨{shapefileName} Shapefile");
+                    System.Diagnostics.Debug.WriteLine($"æˆåŠŸåˆ›å»º{shapefileName} Shapefile");
                 }
 
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"´´½¨{shapefileName} ShapefileÊ±³ö´í: {ex.Message}");
-                MessageBox.Show($"´´½¨{shapefileName} ShapefileÊ±³ö´í: {ex.Message}", "´íÎó", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Debug.WriteLine($"åˆ›å»º{shapefileName} Shapefileæ—¶å‡ºé”™: {ex.Message}");
+                MessageBox.Show($"åˆ›å»º{shapefileName} Shapefileæ—¶å‡ºé”™: {ex.Message}", "é”™è¯¯", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
             finally
             {
-                // ÊÍ·ÅCOM¶ÔÏó
+                // é‡Šæ”¾COMå¯¹è±¡
                 if (featureClass != null)
                 {
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);
@@ -561,69 +561,69 @@ namespace TestArcMapAddin2.Forms
         }
 
         /// <summary>
-        /// ´´½¨CGCS2000Í¶Ó°×ø±êÏµ£¨ÓÅÏÈÊ¹ÓÃ3¶È´ø37´øÍ¶Ó°×ø±êÏµ£©
+        /// åˆ›å»ºCGCS2000æŠ•å½±åæ ‡ç³»ï¼ˆä¼˜å…ˆä½¿ç”¨3åº¦å¸¦37å¸¦æŠ•å½±åæ ‡ç³»ï¼‰
         /// </summary>
-        /// <returns>CGCS2000×ø±êÏµ¶ÔÏó</returns>
+        /// <returns>CGCS2000åæ ‡ç³»å¯¹è±¡</returns>
         private ISpatialReference CreateCGCS2000SpatialReference()
         {
-            // Ê×ÏÈ³¢ÊÔ´´½¨Í¶Ó°×ø±êÏµ
+            // é¦–å…ˆå°è¯•åˆ›å»ºæŠ•å½±åæ ‡ç³»
             ISpatialReference projectedSpatialRef = CreateCGCS2000ProjectedSpatialReference();
             if (projectedSpatialRef != null)
             {
                 return projectedSpatialRef;
             }
 
-            // Èç¹ûÍ¶Ó°×ø±êÏµ´´½¨Ê§°Ü£¬Ê¹ÓÃµØÀí×ø±êÏµ×÷Îª±¸ÓÃ
+            // å¦‚æœæŠ•å½±åæ ‡ç³»åˆ›å»ºå¤±è´¥ï¼Œä½¿ç”¨åœ°ç†åæ ‡ç³»ä½œä¸ºå¤‡ç”¨
             return CreateCGCS2000GeographicSpatialReference();
         }
 
         /// <summary>
-        /// ´´½¨CGCS2000 3¶È´ø37´øÍ¶Ó°×ø±êÏµ
+        /// åˆ›å»ºCGCS2000 3åº¦å¸¦37å¸¦æŠ•å½±åæ ‡ç³»
         /// </summary>
-        /// <returns>CGCS2000 3¶È´ø37´øÍ¶Ó°×ø±êÏµ¶ÔÏó</returns>
+        /// <returns>CGCS2000 3åº¦å¸¦37å¸¦æŠ•å½±åæ ‡ç³»å¯¹è±¡</returns>
         private ISpatialReference CreateCGCS2000ProjectedSpatialReference()
         {
             try
             {
-                // ·½·¨1£º³¢ÊÔÊ¹ÓÃ×Ô¶¨ÒåEPSG´úÂë´´½¨CGCS2000 3¶È´ø37´øÍ¶Ó°×ø±êÏµ
+                // æ–¹æ³•1ï¼šå°è¯•ä½¿ç”¨è‡ªå®šä¹‰EPSGä»£ç åˆ›å»ºCGCS2000 3åº¦å¸¦37å¸¦æŠ•å½±åæ ‡ç³»
                 try
                 {
-                    // ´´½¨¿Õ¼ä²Î¿¼ÏµÍ³»·¾³½Ó¿Ú
+                    // åˆ›å»ºç©ºé—´å‚è€ƒç³»ç»Ÿç¯å¢ƒæ¥å£
                     Type spatialRefEnvType = Type.GetTypeFromProgID("esriGeometry.SpatialReferenceEnvironment");
                     object spatialRefEnvObj = Activator.CreateInstance(spatialRefEnvType);
                     ISpatialReferenceFactory spatialRefFactory = spatialRefEnvObj as ISpatialReferenceFactory;
 
                     if (spatialRefFactory != null)
                     {
-                        // ³¢ÊÔÊ¹ÓÃ¿ÉÄÜµÄEPSG´úÂë£¨CGCS2000 3¶È´øÍ¶Ó°×ø±êÏµÍ¨³£ÒÔ4491+´øºÅµÄĞÎÊ½£©
+                        // å°è¯•ä½¿ç”¨å¯èƒ½çš„EPSGä»£ç ï¼ˆCGCS2000 3åº¦å¸¦æŠ•å½±åæ ‡ç³»é€šå¸¸ä»¥4491+å¸¦å·çš„å½¢å¼ï¼‰
                         try
                         {
                            
                             IProjectedCoordinateSystem projectedCS = spatialRefFactory.CreateProjectedCoordinateSystem(4525);
                             if (projectedCS != null)
                             {
-                                System.Diagnostics.Debug.WriteLine("³É¹¦Ê¹ÓÃEPSG 4528´´½¨CGCS2000 3¶È´ø37´øÍ¶Ó°×ø±êÏµ");
+                                System.Diagnostics.Debug.WriteLine("æˆåŠŸä½¿ç”¨EPSG 4528åˆ›å»ºCGCS2000 3åº¦å¸¦37å¸¦æŠ•å½±åæ ‡ç³»");
                                 return projectedCS as ISpatialReference;
                             }
                         }
                         catch (Exception ex1)
                         {
-                            System.Diagnostics.Debug.WriteLine($"Ê¹ÓÃEPSG 4528´´½¨Í¶Ó°×ø±êÏµÊ§°Ü: {ex1.Message}");
+                            System.Diagnostics.Debug.WriteLine($"ä½¿ç”¨EPSG 4528åˆ›å»ºæŠ•å½±åæ ‡ç³»å¤±è´¥: {ex1.Message}");
                         }
                     }
                 }
                 catch (Exception ex1)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Ê¹ÓÃEPSG´úÂë´´½¨CGCS2000Í¶Ó°×ø±êÏµÊ§°Ü: {ex1.Message}");
+                    System.Diagnostics.Debug.WriteLine($"ä½¿ç”¨EPSGä»£ç åˆ›å»ºCGCS2000æŠ•å½±åæ ‡ç³»å¤±è´¥: {ex1.Message}");
                 }
 
-                // ·½·¨2£ºÊ¹ÓÃWKT×Ö·û´®´´½¨Í¶Ó°×ø±êÏµ
+                // æ–¹æ³•2ï¼šä½¿ç”¨WKTå­—ç¬¦ä¸²åˆ›å»ºæŠ•å½±åæ ‡ç³»
                 try
                 {
                     Type spatialRefEnvType = Type.GetTypeFromProgID("esriGeometry.SpatialReferenceEnvironment");
                     object spatialRefEnvObj = Activator.CreateInstance(spatialRefEnvType);
 
-                    // Ê¹ÓÃ·´Éäµ÷ÓÃCreateESRISpatialReferenceFromPRJString·½·¨
+                    // ä½¿ç”¨åå°„è°ƒç”¨CreateESRISpatialReferenceFromPRJStringæ–¹æ³•
                     System.Reflection.MethodInfo createFromPrjMethod = spatialRefEnvType.GetMethod("CreateESRISpatialReferenceFromPRJString");
                     if (createFromPrjMethod != null)
                     {
@@ -632,65 +632,65 @@ namespace TestArcMapAddin2.Forms
 
                         if (result != null && result is ISpatialReference)
                         {
-                            System.Diagnostics.Debug.WriteLine("³É¹¦Ê¹ÓÃWKT×Ö·û´®´´½¨CGCS2000 3¶È´ø37´øÍ¶Ó°×ø±êÏµ");
+                            System.Diagnostics.Debug.WriteLine("æˆåŠŸä½¿ç”¨WKTå­—ç¬¦ä¸²åˆ›å»ºCGCS2000 3åº¦å¸¦37å¸¦æŠ•å½±åæ ‡ç³»");
                             return result as ISpatialReference;
                         }
                     }
                 }
                 catch (Exception ex2)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Ê¹ÓÃWKT×Ö·û´®´´½¨CGCS2000Í¶Ó°×ø±êÏµÊ§°Ü: {ex2.Message}");
+                    System.Diagnostics.Debug.WriteLine($"ä½¿ç”¨WKTå­—ç¬¦ä¸²åˆ›å»ºCGCS2000æŠ•å½±åæ ‡ç³»å¤±è´¥: {ex2.Message}");
                 }
 
-                System.Diagnostics.Debug.WriteLine("ËùÓĞÍ¶Ó°×ø±êÏµ´´½¨·½·¨¶¼Ê§°Ü");
+                System.Diagnostics.Debug.WriteLine("æ‰€æœ‰æŠ•å½±åæ ‡ç³»åˆ›å»ºæ–¹æ³•éƒ½å¤±è´¥");
                 return null;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"´´½¨CGCS2000Í¶Ó°×ø±êÏµÊ±³öÏÖÒâÍâ´íÎó: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"åˆ›å»ºCGCS2000æŠ•å½±åæ ‡ç³»æ—¶å‡ºç°æ„å¤–é”™è¯¯: {ex.Message}");
                 return null;
             }
         }
 
         /// <summary>
-        /// ´´½¨CGCS2000µØÀí×ø±êÏµ£¨±¸ÓÃ·½°¸£©
+        /// åˆ›å»ºCGCS2000åœ°ç†åæ ‡ç³»ï¼ˆå¤‡ç”¨æ–¹æ¡ˆï¼‰
         /// </summary>
-        /// <returns>CGCS2000µØÀí×ø±êÏµ¶ÔÏó</returns>
+        /// <returns>CGCS2000åœ°ç†åæ ‡ç³»å¯¹è±¡</returns>
         private ISpatialReference CreateCGCS2000GeographicSpatialReference()
         {
             try
             {
-                // ·½·¨1£º³¢ÊÔÊ¹ÓÃEPSG´úÂë4490´´½¨CGCS2000µØÀí×ø±êÏµ
+                // æ–¹æ³•1ï¼šå°è¯•ä½¿ç”¨EPSGä»£ç 4490åˆ›å»ºCGCS2000åœ°ç†åæ ‡ç³»
                 try
                 {
-                    // ´´½¨¿Õ¼ä²Î¿¼ÏµÍ³»·¾³½Ó¿Ú
+                    // åˆ›å»ºç©ºé—´å‚è€ƒç³»ç»Ÿç¯å¢ƒæ¥å£
                     Type spatialRefEnvType = Type.GetTypeFromProgID("esriGeometry.SpatialReferenceEnvironment");
                     object spatialRefEnvObj = Activator.CreateInstance(spatialRefEnvType);
                     ISpatialReferenceFactory spatialRefFactory = spatialRefEnvObj as ISpatialReferenceFactory;
 
                     if (spatialRefFactory != null)
                     {
-                        // Ê¹ÓÃEPSG´úÂë4490´´½¨CGCS2000µØÀí×ø±êÏµ
+                        // ä½¿ç”¨EPSGä»£ç 4490åˆ›å»ºCGCS2000åœ°ç†åæ ‡ç³»
                         IGeographicCoordinateSystem geographicCS = spatialRefFactory.CreateGeographicCoordinateSystem(4490);
                         if (geographicCS != null)
                         {
-                            System.Diagnostics.Debug.WriteLine("³É¹¦Ê¹ÓÃEPSG 4490´´½¨CGCS2000µØÀí×ø±êÏµ");
+                            System.Diagnostics.Debug.WriteLine("æˆåŠŸä½¿ç”¨EPSG 4490åˆ›å»ºCGCS2000åœ°ç†åæ ‡ç³»");
                             return geographicCS as ISpatialReference;
                         }
                     }
                 }
                 catch (Exception ex1)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Ê¹ÓÃEPSG 4490´´½¨CGCS2000Ê§°Ü: {ex1.Message}");
+                    System.Diagnostics.Debug.WriteLine($"ä½¿ç”¨EPSG 4490åˆ›å»ºCGCS2000å¤±è´¥: {ex1.Message}");
                 }
 
-                // ·½·¨2£º±¸ÓÃ·½°¸ - ³¢ÊÔ´ÓWKT×Ö·û´®´´½¨
+                // æ–¹æ³•2ï¼šå¤‡ç”¨æ–¹æ¡ˆ - å°è¯•ä»WKTå­—ç¬¦ä¸²åˆ›å»º
                 try
                 {
                     Type spatialRefEnvType = Type.GetTypeFromProgID("esriGeometry.SpatialReferenceEnvironment");
                     object spatialRefEnvObj = Activator.CreateInstance(spatialRefEnvType);
 
-                    // Ê¹ÓÃ·´Éäµ÷ÓÃCreateESRISpatialReferenceFromPRJString·½·¨
+                    // ä½¿ç”¨åå°„è°ƒç”¨CreateESRISpatialReferenceFromPRJStringæ–¹æ³•
                     System.Reflection.MethodInfo createFromPrjMethod = spatialRefEnvType.GetMethod("CreateESRISpatialReferenceFromPRJString");
                     if (createFromPrjMethod != null)
                     {
@@ -699,17 +699,17 @@ namespace TestArcMapAddin2.Forms
 
                         if (result != null && result is ISpatialReference)
                         {
-                            System.Diagnostics.Debug.WriteLine("³É¹¦Ê¹ÓÃWKT×Ö·û´®´´½¨CGCS2000µØÀí×ø±êÏµ");
+                            System.Diagnostics.Debug.WriteLine("æˆåŠŸä½¿ç”¨WKTå­—ç¬¦ä¸²åˆ›å»ºCGCS2000åœ°ç†åæ ‡ç³»");
                             return result as ISpatialReference;
                         }
                     }
                 }
                 catch (Exception ex2)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Ê¹ÓÃWKT×Ö·û´®´´½¨CGCS2000Ê§°Ü: {ex2.Message}");
+                    System.Diagnostics.Debug.WriteLine($"ä½¿ç”¨WKTå­—ç¬¦ä¸²åˆ›å»ºCGCS2000å¤±è´¥: {ex2.Message}");
                 }
 
-                // ·½·¨3£º×îºóµÄ±¸ÓÃ·½°¸ - ´´½¨Ò»¸öÍ¨ÓÃµÄµØÀí×ø±êÏµ
+                // æ–¹æ³•3ï¼šæœ€åçš„å¤‡ç”¨æ–¹æ¡ˆ - åˆ›å»ºä¸€ä¸ªé€šç”¨çš„åœ°ç†åæ ‡ç³»
                 try
                 {
                     Type spatialRefEnvType = Type.GetTypeFromProgID("esriGeometry.SpatialReferenceEnvironment");
@@ -718,82 +718,75 @@ namespace TestArcMapAddin2.Forms
 
                     if (spatialRefFactory != null)
                     {
-                        // ´´½¨WGS84µØÀí×ø±êÏµ×÷Îª±¸ÓÃ
+                        // åˆ›å»ºWGS84åœ°ç†åæ ‡ç³»ä½œä¸ºå¤‡ç”¨
                         IGeographicCoordinateSystem wgs84CS = spatialRefFactory.CreateGeographicCoordinateSystem((int)esriSRGeoCSType.esriSRGeoCS_WGS1984);
                         if (wgs84CS != null)
                         {
-                            System.Diagnostics.Debug.WriteLine("¾¯¸æ£ºÊ¹ÓÃWGS84×ø±êÏµ×÷Îª±¸ÓÃ·½°¸");
+                            System.Diagnostics.Debug.WriteLine("è­¦å‘Šï¼šä½¿ç”¨WGS84åæ ‡ç³»ä½œä¸ºå¤‡ç”¨æ–¹æ¡ˆ");
                             return wgs84CS as ISpatialReference;
                         }
                     }
                 }
                 catch (Exception ex3)
                 {
-                    System.Diagnostics.Debug.WriteLine($"´´½¨±¸ÓÃ×ø±êÏµÒ²Ê§°Ü: {ex3.Message}");
+                    System.Diagnostics.Debug.WriteLine($"åˆ›å»ºå¤‡ç”¨åæ ‡ç³»ä¹Ÿå¤±è´¥: {ex3.Message}");
                 }
 
-                System.Diagnostics.Debug.WriteLine("ËùÓĞ´´½¨CGCS2000µØÀí×ø±êÏµµÄ·½·¨¶¼Ê§°ÜÁË");
+                System.Diagnostics.Debug.WriteLine("æ‰€æœ‰åˆ›å»ºCGCS2000åœ°ç†åæ ‡ç³»çš„æ–¹æ³•éƒ½å¤±è´¥äº†");
                 return null;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"´´½¨CGCS2000µØÀí×ø±êÏµÊ±³öÏÖÒâÍâ´íÎó: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"åˆ›å»ºCGCS2000åœ°ç†åæ ‡ç³»æ—¶å‡ºç°æ„å¤–é”™è¯¯: {ex.Message}");
                 return null;
             }
         }
 
         /// <summary>
-        /// ÎªÒÑ´æÔÚµÄÒªËØÀàÉèÖÃCGCS2000×ø±êÏµ
+        /// ä¸ºå·²å­˜åœ¨çš„è¦ç´ ç±»è®¾ç½®CGCS2000åæ ‡ç³»
         /// </summary>
-        /// <param name="featureClass">ÒªËØÀà</param>
-        /// <param name="featureClassName">ÒªËØÀàÃû³Æ</param>
+        /// <param name="featureClass">è¦ç´ ç±»</param>
+        /// <param name="featureClassName">è¦ç´ ç±»åç§°</param>
         private void SetCoordinateSystemForExistingFeatureClass(IFeatureClass featureClass, string featureClassName)
         {
             try
             {
-                // ´´½¨CGCS2000¿Õ¼ä²Î¿¼ÏµÍ³
+                // åˆ›å»ºCGCS2000ç©ºé—´å‚è€ƒç³»ç»Ÿ
                 ISpatialReference cgcs2000SpatialRef = CreateCGCS2000SpatialReference();
                 if (cgcs2000SpatialRef == null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"ÎŞ·¨Îª{featureClassName}ÉèÖÃ×ø±êÏµ£º¿Õ¼ä²Î¿¼ÏµÍ³´´½¨Ê§°Ü");
+                    System.Diagnostics.Debug.WriteLine($"æ— æ³•ä¸º{featureClassName}è®¾ç½®åæ ‡ç³»ï¼šç©ºé—´å‚è€ƒç³»ç»Ÿåˆ›å»ºå¤±è´¥");
                     return;
                 }
 
-                // ´ÓÒªËØÀà»ñÈ¡µØÀíÊı¾İ¼¯¶ÔÏó
+                // ä»è¦ç´ ç±»è·å–åœ°ç†æ•°æ®é›†å¯¹è±¡
                 IGeoDataset geoDataset = (IGeoDataset)featureClass;
 
-                // ¼ì²éµ±Ç°×ø±êÏµ
+                // æ£€æŸ¥å½“å‰åæ ‡ç³»
                 ISpatialReference currentSpatialRef = geoDataset.SpatialReference;
                 if (currentSpatialRef != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"{featureClassName}µ±Ç°ÒÑÓĞ×ø±êÏµ£¬×¼±¸¸ü¸ÄÎªCGCS2000");
+                    System.Diagnostics.Debug.WriteLine($"{featureClassName}å½“å‰å·²æœ‰åæ ‡ç³»ï¼Œå‡†å¤‡æ›´æ”¹ä¸ºCGCS2000");
                 }
 
-                // ×ª»»ÎªIGeoDatasetSchemaEdit¶ÔÏóÒÔĞŞ¸Ä×ø±êÏµ
+                // è½¬æ¢ä¸ºIGeoDatasetSchemaEditå¯¹è±¡ä»¥ä¿®æ”¹åæ ‡ç³»
                 IGeoDatasetSchemaEdit schemaEdit = (IGeoDatasetSchemaEdit)geoDataset;
 
-                // ÎªÒªËØÀà¶¨ÒåCGCS2000×ø±êÏµ
+                // ä¸ºè¦ç´ ç±»å®šä¹‰CGCS2000åæ ‡ç³»
                 schemaEdit.AlterSpatialReference(cgcs2000SpatialRef);
 
-                System.Diagnostics.Debug.WriteLine($"³É¹¦Îª{featureClassName}ÒªËØÀàÉèÖÃCGCS2000×ø±êÏµ");
+                System.Diagnostics.Debug.WriteLine($"æˆåŠŸä¸º{featureClassName}è¦ç´ ç±»è®¾ç½®CGCS2000åæ ‡ç³»");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Îª{featureClassName}ÉèÖÃ×ø±êÏµÊ±³ö´í: {ex.Message}");
-                // ²»Å×³öÒì³££¬È·±£ÆäËû´¦ÀíÁ÷³Ì¼ÌĞø
+                System.Diagnostics.Debug.WriteLine($"ä¸º{featureClassName}è®¾ç½®åæ ‡ç³»æ—¶å‡ºé”™: {ex.Message}");
+                // ä¸æŠ›å‡ºå¼‚å¸¸ï¼Œç¡®ä¿å…¶ä»–å¤„ç†æµç¨‹ç»§ç»­
             }
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog folderBrowser = new FolderBrowserDialog();
-            folderBrowser.Description = "ÇëÑ¡ÔñÊı¾İ×ÜÄ¿Â¼";
-            // folderBrowser.ShowNewFolderButton = true;
-            if (folderBrowser.ShowDialog() == DialogResult.OK)
-            {
-                dataSourcePath = folderBrowser.SelectedPath;
-            }
-
+            // ğŸ”¥ ä¿®æ”¹: ç§»é™¤å¼¹çª—ï¼Œç›´æ¥ä½¿ç”¨ dataSourcePath (ä¸ txtDataPath åŒæ­¥)
             if (!String.IsNullOrEmpty(dataSourcePath))
             {
                 System.IO.DirectoryInfo theFolder = new System.IO.DirectoryInfo(dataSourcePath);
@@ -804,21 +797,105 @@ namespace TestArcMapAddin2.Forms
                     String countryName = curDir.Substring(curDir.LastIndexOf('\\') + 1);
                     if (!CreateTable4Country(outputGDBPath, countryName))
                     {
-                        MessageBox.Show("´´½¨" + countryName + "Êı¾İ¿âÊ§°Ü");
+                        MessageBox.Show("åˆ›å»º" + countryName + "æ•°æ®åº“å¤±è´¥");
                         return;
                     }
                 }
-                MessageBox.Show("ÒÑ½¨Á¢³É¹ûÊı¾İ¿â¼°±í½á¹¹");
+                MessageBox.Show("å·²å»ºç«‹æˆæœæ•°æ®åº“åŠè¡¨ç»“æ„");
             }
             else
             {
-                MessageBox.Show("Ô´Â·¾¶Îª¿Õ");
+                // ğŸ”¥ ä¿®æ”¹: æç¤ºç”¨æˆ·å…ˆé€‰æ‹©æ•°æ®æºè·¯å¾„
+                MessageBox.Show("æ•°æ®æºè·¯å¾„ä¸ºç©ºï¼Œè¯·å…ˆé€šè¿‡æµè§ˆæŒ‰é’®é€‰æ‹©ã€‚");
             }
         }
 
         private void lblOutputGDBPath_Click(object sender, EventArgs e)
         {
 
+        }
+
+        /// <summary>
+        /// ç”¨äºç”ŸæˆExcelæŠ¥å‘Šçš„æ•°æ®ç»“æ„
+        /// </summary>
+        private class DataSourceReportItem
+        {
+            public string CountyName { get; set; }
+            public string DataType { get; set; }
+            public string Format { get; set; }
+            public string Path { get; set; }
+        }
+
+        private void btnResultExcel_Click(object sender, EventArgs e)
+        {
+            // 1. éªŒè¯è¾“å‡ºè·¯å¾„æ˜¯å¦å·²é€‰æ‹©
+            if (string.IsNullOrEmpty(outputGDBPath))
+            {
+                MessageBox.Show("è¯·å…ˆé€‰æ‹©è¾“å‡ºç»“æœè·¯å¾„ã€‚", "æç¤º", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                // 2. ä»å…±äº«ç®¡ç†å™¨æ”¶é›†æ•°æ®
+                var lcxzgxFiles = ForestResourcePlugin.SharedDataManager.GetLCXZGXFiles();
+                var czkfbjFiles = ForestResourcePlugin.SharedDataManager.GetCZKFBJFiles();
+
+                if (lcxzgxFiles.Count == 0 && czkfbjFiles.Count == 0)
+                {
+                    MessageBox.Show("æ²¡æœ‰æ‰¾åˆ°ä»»ä½•å¯æŠ¥å‘Šçš„æ•°æ®æºæ–‡ä»¶ã€‚", "æç¤º", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // 3. å°†æ•°æ®æ•´ç†ä¸ºæŠ¥å‘Šæ ¼å¼
+                var reportData = new List<DataSourceReportItem>();
+                foreach (var file in lcxzgxFiles)
+                {
+                    reportData.Add(new DataSourceReportItem
+                    {
+                        CountyName = file.DisplayName,
+                        DataType = "æ—è‰ç°çŠ¶",
+                        Format = file.IsGdb ? "GDBè¦ç´ ç±»" : "Shapefile",
+                        Path = file.FullPath
+                    });
+                }
+                foreach (var file in czkfbjFiles)
+                {
+                    reportData.Add(new DataSourceReportItem
+                    {
+                        CountyName = file.DisplayName,
+                        DataType = "åŸé•‡å¼€å‘è¾¹ç•Œ",
+                        Format = file.IsGdb ? "GDBè¦ç´ ç±»" : "Shapefile",
+                        Path = file.FullPath
+                    });
+                }
+
+                // æŒ‰å¿åå’Œæ•°æ®ç±»å‹æ’åºï¼Œä½¿æŠ¥å‘Šæ›´æ¸…æ™°
+                reportData = reportData.OrderBy(r => r.CountyName).ThenBy(r => r.DataType).ToList();
+
+                // 4. å®šä¹‰Excelè¡¨å¤´
+                var headers = new Dictionary<string, string>
+                {
+                    { "CountyName", "å¿å" },
+                    { "DataType", "æ•°æ®ç±»å‹" },
+                    { "Format", "æ•°æ®æ ¼å¼" },
+                    { "Path", "æ–‡ä»¶è·¯å¾„" }
+                };
+
+                // 5. å®šä¹‰è¾“å‡ºæ–‡ä»¶è·¯å¾„
+                string excelFilePath = System.IO.Path.Combine(outputGDBPath, "æ•°æ®æºå‡†å¤‡æƒ…å†µæŠ¥å‘Š.xlsx");
+
+                // 6. è°ƒç”¨å¯¼å‡ºå·¥å…·
+                ForestResourcePlugin.Utils.ExcelExporter.ExportToExcel(reportData, headers, excelFilePath);
+
+                // 7. æç¤ºç”¨æˆ·æˆåŠŸ
+                MessageBox.Show($"æ•°æ®æºå‡†å¤‡æƒ…å†µæŠ¥å‘Šå·²æˆåŠŸå¯¼å‡ºåˆ°ï¼š\n\n{excelFilePath}", "å¯¼å‡ºæˆåŠŸ", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"å¯¼å‡ºExcelæŠ¥å‘Šæ—¶å‘ç”Ÿé”™è¯¯ï¼š\n{ex.Message}", "é”™è¯¯", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Debug.WriteLine($"å¯¼å‡ºExcelæŠ¥å‘Šå¤±è´¥: {ex}");
+            }
         }
     }
 }

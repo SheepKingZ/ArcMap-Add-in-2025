@@ -430,7 +430,12 @@ namespace ForestResourcePlugin
                     fieldMappings = Convert2ResultTable.CreateXZ2SLZYZCFieldsMap();
                 }
 
-                // 获取CZKFBJMJ字段索引
+                // 🔥 修改: 显式获取并检查 ZCQCBSM 和 CZKFBJMJ 字段索引
+                int zcqcbsmIndex = targetFeatureClass.FindField("ZCQCBSM");
+                if (zcqcbsmIndex == -1)
+                {
+                    System.Diagnostics.Debug.WriteLine($"警告: 目标表 SLZYZC.shp 中未找到 ZCQCBSM 字段，将跳过该字段的计算。");
+                }
                 int czkfbjmjIndex = targetFeatureClass.FindField("CZKFBJMJ");
                 if (czkfbjmjIndex == -1)
                 {
@@ -452,38 +457,51 @@ namespace ForestResourcePlugin
                             featureBuffer.Shape = sourceFeature.ShapeCopy;
                         }
 
-                        // 复制属性并执行字段映射
+                        // 1. 复制通用属性并执行字段映射
                         CopyAndConvertFeatureAttributes(
                             sourceFeature,
                             sourceFeatureClass,
                             featureBuffer,
                             targetFeatureClass,
                             fieldMappings,
-                            countyName);
+                            countyName,
+                            successCount + 1); // 传递图斑序号
 
-                        // 处理CZKFBJMJ字段
+                        // 🔥 修改: 2. 独立处理 ZCQCBSM 字段，不再依赖于字段映射
+                        if (zcqcbsmIndex != -1)
+                        {
+                            object zcqcbsmValue = ProcessSpecialFieldMapping(
+                                sourceFeature,
+                                sourceFeatureClass,
+                                "ZCQCBSM", // 目标字段名
+                                "",        // 源字段名（此处无用）
+                                countyName,
+                                successCount + 1); // 传递图斑序号
+
+                            if (zcqcbsmValue != null)
+                            {
+                                featureBuffer.set_Value(zcqcbsmIndex, zcqcbsmValue);
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine($"警告：为要素 {sourceFeature.OID} 计算 ZCQCBSM 失败。");
+                            }
+                        }
+
+                        // 3. 处理CZKFBJMJ字段
                         if (czkfbjmjIndex != -1)
                         {
                             double intersectionArea = 0;
-
-                            // 计算与城镇开发边界的交集面积
                             if (czkfbjFeatureClass != null && sourceFeature.Shape != null)
                             {
                                 intersectionArea = CalculateIntersectionArea(sourceFeature.Shape, czkfbjFeatureClass);
-
-                                if (intersectionArea > 0)
-                                {
-                                    System.Diagnostics.Debug.WriteLine($"图斑与城镇开发边界交集面积: {intersectionArea:F2} 平方米");
-                                }
                             }
-
                             featureBuffer.set_Value(czkfbjmjIndex, intersectionArea);
                         }
 
                         // 插入要素
                         insertCursor.InsertFeature(featureBuffer);
                         successCount++;
-
                         processedCount++;
 
                         // 更新进度
@@ -496,7 +514,7 @@ namespace ForestResourcePlugin
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"转换{countyName}要素时出错: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"转换{countyName}要素 {sourceFeature?.OID} 时出错: {ex.Message}");
                     }
                     finally
                     {
@@ -539,13 +557,15 @@ namespace ForestResourcePlugin
         /// <param name="targetFeatureClass">目标要素类</param>
         /// <param name="fieldMappings">字段映射配置</param>
         /// <param name="countyName">县名</param>
+        /// <param name="featureSequence">当前图斑的序号</param>
         private void CopyAndConvertFeatureAttributes(
             IFeature sourceFeature,
             IFeatureClass sourceFeatureClass,
             IFeatureBuffer targetFeatureBuffer,
             IFeatureClass targetFeatureClass,
             Dictionary<string, string> fieldMappings,
-            string countyName)
+            string countyName,
+            int featureSequence)
         {
             foreach (var mapping in fieldMappings)
             {
@@ -565,7 +585,8 @@ namespace ForestResourcePlugin
                         sourceFeatureClass,
                         targetFieldName,
                         sourceFieldName,
-                        countyName);
+                        countyName,
+                        featureSequence); // 传递序号
 
                     if (targetValue != null)
                     {
@@ -587,18 +608,35 @@ namespace ForestResourcePlugin
         /// <param name="targetFieldName">目标字段名</param>
         /// <param name="sourceFieldName">源字段名</param>
         /// <param name="countyName">县名</param>
+        /// <param name="featureSequence">当前图斑的序号</param>
         /// <returns>转换后的字段值</returns>
         private object ProcessSpecialFieldMapping(
             IFeature sourceFeature,
             IFeatureClass sourceFeatureClass,
             string targetFieldName,
             string sourceFieldName,
-            string countyName)
+            string countyName,
+            int featureSequence)
         {
             try
             {
                 switch (targetFieldName)
                 {
+                    case "ZCQCBSM":
+                        // 格式: XZQDM(6) + "4120" + 图斑序号(12)
+                        int xzqdmIndex = sourceFeatureClass.FindField("XZQDM");
+                        if (xzqdmIndex != -1)
+                        {
+                            string xzqdm = sourceFeature.get_Value(xzqdmIndex)?.ToString() ?? "";
+                            if (xzqdm.Length > 6)
+                            {
+                                xzqdm = xzqdm.Substring(0, 6);
+                            }
+                            string sequenceStr = featureSequence.ToString("D12"); // 格式化为12位，前补0
+                            return $"{xzqdm}4120{sequenceStr}";
+                        }
+                        return 0;
+
                     case "PCTBBM":
                         // 字段合并：xian + lin_ban + xiao_ban
                         return CombineFields(sourceFeature, sourceFeatureClass,

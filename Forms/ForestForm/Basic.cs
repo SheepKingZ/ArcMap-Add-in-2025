@@ -1,18 +1,20 @@
-﻿using System;
-using System.Windows.Forms;
+﻿using ESRI.ArcGIS.Carto;
+using ESRI.ArcGIS.DataSourcesFile;
+using ESRI.ArcGIS.Geodatabase;
+using ESRI.ArcGIS.Geometry;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Collections.Generic;
-using ESRI.ArcGIS.Geodatabase;
-using ESRI.ArcGIS.DataSourcesFile;
-using ESRI.ArcGIS.Geometry;
-using ESRI.ArcGIS.Carto;
 using System.Linq;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace ForestResourcePlugin
 {
     public partial class Basic : Form
     {
+        private CancellationTokenSource _cancellationTokenSource;
         private DataTable previewData;
         private DataTable mappingData;
         private List<CountyDataInfo> selectedCountyData; // 存储选中县的数据信息
@@ -30,18 +32,6 @@ namespace ForestResourcePlugin
 
         private void InitializeForm()
         {
-            // 初始化坐标系下拉框
-            cmbCoordSystem.Items.AddRange(new string[]
-            {
-                "CGCS2000_3_Degree_GK_CM_117E",
-                "CGCS2000_3_Degree_GK_CM_120E",
-                "CGCS2000_3_Degree_GK_CM_123E",
-                "Beijing_1954_3_Degree_GK_CM_117E",
-                "WGS_1984_UTM_Zone_49N",
-                "WGS_1984_UTM_Zone_50N"
-            });
-            cmbCoordSystem.SelectedIndex = 0;
-
             // 初始化处理选项
             chkTopologyCheck.Checked = true;
             chkGeometryValidation.Checked = true;
@@ -74,6 +64,7 @@ namespace ForestResourcePlugin
 
             // 加载县列表
             LoadCounties();
+
         }
         /// <summary>
         /// 县数据信息类
@@ -816,7 +807,7 @@ namespace ForestResourcePlugin
         /// <summary>
         /// 生成多县预览数据
         /// </summary>
-        private PreviewQueryResult GenerateMultiCountyPreview(string landTypeField, string landOwnerField)
+        private PreviewQueryResult GenerateMultiCountyPreview(string landTypeField, string landOwnerField, CancellationToken token)
         {
             var combinedResult = new PreviewQueryResult
             {
@@ -835,6 +826,8 @@ namespace ForestResourcePlugin
             {
                 try
                 {
+                    token.ThrowIfCancellationRequested();
+
                     if (countyInfo.LCXZGXFile == null)
                     {
                         System.Diagnostics.Debug.WriteLine($"县 {countyInfo.CountyName} 没有林草现状数据，跳过");
@@ -849,7 +842,7 @@ namespace ForestResourcePlugin
                     progressBar.Value = baseProgress;
 
                     // 处理单个县的数据
-                    var countyResult = ProcessSingleCountyPreview(countyInfo, landTypeField, landOwnerField);
+                    var countyResult = ProcessSingleCountyPreview(countyInfo, landTypeField, landOwnerField, token);
 
                     // 合并结果
                     foreach (DataRow row in countyResult.PreviewData.Rows)
@@ -886,7 +879,7 @@ namespace ForestResourcePlugin
         /// <summary>
         /// 处理单个县的预览数据
         /// </summary>
-        private PreviewQueryResult ProcessSingleCountyPreview(CountyDataInfo countyInfo, string landTypeField, string landOwnerField)
+        private PreviewQueryResult ProcessSingleCountyPreview(CountyDataInfo countyInfo, string landTypeField, string landOwnerField, CancellationToken token)
         {
             var result = new PreviewQueryResult
             {
@@ -924,7 +917,8 @@ namespace ForestResourcePlugin
                     optimizedWhereClause,
                     landTypeField,
                     landOwnerField,
-                    200); // 每个县最多200条记录用于预览
+                    200, // 每个县最多200条记录用于预览
+                    token);
 
                 // 清理COM对象
                 if (lcxzgxFeatureClass != null)
@@ -949,7 +943,8 @@ namespace ForestResourcePlugin
             string whereClause,
             string landTypeField,
             string landOwnerField,
-            int maxCount)
+            int maxCount,
+            CancellationToken token)
         {
             var result = new PreviewQueryResult
             {
@@ -991,6 +986,7 @@ namespace ForestResourcePlugin
 
                     while ((feature = cursor.NextFeature()) != null && result.ProcessedCount < maxCount)
                     {
+                        token.ThrowIfCancellationRequested();
                         result.TotalCount++;
 
                         if (ShouldIncludeFeatureForCounty(feature, fieldIndices, cachedSpatialFilter, czkfbjFeatureClass))
@@ -1143,6 +1139,12 @@ namespace ForestResourcePlugin
 
         private void btnPreview_Click(object sender, EventArgs e)
         {
+            _cancellationTokenSource = new CancellationTokenSource();
+            var token = _cancellationTokenSource.Token;
+
+            btnExecute.Enabled = false;
+            btnCancel.Enabled = true;
+            btnPreview.Enabled = false;
             try
             {
                 // 验证输入
@@ -1172,7 +1174,7 @@ namespace ForestResourcePlugin
                 progressBar.Value = 10;
 
                 // 生成多县预览数据
-                var allPreviewData = GenerateMultiCountyPreview(landTypeField, landOwnerField);
+                var allPreviewData = GenerateMultiCountyPreview(landTypeField, landOwnerField, token);
 
                 // 显示结果
                 DisplayPreviewResults(allPreviewData);
@@ -1183,6 +1185,12 @@ namespace ForestResourcePlugin
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }
+            catch (OperationCanceledException)
+            {
+                UpdateStatus("预览操作已取消");
+                progressBar.Value = 0;
+                ClearPreviewData();
+            }
             catch (Exception ex)
             {
                 MessageBox.Show($"生成预览时出错: {ex.Message}", "错误",
@@ -1190,6 +1198,17 @@ namespace ForestResourcePlugin
                 UpdateStatus("预览生成失败");
                 progressBar.Value = 0;
                 System.Diagnostics.Debug.WriteLine($"btnPreview_Click错误: {ex}");
+            }
+            finally
+            {
+                btnExecute.Enabled = true;
+                btnCancel.Enabled = false;
+                btnPreview.Enabled = true;
+                if (_cancellationTokenSource != null)
+                {
+                    _cancellationTokenSource.Dispose();
+                    _cancellationTokenSource = null;
+                }
             }
         }
 
@@ -1266,6 +1285,9 @@ namespace ForestResourcePlugin
         }
         private void ExecuteProcessing()
         {
+            _cancellationTokenSource = new CancellationTokenSource();
+            var token = _cancellationTokenSource.Token;
+
             btnExecute.Enabled = false;
             btnCancel.Enabled = true;
             progressBar.Value = 0;
@@ -1304,7 +1326,7 @@ namespace ForestResourcePlugin
                 UpdateStatus("开始批量处理县数据...");
 
                 // 4. 执行多县批量处理
-                var batchResults = ExecuteMultiCountyBatchProcessing(landTypeField, landOwnerField);
+                var batchResults = ExecuteMultiCountyBatchProcessing(landTypeField, landOwnerField, token);
 
                 progressBar.Value = 90;
                 UpdateStatus("正在生成处理报告...");
@@ -1322,6 +1344,13 @@ namespace ForestResourcePlugin
                     System.Diagnostics.Process.Start("explorer.exe", txtOutputPath.Text);
                 }
             }
+            catch (OperationCanceledException)
+            {
+                progressBar.Value = 0;
+                UpdateStatus("处理操作已取消");
+                MessageBox.Show("处理操作已由用户取消。", "操作取消",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
             catch (Exception ex)
             {
                 progressBar.Value = 0;
@@ -1334,13 +1363,18 @@ namespace ForestResourcePlugin
             {
                 btnExecute.Enabled = true;
                 btnCancel.Enabled = false;
+                if (_cancellationTokenSource != null)
+                {
+                    _cancellationTokenSource.Dispose();
+                    _cancellationTokenSource = null;
+                }
             }
         }
 
         /// <summary>
         /// 执行多县批量处理
         /// </summary>
-        private List<CountyProcessingResult> ExecuteMultiCountyBatchProcessing(string landTypeField, string landOwnerField)
+        private List<CountyProcessingResult> ExecuteMultiCountyBatchProcessing(string landTypeField, string landOwnerField, CancellationToken token)
         {
             var results = new List<CountyProcessingResult>();
             var selectedCounties = GetSelectedCounties();
@@ -1351,6 +1385,7 @@ namespace ForestResourcePlugin
             {
                 try
                 {
+                    token.ThrowIfCancellationRequested();
                     processedCounties++;
                     UpdateStatus($"正在处理县 {countyName} ({processedCounties}/{totalCounties})...");
 
@@ -1372,7 +1407,7 @@ namespace ForestResourcePlugin
                     }
 
                     // 处理单个县
-                    var countyResult = ProcessSingleCounty(countyInfo, landTypeField, landOwnerField);
+                    var countyResult = ProcessSingleCounty(countyInfo, landTypeField, landOwnerField, token);
                     results.Add(countyResult);
 
                     // 更新进度
@@ -1572,7 +1607,7 @@ namespace ForestResourcePlugin
         /// <summary>
         /// 处理单个县
         /// </summary>
-        private CountyProcessingResult ProcessSingleCounty(CountyDataInfo countyInfo, string landTypeField, string landOwnerField)
+        private CountyProcessingResult ProcessSingleCounty(CountyDataInfo countyInfo, string landTypeField, string landOwnerField, CancellationToken token)
         {
             var result = new CountyProcessingResult
             {
@@ -1602,7 +1637,8 @@ namespace ForestResourcePlugin
                     lcxzgxFeatureClass, 
                     czkfbjFeatureClass, 
                     landTypeField, 
-                    landOwnerField);
+                    landOwnerField,
+                    token);
 
                 if (filteredFeatures.Count == 0)
                 {
@@ -1637,6 +1673,7 @@ namespace ForestResourcePlugin
                     countyInfo.CountyName,     // 当前处理的县名，用于确定目标数据库路径
                     countyDatabasePath,        // 县级数据库基础路径，最终会拼接为：{countyDatabasePath}/{县名}/{县名}.gdb
                     fieldMappings,             // 字段映射配置，定义源字段与目标字段的对应关系
+                    //token,                     // CancellationToken for cancellation
                     (percentage, message) => { // 进度回调函数，用于实时更新处理进度和状态信息
                         // 进度回调处理：更新界面进度条和状态显示
                         try
@@ -1689,7 +1726,8 @@ namespace ForestResourcePlugin
             IFeatureClass lcxzgxFeatureClass,
             IFeatureClass czkfbjFeatureClass,
             string landTypeField,
-            string landOwnerField)
+            string landOwnerField,
+            CancellationToken token)
         {
             var features = new List<IFeature>();
 
@@ -1721,6 +1759,7 @@ namespace ForestResourcePlugin
 
                     while ((feature = cursor.NextFeature()) != null)
                     {
+                        token.ThrowIfCancellationRequested();
                         if (ShouldIncludeFeatureForCounty(feature, fieldIndices, cachedSpatialFilter, czkfbjFeatureClass))
                         {
                             features.Add(feature);
@@ -1736,9 +1775,13 @@ namespace ForestResourcePlugin
                 finally
                 {
                     if (feature != null)
+                    {
                         System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                    }
                     if (cursor != null)
+                    {
                         System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                    }
                 }
             }
             catch (Exception ex)
@@ -2295,34 +2338,66 @@ namespace ForestResourcePlugin
 
         private void btnAutoMapping_Click(object sender, EventArgs e)
         {
-            // 执行自动映射逻辑
-            UpdateStatus("正在执行自动映射...");
-            progressBar.Value = 30;
-
-            // 模拟自动映射
-            foreach (DataRow row in mappingData.Rows)
+            try
             {
-                string targetField = row["目标字段"].ToString();
-                switch (targetField)
-                {
-                    case "TBDH":
-                        row["源字段"] = "图斑编号";
-                        row["映射状态"] = "已映射";
-                        break;
-                    case "DLMC":
-                        row["源字段"] = "地类";
-                        row["映射状态"] = "已映射";
-                        break;
-                    case "TDQS":
-                        row["源字段"] = "土地权属";
-                        row["映射状态"] = "已映射";
-                        break;
-                }
-            }
+                UpdateStatus("正在执行自动字段映射...");
 
-            dgvMapping.Refresh();
-            progressBar.Value = 100;
-            UpdateStatus("自动映射完成");
+                // 1. 获取可用的源字段列表
+                var availableSourceFields = GetAvailableSourceFields();
+                if (availableSourceFields.Count == 0)
+                {
+                    MessageBox.Show("无法进行自动映射，因为没有可用的源字段。\n\n请先在左侧选择至少一个县。",
+                        "操作提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    UpdateStatus("自动映射失败：无源字段");
+                    return;
+                }
+
+                // 2. 获取硬编码的默认映射规则
+                var defaultMappings = ForestResourcePlugin.Utils.DefaultFieldMappingManager.GetFullFieldMappings();
+
+                // 3. 清空并重新填充映射表格
+                mappingData.Clear();
+                int mappedCount = 0;
+
+                foreach (var mapping in defaultMappings)
+                {
+                    string targetField = mapping.Key;
+                    string idealSourceField = mapping.Value;
+
+                    // 查找最佳匹配的源字段（不区分大小写）
+                    string matchedSourceField = availableSourceFields.FirstOrDefault(f =>
+                        f.Equals(idealSourceField, StringComparison.OrdinalIgnoreCase));
+
+                    string status;
+                    if (!string.IsNullOrEmpty(matchedSourceField))
+                    {
+                        status = "已映射";
+                        mappedCount++;
+                    }
+                    else
+                    {
+                        status = "未映射";
+                        matchedSourceField = ""; // 如果未找到匹配，则源字段为空
+                    }
+
+                    mappingData.Rows.Add(targetField, matchedSourceField, status);
+                }
+
+                // 刷新表格显示
+                dgvMapping.DataSource = mappingData;
+                dgvMapping.Refresh();
+
+                UpdateStatus($"自动映射完成，成功映射 {mappedCount} / {defaultMappings.Count} 个字段");
+                MessageBox.Show($"自动映射完成！\n\n成功匹配 {mappedCount} 个字段。", "操作成功",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"自动映射时发生错误: {ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                UpdateStatus("自动映射失败");
+                System.Diagnostics.Debug.WriteLine($"btnAutoMapping_Click 错误: {ex}");
+            }
         }
 
         private void btnLoadTemplate_Click(object sender, EventArgs e)
@@ -2673,10 +2748,11 @@ namespace ForestResourcePlugin
         private void btnCancel_Click(object sender, EventArgs e)
         {
             // 取消处理逻辑
-            UpdateStatus("操作已取消");
-            btnExecute.Enabled = true;
-            btnCancel.Enabled = false;
-            progressBar.Value = 0;
+            if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
+            {
+                _cancellationTokenSource.Cancel();
+                UpdateStatus("正在取消操作...");
+            }
         }
 
         private void UpdateStatus(string message)

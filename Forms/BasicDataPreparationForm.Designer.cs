@@ -42,6 +42,7 @@ namespace TestArcMapAddin2.Forms
             this.button1 = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
+            this.btnResultExcel = new System.Windows.Forms.Button();
             this.topPanel.SuspendLayout();
             this.bottomPanel.SuspendLayout();
             this.SuspendLayout();
@@ -79,7 +80,7 @@ namespace TestArcMapAddin2.Forms
             // 
             this.lblDataSource.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblDataSource.ForeColor = System.Drawing.Color.Black;
-            this.lblDataSource.Location = new System.Drawing.Point(27, 136);
+            this.lblDataSource.Location = new System.Drawing.Point(19, 74);
             this.lblDataSource.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblDataSource.Name = "lblDataSource";
             this.lblDataSource.Size = new System.Drawing.Size(560, 30);
@@ -90,7 +91,7 @@ namespace TestArcMapAddin2.Forms
             // txtDataPath
             // 
             this.txtDataPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.txtDataPath.Location = new System.Drawing.Point(27, 174);
+            this.txtDataPath.Location = new System.Drawing.Point(19, 112);
             this.txtDataPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtDataPath.Name = "txtDataPath";
             this.txtDataPath.ReadOnly = true;
@@ -101,7 +102,7 @@ namespace TestArcMapAddin2.Forms
             // btnBrowseData
             // 
             this.btnBrowseData.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnBrowseData.Location = new System.Drawing.Point(860, 174);
+            this.btnBrowseData.Location = new System.Drawing.Point(852, 112);
             this.btnBrowseData.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseData.Name = "btnBrowseData";
             this.btnBrowseData.Size = new System.Drawing.Size(105, 34);
@@ -114,7 +115,7 @@ namespace TestArcMapAddin2.Forms
             // 
             this.lblOutputGDBPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblOutputGDBPath.ForeColor = System.Drawing.Color.Black;
-            this.lblOutputGDBPath.Location = new System.Drawing.Point(27, 226);
+            this.lblOutputGDBPath.Location = new System.Drawing.Point(19, 164);
             this.lblOutputGDBPath.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblOutputGDBPath.Name = "lblOutputGDBPath";
             this.lblOutputGDBPath.Size = new System.Drawing.Size(225, 30);
@@ -126,7 +127,7 @@ namespace TestArcMapAddin2.Forms
             // txtOutputGDBPath
             // 
             this.txtOutputGDBPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.txtOutputGDBPath.Location = new System.Drawing.Point(27, 264);
+            this.txtOutputGDBPath.Location = new System.Drawing.Point(19, 202);
             this.txtOutputGDBPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtOutputGDBPath.Name = "txtOutputGDBPath";
             this.txtOutputGDBPath.ReadOnly = true;
@@ -137,7 +138,7 @@ namespace TestArcMapAddin2.Forms
             // btnBrowseOutputGDB
             // 
             this.btnBrowseOutputGDB.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnBrowseOutputGDB.Location = new System.Drawing.Point(860, 264);
+            this.btnBrowseOutputGDB.Location = new System.Drawing.Point(852, 202);
             this.btnBrowseOutputGDB.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseOutputGDB.Name = "btnBrowseOutputGDB";
             this.btnBrowseOutputGDB.Size = new System.Drawing.Size(105, 34);
@@ -149,6 +150,7 @@ namespace TestArcMapAddin2.Forms
             // bottomPanel
             // 
             this.bottomPanel.BackColor = System.Drawing.Color.LightGray;
+            this.bottomPanel.Controls.Add(this.btnResultExcel);
             this.bottomPanel.Controls.Add(this.button1);
             this.bottomPanel.Controls.Add(this.btnOK);
             this.bottomPanel.Controls.Add(this.btnCancel);
@@ -161,12 +163,12 @@ namespace TestArcMapAddin2.Forms
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(459, 22);
+            this.button1.Location = new System.Drawing.Point(418, 22);
             this.button1.Margin = new System.Windows.Forms.Padding(4);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(112, 34);
+            this.button1.Size = new System.Drawing.Size(153, 34);
             this.button1.TabIndex = 2;
-            this.button1.Text = "创建数据库";
+            this.button1.Text = "创建Shapefile";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -195,6 +197,16 @@ namespace TestArcMapAddin2.Forms
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
             // 
+            // btnResultExcel
+            // 
+            this.btnResultExcel.Location = new System.Drawing.Point(255, 22);
+            this.btnResultExcel.Name = "btnResultExcel";
+            this.btnResultExcel.Size = new System.Drawing.Size(156, 34);
+            this.btnResultExcel.TabIndex = 3;
+            this.btnResultExcel.Text = "创建结果表格";
+            this.btnResultExcel.UseVisualStyleBackColor = true;
+            this.btnResultExcel.Click += new System.EventHandler(this.btnResultExcel_Click);
+            // 
             // BasicDataPreparationForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
@@ -219,5 +231,6 @@ namespace TestArcMapAddin2.Forms
         }
 
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnResultExcel;
     }
 }

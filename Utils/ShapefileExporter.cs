@@ -82,9 +82,10 @@ namespace ForestResourcePlugin
 
                 progressCallback?.Invoke(15, $"正在创建{countyName}的LCXZGX Shapefile...");
 
-                // 获取几何类型和空间参考
-                esriGeometryType geometryType = sourceFeatureClass.ShapeType;
-                ISpatialReference spatialReference = ((IGeoDataset)sourceFeatureClass).SpatialReference;
+                // 🔥 修改: 直接从当前处理的要素获取几何类型和空间参考，确保与源数据一致
+                IFeature firstFeature = processedFeatures[0];
+                esriGeometryType geometryType = firstFeature.Shape.GeometryType;
+                ISpatialReference spatialReference = firstFeature.Shape.SpatialReference;
 
                 // 创建LCXZGX要素类
                 lcxzgxFeatureClass = CreateLCXZGXShapefile(shapefileWorkspace, geometryType, spatialReference);
@@ -104,7 +105,7 @@ namespace ForestResourcePlugin
                 System.Diagnostics.Debug.WriteLine($"县{countyName}的数据已成功写入Shapefile");
 
                 // 执行转换操作
-                progressCallback?.Invoke(85, $"开始转换{countyName}的LCXZGX数据到SLZYZC Shapefile...");
+                // 移除了此处固定的进度跳转，将进度控制移入 PerformAutoConversion
                 PerformAutoConversion(countyName, outputPath, progressCallback);
 
                 progressCallback?.Invoke(100, $"{countyName}的数据导入和转换已全部完成");
@@ -129,22 +130,12 @@ namespace ForestResourcePlugin
         /// <param name="countyName">县名</param>
         /// <param name="outputPath">输出路径</param>
         /// <param name="progressCallback">进度回调</param>
-        /// <summary>
-        /// 执行自动转换 - 在LCXZGX数据插入完成后自动转换为SLZYZC和SLZYZC_DLTB
-        /// </summary>
-        /// <param name="countyName">县名</param>
-        /// <param name="outputPath">输出路径</param>
-        /// <param name="progressCallback">进度回调</param>
-        /// <summary>
-        /// 执行自动转换 - 在LCXZGX数据插入完成后自动转换为SLZYZC和SLZYZC_DLTB
-        /// </summary>
-        /// <param name="countyName">县名</param>
-        /// <param name="outputPath">输出路径</param>
-        /// <param name="progressCallback">进度回调</param>
         private void PerformAutoConversion(string countyName, string outputPath, ProgressCallback progressCallback)
         {
             try
             {
+                // 🔥 修改: 在转换开始时立即更新进度，从上一个阶段的80%平滑过渡
+                progressCallback?.Invoke(80, $"准备转换 {countyName} 的成果表...");
                 System.Diagnostics.Debug.WriteLine($"开始自动转换县{countyName}的数据从LCXZGX到SLZYZC");
 
                 // 构建文件路径
@@ -162,15 +153,15 @@ namespace ForestResourcePlugin
                     null, // 使用默认字段映射
                     (subPercentage, subMessage) =>
                     {
-                        // 将转换进度映射到总进度的85%-90%区间
-                        int totalPercentage = 85 + (subPercentage * 5 / 100);
+                        int totalPercentage = 80 + (subPercentage * 10 / 100);
                         progressCallback?.Invoke(totalPercentage, $"{countyName}: {subMessage}");
                     });
 
                 if (conversionSuccess)
                 {
                     System.Diagnostics.Debug.WriteLine($"县{countyName}的LCXZGX数据已成功自动转换为SLZYZC表");
-                    progressCallback?.Invoke(90, $"{countyName}的SLZYZC数据转换成功完成");
+                    //在第二次转换开始前，将进度明确设置到90%
+                    progressCallback?.Invoke(90, $"{countyName}的SLZYZC数据转换成功，准备转换DLTB...");
 
                     // 继续执行第二次转换 - SLZYZC转换为SLZYZC_DLTB
                     System.Diagnostics.Debug.WriteLine($"开始自动转换县{countyName}的数据从SLZYZC到SLZYZC_DLTB");
@@ -183,33 +174,34 @@ namespace ForestResourcePlugin
                         null, // 使用默认字段映射
                         (subPercentage, subMessage) =>
                         {
-                            // 将转换进度映射到总进度的90%-95%区间
-                            int totalPercentage = 90 + (subPercentage * 5 / 100);
+                            // 🔥 修改: 将转换进度映射到总进度的90%-99%区间
+                            int totalPercentage = 90 + (subPercentage * 9 / 100);
                             progressCallback?.Invoke(totalPercentage, $"{countyName}: {subMessage}");
                         });
 
                     if (conversion3Success)
                     {
                         System.Diagnostics.Debug.WriteLine($"县{countyName}的SLZYZC数据已成功自动转换为SLZYZC_DLTB表");
-                        progressCallback?.Invoke(95, $"{countyName}的数据全部转换成功完成");
+                        // 🔥 修改: 将最终进度设置为99%，为完成步骤留出空间
+                        progressCallback?.Invoke(99, $"{countyName}的数据全部转换成功完成");
                     }
                     else
                     {
                         System.Diagnostics.Debug.WriteLine($"县{countyName}的SLZYZC_DLTB数据转换失败");
-                        progressCallback?.Invoke(95, $"{countyName}的SLZYZC_DLTB数据转换失败，但SLZYZC数据已成功保存");
+                        progressCallback?.Invoke(99, $"{countyName}的SLZYZC_DLTB数据转换失败，但SLZYZC数据已成功保存");
                     }
                 }
                 else
                 {
                     System.Diagnostics.Debug.WriteLine($"县{countyName}的SLZYZC数据转换失败");
-                    progressCallback?.Invoke(95, $"{countyName}的数据转换失败，但LCXZGX数据已成功保存");
+                    progressCallback?.Invoke(90, $"{countyName}的数据转换失败，但LCXZGX数据已成功保存");
                 }
             }
             catch (Exception ex)
             {
                 // 转换失败不应影响主要的数据插入流程
                 System.Diagnostics.Debug.WriteLine($"自动转换县{countyName}数据时出错: {ex.Message}");
-                progressCallback?.Invoke(95, $"{countyName}的数据转换出错: {ex.Message}");
+                progressCallback?.Invoke(99, $"{countyName}的数据转换出错: {ex.Message}");
 
                 // 记录错误但不抛出异常，确保主流程继续
                 System.Diagnostics.Debug.WriteLine($"转换错误详情: {ex}");
@@ -255,7 +247,12 @@ namespace ForestResourcePlugin
 
                     // 为每个县输出数据到Shapefile
                     ExportToShapefile(countyFeatures, sourceFeatureClass, countyName, outputPath,
-                        fieldMappings, null);
+                        fieldMappings, (percentage, message) =>
+                        {
+                            // 将单个县的进度（0-100）映射到当前县的总体进度范围内
+                            int countyOverallProgress = overallProgress + (percentage * (100 / totalCounties) / 100);
+                            progressCallback?.Invoke(countyOverallProgress, message);
+                        });
 
                     processedCounties++;
 
@@ -386,13 +383,6 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 创建默认空间参考系统
-        /// </summary>
-        /// <returns>空间参考系统</returns>
-
-
-
-        /// <summary>
         /// 将要素写入Shapefile
         /// </summary>
         /// <param name="sourceFeatures">源要素列表</param>
@@ -421,6 +411,10 @@ namespace ForestResourcePlugin
                 int successCount = 0;
                 int errorCount = 0;
 
+                // 🔥 修改: 动态计算进度更新的间隔，确保进度条平滑更新
+                // 目标是整个循环过程中大约更新100次进度
+                int updateInterval = Math.Max(1, totalFeatures / 100);
+
                 System.Diagnostics.Debug.WriteLine($"开始向{countyName}的LCXZGX Shapefile插入{totalFeatures}个要素");
 
                 // 逐个处理要素
@@ -444,9 +438,10 @@ namespace ForestResourcePlugin
 
                         processedCount++;
 
-                        // 定期更新进度
-                        if (processedCount % 10 == 0 || processedCount == totalFeatures)
+                        // 🔥 修改: 使用动态计算的间隔来更新进度
+                        if (processedCount % updateInterval == 0 || processedCount == totalFeatures)
                         {
+                            // 将此过程的进度映射到总体进度的 25% 到 80% 区间
                             int percentage = 25 + (int)((processedCount / (double)totalFeatures) * 55);
                             progressCallback?.Invoke(percentage,
                                 $"正在写入{countyName}的LCXZGX Shapefile... ({processedCount}/{totalFeatures})");

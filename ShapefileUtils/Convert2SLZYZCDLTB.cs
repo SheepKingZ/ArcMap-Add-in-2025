@@ -156,22 +156,43 @@ namespace TestArcMapAddin2.ShapefileUtils
         /// </summary>
         private void ClearShapefileData(IFeatureClass featureClass)
         {
-            // 在编辑会话中执行删除操作以获得更好的性能
+            // 🔥 修改: 使该方法能独立管理编辑会话
+            ITable table = (ITable)featureClass;
+            if (table.RowCount(null) == 0) return; // 如果没有数据，则无需清空
+
             IWorkspaceEdit workspaceEdit = ((IDataset)featureClass).Workspace as IWorkspaceEdit;
-            if (workspaceEdit == null || !workspaceEdit.IsBeingEdited())
+            if (workspaceEdit == null)
             {
-                throw new Exception("无法获取工作空间编辑对象或工作空间未处于编辑状态。");
+                throw new Exception("无法获取工作空间编辑对象。");
             }
 
+            bool wasEditing = workspaceEdit.IsBeingEdited();
             try
             {
+                if (!wasEditing)
+                {
+                    workspaceEdit.StartEditing(true);
+                }
                 workspaceEdit.StartEditOperation();
-                ((ITable)featureClass).DeleteSearchedRows(null);
+
+                table.DeleteSearchedRows(null);
+
                 workspaceEdit.StopEditOperation();
+                if (!wasEditing)
+                {
+                    workspaceEdit.StopEditing(true);
+                }
             }
             catch (Exception ex)
             {
-                workspaceEdit.AbortEditOperation();
+                if (workspaceEdit.IsBeingEdited())
+                {
+                    workspaceEdit.AbortEditOperation();
+                    if (!wasEditing)
+                    {
+                        workspaceEdit.StopEditing(false);
+                    }
+                }
                 System.Diagnostics.Debug.WriteLine($"清空shapefile数据时出错: {ex.Message}");
                 throw;
             }
@@ -210,14 +231,14 @@ namespace TestArcMapAddin2.ShapefileUtils
                     {
                         featureBuffer.Shape = sourceFeature.ShapeCopy;
 
-                        // 复制属性
-                        CopyFeatureAttributes(sourceFeature, featureBuffer, fieldMappings, sourceFeatureClass.Fields, targetFeatureClass.Fields);
+                        // 复制属性，并处理特殊字段
+                        CopyFeatureAttributes(sourceFeature, featureBuffer, fieldMappings, sourceFeatureClass.Fields, targetFeatureClass.Fields, processedCount + 1);
 
                         insertCursor.InsertFeature(featureBuffer);
                         processedCount++;
 
                         // 更新进度
-                        if (processedCount % 100 == 0)
+                        if (processedCount % 100 == 0 || processedCount == totalFeatures)
                         {
                             int percentage = 55 + (int)((processedCount / (double)totalFeatures) * 40);
                             progressCallback?.Invoke(percentage, $"正在转换数据... ({processedCount}/{totalFeatures})");
@@ -237,25 +258,47 @@ namespace TestArcMapAddin2.ShapefileUtils
         }
 
         /// <summary>
-        /// 复制要素属性
+        /// 复制要素属性，并处理特殊计算字段
         /// </summary>
-        private void CopyFeatureAttributes(IFeature sourceFeature, IFeatureBuffer targetFeatureBuffer, Dictionary<string, string> fieldMappings, IFields sourceFields, IFields targetFields)
+        private void CopyFeatureAttributes(IFeature sourceFeature, IFeatureBuffer targetFeatureBuffer, Dictionary<string, string> fieldMappings, IFields sourceFields, IFields targetFields, int featureSequence)
         {
             foreach (var mapping in fieldMappings)
             {
                 string targetFieldName = mapping.Key;
                 string sourceFieldName = mapping.Value;
 
-                int sourceFieldIndex = sourceFields.FindField(sourceFieldName);
                 int targetFieldIndex = targetFields.FindField(targetFieldName);
+                if (targetFieldIndex == -1) continue;
 
-                if (sourceFieldIndex != -1 && targetFieldIndex != -1)
+                object value = null;
+
+                // 优先处理特殊计算字段
+                if (targetFieldName.Equals("ZCQCBSM", StringComparison.OrdinalIgnoreCase))
                 {
-                    object value = sourceFeature.get_Value(sourceFieldIndex);
-                    if (value != null && value != DBNull.Value)
+                    // 规则: XZQDM(6) + "4110" + 图斑序号(12)
+                    int xzqdmIndex = sourceFields.FindField("XZQDM");
+                    if (xzqdmIndex != -1)
                     {
-                        targetFeatureBuffer.set_Value(targetFieldIndex, value);
+                        string xzqdm = sourceFeature.get_Value(xzqdmIndex)?.ToString() ?? "";
+                        if (xzqdm.Length > 6) xzqdm = xzqdm.Substring(0, 6);
+                        string sequenceStr = featureSequence.ToString("D12"); // 格式化为12位，前补0
+                        value = $"{xzqdm}4110{sequenceStr}";
                     }
+                }
+                else
+                {
+                    // 处理普通字段映射
+                    int sourceFieldIndex = sourceFields.FindField(sourceFieldName);
+                    if (sourceFieldIndex != -1)
+                    {
+                        value = sourceFeature.get_Value(sourceFieldIndex);
+                    }
+                }
+
+                // 写入值
+                if (value != null && value != DBNull.Value)
+                {
+                    targetFeatureBuffer.set_Value(targetFieldIndex, value);
                 }
             }
         }
@@ -281,7 +324,8 @@ namespace TestArcMapAddin2.ShapefileUtils
                 { "ZLDWDM", "ZLDWDM" },            // 坐落单位代码
                 { "ZLDWMC", "ZLDWMC" },            // 坐落单位名称
                 { "GTDCTBMJ", "GTDCTBMJ" },        // 国土调查图斑面积
-                { "CZKFBJMJ", "CZKFBJMJ" }         // 城镇开发边界面积
+                { "CZKFBJMJ", "CZKFBJMJ" },         // 城镇开发边界面积
+                { "ZCQCBSM", "" }                  // 资产权籍标识码 (计算字段)
             };
             return result;
         }
