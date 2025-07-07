@@ -624,7 +624,7 @@ namespace ForestResourcePlugin
                 {
                     case "ZCQCBSM":
                         // 格式: XZQDM(6) + "4120" + 图斑序号(12)
-                        int xzqdmIndex = sourceFeatureClass.FindField("XZQDM");
+                        int xzqdmIndex = sourceFeatureClass.FindField("xian");
                         if (xzqdmIndex != -1)
                         {
                             string xzqdm = sourceFeature.get_Value(xzqdmIndex)?.ToString() ?? "";

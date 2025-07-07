@@ -357,12 +357,15 @@ namespace ForestResourcePlugin
 
         private void btnBrowseOutput_Click(object sender, EventArgs e)
         {
-            using (FolderBrowserDialog dialog = new FolderBrowserDialog())
+            // 在 Basic.cs 中打开 BasicDataPreparationForm 的地方
+            using (var form = new TestArcMapAddin2.Forms.BasicDataPreparationForm())
             {
-                dialog.Description = "选择输出路径";
-                if (dialog.ShowDialog() == DialogResult.OK)
+                form.ParentBasicForm = this; // 传入 Basic 窗体的实例
+                if (form.ShowDialog() == DialogResult.OK)
                 {
-                    txtOutputPath.Text = dialog.SelectedPath;
+                    // 窗体关闭后，可以根据需要刷新状态
+                    this.txtOutputPath.Text = form.OutputGDBPath;
+                    LoadCountiesFromSharedData(); // 重新加载县列表以反映可能的数据源变化
                 }
             }
         }
@@ -3097,6 +3100,21 @@ namespace ForestResourcePlugin
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"切换县选择状态时出错: {ex.Message}");
+            }
+        }
+
+        private void Basic_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void cbxSelectAllCounty_Click(object sender, EventArgs e)
+        {
+            // 检查事件发送者是否为CheckBox
+            if (sender is CheckBox cb)
+            {
+                // 调用已有的方法来切换所有县的选中状态
+                ToggleAllCounties(cb.Checked);
             }
         }
     }

@@ -79,6 +79,7 @@
     <Reference Include="ESRI.ArcGIS.System">
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.Build.Tasks.v4.0" />
     <Reference Include="NPOI.Core, Version=2.7.4.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
       <HintPath>packages\NPOI.2.7.4\lib\netstandard2.0\NPOI.Core.dll</HintPath>
     </Reference>

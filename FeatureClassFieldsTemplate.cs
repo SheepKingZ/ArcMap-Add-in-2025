@@ -881,7 +881,7 @@ namespace TestArcMapAddin2
             //树种组成字段
             IField field72 = new FieldClass();
             IFieldEdit fieldEdit72 = (IFieldEdit)field72;
-            fieldEdit72.Name_2 = "zhuzhong_zc";
+            fieldEdit72.Name_2 = "shuzhong_zc";
             fieldEdit72.Type_2 = esriFieldType.esriFieldTypeString;
             fieldEdit72.IsNullable_2 = true;
             fieldEdit72.AliasName_2 = "树种组成";
@@ -1660,7 +1660,6 @@ namespace TestArcMapAddin2
             fieldEdit135.Length_2 = 50;
             fields.AddField(field135);
         }
-
         public static void GenerateSlzyzcFields(IFieldsEdit fields) {
             if (fields == null)
             {
@@ -2158,7 +2157,6 @@ namespace TestArcMapAddin2
             fieldEdit40.Length_2 = 254;
             fields.AddField(field40);
         }
-
         public static void GenerateSlzyzc_dltbFields(IFieldsEdit fields) {
             if (fields == null)
             {
@@ -2420,6 +2418,27 @@ namespace TestArcMapAddin2
             fieldEdit21.Editable_2 = true;
             fieldEdit21.Length_2 = 254;
             fields.AddField(field21);
+        }
+        
+        public static void GenerateCyzyzcFields(IFieldsEdit fields)
+        {
+            if (fields == null)
+            {
+                System.Windows.Forms.MessageBox.Show("字段集合对象不存在");
+                return;
+            }
+
+            //资产清查标识码字段
+            IField field01 = new FieldClass();
+            IFieldEdit fieldEdit01 = (IFieldEdit)field01;
+            fieldEdit01.Name_2 = "ZCQCBSM";
+            fieldEdit01.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit01.IsNullable_2 = true;
+            fieldEdit01.AliasName_2 = "资产清查标识码";
+            fieldEdit01.DefaultValue_2 = "";
+            fieldEdit01.Editable_2 = true;
+            fieldEdit01.Length_2 = 22;
+            fields.AddField(field01);
         }
     }
 }

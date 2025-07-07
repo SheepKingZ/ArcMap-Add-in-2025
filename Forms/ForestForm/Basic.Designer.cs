@@ -63,6 +63,7 @@ namespace ForestResourcePlugin
             this.btnExecute = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
+            this.cbxSelectAllCounty = new System.Windows.Forms.CheckBox();
             this.tabControl.SuspendLayout();
             this.tabDataSource.SuspendLayout();
             this.groupBoxFiles.SuspendLayout();
@@ -86,7 +87,7 @@ namespace ForestResourcePlugin
             this.tabControl.Controls.Add(this.tabMapping);
             this.tabControl.Dock = System.Windows.Forms.DockStyle.Top;
             this.tabControl.Location = new System.Drawing.Point(0, 0);
-            this.tabControl.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabControl.Margin = new System.Windows.Forms.Padding(4);
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
             this.tabControl.Size = new System.Drawing.Size(1196, 622);
@@ -97,9 +98,9 @@ namespace ForestResourcePlugin
             this.tabDataSource.Controls.Add(this.groupBoxFiles);
             this.tabDataSource.Controls.Add(this.groupBoxOptions);
             this.tabDataSource.Location = new System.Drawing.Point(4, 28);
-            this.tabDataSource.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabDataSource.Margin = new System.Windows.Forms.Padding(4);
             this.tabDataSource.Name = "tabDataSource";
-            this.tabDataSource.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabDataSource.Padding = new System.Windows.Forms.Padding(4);
             this.tabDataSource.Size = new System.Drawing.Size(1188, 590);
             this.tabDataSource.TabIndex = 0;
             this.tabDataSource.Text = "数据源配置";
@@ -107,6 +108,7 @@ namespace ForestResourcePlugin
             // 
             // groupBoxFiles
             // 
+            this.groupBoxFiles.Controls.Add(this.cbxSelectAllCounty);
             this.groupBoxFiles.Controls.Add(this.btnRefreshLayers);
             this.groupBoxFiles.Controls.Add(this.btnBrowseOutput);
             this.groupBoxFiles.Controls.Add(this.txtOutputPath);
@@ -117,9 +119,9 @@ namespace ForestResourcePlugin
             this.groupBoxFiles.Controls.Add(this.cmbLCXZGXPath);
             this.groupBoxFiles.Controls.Add(this.cmbCZKFBJPath);
             this.groupBoxFiles.Location = new System.Drawing.Point(9, 8);
-            this.groupBoxFiles.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxFiles.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxFiles.Name = "groupBoxFiles";
-            this.groupBoxFiles.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxFiles.Padding = new System.Windows.Forms.Padding(4);
             this.groupBoxFiles.Size = new System.Drawing.Size(1170, 240);
             this.groupBoxFiles.TabIndex = 0;
             this.groupBoxFiles.TabStop = false;
@@ -128,7 +130,7 @@ namespace ForestResourcePlugin
             // btnRefreshLayers
             // 
             this.btnRefreshLayers.Location = new System.Drawing.Point(22, 201);
-            this.btnRefreshLayers.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnRefreshLayers.Margin = new System.Windows.Forms.Padding(4);
             this.btnRefreshLayers.Name = "btnRefreshLayers";
             this.btnRefreshLayers.Size = new System.Drawing.Size(150, 32);
             this.btnRefreshLayers.TabIndex = 9;
@@ -139,7 +141,7 @@ namespace ForestResourcePlugin
             // btnBrowseOutput
             // 
             this.btnBrowseOutput.Location = new System.Drawing.Point(596, 162);
-            this.btnBrowseOutput.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseOutput.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseOutput.Name = "btnBrowseOutput";
             this.btnBrowseOutput.Size = new System.Drawing.Size(112, 32);
             this.btnBrowseOutput.TabIndex = 8;
@@ -150,7 +152,7 @@ namespace ForestResourcePlugin
             // txtOutputPath
             // 
             this.txtOutputPath.Location = new System.Drawing.Point(210, 162);
-            this.txtOutputPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtOutputPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtOutputPath.Name = "txtOutputPath";
             this.txtOutputPath.ReadOnly = true;
             this.txtOutputPath.Size = new System.Drawing.Size(360, 28);
@@ -190,7 +192,7 @@ namespace ForestResourcePlugin
             // 
             this.chkListCounties.CheckOnClick = true;
             this.chkListCounties.Location = new System.Drawing.Point(750, 38);
-            this.chkListCounties.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkListCounties.Margin = new System.Windows.Forms.Padding(4);
             this.chkListCounties.Name = "chkListCounties";
             this.chkListCounties.Size = new System.Drawing.Size(274, 179);
             this.chkListCounties.TabIndex = 10;
@@ -200,7 +202,7 @@ namespace ForestResourcePlugin
             this.cmbLCXZGXPath.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbLCXZGXPath.FormattingEnabled = true;
             this.cmbLCXZGXPath.Location = new System.Drawing.Point(210, 38);
-            this.cmbLCXZGXPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbLCXZGXPath.Margin = new System.Windows.Forms.Padding(4);
             this.cmbLCXZGXPath.Name = "cmbLCXZGXPath";
             this.cmbLCXZGXPath.Size = new System.Drawing.Size(523, 26);
             this.cmbLCXZGXPath.TabIndex = 1;
@@ -211,7 +213,7 @@ namespace ForestResourcePlugin
             this.cmbCZKFBJPath.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbCZKFBJPath.FormattingEnabled = true;
             this.cmbCZKFBJPath.Location = new System.Drawing.Point(210, 80);
-            this.cmbCZKFBJPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbCZKFBJPath.Margin = new System.Windows.Forms.Padding(4);
             this.cmbCZKFBJPath.Name = "cmbCZKFBJPath";
             this.cmbCZKFBJPath.Size = new System.Drawing.Size(523, 26);
             this.cmbCZKFBJPath.TabIndex = 4;
@@ -225,9 +227,9 @@ namespace ForestResourcePlugin
             this.groupBoxOptions.Controls.Add(this.chkGenerateReport);
             this.groupBoxOptions.Controls.Add(this.lblBufferDistance);
             this.groupBoxOptions.Location = new System.Drawing.Point(9, 258);
-            this.groupBoxOptions.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxOptions.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxOptions.Name = "groupBoxOptions";
-            this.groupBoxOptions.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxOptions.Padding = new System.Windows.Forms.Padding(4);
             this.groupBoxOptions.Size = new System.Drawing.Size(460, 194);
             this.groupBoxOptions.TabIndex = 1;
             this.groupBoxOptions.TabStop = false;
@@ -237,7 +239,7 @@ namespace ForestResourcePlugin
             // 
             this.chkTopologyCheck.AutoSize = true;
             this.chkTopologyCheck.Location = new System.Drawing.Point(22, 34);
-            this.chkTopologyCheck.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkTopologyCheck.Margin = new System.Windows.Forms.Padding(4);
             this.chkTopologyCheck.Name = "chkTopologyCheck";
             this.chkTopologyCheck.Size = new System.Drawing.Size(214, 22);
             this.chkTopologyCheck.TabIndex = 0;
@@ -248,7 +250,7 @@ namespace ForestResourcePlugin
             // 
             this.chkGeometryValidation.AutoSize = true;
             this.chkGeometryValidation.Location = new System.Drawing.Point(22, 66);
-            this.chkGeometryValidation.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkGeometryValidation.Margin = new System.Windows.Forms.Padding(4);
             this.chkGeometryValidation.Name = "chkGeometryValidation";
             this.chkGeometryValidation.Size = new System.Drawing.Size(106, 22);
             this.chkGeometryValidation.TabIndex = 1;
@@ -259,7 +261,7 @@ namespace ForestResourcePlugin
             // 
             this.chkCreateBackup.AutoSize = true;
             this.chkCreateBackup.Location = new System.Drawing.Point(300, 34);
-            this.chkCreateBackup.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkCreateBackup.Margin = new System.Windows.Forms.Padding(4);
             this.chkCreateBackup.Name = "chkCreateBackup";
             this.chkCreateBackup.Size = new System.Drawing.Size(106, 22);
             this.chkCreateBackup.TabIndex = 2;
@@ -270,7 +272,7 @@ namespace ForestResourcePlugin
             // 
             this.chkGenerateReport.AutoSize = true;
             this.chkGenerateReport.Location = new System.Drawing.Point(300, 66);
-            this.chkGenerateReport.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkGenerateReport.Margin = new System.Windows.Forms.Padding(4);
             this.chkGenerateReport.Name = "chkGenerateReport";
             this.chkGenerateReport.Size = new System.Drawing.Size(106, 22);
             this.chkGenerateReport.TabIndex = 3;
@@ -292,9 +294,9 @@ namespace ForestResourcePlugin
             this.tabFilter.Controls.Add(this.groupBoxConditions);
             this.tabFilter.Controls.Add(this.groupBoxPreview);
             this.tabFilter.Location = new System.Drawing.Point(4, 28);
-            this.tabFilter.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabFilter.Margin = new System.Windows.Forms.Padding(4);
             this.tabFilter.Name = "tabFilter";
-            this.tabFilter.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabFilter.Padding = new System.Windows.Forms.Padding(4);
             this.tabFilter.Size = new System.Drawing.Size(1188, 590);
             this.tabFilter.TabIndex = 1;
             this.tabFilter.Text = "筛选条件设置";
@@ -307,9 +309,9 @@ namespace ForestResourcePlugin
             this.groupBoxFieldSelect.Controls.Add(this.lblLandTypeField);
             this.groupBoxFieldSelect.Controls.Add(this.lblLandOwnerField);
             this.groupBoxFieldSelect.Location = new System.Drawing.Point(9, 8);
-            this.groupBoxFieldSelect.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxFieldSelect.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxFieldSelect.Name = "groupBoxFieldSelect";
-            this.groupBoxFieldSelect.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxFieldSelect.Padding = new System.Windows.Forms.Padding(4);
             this.groupBoxFieldSelect.Size = new System.Drawing.Size(1170, 111);
             this.groupBoxFieldSelect.TabIndex = 0;
             this.groupBoxFieldSelect.TabStop = false;
@@ -320,7 +322,7 @@ namespace ForestResourcePlugin
             this.cmbLandTypeField.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbLandTypeField.FormattingEnabled = true;
             this.cmbLandTypeField.Location = new System.Drawing.Point(150, 34);
-            this.cmbLandTypeField.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbLandTypeField.Margin = new System.Windows.Forms.Padding(4);
             this.cmbLandTypeField.Name = "cmbLandTypeField";
             this.cmbLandTypeField.Size = new System.Drawing.Size(298, 26);
             this.cmbLandTypeField.TabIndex = 1;
@@ -330,7 +332,7 @@ namespace ForestResourcePlugin
             this.cmbLandOwnerField.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbLandOwnerField.FormattingEnabled = true;
             this.cmbLandOwnerField.Location = new System.Drawing.Point(675, 34);
-            this.cmbLandOwnerField.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbLandOwnerField.Margin = new System.Windows.Forms.Padding(4);
             this.cmbLandOwnerField.Name = "cmbLandOwnerField";
             this.cmbLandOwnerField.Size = new System.Drawing.Size(298, 26);
             this.cmbLandOwnerField.TabIndex = 3;
@@ -361,9 +363,9 @@ namespace ForestResourcePlugin
             this.groupBoxConditions.Controls.Add(this.chkStateOwned);
             this.groupBoxConditions.Controls.Add(this.chkCollectiveInBoundary);
             this.groupBoxConditions.Location = new System.Drawing.Point(9, 128);
-            this.groupBoxConditions.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxConditions.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxConditions.Name = "groupBoxConditions";
-            this.groupBoxConditions.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxConditions.Padding = new System.Windows.Forms.Padding(4);
             this.groupBoxConditions.Size = new System.Drawing.Size(1170, 111);
             this.groupBoxConditions.TabIndex = 1;
             this.groupBoxConditions.TabStop = false;
@@ -375,7 +377,7 @@ namespace ForestResourcePlugin
             this.chkForestLand.Checked = true;
             this.chkForestLand.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkForestLand.Location = new System.Drawing.Point(22, 34);
-            this.chkForestLand.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkForestLand.Margin = new System.Windows.Forms.Padding(4);
             this.chkForestLand.Name = "chkForestLand";
             this.chkForestLand.Size = new System.Drawing.Size(124, 22);
             this.chkForestLand.TabIndex = 0;
@@ -388,7 +390,7 @@ namespace ForestResourcePlugin
             this.chkStateOwned.Checked = true;
             this.chkStateOwned.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkStateOwned.Location = new System.Drawing.Point(22, 66);
-            this.chkStateOwned.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkStateOwned.Margin = new System.Windows.Forms.Padding(4);
             this.chkStateOwned.Name = "chkStateOwned";
             this.chkStateOwned.Size = new System.Drawing.Size(214, 22);
             this.chkStateOwned.TabIndex = 1;
@@ -401,7 +403,7 @@ namespace ForestResourcePlugin
             this.chkCollectiveInBoundary.Checked = true;
             this.chkCollectiveInBoundary.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkCollectiveInBoundary.Location = new System.Drawing.Point(375, 66);
-            this.chkCollectiveInBoundary.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkCollectiveInBoundary.Margin = new System.Windows.Forms.Padding(4);
             this.chkCollectiveInBoundary.Name = "chkCollectiveInBoundary";
             this.chkCollectiveInBoundary.Size = new System.Drawing.Size(394, 22);
             this.chkCollectiveInBoundary.TabIndex = 2;
@@ -414,9 +416,9 @@ namespace ForestResourcePlugin
             this.groupBoxPreview.Controls.Add(this.btnPreview);
             this.groupBoxPreview.Controls.Add(this.lblPreviewCount);
             this.groupBoxPreview.Location = new System.Drawing.Point(9, 246);
-            this.groupBoxPreview.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxPreview.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxPreview.Name = "groupBoxPreview";
-            this.groupBoxPreview.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxPreview.Padding = new System.Windows.Forms.Padding(4);
             this.groupBoxPreview.Size = new System.Drawing.Size(1170, 332);
             this.groupBoxPreview.TabIndex = 2;
             this.groupBoxPreview.TabStop = false;
@@ -428,7 +430,7 @@ namespace ForestResourcePlugin
             this.dgvPreview.AllowUserToDeleteRows = false;
             this.dgvPreview.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvPreview.Location = new System.Drawing.Point(22, 34);
-            this.dgvPreview.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.dgvPreview.Margin = new System.Windows.Forms.Padding(4);
             this.dgvPreview.Name = "dgvPreview";
             this.dgvPreview.ReadOnly = true;
             this.dgvPreview.RowHeadersWidth = 62;
@@ -438,7 +440,7 @@ namespace ForestResourcePlugin
             // btnPreview
             // 
             this.btnPreview.Location = new System.Drawing.Point(22, 292);
-            this.btnPreview.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnPreview.Margin = new System.Windows.Forms.Padding(4);
             this.btnPreview.Name = "btnPreview";
             this.btnPreview.Size = new System.Drawing.Size(150, 32);
             this.btnPreview.TabIndex = 1;
@@ -461,7 +463,7 @@ namespace ForestResourcePlugin
             this.tabMapping.Controls.Add(this.groupBoxMapping);
             this.tabMapping.Controls.Add(this.groupBoxTemplate);
             this.tabMapping.Location = new System.Drawing.Point(4, 28);
-            this.tabMapping.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabMapping.Margin = new System.Windows.Forms.Padding(4);
             this.tabMapping.Name = "tabMapping";
             this.tabMapping.Size = new System.Drawing.Size(1188, 590);
             this.tabMapping.TabIndex = 2;
@@ -473,9 +475,9 @@ namespace ForestResourcePlugin
             this.groupBoxMapping.Controls.Add(this.dgvMapping);
             this.groupBoxMapping.Controls.Add(this.btnAutoMapping);
             this.groupBoxMapping.Location = new System.Drawing.Point(9, 8);
-            this.groupBoxMapping.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxMapping.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxMapping.Name = "groupBoxMapping";
-            this.groupBoxMapping.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxMapping.Padding = new System.Windows.Forms.Padding(4);
             this.groupBoxMapping.Size = new System.Drawing.Size(1170, 442);
             this.groupBoxMapping.TabIndex = 0;
             this.groupBoxMapping.TabStop = false;
@@ -487,7 +489,7 @@ namespace ForestResourcePlugin
             this.dgvMapping.AllowUserToDeleteRows = false;
             this.dgvMapping.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvMapping.Location = new System.Drawing.Point(22, 34);
-            this.dgvMapping.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.dgvMapping.Margin = new System.Windows.Forms.Padding(4);
             this.dgvMapping.Name = "dgvMapping";
             this.dgvMapping.RowHeadersWidth = 62;
             this.dgvMapping.Size = new System.Drawing.Size(1125, 360);
@@ -496,7 +498,7 @@ namespace ForestResourcePlugin
             // btnAutoMapping
             // 
             this.btnAutoMapping.Location = new System.Drawing.Point(22, 404);
-            this.btnAutoMapping.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnAutoMapping.Margin = new System.Windows.Forms.Padding(4);
             this.btnAutoMapping.Name = "btnAutoMapping";
             this.btnAutoMapping.Size = new System.Drawing.Size(150, 32);
             this.btnAutoMapping.TabIndex = 1;
@@ -510,9 +512,9 @@ namespace ForestResourcePlugin
             this.groupBoxTemplate.Controls.Add(this.btnSaveTemplate);
             this.groupBoxTemplate.Controls.Add(this.lblTemplateInfo);
             this.groupBoxTemplate.Location = new System.Drawing.Point(9, 460);
-            this.groupBoxTemplate.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxTemplate.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxTemplate.Name = "groupBoxTemplate";
-            this.groupBoxTemplate.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBoxTemplate.Padding = new System.Windows.Forms.Padding(4);
             this.groupBoxTemplate.Size = new System.Drawing.Size(1170, 111);
             this.groupBoxTemplate.TabIndex = 1;
             this.groupBoxTemplate.TabStop = false;
@@ -521,7 +523,7 @@ namespace ForestResourcePlugin
             // btnLoadTemplate
             // 
             this.btnLoadTemplate.Location = new System.Drawing.Point(22, 34);
-            this.btnLoadTemplate.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnLoadTemplate.Margin = new System.Windows.Forms.Padding(4);
             this.btnLoadTemplate.Name = "btnLoadTemplate";
             this.btnLoadTemplate.Size = new System.Drawing.Size(150, 32);
             this.btnLoadTemplate.TabIndex = 0;
@@ -532,7 +534,7 @@ namespace ForestResourcePlugin
             // btnSaveTemplate
             // 
             this.btnSaveTemplate.Location = new System.Drawing.Point(195, 34);
-            this.btnSaveTemplate.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSaveTemplate.Margin = new System.Windows.Forms.Padding(4);
             this.btnSaveTemplate.Name = "btnSaveTemplate";
             this.btnSaveTemplate.Size = new System.Drawing.Size(150, 32);
             this.btnSaveTemplate.TabIndex = 1;
@@ -559,7 +561,7 @@ namespace ForestResourcePlugin
             this.panelBottom.Controls.Add(this.btnClose);
             this.panelBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panelBottom.Location = new System.Drawing.Point(0, 631);
-            this.panelBottom.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.panelBottom.Margin = new System.Windows.Forms.Padding(4);
             this.panelBottom.Name = "panelBottom";
             this.panelBottom.Size = new System.Drawing.Size(1196, 111);
             this.panelBottom.TabIndex = 1;
@@ -567,7 +569,7 @@ namespace ForestResourcePlugin
             // progressBar
             // 
             this.progressBar.Location = new System.Drawing.Point(18, 26);
-            this.progressBar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.progressBar.Margin = new System.Windows.Forms.Padding(4);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(750, 22);
             this.progressBar.TabIndex = 0;
@@ -585,7 +587,7 @@ namespace ForestResourcePlugin
             // btnExecute
             // 
             this.btnExecute.Location = new System.Drawing.Point(822, 16);
-            this.btnExecute.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnExecute.Margin = new System.Windows.Forms.Padding(4);
             this.btnExecute.Name = "btnExecute";
             this.btnExecute.Size = new System.Drawing.Size(112, 32);
             this.btnExecute.TabIndex = 2;
@@ -597,7 +599,7 @@ namespace ForestResourcePlugin
             // 
             this.btnCancel.Enabled = false;
             this.btnCancel.Location = new System.Drawing.Point(944, 16);
-            this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnCancel.Margin = new System.Windows.Forms.Padding(4);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(112, 32);
             this.btnCancel.TabIndex = 3;
@@ -608,12 +610,24 @@ namespace ForestResourcePlugin
             // btnClose
             // 
             this.btnClose.Location = new System.Drawing.Point(1065, 16);
-            this.btnClose.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnClose.Margin = new System.Windows.Forms.Padding(4);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(112, 32);
             this.btnClose.TabIndex = 4;
             this.btnClose.Text = "关闭";
             this.btnClose.UseVisualStyleBackColor = true;
+            // 
+            // cbxSelectAllCounty
+            // 
+            this.cbxSelectAllCounty.AutoSize = true;
+            this.cbxSelectAllCounty.Location = new System.Drawing.Point(1031, 40);
+            this.cbxSelectAllCounty.Name = "cbxSelectAllCounty";
+            this.cbxSelectAllCounty.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.cbxSelectAllCounty.Size = new System.Drawing.Size(70, 22);
+            this.cbxSelectAllCounty.TabIndex = 11;
+            this.cbxSelectAllCounty.Text = "全选";
+            this.cbxSelectAllCounty.UseVisualStyleBackColor = true;
+            this.cbxSelectAllCounty.Click += new System.EventHandler(this.cbxSelectAllCounty_Click);
             // 
             // Basic
             // 
@@ -623,12 +637,13 @@ namespace ForestResourcePlugin
             this.Controls.Add(this.tabControl);
             this.Controls.Add(this.panelBottom);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "Basic";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "数据入库";
+            this.Load += new System.EventHandler(this.Basic_Load);
             this.tabControl.ResumeLayout(false);
             this.tabDataSource.ResumeLayout(false);
             this.groupBoxFiles.ResumeLayout(false);
@@ -714,5 +729,6 @@ namespace ForestResourcePlugin
         private System.Windows.Forms.Button btnExecute;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnClose;
+        private System.Windows.Forms.CheckBox cbxSelectAllCounty;
     }
 }
