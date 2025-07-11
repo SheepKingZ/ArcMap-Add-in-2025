@@ -20,6 +20,7 @@ namespace ForestResourcePlugin
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabDataSource = new System.Windows.Forms.TabPage();
             this.groupBoxFiles = new System.Windows.Forms.GroupBox();
+            this.cbxSelectAllCounty = new System.Windows.Forms.CheckBox();
             this.btnRefreshLayers = new System.Windows.Forms.Button();
             this.btnBrowseOutput = new System.Windows.Forms.Button();
             this.txtOutputPath = new System.Windows.Forms.TextBox();
@@ -58,12 +59,13 @@ namespace ForestResourcePlugin
             this.btnSaveTemplate = new System.Windows.Forms.Button();
             this.lblTemplateInfo = new System.Windows.Forms.Label();
             this.panelBottom = new System.Windows.Forms.Panel();
+            this.totalProgressBar = new System.Windows.Forms.ProgressBar();
+            this.lblTotalStatus = new System.Windows.Forms.Label();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.lblStatus = new System.Windows.Forms.Label();
             this.btnExecute = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
-            this.cbxSelectAllCounty = new System.Windows.Forms.CheckBox();
             this.tabControl.SuspendLayout();
             this.tabDataSource.SuspendLayout();
             this.groupBoxFiles.SuspendLayout();
@@ -126,6 +128,18 @@ namespace ForestResourcePlugin
             this.groupBoxFiles.TabIndex = 0;
             this.groupBoxFiles.TabStop = false;
             this.groupBoxFiles.Text = "文件选择";
+            // 
+            // cbxSelectAllCounty
+            // 
+            this.cbxSelectAllCounty.AutoSize = true;
+            this.cbxSelectAllCounty.Location = new System.Drawing.Point(1031, 40);
+            this.cbxSelectAllCounty.Name = "cbxSelectAllCounty";
+            this.cbxSelectAllCounty.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.cbxSelectAllCounty.Size = new System.Drawing.Size(70, 22);
+            this.cbxSelectAllCounty.TabIndex = 11;
+            this.cbxSelectAllCounty.Text = "全选";
+            this.cbxSelectAllCounty.UseVisualStyleBackColor = true;
+            this.cbxSelectAllCounty.Click += new System.EventHandler(this.cbxSelectAllCounty_Click);
             // 
             // btnRefreshLayers
             // 
@@ -554,6 +568,8 @@ namespace ForestResourcePlugin
             // 
             // panelBottom
             // 
+            this.panelBottom.Controls.Add(this.totalProgressBar);
+            this.panelBottom.Controls.Add(this.lblTotalStatus);
             this.panelBottom.Controls.Add(this.progressBar);
             this.panelBottom.Controls.Add(this.lblStatus);
             this.panelBottom.Controls.Add(this.btnExecute);
@@ -565,6 +581,24 @@ namespace ForestResourcePlugin
             this.panelBottom.Name = "panelBottom";
             this.panelBottom.Size = new System.Drawing.Size(1196, 111);
             this.panelBottom.TabIndex = 1;
+            // 
+            // totalProgressBar
+            // 
+            this.totalProgressBar.Location = new System.Drawing.Point(266, 72);
+            this.totalProgressBar.Margin = new System.Windows.Forms.Padding(4);
+            this.totalProgressBar.Name = "totalProgressBar";
+            this.totalProgressBar.Size = new System.Drawing.Size(917, 34);
+            this.totalProgressBar.TabIndex = 6;
+            // 
+            // lblTotalStatus
+            // 
+            this.lblTotalStatus.AutoSize = true;
+            this.lblTotalStatus.Location = new System.Drawing.Point(18, 88);
+            this.lblTotalStatus.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblTotalStatus.Name = "lblTotalStatus";
+            this.lblTotalStatus.Size = new System.Drawing.Size(80, 18);
+            this.lblTotalStatus.TabIndex = 5;
+            this.lblTotalStatus.Text = "总状态：";
             // 
             // progressBar
             // 
@@ -616,18 +650,6 @@ namespace ForestResourcePlugin
             this.btnClose.TabIndex = 4;
             this.btnClose.Text = "关闭";
             this.btnClose.UseVisualStyleBackColor = true;
-            // 
-            // cbxSelectAllCounty
-            // 
-            this.cbxSelectAllCounty.AutoSize = true;
-            this.cbxSelectAllCounty.Location = new System.Drawing.Point(1031, 40);
-            this.cbxSelectAllCounty.Name = "cbxSelectAllCounty";
-            this.cbxSelectAllCounty.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.cbxSelectAllCounty.Size = new System.Drawing.Size(70, 22);
-            this.cbxSelectAllCounty.TabIndex = 11;
-            this.cbxSelectAllCounty.Text = "全选";
-            this.cbxSelectAllCounty.UseVisualStyleBackColor = true;
-            this.cbxSelectAllCounty.Click += new System.EventHandler(this.cbxSelectAllCounty_Click);
             // 
             // Basic
             // 
@@ -730,5 +752,7 @@ namespace ForestResourcePlugin
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.CheckBox cbxSelectAllCounty;
+        private System.Windows.Forms.Label lblTotalStatus;
+        private System.Windows.Forms.ProgressBar totalProgressBar;
     }
 }

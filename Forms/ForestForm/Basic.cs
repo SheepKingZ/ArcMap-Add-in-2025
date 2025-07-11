@@ -343,29 +343,14 @@ namespace ForestResourcePlugin
             }
         }
 
-        private void btnBrowseLCXZGX_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("请在基础数据准备中选择数据源，然后在县列表中选择要处理的县。", "提示",
-            MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void btnBrowseCZKFBJ_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("请在基础数据准备中选择数据源，然后在县列表中选择要处理的县。", "提示",
-            MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
         private void btnBrowseOutput_Click(object sender, EventArgs e)
         {
-            // 在 Basic.cs 中打开 BasicDataPreparationForm 的地方
-            using (var form = new TestArcMapAddin2.Forms.BasicDataPreparationForm())
+            using (var dialog = new FolderBrowserDialog())
             {
-                form.ParentBasicForm = this; // 传入 Basic 窗体的实例
-                if (form.ShowDialog() == DialogResult.OK)
+                dialog.Description = "请选择输出文件夹";
+                if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    // 窗体关闭后，可以根据需要刷新状态
-                    this.txtOutputPath.Text = form.OutputGDBPath;
-                    LoadCountiesFromSharedData(); // 重新加载县列表以反映可能的数据源变化
+                    txtOutputPath.Text = dialog.SelectedPath;
                 }
             }
         }
@@ -1062,14 +1047,14 @@ namespace ForestResourcePlugin
             string ownerValue = GetFieldValue(feature, fieldIndices.QsxzIndex, fieldIndices.TdqsIndex);
 
             // 国有林地直接添加
-            if (chkStateOwned.Checked && (ownerValue == "1" || ownerValue == "20"))
+            if (chkStateOwned.Checked && (ownerValue == "10" || ownerValue == "20"))
             {
                 return true;
             }
 
             // 集体林地需要检查是否在城镇开发边界内
             if (chkCollectiveInBoundary.Checked &&
-                (ownerValue == "2" || ownerValue == "30") &&
+                (ownerValue == "30" || ownerValue == "40") &&
                 czkfbjFeatureClass != null)
             {
                 return IsFeatureInBoundaryForCounty(feature, spatialFilter, czkfbjFeatureClass);
@@ -1294,6 +1279,7 @@ namespace ForestResourcePlugin
             btnExecute.Enabled = false;
             btnCancel.Enabled = true;
             progressBar.Value = 0;
+            totalProgressBar.Value = 0;
 
             try
             {
@@ -1331,6 +1317,7 @@ namespace ForestResourcePlugin
                 // 4. 执行多县批量处理
                 var batchResults = ExecuteMultiCountyBatchProcessing(landTypeField, landOwnerField, token);
 
+                totalProgressBar.Value = 100;
                 progressBar.Value = 90;
                 UpdateStatus("正在生成处理报告...");
 
@@ -1350,6 +1337,7 @@ namespace ForestResourcePlugin
             catch (OperationCanceledException)
             {
                 progressBar.Value = 0;
+                totalProgressBar.Value = 0;
                 UpdateStatus("处理操作已取消");
                 MessageBox.Show("处理操作已由用户取消。", "操作取消",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -1357,6 +1345,7 @@ namespace ForestResourcePlugin
             catch (Exception ex)
             {
                 progressBar.Value = 0;
+                totalProgressBar.Value = 0;
                 UpdateStatus("处理失败");
                 MessageBox.Show($"处理过程中发生错误：\n{ex.Message}", "错误",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -1390,11 +1379,11 @@ namespace ForestResourcePlugin
                 {
                     token.ThrowIfCancellationRequested();
                     processedCounties++;
-                    UpdateStatus($"正在处理县 {countyName} ({processedCounties}/{totalCounties})...");
+                    UpdateTotalStatus($"正在处理县 {countyName} ({processedCounties}/{totalCounties})...");
 
-                    // 计算进度（20-90之间分配给批量处理）
-                    int baseProgress = 20 + (processedCounties - 1) * 70 / totalCounties;
-                    progressBar.Value = baseProgress;
+                    // 计算总进度
+                    int totalProgress = 20 + (processedCounties - 1) * 70 / totalCounties;
+                    totalProgressBar.Value = totalProgress;
 
                     // 查找县数据
                     var countyInfo = selectedCountyData.FirstOrDefault(c => c.CountyName == countyName);
@@ -1413,8 +1402,8 @@ namespace ForestResourcePlugin
                     var countyResult = ProcessSingleCounty(countyInfo, landTypeField, landOwnerField, token);
                     results.Add(countyResult);
 
-                    // 更新进度
-                    progressBar.Value = baseProgress + (70 / totalCounties);
+                    // 更新总进度
+                    totalProgressBar.Value = totalProgress + (70 / totalCounties);
                 }
                 catch (Exception ex)
                 {
@@ -1676,7 +1665,6 @@ namespace ForestResourcePlugin
                     countyInfo.CountyName,     // 当前处理的县名，用于确定目标数据库路径
                     countyDatabasePath,        // 县级数据库基础路径，最终会拼接为：{countyDatabasePath}/{县名}/{县名}.gdb
                     fieldMappings,             // 字段映射配置，定义源字段与目标字段的对应关系
-                    //token,                     // CancellationToken for cancellation
                     (percentage, message) => { // 进度回调函数，用于实时更新处理进度和状态信息
                         // 进度回调处理：更新界面进度条和状态显示
                         try
@@ -1766,7 +1754,7 @@ namespace ForestResourcePlugin
                         if (ShouldIncludeFeatureForCounty(feature, fieldIndices, cachedSpatialFilter, czkfbjFeatureClass))
                         {
                             features.Add(feature);
-                            feature = null; // 防止在 finally 中释放
+                            feature = null; // 防止在finally中释放
                         }
                         else if (feature != null)
                         {
@@ -1854,7 +1842,6 @@ namespace ForestResourcePlugin
             public string ErrorMessage { get; set; }
         }
 
-        // **新增方法: 构建优化的WHERE子句**
         private string BuildOptimizedWhereClause(string landTypeField, string landOwnerField)
         {
             var conditions = new List<string>();
@@ -1863,31 +1850,35 @@ namespace ForestResourcePlugin
             {
                 // 优化: 使用单一条件而不是多个OR条件
                 var subconditions = new List<string>();
-                
+
                 if (chkStateOwned.Checked)
                 {
-                    subconditions.Add($"{landOwnerField} = '20'");
+                    subconditions.Add($"{landOwnerField} IN ('10', '20')");
                 }
-                
+
                 if (chkCollectiveInBoundary.Checked)
                 {
-                    subconditions.Add($"{landOwnerField} = '30'");
+                    subconditions.Add($"{landOwnerField} IN ('30', '40')");
                 }
 
                 if (subconditions.Count > 0)
                 {
-                    string ownerCondition = subconditions.Count == 1 ? 
-                        subconditions[0] : 
+                    string ownerCondition = subconditions.Count == 1 ?
+                        subconditions[0] :
                         $"({string.Join(" OR ", subconditions)})";
-                    
-                    conditions.Add($"{landTypeField} LIKE '03%' AND {ownerCondition}");
+
+                    // 定义林地的精确地类编码列表
+                    string landTypeCodes = "'0301', '0302', '0305', '0307', '0301K', '0302K', '0307K'";
+                    string landTypeCondition = $"{landTypeField} IN ({landTypeCodes})";
+
+                    conditions.Add($"{landTypeCondition} AND {ownerCondition}");
                 }
             }
 
             return conditions.Count > 0 ? string.Join(" OR ", conditions) : "";
         }
 
-        // **新增方法: 执行优化查询**
+        // 新增方法: 执行优化查询
         private PreviewQueryResult ExecuteOptimizedQuery(
             string whereClause, 
             string landTypeField, 
@@ -1932,7 +1923,7 @@ namespace ForestResourcePlugin
             return result;
         }
 
-        // **新增方法: 分块处理要素**
+        // 新增方法: 分块处理要素
         private PreviewQueryResult ProcessFeaturesInChunks(
             IFeatureCursor cursor, 
             FieldIndices fieldIndices, 
@@ -1963,7 +1954,7 @@ namespace ForestResourcePlugin
                     featuresBatch.Add(feature);
                     processedInCurrentChunk++;
 
-                    // **优化: 当达到块大小时批量处理**
+                    // 优化: 当达到块大小时批量处理
                     if (processedInCurrentChunk >= chunkSize)
                     {
                         ProcessFeatureBatch(featuresBatch, fieldIndices, spatialFilter, result);
@@ -1977,13 +1968,13 @@ namespace ForestResourcePlugin
                         featuresBatch.Clear();
                         processedInCurrentChunk = 0;
 
-                        // **优化: 更新进度**
+                        // 更新进度
                         int progress = Math.Min(90, 50 + (result.TotalCount * 40 / maxCount));
                         progressBar.Value = progress;
                         UpdateStatus($"正在处理数据: 已处理 {result.TotalCount} 条，符合条件 {result.ProcessedCount} 条");
                         Application.DoEvents();
 
-                        // **优化: 提前终止条件**
+                        // 提前终止条件
                         if (result.ProcessedCount >= maxCount)
                             break;
                     }
@@ -2014,7 +2005,7 @@ namespace ForestResourcePlugin
             return result;
         }
 
-        // **新增方法: 批量处理要素**
+        // 新增方法: 批量处理要素
         private void ProcessFeatureBatch(
             List<IFeature> features, 
             FieldIndices fieldIndices, 
@@ -2035,21 +2026,21 @@ namespace ForestResourcePlugin
             }
         }
 
-        // **新增方法: 判断是否应包含要素**
+        // 新增方法: 判断是否应包含要素
         private bool ShouldIncludeFeature(IFeature feature, FieldIndices fieldIndices, ISpatialFilter spatialFilter)
         {
             // 获取土地权属值
             string ownerValue = GetFieldValue(feature, fieldIndices.QsxzIndex, fieldIndices.TdqsIndex);
             
             // 国有林地直接添加
-            if (chkStateOwned.Checked && (ownerValue == "1" || ownerValue == "20"))
+            if (chkStateOwned.Checked && (ownerValue == "10" || ownerValue == "20"))
             {
                 return true;
             }
             
             // 集体林地需要检查是否在城镇开发边界内
             if (chkCollectiveInBoundary.Checked && 
-                (ownerValue == "2" || ownerValue == "30") && 
+                (ownerValue == "30" || ownerValue == "40") && 
                 czkfbjFeatureClass != null)
             {
                 return IsFeatureInBoundaryOptimized(feature, spatialFilter);
@@ -2058,7 +2049,7 @@ namespace ForestResourcePlugin
             return false;
         }
 
-        // **优化的空间查询方法**
+        // 优化的空间查询方法
         private bool IsFeatureInBoundaryOptimized(IFeature feature, ISpatialFilter spatialFilter)
         {
             try
@@ -2080,7 +2071,7 @@ namespace ForestResourcePlugin
             }
         }
 
-        // **新增辅助类和方法**
+        // 新增辅助类和方法
         private FieldIndices GetFieldIndices(string landTypeField, string landOwnerField)
         {
             var indices = new FieldIndices();
@@ -2166,11 +2157,11 @@ namespace ForestResourcePlugin
         {
             switch (ownerValue)
             {
-                case "1":
+                case "10":
                 case "20":
                     return "国有";
-                case "2":
                 case "30":
+                case "40":
                     return "集体";
                 default:
                     return ownerValue;
@@ -2193,7 +2184,7 @@ namespace ForestResourcePlugin
             }
         }
 
-        // **新增辅助类**
+        // 新增辅助类
         private class FieldIndices
         {
             public int TbdhIndex { get; set; } = -1;
@@ -2216,7 +2207,7 @@ namespace ForestResourcePlugin
             
             try
             {
-                // **优化: 使用相同的优化查询逻辑**
+                // 使用相同的优化查询逻辑**
                 string optimizedWhereClause = BuildOptimizedWhereClause(landTypeField, landOwnerField);
                 
                 IQueryFilter queryFilter = new QueryFilterClass();
@@ -2227,7 +2218,7 @@ namespace ForestResourcePlugin
 
                 var fieldIndices = GetFieldIndices(landTypeField, landOwnerField);
                 
-                // **优化: 缓存空间过滤器**
+                // 缓存空间过滤器
                 ISpatialFilter cachedSpatialFilter = null;
                 if (chkCollectiveInBoundary.Checked && czkfbjFeatureClass != null)
                 {
@@ -2258,7 +2249,7 @@ namespace ForestResourcePlugin
 
                         processedCount++;
                         
-                        // **优化: 减少UI更新频率**
+                        // 减少UI更新频率
                         if (processedCount % 500 == 0)
                         {
                             UpdateStatus($"正在筛选图斑: 已处理 {processedCount} 条记录...");
@@ -2292,34 +2283,6 @@ namespace ForestResourcePlugin
             }
 
             return features;
-        }
-
-        // 在地图上高亮显示筛选出的要素
-        private void HighlightFeaturesOnMap(List<IFeature> features)
-        {
-            try
-            {
-                // 这里实现与ArcMap交互的代码，将筛选出的要素在地图上高亮显示
-                // 通常涉及获取当前地图文档和图层，然后设置选择集
-                // 此部分需要根据具体的ArcObjects环境实现
-                
-                // 示例代码（需要根据实际ArcObjects环境调整）
-                 //IActiveView activeView = (ArcMap.Document.FocusMap as IActiveView);
-                 //IMap map = activeView.FocusMap;
-                 //map.ClearSelection();
-                
-                 //foreach (IFeature feature in features)
-                 //{
-                 //    map.SelectFeature(lcxzgxFeatureLayer, feature);
-                 //}
-                
-                 //activeView.PartialRefresh(esriViewDrawPhase.esriViewGeoSelection, null, null);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"高亮显示要素出错: {ex.Message}");
-                // 这里不抛出异常，因为高亮显示失败不应阻止其他操作
-            }
         }
 
         private void InitializeMappingGrid()
@@ -2764,6 +2727,12 @@ namespace ForestResourcePlugin
             Application.DoEvents();
         }
 
+        private void UpdateTotalStatus(string message)
+        {
+            lblTotalStatus.Text = $"总状态：{message}";
+            Application.DoEvents();
+        }
+
         // 复选框状态改变事件处理
         private void FilterCheckBox_CheckedChanged(object sender, EventArgs e)
         {
@@ -3008,78 +2977,6 @@ namespace ForestResourcePlugin
             }
 
             return countyNames;
-        }
-
-        /// <summary>
-        /// 验证县数据完整性
-        /// </summary>
-        private bool ValidateCountyData(string countyName)
-        {
-            try
-            {
-                // 检查该县是否有林草现状数据
-                var lcxzgxFiles = ForestResourcePlugin.SharedDataManager.GetLCXZGXFiles();
-                bool hasLCXZGX = lcxzgxFiles.Any(f => f.DisplayName == countyName);
-
-                // 检查该县是否有城镇开发边界数据
-                var czkfbjFiles = ForestResourcePlugin.SharedDataManager.GetCZKFBJFiles();
-                bool hasCZKFBJ = czkfbjFiles.Any(f => f.DisplayName == countyName);
-
-                System.Diagnostics.Debug.WriteLine($"县 {countyName} 数据完整性: 林草现状={hasLCXZGX}, 城镇开发边界={hasCZKFBJ}");
-
-                // 至少需要有林草现状数据
-                return hasLCXZGX;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"验证县 {countyName} 数据时出错: {ex.Message}");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 刷新县列表
-        /// </summary>
-        private void RefreshCountyList()
-        {
-            try
-            {
-                // 保存当前选中状态
-                var selectedCounties = GetSelectedCounties();
-
-                // 重新加载县列表
-                LoadCounties();
-
-                // 恢复选中状态
-                RestoreCountySelection(selectedCounties);
-
-                UpdateStatus("县列表已刷新");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"刷新县列表时出错: {ex.Message}");
-                UpdateStatus("刷新县列表失败");
-            }
-        }
-
-        /// <summary>
-        /// 恢复县选中状态
-        /// </summary>
-        private void RestoreCountySelection(List<string> selectedCounties)
-        {
-            try
-            {
-                for (int i = 0; i < chkListCounties.Items.Count; i++)
-                {
-                    string countyName = chkListCounties.Items[i].ToString();
-                    bool shouldBeChecked = selectedCounties.Contains(countyName);
-                    chkListCounties.SetItemChecked(i, shouldBeChecked);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"恢复县选中状态时出错: {ex.Message}");
-            }
         }
 
         /// <summary>

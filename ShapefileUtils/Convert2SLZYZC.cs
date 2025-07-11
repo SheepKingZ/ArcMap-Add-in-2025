@@ -4,6 +4,7 @@ using ESRI.ArcGIS.Geometry;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace ForestResourcePlugin
 {
@@ -785,6 +786,11 @@ namespace ForestResourcePlugin
         /// </summary>
         /// <param name="countyName">原始县名</param>
         /// <returns>确保带有"县"字的县名</returns>
+        /// <summary>
+        /// 确保县名以"县"字结尾，并移除名称中的非中文字符
+        /// </summary>
+        /// <param name="countyName">原始县名</param>
+        /// <returns>处理后确保带有"县"字的县名</returns>
         private string EnsureCountySuffix(string countyName)
         {
             if (string.IsNullOrEmpty(countyName))
@@ -792,13 +798,16 @@ namespace ForestResourcePlugin
                 return string.Empty;
             }
 
-            if (!countyName.EndsWith("县") && !countyName.EndsWith("市") &&
-                !countyName.EndsWith("区") && !countyName.EndsWith("旗"))
+            // 使用正则表达式仅保留中文字符
+            string chineseOnlyCountyName = Regex.Replace(countyName, @"[^\u4e00-\u9fa5]", "");
+
+            // 如果过滤后名称为空（例如，名称只包含数字），则回退到使用原始名称
+            if (string.IsNullOrEmpty(chineseOnlyCountyName))
             {
-                return countyName + "县";
+                chineseOnlyCountyName = countyName;
             }
 
-            return countyName;
+            return chineseOnlyCountyName;
         }
 
         /// <summary>

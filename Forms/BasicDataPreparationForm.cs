@@ -182,17 +182,6 @@ namespace TestArcMapAddin2.Forms
                     // 保存到共享状态
                     SharedWorkflowState.OutputGDBPath = outputGDBPath;
 
-                    // 🔥 新增：更新Basic窗体中的txtOutputPath
-                    if (ParentBasicForm != null)
-                    {
-                        // 通过Find方法安全地查找控件并更新
-                        var txtOutput = ParentBasicForm.Controls.Find("txtOutputPath", true).FirstOrDefault() as System.Windows.Forms.TextBox;
-                        if (txtOutput != null)
-                        {
-                            txtOutput.Text = outputGDBPath;
-                        }
-                    }
-
                     MessageBox.Show("输出结果路径选择完成。", "成功",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                     UpdateButtonStates();

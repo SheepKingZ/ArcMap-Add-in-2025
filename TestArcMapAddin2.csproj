@@ -218,13 +218,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ShapefileUtils\Convert2SLZYZCDLTB.cs" />
     <Compile Include="SharedWorkflowState.cs" />
-    <Compile Include="Utils\Convert2ResultTable.cs" />
+    <Compile Include="Trash\Convert2ResultTable.cs" />
     <Compile Include="ShapefileUtils\Convert2SLZYZC.cs" />
-    <Compile Include="Utils\Convert3ResultTable.cs" />
+    <Compile Include="Trash\Convert3ResultTable.cs" />
     <Compile Include="Utils\DefaultFieldMappingManager.cs" />
     <Compile Include="Utils\ExcelExporter.cs" />
     <Compile Include="Utils\GdbFeatureClassFinder.cs" />
-    <Compile Include="Utils\GDBManager.cs" />
+    <Compile Include="Trash\GDBManager.cs" />
     <Compile Include="Utils\GeodatabaseUtilities.cs" />
     <Compile Include="Utils\MapLayerUtilities.cs" />
     <Compile Include="Utils\ShapefileExporter.cs" />

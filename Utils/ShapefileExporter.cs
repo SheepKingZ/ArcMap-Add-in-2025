@@ -669,15 +669,14 @@ namespace ForestResourcePlugin
             string strValue = value?.ToString() ?? "";
             switch (strValue)
             {
-                case "1":
+                case "10":
+                    return "10";
                 case "20":
-                    return "国有";
-                case "2":
+                    return "20";
                 case "30":
-                    return "集体";
-                case "3":
+                    return "30";
                 case "40":
-                    return "其他";
+                    return "40";
                 default:
                     return strValue;
             }
