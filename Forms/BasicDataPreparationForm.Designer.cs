@@ -39,10 +39,11 @@ namespace TestArcMapAddin2.Forms
             this.txtOutputGDBPath = new System.Windows.Forms.TextBox();
             this.btnBrowseOutputGDB = new System.Windows.Forms.Button();
             this.bottomPanel = new System.Windows.Forms.Panel();
+            this.buttonResultStructure = new System.Windows.Forms.Button();
+            this.btnResultExcel = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.btnResultExcel = new System.Windows.Forms.Button();
             this.topPanel.SuspendLayout();
             this.bottomPanel.SuspendLayout();
             this.SuspendLayout();
@@ -63,6 +64,7 @@ namespace TestArcMapAddin2.Forms
             this.topPanel.Padding = new System.Windows.Forms.Padding(15);
             this.topPanel.Size = new System.Drawing.Size(1000, 543);
             this.topPanel.TabIndex = 22;
+            this.topPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.topPanel_Paint);
             // 
             // titleLabel
             // 
@@ -150,6 +152,7 @@ namespace TestArcMapAddin2.Forms
             // bottomPanel
             // 
             this.bottomPanel.BackColor = System.Drawing.Color.LightGray;
+            this.bottomPanel.Controls.Add(this.buttonResultStructure);
             this.bottomPanel.Controls.Add(this.btnResultExcel);
             this.bottomPanel.Controls.Add(this.button1);
             this.bottomPanel.Controls.Add(this.btnOK);
@@ -160,6 +163,26 @@ namespace TestArcMapAddin2.Forms
             this.bottomPanel.Name = "bottomPanel";
             this.bottomPanel.Size = new System.Drawing.Size(1000, 75);
             this.bottomPanel.TabIndex = 21;
+            // 
+            // buttonResultStructure
+            // 
+            this.buttonResultStructure.Location = new System.Drawing.Point(88, 22);
+            this.buttonResultStructure.Name = "buttonResultStructure";
+            this.buttonResultStructure.Size = new System.Drawing.Size(156, 34);
+            this.buttonResultStructure.TabIndex = 4;
+            this.buttonResultStructure.Text = "创建目录结构";
+            this.buttonResultStructure.UseVisualStyleBackColor = true;
+            this.buttonResultStructure.Click += new System.EventHandler(this.buttonResultStructure_Click);
+            // 
+            // btnResultExcel
+            // 
+            this.btnResultExcel.Location = new System.Drawing.Point(255, 22);
+            this.btnResultExcel.Name = "btnResultExcel";
+            this.btnResultExcel.Size = new System.Drawing.Size(156, 34);
+            this.btnResultExcel.TabIndex = 3;
+            this.btnResultExcel.Text = "创建结果表格";
+            this.btnResultExcel.UseVisualStyleBackColor = true;
+            this.btnResultExcel.Click += new System.EventHandler(this.btnResultExcel_Click);
             // 
             // button1
             // 
@@ -197,16 +220,6 @@ namespace TestArcMapAddin2.Forms
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
             // 
-            // btnResultExcel
-            // 
-            this.btnResultExcel.Location = new System.Drawing.Point(255, 22);
-            this.btnResultExcel.Name = "btnResultExcel";
-            this.btnResultExcel.Size = new System.Drawing.Size(156, 34);
-            this.btnResultExcel.TabIndex = 3;
-            this.btnResultExcel.Text = "创建结果表格";
-            this.btnResultExcel.UseVisualStyleBackColor = true;
-            this.btnResultExcel.Click += new System.EventHandler(this.btnResultExcel_Click);
-            // 
             // BasicDataPreparationForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
@@ -232,5 +245,6 @@ namespace TestArcMapAddin2.Forms
 
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button btnResultExcel;
+        private System.Windows.Forms.Button buttonResultStructure;
     }
 }

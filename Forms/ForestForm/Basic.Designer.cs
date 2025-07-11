@@ -335,7 +335,7 @@ namespace ForestResourcePlugin
             // 
             this.cmbLandTypeField.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbLandTypeField.FormattingEnabled = true;
-            this.cmbLandTypeField.Location = new System.Drawing.Point(150, 34);
+            this.cmbLandTypeField.Location = new System.Drawing.Point(167, 34);
             this.cmbLandTypeField.Margin = new System.Windows.Forms.Padding(4);
             this.cmbLandTypeField.Name = "cmbLandTypeField";
             this.cmbLandTypeField.Size = new System.Drawing.Size(298, 26);
@@ -357,9 +357,9 @@ namespace ForestResourcePlugin
             this.lblLandTypeField.Location = new System.Drawing.Point(22, 39);
             this.lblLandTypeField.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblLandTypeField.Name = "lblLandTypeField";
-            this.lblLandTypeField.Size = new System.Drawing.Size(89, 18);
+            this.lblLandTypeField.Size = new System.Drawing.Size(125, 18);
             this.lblLandTypeField.TabIndex = 0;
-            this.lblLandTypeField.Text = "地类字段:";
+            this.lblLandTypeField.Text = "地类编码字段:";
             // 
             // lblLandOwnerField
             // 
@@ -584,10 +584,10 @@ namespace ForestResourcePlugin
             // 
             // totalProgressBar
             // 
-            this.totalProgressBar.Location = new System.Drawing.Point(266, 72);
+            this.totalProgressBar.Location = new System.Drawing.Point(388, 84);
             this.totalProgressBar.Margin = new System.Windows.Forms.Padding(4);
             this.totalProgressBar.Name = "totalProgressBar";
-            this.totalProgressBar.Size = new System.Drawing.Size(917, 34);
+            this.totalProgressBar.Size = new System.Drawing.Size(789, 22);
             this.totalProgressBar.TabIndex = 6;
             // 
             // lblTotalStatus

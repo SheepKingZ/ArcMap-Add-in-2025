@@ -210,7 +210,7 @@ namespace ForestResourcePlugin
                 // 选择默认字段
                 if (cmbLandTypeField.Items.Count > 0)
                 {
-                    int landTypeIndex = FindBestMatchIndex(cmbLandTypeField.Items, new[] { "地类", "Y_DLBM", "LandType", "DL", "Land", "Type", "DLDM" });
+                    int landTypeIndex = FindBestMatchIndex(cmbLandTypeField.Items, new[] {"DLBM"});
                     cmbLandTypeField.SelectedIndex = landTypeIndex >= 0 ? landTypeIndex : 0;
 
                     int landOwnerIndex = FindBestMatchIndex(cmbLandOwnerField.Items, new[] {"QSXZ"});
@@ -1895,10 +1895,10 @@ namespace ForestResourcePlugin
                 queryFilter.WhereClause = whereClause;
             }
 
-            // **优化: 预先获取字段索引**
+            // 预先获取字段索引
             var fieldIndices = GetFieldIndices(landTypeField, landOwnerField);
             
-            // **优化: 缓存空间过滤器以提高性能**
+            // 缓存空间过滤器以提高性能
             ISpatialFilter cachedSpatialFilter = null;
             if (chkCollectiveInBoundary.Checked && czkfbjFeatureClass != null)
             {
@@ -1923,7 +1923,7 @@ namespace ForestResourcePlugin
             return result;
         }
 
-        // 新增方法: 分块处理要素
+        // 分块处理要素
         private PreviewQueryResult ProcessFeaturesInChunks(
             IFeatureCursor cursor, 
             FieldIndices fieldIndices, 
@@ -2005,7 +2005,7 @@ namespace ForestResourcePlugin
             return result;
         }
 
-        // 新增方法: 批量处理要素
+        // 批量处理要素
         private void ProcessFeatureBatch(
             List<IFeature> features, 
             FieldIndices fieldIndices, 
