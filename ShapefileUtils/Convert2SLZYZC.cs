@@ -9,8 +9,8 @@ using System.Text.RegularExpressions;
 namespace ForestResourcePlugin
 {
     /// <summary>
-    /// Shapefile结果表转换工具类 - 将LCXZGX.shp转换为SLZYZC.shp
-    /// 更新现有的SLZYZC shapefile，包含CZKFBJMJ字段的计算
+    /// Shapefile结果表生成工具类 - 直接从源GDB生成SLZYZC.shp
+    /// 生成SLZYZC shapefile，包含CZKFBJMJ字段的计算
     /// </summary>
     public class Convert2SLZYZC
     {
@@ -22,18 +22,22 @@ namespace ForestResourcePlugin
         public delegate void ProgressCallback(int percentage, string message);
 
         /// <summary>
-        /// 将LCXZGX.shp转换为SLZYZC.shp
+        /// 从源GDB直接生成SLZYZC.shp
         /// 更新现有的SLZYZC shapefile而不是创建新的
         /// </summary>
         /// <param name="countyName">县名</param>
-        /// <param name="shapefilePath">shapefile目录路径</param>
-        /// <param name="fieldMappings">字段映射配置（SLZYZC字段名 -> LCXZGX字段名）</param>
+        /// <param name="sourceGdbPath">源GDB路径</param>
+        /// <param name="sourceFeatureClassName">源要素类名称</param>
+        /// <param name="outputShapefilePath">输出SLZYZC.shp的完整路径</param>
+        /// <param name="fieldMappings">字段映射配置（SLZYZC字段名 -> 源字段名）</param>
         /// <param name="progressCallback">进度回调</param>
         /// <param name="czkfbjShapefilePath">CZKFBJ shapefile路径（可选）</param>
         /// <returns>转换是否成功</returns>
-        public bool ConvertLCXZGXToSLZYZC(
+        public bool GenerateSLZYZCFromSource(
             string countyName,
-            string shapefilePath,
+            string sourceGdbPath,
+            string sourceFeatureClassName,
+            string outputShapefilePath,
             Dictionary<string, string> fieldMappings = null,
             ProgressCallback progressCallback = null,
             string czkfbjShapefilePath = null)
@@ -44,62 +48,65 @@ namespace ForestResourcePlugin
                 throw new ArgumentException("县名不能为空");
             }
 
-            if (string.IsNullOrEmpty(shapefilePath))
+            if (string.IsNullOrEmpty(sourceGdbPath))
             {
-                throw new ArgumentException("Shapefile路径不能为空");
+                throw new ArgumentException("源GDB路径不能为空");
             }
 
-            progressCallback?.Invoke(5, $"正在开始转换{countyName}的LCXZGX到SLZYZC...");
+            if (string.IsNullOrEmpty(sourceFeatureClassName))
+            {
+                throw new ArgumentException("源要素类名称不能为空");
+            }
+
+            if (string.IsNullOrEmpty(outputShapefilePath))
+            {
+                throw new ArgumentException("输出Shapefile路径不能为空");
+            }
+
+            progressCallback?.Invoke(5, $"正在开始从源GDB生成{countyName}的SLZYZC...");
 
             // COM对象声明
-            IWorkspace lcxzgxWorkspace = null;
+            IWorkspace sourceWorkspace = null;
             IWorkspace slzyzcWorkspace = null;
             IWorkspace czkfbjWorkspace = null;
-            IFeatureClass lcxzgxFeatureClass = null;
+            IFeatureClass sourceFeatureClass = null;
             IFeatureClass slzyzcFeatureClass = null;
             IFeatureClass czkfbjFeatureClass = null;
 
             try
             {
-                // 构建shapefile路径
-                string lcxzgxPath = shapefilePath;
-                string countyPath = System.IO.Path.GetDirectoryName(lcxzgxPath);
-                string slzyzcPath = System.IO.Path.Combine(countyPath, "SLZYZC.shp");
-
-                // 验证LCXZGX.shp存在
-                if (!File.Exists(lcxzgxPath))
+                // 验证源GDB存在
+                if (!Directory.Exists(sourceGdbPath))
                 {
-                    throw new FileNotFoundException($"LCXZGX.shp文件不存在: {lcxzgxPath}");
+                    throw new DirectoryNotFoundException($"源GDB不存在: {sourceGdbPath}");
                 }
 
-                // 验证SLZYZC.shp存在
-                if (!File.Exists(slzyzcPath))
+                progressCallback?.Invoke(15, $"正在打开{countyName}的源GDB...");
+
+                // 打开源GDB
+                sourceWorkspace = OpenGeoDatabase(sourceGdbPath);
+                if (sourceWorkspace == null)
                 {
-                    throw new FileNotFoundException($"SLZYZC.shp文件不存在: {slzyzcPath}");
+                    throw new Exception($"无法打开源GDB: {sourceGdbPath}");
                 }
 
-                progressCallback?.Invoke(15, $"正在打开{countyName}的LCXZGX.shp...");
-
-                // 打开LCXZGX shapefile
-                var lcxzgxResult = OpenShapefileFeatureClass(lcxzgxPath);
-                lcxzgxWorkspace = lcxzgxResult.workspace;
-                lcxzgxFeatureClass = lcxzgxResult.featureClass;
-
-                if (lcxzgxFeatureClass == null)
+                // 获取源要素类
+                sourceFeatureClass = GetFeatureClass(sourceWorkspace, sourceFeatureClassName);
+                if (sourceFeatureClass == null)
                 {
-                    throw new Exception($"无法打开{countyName}的LCXZGX.shp");
+                    throw new Exception($"无法找到源要素类: {sourceFeatureClassName}");
                 }
 
                 progressCallback?.Invoke(25, $"正在打开{countyName}的SLZYZC.shp...");
 
-                // 打开SLZYZC shapefile
-                var slzyzcResult = OpenShapefileFeatureClass(slzyzcPath);
+                // 打开目标SLZYZC shapefile
+                var slzyzcResult = OpenShapefileFeatureClass(outputShapefilePath);
                 slzyzcWorkspace = slzyzcResult.workspace;
                 slzyzcFeatureClass = slzyzcResult.featureClass;
 
                 if (slzyzcFeatureClass == null)
                 {
-                    throw new Exception($"无法打开{countyName}的SLZYZC.shp");
+                    throw new Exception($"无法打开{countyName}的SLZYZC.shp: {outputShapefilePath}");
                 }
 
                 progressCallback?.Invoke(35, $"正在获取{countyName}的CZKFBJ数据...");
@@ -123,6 +130,19 @@ namespace ForestResourcePlugin
                         czkfbjWorkspace = czkfbjResult.workspace;
                         czkfbjFeatureClass = czkfbjResult.featureClass;
                     }
+                    else
+                    {
+                        // 尝试从源GDB中获取
+                        System.Diagnostics.Debug.WriteLine($"未找到{countyName}的CZKFBJ shapefile，尝试从源GDB获取");
+                        try
+                        {
+                            czkfbjFeatureClass = GetCZKFBJFeatureClassFromGDB(sourceWorkspace, countyName);
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"从源GDB获取{countyName}的CZKFBJ失败: {ex.Message}");
+                        }
+                    }
                 }
 
                 if (czkfbjFeatureClass == null)
@@ -144,7 +164,7 @@ namespace ForestResourcePlugin
 
                 // 执行数据转换
                 int convertedCount = ConvertAndUpdateFeatures(
-                    lcxzgxFeatureClass,
+                    sourceFeatureClass,
                     slzyzcFeatureClass,
                     czkfbjFeatureClass,
                     fieldMappings,
@@ -153,21 +173,21 @@ namespace ForestResourcePlugin
 
                 progressCallback?.Invoke(100, $"成功转换 {convertedCount} 个要素到{countyName}的SLZYZC.shp");
 
-                System.Diagnostics.Debug.WriteLine($"县{countyName}的LCXZGX.shp已成功转换更新到SLZYZC.shp");
+                System.Diagnostics.Debug.WriteLine($"县{countyName}的源数据已成功生成到SLZYZC.shp");
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"转换{countyName}数据时出错: {ex.Message}");
-                progressCallback?.Invoke(0, $"转换{countyName}数据失败: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"生成{countyName}数据时出错: {ex.Message}");
+                progressCallback?.Invoke(0, $"生成{countyName}数据失败: {ex.Message}");
                 throw;
             }
             finally
             {
                 // 释放COM对象
-                if (lcxzgxFeatureClass != null)
+                if (sourceFeatureClass != null)
                 {
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(lcxzgxFeatureClass);
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(sourceFeatureClass);
                 }
                 if (slzyzcFeatureClass != null)
                 {
@@ -177,9 +197,9 @@ namespace ForestResourcePlugin
                 {
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(czkfbjFeatureClass);
                 }
-                if (lcxzgxWorkspace != null)
+                if (sourceWorkspace != null)
                 {
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(lcxzgxWorkspace);
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(sourceWorkspace);
                 }
                 if (slzyzcWorkspace != null)
                 {
@@ -190,59 +210,6 @@ namespace ForestResourcePlugin
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(czkfbjWorkspace);
                 }
             }
-        }
-
-        /// <summary>
-        /// 批量转换多个县的LCXZGX.shp为SLZYZC.shp
-        /// </summary>
-        /// <param name="countyShapefilePaths">县级shapefile路径映射（县名 -> shapefile目录路径）</param>
-        /// <param name="fieldMappings">字段映射配置</param>
-        /// <param name="progressCallback">进度回调</param>
-        /// <param name="czkfbjShapefilePath">CZKFBJ shapefile路径（可选）</param>
-        /// <returns>批量转换结果（县名 -> 是否成功）</returns>
-        public Dictionary<string, bool> BatchConvertLCXZGXToSLZYZC(
-            Dictionary<string, string> countyShapefilePaths,
-            Dictionary<string, string> fieldMappings = null,
-            ProgressCallback progressCallback = null,
-            string czkfbjShapefilePath = null)
-        {
-            if (countyShapefilePaths == null || countyShapefilePaths.Count == 0)
-            {
-                throw new ArgumentException("县级shapefile路径映射不能为空");
-            }
-
-            var results = new Dictionary<string, bool>();
-            int totalCounties = countyShapefilePaths.Count;
-            int processedCounties = 0;
-
-            progressCallback?.Invoke(0, $"开始批量转换{totalCounties}个县的数据...");
-
-            foreach (var countyData in countyShapefilePaths)
-            {
-                string countyName = countyData.Key;
-                string shapefilePath = countyData.Value;
-
-                try
-                {
-                    int overallProgress = (processedCounties * 100) / totalCounties;
-                    progressCallback?.Invoke(overallProgress, $"正在转换县: {countyName} ({processedCounties + 1}/{totalCounties})");
-
-                    bool success = ConvertLCXZGXToSLZYZC(countyName, shapefilePath, fieldMappings, null, czkfbjShapefilePath);
-                    results[countyName] = success;
-
-                    processedCounties++;
-                    System.Diagnostics.Debug.WriteLine($"县{countyName}数据转换完成 ({processedCounties}/{totalCounties})");
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"转换县{countyName}数据时出错: {ex.Message}");
-                    results[countyName] = false;
-                    processedCounties++;
-                }
-            }
-
-            progressCallback?.Invoke(100, $"所有县的数据转换完成 ({processedCounties}/{totalCounties})");
-            return results;
         }
 
         /// <summary>
@@ -257,6 +224,65 @@ namespace ForestResourcePlugin
             {
                 this.workspace = workspace;
                 this.featureClass = featureClass;
+            }
+        }
+
+        /// <summary>
+        /// 打开GDB数据库
+        /// </summary>
+        /// <param name="gdbPath">GDB路径</param>
+        /// <returns>工作空间接口</returns>
+        private IWorkspace OpenGeoDatabase(string gdbPath)
+        {
+            try
+            {
+                // 使用ProgID创建File Geodatabase工厂
+                Type factoryType = Type.GetTypeFromProgID("esriDataSourcesGDB.FileGDBWorkspaceFactory");
+                IWorkspaceFactory workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+
+                // 打开GDB工作空间
+                IWorkspace workspace = workspaceFactory.OpenFromFile(gdbPath, 0);
+
+                if (workspace == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"无法打开GDB工作空间: {gdbPath}");
+                    return null;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"成功打开GDB: {gdbPath}");
+                return workspace;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"打开GDB时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"错误堆栈: {ex.StackTrace}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 获取指定名称的要素类
+        /// </summary>
+        /// <param name="workspace">数据库工作空间</param>
+        /// <param name="featureClassName">要素类名称</param>
+        /// <returns>要素类接口</returns>
+        private IFeatureClass GetFeatureClass(IWorkspace workspace, string featureClassName)
+        {
+            try
+            {
+                // 将工作空间转换为要素工作空间以访问要素类
+                IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspace;
+
+                // 打开指定的要素类
+                IFeatureClass featureClass = featureWorkspace.OpenFeatureClass(featureClassName);
+
+                System.Diagnostics.Debug.WriteLine($"成功获取{featureClassName}要素类");
+                return featureClass;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"获取{featureClassName}要素类时出错: {ex.Message}");
+                throw;
             }
         }
 
@@ -351,6 +377,61 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
+        /// 从GDB中获取CZKFBJ要素类
+        /// </summary>
+        /// <param name="workspace">工作空间</param>
+        /// <param name="countyName">县名</param>
+        /// <returns>CZKFBJ要素类或null</returns>
+        private IFeatureClass GetCZKFBJFeatureClassFromGDB(IWorkspace workspace, string countyName)
+        {
+            try
+            {
+                // 首先尝试标准名称
+                string[] possibleNames = { "CZKFBJ", "czkfbj", "城镇开发边界", "CZKFBJ_POLYGON" };
+
+                IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspace;
+
+                foreach (string name in possibleNames)
+                {
+                    try
+                    {
+                        IFeatureClass featureClass = featureWorkspace.OpenFeatureClass(name);
+                        if (featureClass != null)
+                        {
+                            int featureCount = featureClass.FeatureCount(null);
+                            System.Diagnostics.Debug.WriteLine($"成功获取{countyName}的{name}要素类，包含{featureCount}个要素");
+                            return featureClass;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"尝试打开{name}失败: {ex.Message}");
+                    }
+                }
+
+                // 如果标准名称都失败，列出所有要素类进行诊断
+                System.Diagnostics.Debug.WriteLine($"开始列出{countyName}数据库中的所有要素类:");
+                IEnumDataset enumDataset = workspace.get_Datasets(esriDatasetType.esriDTFeatureClass);
+                enumDataset.Reset();
+                IDataset dataset;
+                while ((dataset = enumDataset.Next()) != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"  发现要素类: {dataset.Name}");
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(dataset);
+                }
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(enumDataset);
+
+                System.Diagnostics.Debug.WriteLine($"警告: 在{countyName}数据库中未找到CZKFBJ相关要素类");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"获取{countyName}的CZKFBJ要素类时发生严重错误: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
         /// 清空shapefile的现有数据
         /// </summary>
         /// <param name="featureClass">要清空的要素类</param>
@@ -398,7 +479,7 @@ namespace ForestResourcePlugin
         /// <summary>
         /// 转换并更新要素数据
         /// </summary>
-        /// <param name="sourceFeatureClass">源要素类（LCXZGX）</param>
+        /// <param name="sourceFeatureClass">源要素类</param>
         /// <param name="targetFeatureClass">目标要素类（SLZYZC）</param>
         /// <param name="czkfbjFeatureClass">城镇开发边界要素类</param>
         /// <param name="fieldMappings">字段映射配置</param>
@@ -423,15 +504,15 @@ namespace ForestResourcePlugin
                 int processedCount = 0;
                 int successCount = 0;
 
-                System.Diagnostics.Debug.WriteLine($"开始转换{countyName}的数据：{totalFeatures}个要素从LCXZGX.shp到SLZYZC.shp");
+                System.Diagnostics.Debug.WriteLine($"开始转换{countyName}的数据：{totalFeatures}个要素从源GDB到SLZYZC.shp");
 
                 // 获取字段映射
                 if (fieldMappings == null || fieldMappings.Count == 0)
                 {
-                    fieldMappings = Convert2ResultTable.CreateXZ2SLZYZCFieldsMap();
+                    fieldMappings = CreateSourceToSLZYZCFieldsMap();
                 }
 
-                // 🔥 修改: 显式获取并检查 ZCQCBSM 和 CZKFBJMJ 字段索引
+                // 显式获取并检查 ZCQCBSM 和 CZKFBJMJ 字段索引
                 int zcqcbsmIndex = targetFeatureClass.FindField("ZCQCBSM");
                 if (zcqcbsmIndex == -1)
                 {
@@ -468,7 +549,7 @@ namespace ForestResourcePlugin
                             countyName,
                             successCount + 1); // 传递图斑序号
 
-                        // 🔥 修改: 2. 独立处理 ZCQCBSM 字段，不再依赖于字段映射
+                        // 2. 独立处理 ZCQCBSM 字段，不再依赖于字段映射
                         if (zcqcbsmIndex != -1)
                         {
                             object zcqcbsmValue = ProcessSpecialFieldMapping(
@@ -626,6 +707,11 @@ namespace ForestResourcePlugin
                     case "ZCQCBSM":
                         // 格式: XZQDM(6) + "4120" + 图斑序号(12)
                         int xzqdmIndex = sourceFeatureClass.FindField("xian");
+                        if (xzqdmIndex == -1)
+                        {
+                            // 尝试其他可能的字段名
+                            xzqdmIndex = sourceFeatureClass.FindField("XZQDM");
+                        }
                         if (xzqdmIndex != -1)
                         {
                             string xzqdm = sourceFeature.get_Value(xzqdmIndex)?.ToString() ?? "";
@@ -636,16 +722,21 @@ namespace ForestResourcePlugin
                             string sequenceStr = featureSequence.ToString("D12"); // 格式化为12位，前补0
                             return $"{xzqdm}4120{sequenceStr}";
                         }
-                        return 0;
+                        return null;
 
                     case "PCTBBM":
-                        // 字段合并：xian + lin_ban + xiao_ban
+                        // 字段合并：尝试多种字段名组合
                         return CombineFields(sourceFeature, sourceFeatureClass,
-                            new[] { "xian", "lin_ban", "xiao_ban" });
+                            new[] { "xian", "lin_ban", "xiao_ban" }) ??
+                               CombineFields(sourceFeature, sourceFeatureClass,
+                            new[] { "XZQDM", "LIN_BAN", "XIAO_BAN" });
+
                     case "ZTBXJ":
                         // 字段计算：xbmj * 第65个字段
                         return CalculateFieldProduct(sourceFeature, sourceFeatureClass,
-                            "xbmj", GetFieldByIndex(sourceFeatureClass, 65));
+                            "xbmj", GetFieldByIndex(sourceFeatureClass, 65)) ??
+                               CalculateFieldProduct(sourceFeature, sourceFeatureClass,
+                            "XBMJ", GetFieldByIndex(sourceFeatureClass, 65));
 
                     case "XZQMC":
                         // 使用县名
@@ -782,11 +873,6 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 确保县名以"县"字结尾
-        /// </summary>
-        /// <param name="countyName">原始县名</param>
-        /// <returns>确保带有"县"字的县名</returns>
-        /// <summary>
         /// 确保县名以"县"字结尾，并移除名称中的非中文字符
         /// </summary>
         /// <param name="countyName">原始县名</param>
@@ -820,6 +906,7 @@ namespace ForestResourcePlugin
         private string CombineFields(IFeature sourceFeature, IFeatureClass sourceFeatureClass, string[] fieldNames)
         {
             var values = new List<string>();
+            bool hasAnyField = false;
 
             foreach (string fieldName in fieldNames)
             {
@@ -828,6 +915,7 @@ namespace ForestResourcePlugin
                 {
                     object value = sourceFeature.get_Value(fieldIndex);
                     values.Add(value?.ToString() ?? "");
+                    hasAnyField = true;
                 }
                 else
                 {
@@ -835,7 +923,7 @@ namespace ForestResourcePlugin
                 }
             }
 
-            return string.Join("", values);
+            return hasAnyField ? string.Join("", values) : null;
         }
 
         /// <summary>
@@ -900,6 +988,16 @@ namespace ForestResourcePlugin
                 System.Diagnostics.Debug.WriteLine($"根据索引获取字段名时出错: {ex.Message}");
                 return null;
             }
+        }
+
+        /// <summary>
+        /// 创建源GDB到SLZYZC的字段映射配置
+        /// </summary>
+        /// <returns>字段映射字典（SLZYZC字段名 -> 源字段名）</returns>
+        private Dictionary<string, string> CreateSourceToSLZYZCFieldsMap()
+        {
+            // 复用现有的字段映射，但从Convert2ResultTable获取
+            return Convert2ResultTable.CreateXZ2SLZYZCFieldsMap();
         }
 
         /// <summary>

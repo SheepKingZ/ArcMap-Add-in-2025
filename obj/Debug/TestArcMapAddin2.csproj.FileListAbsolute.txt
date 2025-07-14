@@ -84,7 +84,6 @@ D:\桌面\LDY_Proj\bin\Debug\ESRI.ArcGIS.Editor.xml
 D:\桌面\LDY_Proj\bin\Debug\ESRI.ArcGIS.Geodatabase.xml
 D:\桌面\LDY_Proj\obj\Debug\TestArcMapAddin2.dll
 D:\桌面\LDY_Proj\obj\Debug\TestArcMapAddin2.pdb
-D:\桌面\LDY_Proj\obj\Debug\TestArcMapAddin2.csproj.AssemblyReference.cache
 D:\桌面\LDY_Proj\bin\Debug\TestArcMapAddin2.dll.config
 D:\桌面\LDY_Proj\bin\Debug\Microsoft.Win32.Primitives.dll
 D:\桌面\LDY_Proj\bin\Debug\netstandard.dll
@@ -238,4 +237,6 @@ D:\桌面\LDY_Proj\bin\Debug\System.Security.Cryptography.Xml.xml
 D:\桌面\LDY_Proj\bin\Debug\System.Security.Principal.Windows.xml
 D:\桌面\LDY_Proj\bin\Debug\System.Text.Encoding.CodePages.xml
 D:\桌面\LDY_Proj\bin\Debug\System.Threading.Tasks.Extensions.xml
-D:\桌面\LDY_Proj\obj\Debug\TestArcM.3342E52C.Up2Date
+D:\桌面\LDY_Proj\obj\Debug\TestArcMapAddin2.csproj.CopyComplete
+D:\桌面\LDY_Proj\obj\Debug\TestArcMapAddin2.csprojAssemblyReference.cache
+D:\桌面\LDY_Proj\bin\Debug\TestArcMapAddin2.esriAddIn

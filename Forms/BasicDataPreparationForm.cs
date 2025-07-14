@@ -113,7 +113,6 @@ namespace TestArcMapAddin2.Forms
         }
 
         // 合并数据源方法
-        // 合并数据源方法
         private void BtnBrowseData_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -134,21 +133,21 @@ namespace TestArcMapAddin2.Forms
                     SharedWorkflowState.DataSourcePath = dataSourcePath;
 
                     // 查找包含LCXZGX_P的文件（林草湿荒普查数据）
-                    List<ForestResourcePlugin.LCXZGXFileInfo> lcxzgxFiles = FindFilesWithPattern(dataSourcePath, "LCXZGX_P");
+                    List<ForestResourcePlugin.SourceDataFileInfo> lcxzgxFiles = FindFilesWithPattern(dataSourcePath, "LCXZGX_P");
 
-                    // 保存到共享数据管理器
-                    ForestResourcePlugin.SharedDataManager.SetLCXZGXFiles(lcxzgxFiles);
+                    // 🔥 修复：直接使用新的 SourceDataFileInfo 类型
+                    ForestResourcePlugin.SharedDataManager.SetSourceDataFiles(lcxzgxFiles);
 
                     // 查找包含CZKFBJ的文件（城镇开发边界数据）
-                    List<ForestResourcePlugin.LCXZGXFileInfo> czkfbjFiles = FindFilesWithPattern(dataSourcePath, "CZKFBJ");
+                    List<ForestResourcePlugin.SourceDataFileInfo> czkfbjFiles = FindFilesWithPattern(dataSourcePath, "CZKFBJ");
 
-                    // 保存到共享数据管理器
+                    // 🔥 修复：直接使用新的 SourceDataFileInfo 类型
                     ForestResourcePlugin.SharedDataManager.SetCZKFBJFiles(czkfbjFiles);
 
                     // 新增：查找包含SLZY_DLTB的文件（森林资源地类图斑数据）
-                    List<ForestResourcePlugin.LCXZGXFileInfo> slzyDltbFiles = FindFilesWithPattern(dataSourcePath, "SLZY_DLTB");
+                    List<ForestResourcePlugin.SourceDataFileInfo> slzyDltbFiles = FindFilesWithPattern(dataSourcePath, "SLZY_DLTB");
 
-                    // 保存到共享数据管理器
+                    // 🔥 修复：直接使用新的 SourceDataFileInfo 类型
                     ForestResourcePlugin.SharedDataManager.SetSLZYDLTBFiles(slzyDltbFiles);
 
                     // 显示文件搜索结果
@@ -310,9 +309,9 @@ namespace TestArcMapAddin2.Forms
         /// <param name="rootDir">根目录</param>
         /// <param name="pattern">名称匹配模式</param>
         /// <returns>文件信息列表</returns>
-        private List<ForestResourcePlugin.LCXZGXFileInfo> FindFilesWithPattern(string rootDir, string pattern)
+        private List<ForestResourcePlugin.SourceDataFileInfo> FindFilesWithPattern(string rootDir, string pattern)
         {
-            var result = new List<ForestResourcePlugin.LCXZGXFileInfo>();
+            var result = new List<ForestResourcePlugin.SourceDataFileInfo>();
 
             try
             {
@@ -320,7 +319,7 @@ namespace TestArcMapAddin2.Forms
 
                 // 1. 首先查找GDB要素类
                 System.Diagnostics.Debug.WriteLine("第1步：查找GDB要素类...");
-                var gdbFeatureClasses = ForestResourcePlugin.GdbFeatureClassFinder.FindFeatureClassesWithPattern(
+                var gdbFeatureClasses = ForestResourcePlugin.GdbFeatureClassFinder.FindFeatureClassesWithPatternAsSourceData(
                     rootDir, pattern, ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon);
 
                 // 将找到的GDB要素类添加到结果中
@@ -345,7 +344,7 @@ namespace TestArcMapAddin2.Forms
                             // 提取县名（第一级文件夹名称）
                             string countyName = ExtractCountyNameFromPath(filePath, rootDir);
 
-                            result.Add(new ForestResourcePlugin.LCXZGXFileInfo
+                            result.Add(new ForestResourcePlugin.SourceDataFileInfo
                             {
                                 FullPath = filePath,
                                 DisplayName = countyName,
@@ -418,12 +417,7 @@ namespace TestArcMapAddin2.Forms
                         IWorkspaceFactory workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
                         IWorkspace workspace = workspaceFactory.OpenFromFile(countryFolder.FullName, 0);
 
-                        // 创建三个空的Shapefile，并传入空间参考
-                        if (!CreateEmptyShapefile("LCXZGX", workspace, spatialReference))
-                        {
-                            MessageBox.Show("创建LCXZGX Shapefile失败");
-                            return false;
-                        }
+                        // 创建两个空的Shapefile，并传入空间参考
                         if (!CreateEmptyShapefile("SLZYZC", workspace, spatialReference))
                         {
                             MessageBox.Show("创建SLZYZC Shapefile失败");
@@ -435,7 +429,7 @@ namespace TestArcMapAddin2.Forms
                             return false;
                         }
 
-                        System.Diagnostics.Debug.WriteLine($"成功为{countryName}创建三个空的Shapefile");
+                        System.Diagnostics.Debug.WriteLine($"成功为{countryName}创建两个空的Shapefile");
                         return true;
                     }
                     catch (Exception ex)
@@ -496,7 +490,7 @@ namespace TestArcMapAddin2.Forms
                 IGeometryDefEdit geometryDefEdit = (IGeometryDefEdit)geometryDef;
                 geometryDefEdit.GeometryType_2 = esriGeometryType.esriGeometryPolygon;
 
-                // 🔥 修改: 使用传入的空间参考
+                //使用传入的空间参考
                 if (spatialReference != null)
                 {
                     geometryDefEdit.SpatialReference_2 = spatialReference;
@@ -518,9 +512,6 @@ namespace TestArcMapAddin2.Forms
                 // 根据Shapefile名称添加相应的业务字段
                 switch (shapefileName)
                 {
-                    case "LCXZGX":
-                        FeatureClassFieldsTemplate.GenerateLcxzgxFields(fieldsEdit);
-                        break;
                     case "SLZYZC":
                         FeatureClassFieldsTemplate.GenerateSlzyzcFields(fieldsEdit);
                         break;
@@ -557,7 +548,7 @@ namespace TestArcMapAddin2.Forms
 
                 if (featureClass == null)
                 {
-                    MessageBox.Show($"创建{shapefileName} Shapefile失败");
+                    MessageBox.Show($"在路径 {workspace.PathName} 创建{shapefileName}失败。", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;
                 }
 
@@ -573,7 +564,7 @@ namespace TestArcMapAddin2.Forms
             }
             finally
             {
-                // 释放COM对象
+                // 释放COM对象  
                 if (featureClass != null)
                 {
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);
@@ -767,13 +758,14 @@ namespace TestArcMapAddin2.Forms
         {
             if (string.IsNullOrEmpty(outputGDBPath))
             {
-                MessageBox.Show("输出结果路径为空，请先通过“生成成果结构”按钮选择或创建成果根目录。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("输出结果路径为空，请先通过生成成果结构按钮选择或创建成果根目录。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             try
             {
-                var lcxzgxFiles = ForestResourcePlugin.SharedDataManager.GetLCXZGXFiles();
+                // 使用新的 SourceDataFileInfo 类型
+                var lcxzgxFiles = ForestResourcePlugin.SharedDataManager.GetSourceDataFiles();
                 if (lcxzgxFiles == null || lcxzgxFiles.Count == 0)
                 {
                     MessageBox.Show("未能从共享数据中找到林草湿荒普查数据，无法继续操作。", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -786,7 +778,7 @@ namespace TestArcMapAddin2.Forms
 
                 if (countyGroups.Count == 0)
                 {
-                    MessageBox.Show("未能获取县列表，请先在“数据源”步骤中选择数据。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("未能获取县列表，请先在数据源步骤中选择数据。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -801,10 +793,10 @@ namespace TestArcMapAddin2.Forms
                     ISpatialReference sourceSpatialRef = GetSpatialReferenceFromFile(firstFileInGroup);
                     if (sourceSpatialRef == null)
                     {
-                        var userChoice = MessageBox.Show($"无法自动读取“{countyName}”的源数据坐标系。\n\n是否继续并使用默认的CGCS2000坐标系？", "坐标系读取失败", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                        var userChoice = MessageBox.Show($"无法自动读取{ countyName}的源数据坐标系。\n\n是否继续并使用默认的CGCS2000坐标系？", "坐标系读取失败", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                         if (userChoice == DialogResult.No)
                         {
-                            MessageBox.Show($"已跳过“{countyName}”的Shapefile创建。", "操作取消", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show($"已跳过{ countyName}的Shapefile创建。", "操作取消", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             continue; // 跳过当前县，继续处理下一个
                         }
                         sourceSpatialRef = CreateCGCS2000SpatialReference();
@@ -819,9 +811,9 @@ namespace TestArcMapAddin2.Forms
                     // 定义资源类型和对应的Shapefile名称
                     var resourceTypes = new Dictionary<string, string[]>
                     {
-                        { "森林", new[] { "LCXZGX", "SLZYZC", "SLZYZC_DLTB" } },
-                        { "草原", new[] { "LCXZGX", "CYZYZC", "CYZYZC_DLTB" } },
-                        { "湿地", new[] { "LCXZGX", "SDZYZC", "SDZYZC_DLTB" } }
+                        { "森林", new[] { "SLZYZC", "SLZYZC_DLTB" } },
+                        { "草原", new[] { "CYZYZC", "CYZYZC_DLTB" } },
+                        { "湿地", new[] { "SDZYZC", "SDZYZC_DLTB" } }
                     };
 
                     bool countySuccess = true;
@@ -830,7 +822,7 @@ namespace TestArcMapAddin2.Forms
                         string spatialDataPath = System.IO.Path.Combine(dataSetPath, resource.Key, "空间数据");
                         if (!Directory.Exists(spatialDataPath))
                         {
-                            MessageBox.Show($"“{countyName}”的目录结构不完整，找不到路径：\n{spatialDataPath}\n\n请先使用“生成成果结构”功能创建正确的目录。", "目录错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show($"{ countyName}的目录结构不完整，找不到路径：\n{spatialDataPath}\n\n请先使用生成成果结构功能创建正确的目录。", "目录错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             countySuccess = false;
                             break;
                         }
@@ -845,7 +837,7 @@ namespace TestArcMapAddin2.Forms
                         {
                             if (!CreateEmptyShapefile(shapefileName, workspace, sourceSpatialRef))
                             {
-                                MessageBox.Show($"在路径 {spatialDataPath} 创建“{shapefileName}”失败。", "创建失败", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show($"在路径 {spatialDataPath} 创建{shapefileName}失败。", "创建失败", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 countySuccess = false;
                                 break;
                             }
@@ -876,14 +868,11 @@ namespace TestArcMapAddin2.Forms
         }
 
         /// <summary>
-        /// 从单个数据源文件获取空间参考（重构版）
-
-        /// <summary>
-        /// 从单个数据源文件获取空间参考（重构版）
+        /// 从单个数据源文件获取空间参考
         /// </summary>
         /// <param name="fileInfo">数据源文件信息</param>
         /// <returns>空间参考对象，失败则返回null</returns>
-        private ISpatialReference GetSpatialReferenceFromFile(ForestResourcePlugin.LCXZGXFileInfo fileInfo)
+        private ISpatialReference GetSpatialReferenceFromFile(ForestResourcePlugin.SourceDataFileInfo fileInfo)
         {
             if (fileInfo == null || string.IsNullOrEmpty(fileInfo.FullPath))
             {
@@ -981,8 +970,8 @@ namespace TestArcMapAddin2.Forms
 
                     try
                     {
-                        // 2. 从共享数据管理器中获取所有唯一的县名
-                        var lcxzgxFiles = ForestResourcePlugin.SharedDataManager.GetLCXZGXFiles();
+                        // 使用新的 SourceDataFileInfo 类型
+                        var lcxzgxFiles = ForestResourcePlugin.SharedDataManager.GetSourceDataFiles();
                         var czkfbjFiles = ForestResourcePlugin.SharedDataManager.GetCZKFBJFiles();
 
                         var countyNames = new HashSet<string>();
@@ -997,7 +986,7 @@ namespace TestArcMapAddin2.Forms
 
                         if (countyNames.Count == 0)
                         {
-                            MessageBox.Show("未能获取县列表，请先在“数据源”步骤中选择数据。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            MessageBox.Show("未能获取县列表，请先在数据源步骤中选择数据。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             return;
                         }
 
@@ -1042,7 +1031,7 @@ namespace TestArcMapAddin2.Forms
                         MessageBox.Show($"成功为 {createdCount} 个县创建了成果目录结构。\n\n根目录路径：{rootPath}", "操作成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                         // 6. （可选）在文件资源管理器中打开创建的根目录
-                        System.Diagnostics.Process.Start("explorer.exe", rootPath);
+                        //System.Diagnostics.Process.Start("explorer.exe", rootPath);
                     }
                     catch (Exception ex)
                     {
