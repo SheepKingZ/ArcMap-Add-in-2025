@@ -17,6 +17,9 @@ namespace ForestResourcePlugin
         // 存储找到的CZKFBJ文件信息
         private static List<LCXZGXFileInfo> czkfbjFiles = new List<LCXZGXFileInfo>();
 
+        // 新增：存储找到的SLZY_DLTB文件信息
+        private static List<LCXZGXFileInfo> slzyDltbFiles = new List<LCXZGXFileInfo>();
+
         /// <summary>
         /// 设置LCXZGX文件列表
         /// </summary>
@@ -88,12 +91,48 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
+        /// 设置SLZY_DLTB文件列表
+        /// </summary>
+        public static void SetSLZYDLTBFiles(List<LCXZGXFileInfo> files)
+        {
+            // 确保传入非null列表
+            if (files == null)
+            {
+                slzyDltbFiles = new List<LCXZGXFileInfo>();
+                System.Diagnostics.Debug.WriteLine("警告：传入了null的SLZY_DLTB文件列表，已初始化为空列表");
+            }
+            else
+            {
+                slzyDltbFiles = new List<LCXZGXFileInfo>(files); // 创建副本以避免外部修改
+                
+                // 记录详细文件信息
+                System.Diagnostics.Debug.WriteLine($"已保存 {slzyDltbFiles.Count} 个SLZY_DLTB文件信息:");
+                foreach (var file in slzyDltbFiles)
+                {
+                    System.Diagnostics.Debug.WriteLine($" - {file.DisplayName}: {file.FullPath}" + 
+                        (file.IsGdb ? $" (GDB要素类: {file.FeatureClassName})" : " (Shapefile)"));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取SLZY_DLTB文件列表
+        /// </summary>
+        public static List<LCXZGXFileInfo> GetSLZYDLTBFiles()
+        {
+            System.Diagnostics.Debug.WriteLine($"获取 {slzyDltbFiles.Count} 个SLZY_DLTB文件");
+            // 返回副本以避免外部修改内部列表
+            return new List<LCXZGXFileInfo>(slzyDltbFiles);
+        }
+
+        /// <summary>
         /// 清空所有数据
         /// </summary>
         public static void ClearAll()
         {
             lcxzgxFiles.Clear();
             czkfbjFiles.Clear();
+            slzyDltbFiles.Clear();
             System.Diagnostics.Debug.WriteLine("已清空所有共享数据");
         }
     }

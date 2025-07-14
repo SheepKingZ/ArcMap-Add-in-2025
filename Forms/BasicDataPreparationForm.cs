@@ -112,7 +112,8 @@ namespace TestArcMapAddin2.Forms
             UpdateButtonStates();
         }
 
-        // 新的合并后的数据源浏览方法
+        // 合并数据源方法
+        // 合并数据源方法
         private void BtnBrowseData_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -144,11 +145,17 @@ namespace TestArcMapAddin2.Forms
                     // 保存到共享数据管理器
                     ForestResourcePlugin.SharedDataManager.SetCZKFBJFiles(czkfbjFiles);
 
+                    // 新增：查找包含SLZY_DLTB的文件（森林资源地类图斑数据）
+                    List<ForestResourcePlugin.LCXZGXFileInfo> slzyDltbFiles = FindFilesWithPattern(dataSourcePath, "SLZY_DLTB");
+
+                    // 保存到共享数据管理器
+                    ForestResourcePlugin.SharedDataManager.SetSLZYDLTBFiles(slzyDltbFiles);
+
                     // 显示文件搜索结果
-                    int totalFiles = lcxzgxFiles.Count + czkfbjFiles.Count;
+                    int totalFiles = lcxzgxFiles.Count + czkfbjFiles.Count + slzyDltbFiles.Count;
                     if (totalFiles > 0)
                     {
-                        MessageBox.Show($"在同一文件夹中找到：\n- {lcxzgxFiles.Count} 个林草湿荒普查数据文件\n- {czkfbjFiles.Count} 个城镇开发边界数据文件",
+                        MessageBox.Show($"在同一文件夹中找到：\n- {lcxzgxFiles.Count} 个林草湿荒普查数据文件\n- {czkfbjFiles.Count} 个城镇开发边界数据文件\n- {slzyDltbFiles.Count} 个森林资源地类图斑数据文件",
                             "文件搜索结果", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     else
