@@ -194,7 +194,7 @@ namespace ForestResourcePlugin
             this.chkListCounties.Location = new System.Drawing.Point(750, 38);
             this.chkListCounties.Margin = new System.Windows.Forms.Padding(4);
             this.chkListCounties.Name = "chkListCounties";
-            this.chkListCounties.Size = new System.Drawing.Size(274, 179);
+            this.chkListCounties.Size = new System.Drawing.Size(274, 165);
             this.chkListCounties.TabIndex = 10;
             // 
             // cmbCZKFBJPath
@@ -389,14 +389,12 @@ namespace ForestResourcePlugin
             // chkCollectiveInBoundary
             // 
             this.chkCollectiveInBoundary.AutoSize = true;
-            this.chkCollectiveInBoundary.Checked = true;
-            this.chkCollectiveInBoundary.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkCollectiveInBoundary.Location = new System.Drawing.Point(375, 66);
             this.chkCollectiveInBoundary.Margin = new System.Windows.Forms.Padding(4);
             this.chkCollectiveInBoundary.Name = "chkCollectiveInBoundary";
-            this.chkCollectiveInBoundary.Size = new System.Drawing.Size(394, 22);
+            this.chkCollectiveInBoundary.Size = new System.Drawing.Size(358, 22);
             this.chkCollectiveInBoundary.TabIndex = 2;
-            this.chkCollectiveInBoundary.Text = "土地权属性质为\"集体\"且位于城镇开发边界内";
+            this.chkCollectiveInBoundary.Text = "土地权属性质为\"集体\"且位于开发边界内";
             this.chkCollectiveInBoundary.UseVisualStyleBackColor = true;
             // 
             // groupBoxPreview

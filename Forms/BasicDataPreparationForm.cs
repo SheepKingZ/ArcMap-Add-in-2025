@@ -754,6 +754,7 @@ namespace TestArcMapAddin2.Forms
             }
         }
 
+        // 在 button1_Click 方法中更新县代码使用逻辑
         private void button1_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(outputGDBPath))
@@ -802,8 +803,8 @@ namespace TestArcMapAddin2.Forms
                         sourceSpatialRef = CreateCGCS2000SpatialReference();
                     }
 
-                    // 注意：此处县区代码暂时使用占位符 "XXXXXX"。
-                    string countyCode = "XXXXXX";
+                    // 修改：使用县代码映射器获取真实的县代码
+                    string countyCode = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyCode(countyName);
                     string countyFolderName = $"{countyName}（{countyCode}）全民所有自然资源资产清查数据成果";
                     string countyFolderPath = System.IO.Path.Combine(outputGDBPath, countyFolderName);
                     string dataSetPath = System.IO.Path.Combine(countyFolderPath, "清查数据集");
@@ -848,6 +849,7 @@ namespace TestArcMapAddin2.Forms
                     if (countySuccess)
                     {
                         successCount++;
+                        System.Diagnostics.Debug.WriteLine($"成功为{countyName}({countyCode})创建Shapefile");
                     }
                 }
 
@@ -867,6 +869,21 @@ namespace TestArcMapAddin2.Forms
             }
         }
 
+        private void lblOutputGDBPath_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        /// <summary>
+        /// 用于生成Excel报告的数据结构
+        /// </summary>
+        private class DataSourceReportItem
+        {
+            public string CountyName { get; set; }
+            public string DataType { get; set; }
+            public string Format { get; set; }
+            public string Path { get; set; }
+        }
         /// <summary>
         /// 从单个数据源文件获取空间参考
         /// </summary>
@@ -931,28 +948,12 @@ namespace TestArcMapAddin2.Forms
             }
             return null;
         }
-
-        private void lblOutputGDBPath_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        /// <summary>
-        /// 用于生成Excel报告的数据结构
-        /// </summary>
-        private class DataSourceReportItem
-        {
-            public string CountyName { get; set; }
-            public string DataType { get; set; }
-            public string Format { get; set; }
-            public string Path { get; set; }
-        }
-
         private void btnResultExcel_Click(object sender, EventArgs e)
         {
            
         }
 
+        // 在 buttonResultStructure_Click 方法中更新县代码使用逻辑
         private void buttonResultStructure_Click(object sender, EventArgs e)
         {
             // 1. 提示用户选择或输入成果的根文件夹名称和位置
@@ -997,9 +998,8 @@ namespace TestArcMapAddin2.Forms
                         // 4. 遍历每个县，创建所需的多级目录结构
                         foreach (string countyName in countyNames)
                         {
-                            // 注意：此处县区代码暂时使用占位符 "XXXXXX"。
-                            // 您需要根据实际情况，从数据源的属性字段（如 "XZQDM"）中获取真实的6位代码。
-                            string countyCode = "XXXXXX";
+                            // 修改：使用县代码映射器获取真实的县代码
+                            string countyCode = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyCode(countyName);
                             string countyFolderName = $"{countyName}（{countyCode}）全民所有自然资源资产清查数据成果";
                             string countyFolderPath = System.IO.Path.Combine(rootPath, countyFolderName);
 
@@ -1025,6 +1025,7 @@ namespace TestArcMapAddin2.Forms
                             }
 
                             createdCount++;
+                            System.Diagnostics.Debug.WriteLine($"为{countyName}({countyCode})创建目录结构完成");
                         }
 
                         // 5. 操作完成后向用户报告结果

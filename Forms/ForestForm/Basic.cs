@@ -41,7 +41,7 @@ namespace ForestResourcePlugin
             // 初始化筛选条件复选框
             chkForestLand.Checked = true;
             chkStateOwned.Checked = true;
-            chkCollectiveInBoundary.Checked = true;
+            chkCollectiveInBoundary.Checked = false;
 
             // 为复选框添加事件处理程序
             chkForestLand.CheckedChanged += FilterCheckBox_CheckedChanged;
@@ -483,8 +483,24 @@ namespace ForestResourcePlugin
         }
 
         // Helper method to find the best matching field name
+        // Helper method to find the best matching field name
         private int FindBestMatchIndex(ComboBox.ObjectCollection items, string[] searchTerms)
         {
+            // 第一轮：精确匹配（忽略大小写）
+            foreach (string term in searchTerms)
+            {
+                for (int i = 0; i < items.Count; i++)
+                {
+                    string item = items[i].ToString();
+                    if (item.Equals(term, StringComparison.OrdinalIgnoreCase))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"FindBestMatchIndex: 精确匹配找到 '{term}' -> '{item}' (索引: {i})");
+                        return i;
+                    }
+                }
+            }
+
+            // 第二轮：包含匹配（如果没有精确匹配）
             foreach (string term in searchTerms)
             {
                 for (int i = 0; i < items.Count; i++)
@@ -492,10 +508,13 @@ namespace ForestResourcePlugin
                     string item = items[i].ToString();
                     if (item.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
+                        System.Diagnostics.Debug.WriteLine($"FindBestMatchIndex: 包含匹配找到 '{term}' -> '{item}' (索引: {i})");
                         return i;
                     }
                 }
             }
+
+            System.Diagnostics.Debug.WriteLine($"FindBestMatchIndex: 未找到匹配项，搜索词: {string.Join(", ", searchTerms)}");
             return -1; // No match found
         }
 
@@ -1175,11 +1194,11 @@ namespace ForestResourcePlugin
                 }
 
                 // 创建县级输出文件
-                string countyOutputPath = System.IO.Path.Combine(txtOutputPath.Text, countyInfo.CountyName);
-                if (!Directory.Exists(countyOutputPath))
-                {
-                    Directory.CreateDirectory(countyOutputPath);
-                }
+                //string countyOutputPath = System.IO.Path.Combine(txtOutputPath.Text, countyInfo.CountyName);
+                //if (!Directory.Exists(countyOutputPath))
+                //{
+                //    Directory.CreateDirectory(countyOutputPath);
+                //}
 
                 // 构建县级数据库路径
                 string countyDatabasePath = txtOutputPath.Text;
