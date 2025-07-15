@@ -239,14 +239,19 @@ namespace ForestResourcePlugin
         {
             try
             {
-                // 构建县级Shapefile目录路径
-                string countyShapefilePath = System.IO.Path.Combine(outputPath, countyName);
+                // 修改：使用成果目录结构而不是简单的县名目录
+                string countyCode = "XXXXXX"; // 这里应该从实际数据获取
+                string countyFolderName = $"{countyName}（{countyCode}）全民所有自然资源资产清查数据成果";
+                string countyFolderPath = System.IO.Path.Combine(outputPath, countyFolderName);
+                string dataSetPath = System.IO.Path.Combine(countyFolderPath, "清查数据集");
+                string forestPath = System.IO.Path.Combine(dataSetPath, "森林");
+                string spatialDataPath = System.IO.Path.Combine(forestPath, "空间数据");
 
                 // 确保目录存在
-                if (!Directory.Exists(countyShapefilePath))
+                if (!Directory.Exists(spatialDataPath))
                 {
-                    Directory.CreateDirectory(countyShapefilePath);
-                    System.Diagnostics.Debug.WriteLine($"创建县级目录: {countyShapefilePath}");
+                    Directory.CreateDirectory(spatialDataPath);
+                    System.Diagnostics.Debug.WriteLine($"创建目录结构: {spatialDataPath}");
                 }
 
                 // 使用ProgID创建Shapefile工作空间工厂
@@ -254,9 +259,9 @@ namespace ForestResourcePlugin
                 IWorkspaceFactory workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
 
                 // 打开工作空间
-                IWorkspace workspace = workspaceFactory.OpenFromFile(countyShapefilePath, 0);
+                IWorkspace workspace = workspaceFactory.OpenFromFile(spatialDataPath, 0);
 
-                System.Diagnostics.Debug.WriteLine($"成功创建{countyName}的Shapefile工作空间: {countyShapefilePath}");
+                System.Diagnostics.Debug.WriteLine($"成功创建{countyName}的Shapefile工作空间: {spatialDataPath}");
                 return workspace;
             }
             catch (Exception ex)
@@ -286,7 +291,11 @@ namespace ForestResourcePlugin
                     IFeatureClass existingFeatureClass = featureWorkspace.OpenFeatureClass(featureClassName);
                     if (existingFeatureClass != null)
                     {
-                        System.Diagnostics.Debug.WriteLine($"SLZYZC Shapefile已存在，将直接使用");
+                        System.Diagnostics.Debug.WriteLine($"SLZYZC Shapefile已存在，将使用现有文件并清空数据");
+
+                        // 清空现有数据
+                        ClearExistingShapefileData(existingFeatureClass);
+
                         return existingFeatureClass;
                     }
                 }
@@ -294,6 +303,9 @@ namespace ForestResourcePlugin
                 {
                     // 要素类不存在，继续创建
                 }
+
+                // 如果文件不存在，创建新的Shapefile
+                // ... 保持原有的创建逻辑 ...
 
                 // 创建字段集合
                 IFields fields = new FieldsClass();
@@ -339,6 +351,51 @@ namespace ForestResourcePlugin
             {
                 System.Diagnostics.Debug.WriteLine($"创建SLZYZC Shapefile要素类时出错: {ex.Message}");
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// 清空现有Shapefile的数据
+        /// </summary>
+        /// <param name="featureClass">要清空的要素类</param>
+        private void ClearExistingShapefileData(IFeatureClass featureClass)
+        {
+            IFeatureCursor deleteCursor = null;
+            try
+            {
+                // 获取所有要素的游标
+                deleteCursor = featureClass.Search(null, false);
+                IFeature feature;
+
+                // 逐个删除所有要素
+                while ((feature = deleteCursor.NextFeature()) != null)
+                {
+                    try
+                    {
+                        feature.Delete();
+                    }
+                    finally
+                    {
+                        if (feature != null)
+                        {
+                            System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                        }
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine("成功清空现有shapefile数据");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"清空shapefile数据时出错: {ex.Message}");
+                throw;
+            }
+            finally
+            {
+                if (deleteCursor != null)
+                {
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(deleteCursor);
+                }
             }
         }
 

@@ -1032,6 +1032,8 @@ namespace TestArcMapAddin2.Forms
 
                         // 6. （可选）在文件资源管理器中打开创建的根目录
                         //System.Diagnostics.Process.Start("explorer.exe", rootPath);
+
+                        txtOutputGDBPath.Text = rootPath;
                     }
                     catch (Exception ex)
                     {
