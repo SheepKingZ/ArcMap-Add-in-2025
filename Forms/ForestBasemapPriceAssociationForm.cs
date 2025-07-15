@@ -1065,10 +1065,21 @@ namespace TestArcMapAddin2.Forms
             fieldEdit.Name_2 = name;
             fieldEdit.Type_2 = type;
             fieldEdit.Length_2 = length;
-            if (precision > 0)
+            
+            // 对于Double类型字段，需要特别处理精度设置
+            if (type == esriFieldType.esriFieldTypeDouble)
+            {
+                // 对于Double类型，precision表示总位数，scale表示小数位数
+                // ArcGIS中Double字段不需要设置Length，系统会自动处理
+                fieldEdit.Precision_2 = 15; // 总精度15位
+                fieldEdit.Scale_2 = 5;      // 小数点后5位
+                System.Diagnostics.Debug.WriteLine($"创建Double字段 {name}: 总精度=15, 小数位=5");
+            }
+            else if (precision > 0)
             {
                 fieldEdit.Precision_2 = precision;
             }
+            
             fieldsEdit.AddField(field);
         }
 

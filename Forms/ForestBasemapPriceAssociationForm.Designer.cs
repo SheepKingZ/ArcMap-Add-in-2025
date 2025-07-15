@@ -276,7 +276,7 @@ namespace TestArcMapAddin2.Forms
             this.btnPairData.BackColor = System.Drawing.Color.LightGreen;
             this.btnPairData.Enabled = false;
             this.btnPairData.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnPairData.Location = new System.Drawing.Point(414, 119);
+            this.btnPairData.Location = new System.Drawing.Point(457, 119);
             this.btnPairData.Name = "btnPairData";
             this.btnPairData.Size = new System.Drawing.Size(120, 30);
             this.btnPairData.TabIndex = 10;
@@ -505,7 +505,7 @@ namespace TestArcMapAddin2.Forms
             this.lblMappingStatus.ForeColor = System.Drawing.Color.DarkBlue;
             this.lblMappingStatus.Location = new System.Drawing.Point(6, 30);
             this.lblMappingStatus.Name = "lblMappingStatus";
-            this.lblMappingStatus.Size = new System.Drawing.Size(284, 24);
+            this.lblMappingStatus.Size = new System.Drawing.Size(282, 25);
             this.lblMappingStatus.TabIndex = 0;
             this.lblMappingStatus.Text = "状态：尚未导入任何价格映射数据";
             // 
