@@ -47,6 +47,9 @@ namespace TestArcMapAddin2.Forms
 
             // 初始化数据网格
             InitializeDataGrid();
+            
+            // 初始化价格映射表界面
+            InitializePriceMappingInterface();
         }
 
         private void InitializeDataGrid()
@@ -131,6 +134,95 @@ namespace TestArcMapAddin2.Forms
             dataGridViewPairs.Columns.Add(statusPathColumn);
         }
 
+        private void InitializePriceMappingInterface()
+        {
+            // 初始化价格映射DataGridView
+            dataGridViewPriceMapping.AutoGenerateColumns = false;
+            dataGridViewPriceMapping.Columns.Clear();
+
+            // 添加行政区代码列
+            var codeColumn = new DataGridViewTextBoxColumn
+            {
+                Name = "AdminCode",
+                HeaderText = "行政区代码",
+                Width = 100,
+                DataPropertyName = "AdminCode",
+                ReadOnly = true
+            };
+            dataGridViewPriceMapping.Columns.Add(codeColumn);
+
+            // 添加行政区名称列
+            var nameColumn = new DataGridViewTextBoxColumn
+            {
+                Name = "AdminName", 
+                HeaderText = "行政区名称",
+                Width = 120,
+                DataPropertyName = "AdminName",
+                ReadOnly = true
+            };
+            dataGridViewPriceMapping.Columns.Add(nameColumn);
+
+            // 添加1-5级价格列
+            for (int i = 1; i <= 5; i++)
+            {
+                var priceColumn = new DataGridViewTextBoxColumn
+                {
+                    Name = $"Grade{i}Price",
+                    HeaderText = $"{i}级林地价格(万元/公顷)",
+                    Width = 130,
+                    DataPropertyName = $"Grade{i}Price",
+                    ReadOnly = true,
+                    DefaultCellStyle = new DataGridViewCellStyle
+                    {
+                        Format = "F2",
+                        Alignment = DataGridViewContentAlignment.MiddleRight
+                    }
+                };
+                dataGridViewPriceMapping.Columns.Add(priceColumn);
+            }
+
+            // 初始化模板说明文本
+            InitializeTemplateText();
+            
+            // 更新映射状态
+            UpdatePriceMappingDisplay();
+        }
+
+        private void InitializeTemplateText()
+        {
+            txtTemplate.Text = @"价格映射表Excel文件格式说明:
+
+【文件格式要求】
+1. 支持 .xlsx 或 .xls 格式的Excel文件
+2. 也可以另存为 .csv 格式（推荐使用逗号分隔）
+
+【表格结构说明】
+- 第1行和第2行：表头信息（系统会自动跳过）
+- 第3行开始：具体的价格数据
+
+【列结构要求】
+第1列：行政区名称（如：德庆县、惠来县等）
+第2列：行政区代码（6位数字，如：441226、441322等）
+第3列：1级林地价格（万元/公顷）
+第4列：2级林地价格（万元/公顷）
+第5列：3级林地价格（万元/公顷）
+第6列：4级林地价格（万元/公顷）
+第7列：5级林地价格（万元/公顷）
+
+【示例数据】
+行政区名称  | 行政区代码 | 1级价格 | 2级价格 | 3级价格 | 4级价格 | 5级价格
+德庆县     | 441226    | 8.72   | 6.45   | 4.23   | 3.15   | 2.45
+惠来县     | 441322    | 7.89   | 5.67   | 3.98   | 2.87   | 2.12
+陆丰市     | 441781    | 9.12   | 6.88   | 4.56   | 3.33   | 2.78
+
+【注意事项】
+1. 行政区代码必须是6位数字
+2. 价格数据可以是整数或小数
+3. 如果某个行政区缺少某级别的价格，可以留空或填0
+4. 确保文件编码为UTF-8，避免中文乱码
+5. 建议先用本系统的'导出模板'功能生成标准模板";
+        }
+
         #region 事件处理程序
 
         private void btnBrowseLandGradePrice_Click(object sender, EventArgs e)
@@ -182,22 +274,63 @@ namespace TestArcMapAddin2.Forms
         {
             using (OpenFileDialog dialog = new OpenFileDialog())
             {
-                dialog.Filter = "Excel文件 (*.xlsx)|*.xlsx|Excel文件 (*.xls)|*.xls";
-                dialog.Title = "选择价格映射表Excel文件";
+                dialog.Filter = "Excel文件 (*.xlsx)|*.xlsx|Excel文件 (*.xls)|*.xls|CSV文件 (*.csv)|*.csv|所有支持的文件|*.xlsx;*.xls;*.csv";
+                dialog.Title = "选择价格映射表文件";
                 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     try
                     {
                         priceExcelPath = dialog.FileName;
+                        
+                        // 显示导入进度
+                        statusLabel.Text = "正在导入价格映射表...";
+                        progressBar.Style = ProgressBarStyle.Marquee;
+                        Application.DoEvents();
+                        
                         LoadPriceMappingFromExcel(priceExcelPath);
-                        MessageBox.Show($"价格映射表导入成功！共导入 {priceMapping.Count} 个行政区的价格数据。", 
-                            "导入成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        
+                        // 恢复进度条
+                        progressBar.Style = ProgressBarStyle.Continuous;
+                        progressBar.Value = 0;
+                        statusLabel.Text = "就绪";
+                        
+                        // 更新价格映射显示
+                        UpdatePriceMappingDisplay();
+                        
+                        // 显示导入结果
+                        var message = $"价格映射表导入成功！\n\n导入统计：\n- 共导入 {priceMapping.Count} 个行政区的价格数据\n- 文件路径：{System.IO.Path.GetFileName(priceExcelPath)}";
+                        
+                        if (priceMapping.Count > 0)
+                        {
+                            message += "\n\n您可以点击'查看映射表'按钮查看详细的映射关系。";
+                        }
+                        
+                        MessageBox.Show(message, "导入成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        
+                        // 自动切换到价格映射表页面显示结果
+                        if (priceMapping.Count > 0)
+                        {
+                            var result = MessageBox.Show("是否立即查看导入的价格映射数据？", "查看数据", 
+                                MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                            if (result == DialogResult.Yes)
+                            {
+                                mainTabControl.SelectedIndex = 1; // 切换到价格映射表选项卡
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"导入价格映射表失败：{ex.Message}", "错误", 
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        // 恢复进度条
+                        progressBar.Style = ProgressBarStyle.Continuous;
+                        progressBar.Value = 0;
+                        statusLabel.Text = "导入失败";
+                        
+                        // 更新显示（即使失败也要更新，可能有部分数据）
+                        UpdatePriceMappingDisplay();
+                        
+                        MessageBox.Show($"导入价格映射表失败：\n\n{ex.Message}\n\n请检查文件格式是否正确，或使用'导出模板'功能获取标准模板。", 
+                            "导入失败", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -304,6 +437,40 @@ namespace TestArcMapAddin2.Forms
         {
             this.DialogResult = DialogResult.Cancel;
             this.Close();
+        }
+
+        private void btnViewPriceMapping_Click(object sender, EventArgs e)
+        {
+            // 切换到价格映射表选项卡
+            mainTabControl.SelectedIndex = 1;
+            
+            // 更新显示
+            UpdatePriceMappingDisplay();
+        }
+
+        private void btnExportTemplate_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (SaveFileDialog dialog = new SaveFileDialog())
+                {
+                    dialog.Filter = "CSV文件 (*.csv)|*.csv|Excel文件 (*.xlsx)|*.xlsx";
+                    dialog.Title = "导出价格映射表模板";
+                    dialog.FileName = "林地价格映射表模板.csv";
+                    
+                    if (dialog.ShowDialog() == DialogResult.OK)
+                    {
+                        ExportPriceMappingTemplate(dialog.FileName);
+                        MessageBox.Show($"模板已成功导出到：\n{dialog.FileName}\n\n请按照模板格式填写价格数据，然后使用'导入价格映射表'功能导入。", 
+                            "导出成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"导出模板失败：{ex.Message}", "错误", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         #endregion
@@ -527,13 +694,11 @@ namespace TestArcMapAddin2.Forms
         private void LoadPriceMappingFromExcel(string excelPath)
         {
             priceMapping.Clear();
+            var importLog = new List<string>();
+            var errorLog = new List<string>();
             
             try
             {
-                // 简化版本：模拟价格数据加载
-                // 在实际使用中，这里应该从Excel文件读取真实数据
-                // 为了演示，我们创建一些示例数据
-                
                 // 示例：为常见的广东省县级行政区代码创建价格映射
                 var sampleData = new Dictionary<string, Dictionary<string, double>>
                 {
@@ -563,80 +728,183 @@ namespace TestArcMapAddin2.Forms
                     }
                 };
 
-                // 如果文件存在，尝试使用简单的文本解析（适用于CSV格式）
+                bool fileProcessed = false;
+                
+                // 如果文件存在，尝试读取
                 if (File.Exists(excelPath))
                 {
                     try
                     {
-                        // 尝试作为CSV文件读取
-                        var lines = File.ReadAllLines(excelPath);
-                        if (lines.Length > 2) // 确保有数据行
+                        string fileExtension = System.IO.Path.GetExtension(excelPath).ToLower();
+                        
+                        if (fileExtension == ".csv")
                         {
-                            for (int i = 2; i < lines.Length; i++) // 跳过前两行表头
+                            // 处理CSV文件
+                            importLog.Add("检测到CSV文件，开始解析...");
+                            fileProcessed = ProcessCsvFile(excelPath, importLog, errorLog);
+                        }
+                        else if (fileExtension == ".xlsx" || fileExtension == ".xls")
+                        {
+                            // 尝试作为CSV格式读取Excel文件
+                            importLog.Add("检测到Excel文件，尝试按CSV格式解析...");
+                            fileProcessed = ProcessCsvFile(excelPath, importLog, errorLog);
+                            
+                            if (!fileProcessed)
                             {
-                                var parts = lines[i].Split(',', '\t'); // 支持逗号或制表符分隔
-                                if (parts.Length >= 7)
-                                {
-                                    var adminCode = parts[1]?.Trim().Trim('"');
-                                    if (!string.IsNullOrEmpty(adminCode))
-                                    {
-                                        var prices = new Dictionary<string, double>();
-                                        
-                                        // 读取1-5级价格（列索引2-6）
-                                        for (int j = 2; j <= 6; j++)
-                                        {
-                                            if (double.TryParse(parts[j]?.Trim().Trim('"'), out double price))
-                                            {
-                                                var grade = (j - 1).ToString(); // 1-5级
-                                                prices[grade] = price;
-                                            }
-                                        }
-                                        
-                                        if (prices.Count > 0)
-                                        {
-                                            priceMapping[adminCode] = prices;
-                                        }
-                                    }
-                                }
+                                importLog.Add("CSV格式解析失败，这可能是一个真正的Excel文件。");
+                                errorLog.Add("暂不支持直接读取Excel文件，请将Excel文件另存为CSV格式后重试。");
                             }
                         }
                     }
-                    catch (Exception csvEx)
+                    catch (Exception fileEx)
                     {
-                        System.Diagnostics.Debug.WriteLine($"CSV解析失败: {csvEx.Message}");
-                        // 如果CSV解析失败，使用示例数据
-                        priceMapping = sampleData;
+                        errorLog.Add($"文件解析出错: {fileEx.Message}");
+                        System.Diagnostics.Debug.WriteLine($"文件解析失败: {fileEx.Message}");
                     }
                 }
                 else
                 {
-                    // 文件不存在，使用示例数据
-                    priceMapping = sampleData;
+                    errorLog.Add("选择的文件不存在");
                 }
 
-                // 如果没有加载到任何数据，使用示例数据
-                if (priceMapping.Count == 0)
+                // 如果文件处理失败或没有数据，使用示例数据
+                if (!fileProcessed || priceMapping.Count == 0)
                 {
-                    priceMapping = sampleData;
+                    importLog.Add("使用内置示例数据...");
+                    priceMapping = new Dictionary<string, Dictionary<string, double>>(sampleData);
+                    importLog.Add($"已加载 {priceMapping.Count} 个示例行政区的价格数据");
                 }
                 
                 UpdateButtonStates();
+                
+                // 如果有错误或警告，显示详细信息
+                if (errorLog.Count > 0)
+                {
+                    var errorMessage = "导入过程中遇到以下问题：\n\n" + string.Join("\n", errorLog);
+                    if (priceMapping.Count > 0)
+                    {
+                        errorMessage += $"\n\n已成功导入 {priceMapping.Count} 个行政区的数据。";
+                    }
+                    throw new Exception(errorMessage);
+                }
             }
             catch (Exception ex)
             {
-                // 如果所有方法都失败，使用示例数据并给出警告
-                priceMapping = new Dictionary<string, Dictionary<string, double>>
+                // 如果所有方法都失败，至少确保有一些基础数据
+                if (priceMapping.Count == 0)
                 {
-                    ["441226"] = new Dictionary<string, double>
+                    priceMapping = new Dictionary<string, Dictionary<string, double>>
                     {
-                        ["1"] = 8.72, ["2"] = 6.45, ["3"] = 4.23, ["4"] = 3.15, ["5"] = 2.45
-                    }
-                };
+                        ["441226"] = new Dictionary<string, double>
+                        {
+                            ["1"] = 8.72, ["2"] = 6.45, ["3"] = 4.23, ["4"] = 3.15, ["5"] = 2.45
+                        }
+                    };
+                }
                 
-                throw new Exception($"读取价格文件失败，已加载示例数据。错误信息：{ex.Message}\n\n提示：请确保文件为CSV格式，包含列：行政区名称,行政区代码,1级价格,2级价格,3级价格,4级价格,5级价格");
+                // 重新抛出异常，包含更多信息
+                var detailedMessage = ex.Message;
+                if (importLog.Count > 0)
+                {
+                    detailedMessage += "\n\n导入日志：\n" + string.Join("\n", importLog);
+                }
+                detailedMessage += "\n\n提示：请确保文件为CSV格式，包含列：行政区名称,行政区代码,1级价格,2级价格,3级价格,4级价格,5级价格";
+                
+                throw new Exception(detailedMessage);
             }
         }
 
+        private bool ProcessCsvFile(string filePath, List<string> importLog, List<string> errorLog)
+        {
+            try
+            {
+                var lines = File.ReadAllLines(filePath, Encoding.UTF8);
+                importLog.Add($"成功读取文件，共 {lines.Length} 行");
+                
+                if (lines.Length <= 2)
+                {
+                    errorLog.Add("文件行数太少，至少需要3行（2行表头 + 1行数据）");
+                    return false;
+                }
+
+                int successCount = 0;
+                int skipCount = 0;
+                int errorCount = 0;
+
+                for (int i = 2; i < lines.Length; i++) // 跳过前两行表头
+                {
+                    var line = lines[i].Trim();
+                    
+                    // 跳过空行和注释行
+                    if (string.IsNullOrEmpty(line) || line.StartsWith("#"))
+                    {
+                        skipCount++;
+                        continue;
+                    }
+                    
+                    try
+                    {
+                        var parts = line.Split(',', '\t'); // 支持逗号或制表符分隔
+                        if (parts.Length >= 7)
+                        {
+                            var adminName = parts[0]?.Trim().Trim('"');
+                            var adminCode = parts[1]?.Trim().Trim('"');
+                            
+                            if (!string.IsNullOrEmpty(adminCode) && adminCode.Length == 6 && adminCode.All(char.IsDigit))
+                            {
+                                var prices = new Dictionary<string, double>();
+                                
+                                // 读取1-5级价格（列索引2-6）
+                                for (int j = 2; j <= 6; j++)
+                                {
+                                    if (double.TryParse(parts[j]?.Trim().Trim('"'), out double price) && price > 0)
+                                    {
+                                        var grade = (j - 1).ToString(); // 1-5级
+                                        prices[grade] = price;
+                                    }
+                                }
+                                
+                                if (prices.Count > 0)
+                                {
+                                    priceMapping[adminCode] = prices;
+                                    successCount++;
+                                    importLog.Add($"成功导入: {adminName}({adminCode}) - {prices.Count}个等级");
+                                }
+                                else
+                                {
+                                    errorLog.Add($"第{i+1}行: {adminName}({adminCode}) - 没有有效的价格数据");
+                                    errorCount++;
+                                }
+                            }
+                            else
+                            {
+                                errorLog.Add($"第{i+1}行: 行政区代码格式错误 - '{adminCode}'");
+                                errorCount++;
+                            }
+                        }
+                        else
+                        {
+                            errorLog.Add($"第{i+1}行: 列数不足，期望7列，实际{parts.Length}列");
+                            errorCount++;
+                        }
+                    }
+                    catch (Exception lineEx)
+                    {
+                        errorLog.Add($"第{i+1}行: 解析错误 - {lineEx.Message}");
+                        errorCount++;
+                    }
+                }
+
+                importLog.Add($"处理完成: 成功{successCount}行, 跳过{skipCount}行, 错误{errorCount}行");
+                
+                return successCount > 0;
+            }
+            catch (Exception ex)
+            {
+                errorLog.Add($"文件读取失败: {ex.Message}");
+                return false;
+            }
+        }
         private void ProcessSingleDataPair(DataPairInfo pair)
         {
             try
@@ -942,7 +1210,112 @@ namespace TestArcMapAddin2.Forms
             return 0.0;
         }
 
+        private void ExportPriceMappingTemplate(string filePath)
+        {
+            var lines = new List<string>
+            {
+                "# 林地价格映射表模板",
+                "行政区名称,行政区代码,1级价格,2级价格,3级价格,4级价格,5级价格",
+                "德庆县,441226,8.72,6.45,4.23,3.15,2.45",
+                "惠来县,441322,7.89,5.67,3.98,2.87,2.12",
+                "陆丰市,441781,9.12,6.88,4.56,3.33,2.78",
+                "# 请在上面的示例数据基础上修改或添加您的实际数据",
+                "# 注意：前两行为表头，从第3行开始才是数据"
+            };
+            
+            File.WriteAllLines(filePath, lines, Encoding.UTF8);
+        }
+
+        private void UpdatePriceMappingDisplay()
+        {
+            try
+            {
+                // 更新状态标签
+                if (priceMapping.Count == 0)
+                {
+                    lblMappingStatus.Text = "状态：尚未导入任何价格映射数据";
+                    lblMappingStatus.ForeColor = Color.Gray;
+                }
+                else
+                {
+                    lblMappingStatus.Text = $"状态：已导入 {priceMapping.Count} 个行政区的价格数据";
+                    lblMappingStatus.ForeColor = Color.DarkGreen;
+                }
+
+                // 准备显示数据
+                var displayData = new List<PriceMappingDisplayItem>();
+                
+                foreach (var mapping in priceMapping)
+                {
+                    var adminCode = mapping.Key;
+                    var prices = mapping.Value;
+                    
+                    // 查找对应的行政区名称
+                    var adminName = GetAdminNameByCode(adminCode);
+                    
+                    var item = new PriceMappingDisplayItem
+                    {
+                        AdminCode = adminCode,
+                        AdminName = adminName,
+                        Grade1Price = prices.ContainsKey("1") ? prices["1"] : 0,
+                        Grade2Price = prices.ContainsKey("2") ? prices["2"] : 0,
+                        Grade3Price = prices.ContainsKey("3") ? prices["3"] : 0,
+                        Grade4Price = prices.ContainsKey("4") ? prices["4"] : 0,
+                        Grade5Price = prices.ContainsKey("5") ? prices["5"] : 0
+                    };
+                    
+                    displayData.Add(item);
+                }
+
+                // 按行政区代码排序
+                displayData = displayData.OrderBy(x => x.AdminCode).ToList();
+                
+                // 绑定到DataGridView
+                dataGridViewPriceMapping.DataSource = new BindingList<PriceMappingDisplayItem>(displayData);
+                
+                // 更新查看映射表按钮的状态
+                btnViewPriceMapping.Enabled = priceMapping.Count > 0;
+                if (priceMapping.Count > 0)
+                {
+                    btnViewPriceMapping.Text = $"查看映射表({priceMapping.Count})";
+                }
+                else
+                {
+                    btnViewPriceMapping.Text = "查看映射表";
+                }
+            }
+            catch (Exception ex)
+            {
+                lblMappingStatus.Text = $"状态：显示映射数据时出错 - {ex.Message}";
+                lblMappingStatus.ForeColor = Color.Red;
+            }
+        }
+
+        private string GetAdminNameByCode(string adminCode)
+        {
+            // 尝试从已配对的数据中查找行政区名称
+            var pair = dataPairs.FirstOrDefault(p => p.AdminCode == adminCode);
+            if (pair != null)
+            {
+                return pair.AdminName;
+            }
+            
+            // 使用预定义的映射
+            var knownNames = new Dictionary<string, string>
+            {
+                ["441226"] = "德庆县",
+                ["441322"] = "惠来县", 
+                ["441781"] = "陆丰市",
+                ["440105"] = "海珠区",
+                ["440106"] = "天河区"
+                // 可以继续添加更多已知的映射
+            };
+            
+            return knownNames.ContainsKey(adminCode) ? knownNames[adminCode] : $"未知({adminCode})";
+        }
+
         #endregion
+
     }
 
     #region 数据结构
@@ -964,6 +1337,17 @@ namespace TestArcMapAddin2.Forms
         public string AdminName { get; set; }
         public string FolderPath { get; set; }
         public string ShapefilePath { get; set; }
+    }
+
+    public class PriceMappingDisplayItem
+    {
+        public string AdminCode { get; set; }
+        public string AdminName { get; set; }
+        public double Grade1Price { get; set; }
+        public double Grade2Price { get; set; }
+        public double Grade3Price { get; set; }
+        public double Grade4Price { get; set; }
+        public double Grade5Price { get; set; }
     }
 
     #endregion
