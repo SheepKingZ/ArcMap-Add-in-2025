@@ -191,6 +191,12 @@
     <Compile Include="Forms\BasicDataPreparationForm.Designer.cs">
       <DependentUpon>BasicDataPreparationForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\ForestBasemapPriceAssociationForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ForestBasemapPriceAssociationForm.Designer.cs">
+      <DependentUpon>ForestBasemapPriceAssociationForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\ForestForm\Basic.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -277,6 +283,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Forms\BasicDataPreparationForm.resx">
       <DependentUpon>BasicDataPreparationForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ForestBasemapPriceAssociationForm.resx">
+      <DependentUpon>ForestBasemapPriceAssociationForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\ForestForm\Basic.resx">
       <DependentUpon>Basic.cs</DependentUpon>
