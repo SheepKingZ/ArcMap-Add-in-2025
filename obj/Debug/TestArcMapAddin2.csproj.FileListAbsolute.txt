@@ -175,7 +175,6 @@ C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.Threading.Tasks.Parallel.dll
 C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.Threading.Thread.dll
 C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.Threading.ThreadPool.dll
 C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.Threading.Timer.dll
-C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.ValueTuple.dll
 C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.Xml.ReaderWriter.dll
 C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.Xml.XDocument.dll
 C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.Xml.XmlDocument.dll
@@ -238,5 +237,7 @@ C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.Security.Cryptography.Xml.xml
 C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.Security.Principal.Windows.xml
 C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.Text.Encoding.CodePages.xml
 C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.Threading.Tasks.Extensions.xml
+C:\Users\Realian\Desktop\LDY_Proj\obj\Debug\TestArcMapAddin2.Forms.ForestBasemapPriceAssociationForm.resources
+C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.ValueTuple.dll
 C:\Users\Realian\Desktop\LDY_Proj\obj\Debug\TestArcMapAddin2.csproj.AssemblyReference.cache
 C:\Users\Realian\Desktop\LDY_Proj\obj\Debug\TestArcM.3342E52C.Up2Date

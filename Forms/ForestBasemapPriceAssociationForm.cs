@@ -416,17 +416,67 @@ namespace TestArcMapAddin2.Forms
         {
             try
             {
-                // 路径：空间数据/清查范围数据/行政区代码+SLZY_DLTB.shp
+                // 路径：空间数据/清查范围数据/(行政区代码)SLZY_DLTB.shp
                 var surveyDataPath = System.IO.Path.Combine(folderPath, "空间数据", "清查范围数据");
                 
                 if (Directory.Exists(surveyDataPath))
                 {
-                    var targetFileName = adminCode + "SLZY_DLTB.shp";
+                    // 修正文件名格式：括号+行政区代码+SLZY_DLTB
+                    var targetFileName = $"({adminCode})SLZY_DLTB.shp";
                     var targetPath = System.IO.Path.Combine(surveyDataPath, targetFileName);
+                    
+                    System.Diagnostics.Debug.WriteLine($"查找现状Shapefile: {targetPath}");
                     
                     if (File.Exists(targetPath))
                     {
+                        System.Diagnostics.Debug.WriteLine($"成功找到现状Shapefile: {targetPath}");
                         return targetPath;
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"未找到目标文件: {targetPath}");
+                        
+                        // 输出调试信息：列出该目录下的所有.shp文件
+                        try
+                        {
+                            var shpFiles = Directory.GetFiles(surveyDataPath, "*.shp");
+                            System.Diagnostics.Debug.WriteLine($"清查范围数据目录下的所有.shp文件：");
+                            foreach (var file in shpFiles)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"  - {System.IO.Path.GetFileName(file)}");
+                            }
+                        }
+                        catch (Exception listEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"列出目录文件时出错: {listEx.Message}");
+                        }
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"清查范围数据目录不存在: {surveyDataPath}");
+                    
+                    // 输出调试信息：列出空间数据目录下的所有子目录
+                    try
+                    {
+                        var spatialDataPath = System.IO.Path.Combine(folderPath, "空间数据");
+                        if (Directory.Exists(spatialDataPath))
+                        {
+                            var subDirs = Directory.GetDirectories(spatialDataPath);
+                            System.Diagnostics.Debug.WriteLine($"空间数据目录下的所有子目录：");
+                            foreach (var dir in subDirs)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"  - {System.IO.Path.GetFileName(dir)}");
+                            }
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"空间数据目录也不存在: {spatialDataPath}");
+                        }
+                    }
+                    catch (Exception listEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"列出空间数据目录时出错: {listEx.Message}");
                     }
                 }
             }
