@@ -343,66 +343,6 @@ namespace ForestResourcePlugin
             }
         }
 
-        /// <summary>
-        /// 批量输出多个县的数据到各自的Shapefile
-        /// </summary>
-        /// <param name="countyFeaturesMap">县级要素映射（县名 -> 要素列表）</param>
-        /// <param name="sourceFeatureClass">源要素类</param>
-        /// <param name="outputPath">输出路径</param>
-        /// <param name="fieldMappings">字段映射配置</param>
-        /// <param name="progressCallback">进度回调</param>
-        public void BatchExportToShapefile(
-            Dictionary<string, List<IFeature>> countyFeaturesMap,
-            IFeatureClass sourceFeatureClass,
-            string outputPath,
-            Dictionary<string, string> fieldMappings,
-            ProgressCallback progressCallback = null)
-        {
-            if (countyFeaturesMap == null || countyFeaturesMap.Count == 0)
-            {
-                throw new ArgumentException("县级要素映射不能为空");
-            }
-
-            int totalCounties = countyFeaturesMap.Count;
-            int processedCounties = 0;
-
-            progressCallback?.Invoke(0, $"开始批量处理{totalCounties}个县的数据...");
-
-            // 遍历每个县的数据进行处理
-            foreach (var countyData in countyFeaturesMap)
-            {
-                string countyName = countyData.Key;
-                List<IFeature> countyFeatures = countyData.Value;
-
-                try
-                {
-                    // 计算总体进度 - 基于已处理的县数量
-                    int overallProgress = (processedCounties * 100) / totalCounties;
-                    progressCallback?.Invoke(overallProgress, $"正在处理县: {countyName} ({processedCounties + 1}/{totalCounties})");
-
-                    // 为每个县输出数据到Shapefile
-                    ExportToShapefile(countyFeatures, sourceFeatureClass, countyName, outputPath,
-                        fieldMappings, (percentage, message) =>
-                        {
-                            // 将单个县的进度（0-100）映射到当前县的总体进度范围内
-                            int countyOverallProgress = overallProgress + (percentage * (100 / totalCounties) / 100);
-                            progressCallback?.Invoke(countyOverallProgress, message);
-                        });
-
-                    processedCounties++;
-
-                    System.Diagnostics.Debug.WriteLine($"县{countyName}数据输出和转换完成 ({processedCounties}/{totalCounties})");
-                }
-                catch (Exception ex)
-                {
-                    // 错误处理策略：记录错误但继续处理其他县
-                    System.Diagnostics.Debug.WriteLine($"输出县{countyName}数据时出错: {ex.Message}");
-                    processedCounties++;
-                }
-            }
-
-            progressCallback?.Invoke(100, $"所有县的数据输出和转换完成 ({processedCounties}/{totalCounties})");
-        }
 
         /// <summary>
         /// 创建县级Shapefile工作空间
@@ -560,9 +500,23 @@ namespace ForestResourcePlugin
                     fieldMappings = GetDefaultSLZYZCFieldMappings();
                 }
 
-                // 获取特殊字段索引
+                // 预先获取所有字段索引，减少重复查找
                 int zcqcbsmIndex = targetFeatureClass.FindField("ZCQCBSM");
                 int czkfbjmjIndex = targetFeatureClass.FindField("CZKFBJMJ");
+                int pctbbmIndex = targetFeatureClass.FindField("PCTBBM");
+                int ztbxjIndex = targetFeatureClass.FindField("ZTBXJ");
+                int xzqmcIndex = targetFeatureClass.FindField("XZQMC");
+
+                // 预先获取源字段索引（特殊字段）
+                int xianIndex = sourceFeatureClass.FindField("xian");
+                int linBanIndex = sourceFeatureClass.FindField("lin_ban");
+                int xiaoBanIndex = sourceFeatureClass.FindField("xiao_ban");
+                int xbmjIndex = sourceFeatureClass.FindField("xbmj");
+                string field65Name = GetFieldByIndex(sourceFeatureClass, 65);
+                int field65Index = !string.IsNullOrEmpty(field65Name) ? sourceFeatureClass.FindField(field65Name) : -1;
+                int xzqdmSourceIndex = xianIndex != -1 ? xianIndex : sourceFeatureClass.FindField("XZQDM");
+
+                System.Diagnostics.Debug.WriteLine($"预缓存字段索引完成: PCTBBM={pctbbmIndex}, ZTBXJ={ztbxjIndex}, XZQMC={xzqmcIndex}");
 
                 // 逐个处理要素
                 foreach (IFeature sourceFeature in sourceFeatures)
@@ -575,9 +529,127 @@ namespace ForestResourcePlugin
                             featureBuffer.Shape = sourceFeature.ShapeCopy;
                         }
 
-                        // 复制属性值并执行字段映射转换
-                        CopyFeatureAttributesForSLZYZC(sourceFeature, sourceFeatureClass, featureBuffer,
-                            targetFeatureClass, fieldMappings, countyName, successCount + 1);
+                        // 处理普通字段映射
+                        foreach (var mapping in fieldMappings)
+                        {
+                            string targetFieldName = mapping.Key;
+                            string sourceFieldName = mapping.Value;
+
+                            // 跳过特殊字段，稍后单独处理
+                            if (targetFieldName == "PCTBBM" || targetFieldName == "ZTBXJ" || targetFieldName == "XZQMC")
+                            {
+                                continue;
+                            }
+
+                            try
+                            {
+                                int targetFieldIndex = targetFeatureClass.FindField(targetFieldName);
+                                if (targetFieldIndex != -1 && !string.IsNullOrEmpty(sourceFieldName))
+                                {
+                                    int sourceFieldIndex = sourceFeatureClass.FindField(sourceFieldName);
+                                    if (sourceFieldIndex != -1)
+                                    {
+                                        object sourceValue = sourceFeature.get_Value(sourceFieldIndex);
+                                        object convertedValue = ConvertFieldValueForSLZYZC(sourceValue, targetFieldName, sourceFieldName, countyName);
+                                        if (convertedValue != null)
+                                        {
+                                            featureBuffer.set_Value(targetFieldIndex, convertedValue);
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"复制{countyName}字段{targetFieldName}时出错: {ex.Message}");
+                            }
+                        }
+
+                        // 处理特殊字段：PCTBBM (xian + lin_ban + xiao_ban)
+                        if (pctbbmIndex != -1)
+                        {
+                            try
+                            {
+                                string xianValue = xianIndex != -1 ? (sourceFeature.get_Value(xianIndex)?.ToString() ?? "") : "";
+                                string linBanValue = linBanIndex != -1 ? (sourceFeature.get_Value(linBanIndex)?.ToString() ?? "") : "";
+                                string xiaoBanValue = xiaoBanIndex != -1 ? (sourceFeature.get_Value(xiaoBanIndex)?.ToString() ?? "") : "";
+
+                                string pctbbmValue = $"{xianValue}{linBanValue}{xiaoBanValue}";
+                                featureBuffer.set_Value(pctbbmIndex, pctbbmValue);
+
+                                System.Diagnostics.Debug.WriteLine($"PCTBBM字段合并完成: {pctbbmValue}");
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"处理PCTBBM字段时出错: {ex.Message}");
+                            }
+                        }
+
+                        // 处理特殊字段：ZTBXJ (xbmj * 第65个字段)
+                        if (ztbxjIndex != -1)
+                        {
+                            try
+                            {
+                                if (xbmjIndex != -1 && field65Index != -1)
+                                {
+                                    object xbmjValue = sourceFeature.get_Value(xbmjIndex);
+                                    object field65Value = sourceFeature.get_Value(field65Index);
+
+                                    if (double.TryParse(xbmjValue?.ToString(), out double xbmjNum) &&
+                                        double.TryParse(field65Value?.ToString(), out double field65Num))
+                                    {
+                                        double ztbxjValue = xbmjNum * field65Num;
+                                        featureBuffer.set_Value(ztbxjIndex, ztbxjValue);
+                                        System.Diagnostics.Debug.WriteLine($"ZTBXJ字段计算完成: {xbmjNum} * {field65Num} = {ztbxjValue}");
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"处理ZTBXJ字段时出错: {ex.Message}");
+                            }
+                        }
+
+                        // 处理特殊字段：XZQMC (基于XZQDM获取行政区名称)
+                        if (xzqmcIndex != -1)
+                        {
+                            try
+                            {
+                                string xzqmcValue = countyName; // 默认使用传入的县名
+
+                                if (xzqdmSourceIndex != -1)
+                                {
+                                    object xzqdmValue = sourceFeature.get_Value(xzqdmSourceIndex);
+                                    string xzqdm = xzqdmValue?.ToString();
+
+                                    if (!string.IsNullOrEmpty(xzqdm))
+                                    {
+                                        // 确保XZQDM是6位数字格式
+                                        string normalizedXzqdm = xzqdm.Length > 6 ? xzqdm.Substring(0, 6) : xzqdm.PadLeft(6, '0');
+
+                                        // 使用县代码映射器根据XZQDM获取行政区名称
+                                        string administrativeName = Utils.CountyCodeMapper.GetCountyNameFromCode(normalizedXzqdm);
+
+                                        if (!string.IsNullOrEmpty(administrativeName))
+                                        {
+                                            xzqmcValue = administrativeName;
+                                            System.Diagnostics.Debug.WriteLine($"根据XZQDM '{normalizedXzqdm}' 获取到行政区名称: '{administrativeName}'");
+                                        }
+                                        else
+                                        {
+                                            System.Diagnostics.Debug.WriteLine($"警告: 无法根据XZQDM '{normalizedXzqdm}' 找到对应的行政区名称，使用传入的县名");
+                                        }
+                                    }
+                                }
+
+                                featureBuffer.set_Value(xzqmcIndex, xzqmcValue);
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"处理XZQMC字段时出错: {ex.Message}");
+                                // 出错时设置为默认县名
+                                featureBuffer.set_Value(xzqmcIndex, countyName);
+                            }
+                        }
 
                         // 处理特殊字段：ZCQCBSM
                         if (zcqcbsmIndex != -1)
@@ -589,16 +661,16 @@ namespace ForestResourcePlugin
                             }
                         }
 
-                        // 处理特殊字段：CZKFBJMJ
-                        if (czkfbjmjIndex != -1)
-                        {
-                            double intersectionArea = 0;
-                            if (czkfbjFeatureClass != null && sourceFeature.Shape != null)
-                            {
-                                intersectionArea = CalculateIntersectionArea(sourceFeature.Shape, czkfbjFeatureClass);
-                            }
-                            featureBuffer.set_Value(czkfbjmjIndex, intersectionArea);
-                        }
+                        // 处理特殊字段：CZKFBJMJ（如果需要的话）
+                        //if (czkfbjmjIndex != -1)
+                        //{
+                        //    double intersectionArea = 0;
+                        //    if (czkfbjFeatureClass != null && sourceFeature.Shape != null)
+                        //    {
+                        //        intersectionArea = CalculateIntersectionArea(sourceFeature.Shape, czkfbjFeatureClass);
+                        //    }
+                        //    featureBuffer.set_Value(czkfbjmjIndex, intersectionArea);
+                        //}
 
                         // 执行要素插入操作
                         insertCursor.InsertFeature(featureBuffer);
@@ -747,6 +819,10 @@ namespace ForestResourcePlugin
                             System.Diagnostics.Debug.WriteLine($"进入XZQMC特殊处理逻辑");
                             
                             // 首先尝试从XZQDM源字段获取行政区代码
+
+
+
+
                             int xzqdmIndex = sourceFeatureClass.FindField("xian");
                             if (xzqdmIndex == -1)
                             {
