@@ -12,7 +12,10 @@ using ESRI.ArcGIS.Geodatabase;
 using ESRI.ArcGIS.Geometry; // 新增：用于空间参考系统
 using ESRI.ArcGIS.esriSystem; // 新增：用于空间参考系统
 using System.Reflection;
-
+using NPOI.SS.UserModel;
+using NPOI.HSSF.UserModel;
+using NPOI.XSSF.UserModel;
+using NPOI.SS.Util; 
 
 namespace TestArcMapAddin2.Forms
 {
@@ -950,7 +953,391 @@ namespace TestArcMapAddin2.Forms
         }
         private void btnResultExcel_Click(object sender, EventArgs e)
         {
-           
+            if (string.IsNullOrEmpty(outputGDBPath))
+            {
+                MessageBox.Show("输出结果路径为空，请先通过生成成果结构按钮选择或创建成果根目录。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                // 使用新的 SourceDataFileInfo 类型
+                var lcxzgxFiles = ForestResourcePlugin.SharedDataManager.GetSourceDataFiles();
+                if (lcxzgxFiles == null || lcxzgxFiles.Count == 0)
+                {
+                    MessageBox.Show("未能从共享数据中找到林草湿荒普查数据，无法继续操作。", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // 按县名对数据源进行分组，并获取唯一的县名列表
+                var countyGroups = lcxzgxFiles.GroupBy(f => f.DisplayName)
+                                              .ToDictionary(g => g.Key, g => g.First());
+
+                if (countyGroups.Count == 0)
+                {
+                    MessageBox.Show("未能获取县列表，请先在数据源步骤中选择数据。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                int successCount = 0;
+                int totalTables = 0;
+
+                // 遍历每个县，生成三个Excel报表
+                foreach (var countyEntry in countyGroups)
+                {
+                    string countyName = countyEntry.Key;
+
+                    // 使用县代码映射器获取真实的县代码
+                    string countyCode = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyCode(countyName);
+                    string countyFolderName = $"{countyName}（{countyCode}）全民所有自然资源资产清查数据成果";
+                    string countyFolderPath = System.IO.Path.Combine(outputGDBPath, countyFolderName);
+                    string summaryTablePath = System.IO.Path.Combine(countyFolderPath, "汇总表格");
+                    string forestTablePath = System.IO.Path.Combine(summaryTablePath, "森林");
+
+                    // 检查目录是否存在
+                    if (!Directory.Exists(forestTablePath))
+                    {
+                        MessageBox.Show($"{countyName}的目录结构不完整，找不到路径：\n{forestTablePath}\n\n请先使用生成成果结构功能创建正确的目录。", "目录错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        continue;
+                    }
+
+                    bool countySuccess = true;
+
+                    // 生成第一个表格：全民所有森林资源资产清查实物量汇总表
+                    try
+                    {
+                        string tableA2Name = $"（{countyCode}）全民所有森林资源资产清查实物量汇总表.xls";
+                        string tableA2Path = System.IO.Path.Combine(forestTablePath, tableA2Name);
+                        CreateTableA2(tableA2Path);
+                        totalTables++;
+                        System.Diagnostics.Debug.WriteLine($"成功为{countyName}创建A2表格: {tableA2Path}");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"为{countyName}创建实物量汇总表时出错：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        countySuccess = false;
+                    }
+
+                    // 生成第二个表格：全民所有森林资源资产清查价值量汇总表
+                    try
+                    {
+                        string tableA4Name = $"（{countyCode}）全民所有森林资源资产清查价值量汇总表.xls";
+                        string tableA4Path = System.IO.Path.Combine(forestTablePath, tableA4Name);
+                        CreateTableA4(tableA4Path);
+                        totalTables++;
+                        System.Diagnostics.Debug.WriteLine($"成功为{countyName}创建A4表格: {tableA4Path}");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"为{countyName}创建价值量汇总表时出错：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        countySuccess = false;
+                    }
+
+                    // 生成第三个表格：全民所有森林资源资产清查林地汇总表
+                    try
+                    {
+                        string tableA6Name = $"（{countyCode}）全民所有森林资源资产清查林地汇总表.xls";
+                        string tableA6Path = System.IO.Path.Combine(forestTablePath, tableA6Name);
+                        CreateTableA6(tableA6Path);
+                        totalTables++;
+                        System.Diagnostics.Debug.WriteLine($"成功为{countyName}创建A6表格: {tableA6Path}");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"为{countyName}创建林地汇总表时出错：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        countySuccess = false;
+                    }
+
+                    if (countySuccess)
+                    {
+                        successCount++;
+                    }
+                }
+
+                if (successCount > 0)
+                {
+                    MessageBox.Show($"已成功为 {successCount} 个县生成了 {totalTables} 个Excel报表。\n\n报表保存在各县的汇总表格\\森林目录下。", "操作成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("未能成功生成任何Excel报表。请检查错误信息和目录结构。", "操作完成", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"生成Excel报表时发生错误：{ex.Message}", "严重错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Debug.WriteLine($"生成Excel报表时出错: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// 创建A2表格：全民所有森林资源资产清查实物量汇总表
+        /// </summary>
+        /// <param name="excelFilePath">Excel文件保存路径</param>
+        private void CreateTableA2(string excelFilePath)
+        {
+            // 创建工作簿
+            NPOI.HSSF.UserModel.HSSFWorkbook workbook = new NPOI.HSSF.UserModel.HSSFWorkbook();
+            NPOI.SS.UserModel.ISheet sheet = workbook.CreateSheet("A2");
+
+            //设置对齐
+            NPOI.SS.UserModel.ICellStyle style = workbook.CreateCellStyle();
+            style.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Center;
+            style.VerticalAlignment = NPOI.SS.UserModel.VerticalAlignment.Center;
+
+            // 插入标题行
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 0, 0, 1));
+            NPOI.HSSF.UserModel.HSSFRow row0 = (NPOI.HSSF.UserModel.HSSFRow)sheet.CreateRow(0);
+            row0.CreateCell(0).SetCellValue("行政区");
+            row0.GetCell(0).CellStyle = style;
+
+            NPOI.HSSF.UserModel.HSSFRow row1 = (NPOI.HSSF.UserModel.HSSFRow)sheet.CreateRow(1);
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(1, 2, 0, 0));
+            row1.CreateCell(0).SetCellValue("名称");
+            row1.GetCell(0).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(1, 2, 1, 1));
+            row1.CreateCell(1).SetCellValue("代码");
+            row1.GetCell(1).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 2, 2, 2));
+            row0.CreateCell(2).SetCellValue("国土变更调查权属");
+            row0.GetCell(2).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 2, 3, 3));
+            row0.CreateCell(3).SetCellValue("林木所有权");
+            row0.GetCell(3).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 2, 4, 4));
+            row0.CreateCell(4).SetCellValue("林种");
+            row0.GetCell(4).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 2, 5, 5));
+            row0.CreateCell(5).SetCellValue("起源");
+            row0.GetCell(5).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 2, 6, 6));
+            row0.CreateCell(6).SetCellValue("面积合计");
+            row0.GetCell(6).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 0, 7, 18));
+            row0.CreateCell(7).SetCellValue("乔木林地");
+            row0.GetCell(7).CellStyle = style;
+
+            NPOI.HSSF.UserModel.HSSFRow row2 = (NPOI.HSSF.UserModel.HSSFRow)sheet.CreateRow(2);
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(1, 1, 7, 8));
+            row1.CreateCell(7).SetCellValue("小计");
+            row1.GetCell(7).CellStyle = style;
+            row2.CreateCell(7).SetCellValue("面积");
+            row2.GetCell(7).CellStyle = style;
+            row2.CreateCell(8).SetCellValue("蓄积");
+            row2.GetCell(8).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(1, 1, 9, 10));
+            row1.CreateCell(9).SetCellValue("幼龄林");
+            row1.GetCell(9).CellStyle = style;
+            row2.CreateCell(9).SetCellValue("面积");
+            row2.GetCell(9).CellStyle = style;
+            row2.CreateCell(10).SetCellValue("蓄积");
+            row2.GetCell(10).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(1, 1, 11, 12));
+            row1.CreateCell(11).SetCellValue("中龄林");
+            row1.GetCell(11).CellStyle = style;
+            row2.CreateCell(11).SetCellValue("面积");
+            row2.GetCell(11).CellStyle = style;
+            row2.CreateCell(12).SetCellValue("蓄积");
+            row2.GetCell(12).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(1, 1, 13, 14));
+            row1.CreateCell(13).SetCellValue("近熟林");
+            row1.GetCell(13).CellStyle = style;
+            row2.CreateCell(13).SetCellValue("面积");
+            row2.GetCell(13).CellStyle = style;
+            row2.CreateCell(14).SetCellValue("蓄积");
+            row2.GetCell(14).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(1, 1, 15, 16));
+            row1.CreateCell(15).SetCellValue("成熟林");
+            row1.GetCell(15).CellStyle = style;
+            row2.CreateCell(15).SetCellValue("面积");
+            row2.GetCell(15).CellStyle = style;
+            row2.CreateCell(16).SetCellValue("蓄积");
+            row2.GetCell(16).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(1, 1, 17, 18));
+            row1.CreateCell(17).SetCellValue("过熟林");
+            row1.GetCell(17).CellStyle = style;
+            row2.CreateCell(17).SetCellValue("面积");
+            row2.GetCell(17).CellStyle = style;
+            row2.CreateCell(18).SetCellValue("蓄积");
+            row2.GetCell(18).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 1, 19, 20));
+            row0.CreateCell(19).SetCellValue("竹林地");
+            row0.GetCell(19).CellStyle = style;
+            row2.CreateCell(19).SetCellValue("面积");
+            row2.GetCell(19).CellStyle = style;
+            row2.CreateCell(20).SetCellValue("株数");
+            row2.GetCell(20).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 1, 21, 21));
+            row0.CreateCell(21).SetCellValue("灌木林地");
+            row0.GetCell(21).CellStyle = style;
+            row2.CreateCell(21).SetCellValue("面积");
+            row2.GetCell(21).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 1, 22, 22));
+            row0.CreateCell(22).SetCellValue("其他林地");
+            row0.GetCell(22).CellStyle = style;
+            row2.CreateCell(22).SetCellValue("面积");
+            row2.GetCell(22).CellStyle = style;
+
+            //设置列宽
+            sheet.SetColumnWidth(0, System.Text.Encoding.Default.GetBytes(row1.GetCell(0).StringCellValue).Length * 256 + 500);
+            sheet.SetColumnWidth(1, System.Text.Encoding.Default.GetBytes(row1.GetCell(1).StringCellValue).Length * 256 + 500);
+
+            for (int i = 2; i <= 6; i++)
+            {
+                sheet.SetColumnWidth(i, System.Text.Encoding.Default.GetBytes(row0.GetCell(i).StringCellValue).Length * 256 + 500);
+            }
+
+            for (int i = 7; i <= 20; i++)
+            {
+                sheet.SetColumnWidth(i, System.Text.Encoding.Default.GetBytes(row2.GetCell(i).StringCellValue).Length * 256 + 500);
+            }
+
+            sheet.SetColumnWidth(21, System.Text.Encoding.Default.GetBytes(row0.GetCell(21).StringCellValue).Length * 256 + 500);
+            sheet.SetColumnWidth(22, System.Text.Encoding.Default.GetBytes(row0.GetCell(22).StringCellValue).Length * 256 + 500);
+
+            // 保存文件
+            using (System.IO.FileStream fs = new System.IO.FileStream(excelFilePath, FileMode.Create))
+            {
+                workbook.Write(fs);
+            }
+        }
+
+        /// <summary>
+        /// 创建A4表格：全民所有森林资源资产清查价值量汇总表
+        /// </summary>
+        /// <param name="excelFilePath">Excel文件保存路径</param>
+        private void CreateTableA4(string excelFilePath)
+        {
+            // 创建工作簿
+            NPOI.HSSF.UserModel.HSSFWorkbook workbook = new NPOI.HSSF.UserModel.HSSFWorkbook();
+            NPOI.SS.UserModel.ISheet sheet = workbook.CreateSheet("A4");
+
+            NPOI.SS.UserModel.ICellStyle style = workbook.CreateCellStyle();
+            style.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Center;
+            style.VerticalAlignment = NPOI.SS.UserModel.VerticalAlignment.Center;
+
+            // 插入标题行
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 0, 0, 1));
+            NPOI.HSSF.UserModel.HSSFRow row0 = (NPOI.HSSF.UserModel.HSSFRow)sheet.CreateRow(0);
+            row0.CreateCell(0).SetCellValue("行政区");
+            row0.GetCell(0).CellStyle = style;
+
+            NPOI.HSSF.UserModel.HSSFRow row1 = (NPOI.HSSF.UserModel.HSSFRow)sheet.CreateRow(1);
+            row1.CreateCell(0).SetCellValue("名称");
+            row1.GetCell(0).CellStyle = style;
+            row1.CreateCell(1).SetCellValue("代码");
+            row1.GetCell(1).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 1, 2, 2));
+            row0.CreateCell(2).SetCellValue("国土变更调查权属");
+            row0.GetCell(2).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 1, 3, 3));
+            row0.CreateCell(3).SetCellValue("林木所有权");
+            row0.GetCell(3).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 1, 4, 4));
+            row0.CreateCell(4).SetCellValue("地类");
+            row0.GetCell(4).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 1, 5, 5));
+            row0.CreateCell(5).SetCellValue("面积");
+            row0.GetCell(5).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 1, 6, 6));
+            row0.CreateCell(6).SetCellValue("划入城镇开发边界面积");
+            row0.GetCell(6).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 1, 7, 7));
+            row0.CreateCell(7).SetCellValue("经济价值");
+            row0.GetCell(7).CellStyle = style;
+
+            //设置列宽
+            sheet.SetColumnWidth(0, System.Text.Encoding.Default.GetBytes(row1.GetCell(0).StringCellValue).Length * 256 + 500);
+            sheet.SetColumnWidth(1, System.Text.Encoding.Default.GetBytes(row1.GetCell(1).StringCellValue).Length * 256 + 500);
+            for (int i = 2; i <= 7; i++)
+            {
+                sheet.SetColumnWidth(i, System.Text.Encoding.Default.GetBytes(row0.GetCell(i).StringCellValue).Length * 256 + 500);
+            }
+
+            // 保存文件
+            using (System.IO.FileStream fs = new System.IO.FileStream(excelFilePath, FileMode.Create))
+            {
+                workbook.Write(fs);
+            }
+        }
+
+        /// <summary>
+        /// 创建A6表格：全民所有森林资源资产清查林地汇总表
+        /// </summary>
+        /// <param name="excelFilePath">Excel文件保存路径</param>
+        private void CreateTableA6(string excelFilePath)
+        {
+            // 创建工作簿
+            NPOI.HSSF.UserModel.HSSFWorkbook workbook = new NPOI.HSSF.UserModel.HSSFWorkbook();
+            NPOI.SS.UserModel.ISheet sheet = workbook.CreateSheet("A6");
+            NPOI.SS.UserModel.ICellStyle style = workbook.CreateCellStyle();
+            style.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Center;
+            style.VerticalAlignment = NPOI.SS.UserModel.VerticalAlignment.Center;
+
+            // 插入标题行
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 0, 0, 1));
+            NPOI.HSSF.UserModel.HSSFRow row0 = (NPOI.HSSF.UserModel.HSSFRow)sheet.CreateRow(0);
+            row0.CreateCell(0).SetCellValue("行政区");
+            row0.GetCell(0).CellStyle = style;
+
+            NPOI.HSSF.UserModel.HSSFRow row1 = (NPOI.HSSF.UserModel.HSSFRow)sheet.CreateRow(1);
+            row1.CreateCell(0).SetCellValue("名称");
+            row1.GetCell(0).CellStyle = style;
+            row1.CreateCell(1).SetCellValue("代码");
+            row1.GetCell(1).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 1, 2, 2));
+            row0.CreateCell(2).SetCellValue("地类");
+            row0.GetCell(2).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 1, 3, 3));
+            row0.CreateCell(3).SetCellValue("林地等");
+            row0.GetCell(3).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 1, 4, 4));
+            row0.CreateCell(4).SetCellValue("面积合计");
+            row0.GetCell(4).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 1, 5, 5));
+            row0.CreateCell(5).SetCellValue("划入城镇开发边界面积");
+            row0.GetCell(5).CellStyle = style;
+
+            sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(0, 1, 6, 6));
+            row0.CreateCell(6).SetCellValue("经济价值");
+            row0.GetCell(6).CellStyle = style;
+
+            // 自动调整列宽
+            //for (int i = 0; i <= 6; i++)
+            //{
+            //    sheet.AutoSizeColumn(i);
+            //}
+
+            // 保存文件
+            using (System.IO.FileStream fs = new System.IO.FileStream(excelFilePath, FileMode.Create))
+            {
+                workbook.Write(fs);
+            }
         }
 
         // 在 buttonResultStructure_Click 方法中更新县代码使用逻辑
@@ -1035,6 +1422,7 @@ namespace TestArcMapAddin2.Forms
                         //System.Diagnostics.Process.Start("explorer.exe", rootPath);
 
                         txtOutputGDBPath.Text = rootPath;
+                        outputGDBPath = rootPath; // 更新全局变量
                     }
                     catch (Exception ex)
                     {

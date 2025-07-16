@@ -5,7 +5,7 @@ using ESRI.ArcGIS.Geodatabase;
 using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.esriSystem;
 using TestArcMapAddin2;
-using TestArcMapAddin2.ShapefileUtils;
+//using TestArcMapAddin2.ShapefileUtils;
 
 namespace ForestResourcePlugin
 {
@@ -542,8 +542,9 @@ namespace ForestResourcePlugin
                     }
                 }
 
-                // 获取CZKFBJMJ字段索引
+                // 获取CZKFBJMJ和GTDCTBMJ字段索引
                 int czkfbjmjIndex = targetFeatureClass.FindField("CZKFBJMJ");
+                int gtdctbmjIndex = targetFeatureClass.FindField("GTDCTBMJ");
 
                 // 创建游标
                 sourceCursor = sourceFeatureClass.Search(null, false);
@@ -576,7 +577,7 @@ namespace ForestResourcePlugin
                             }
                         }
 
-                        // 计算CZKFBJMJ字段
+                        // 计算CZKFBJMJ字段（增加与GTDCTBMJ的比较逻辑）
                         if (czkfbjmjIndex != -1)
                         {
                             double intersectionArea = 0;
@@ -585,7 +586,35 @@ namespace ForestResourcePlugin
                                 intersectionArea = CalculateIntersectionAreaWithCZKFBJ(
                                     sourceFeature.Shape, czkfbjFeatureClass);
                             }
+
+                            // 检查CZKFBJMJ是否超过GTDCTBMJ
+                            if (gtdctbmjIndex != -1)
+                            {
+                                // 获取GTDCTBMJ字段的值
+                                object gtdctbmjValue = targetBuffer.get_Value(gtdctbmjIndex);
+                                double gtdctbmjArea = 0;
+
+                                if (gtdctbmjValue != null && double.TryParse(gtdctbmjValue.ToString(), out gtdctbmjArea))
+                                {
+                                    // 如果计算出的CZKFBJMJ大于GTDCTBMJ，则使用GTDCTBMJ的值
+                                    if (intersectionArea > gtdctbmjArea)
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"CZKFBJMJ({intersectionArea:F2})超过GTDCTBMJ({gtdctbmjArea:F2})，使用GTDCTBMJ值");
+                                        intersectionArea = gtdctbmjArea;
+                                    }
+                                }
+                                else
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"警告: 无法获取有效的GTDCTBMJ值，CZKFBJMJ将使用计算值: {intersectionArea:F2}");
+                                }
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine($"警告: 未找到GTDCTBMJ字段，CZKFBJMJ将使用计算值: {intersectionArea:F2}");
+                            }
+
                             targetBuffer.set_Value(czkfbjmjIndex, intersectionArea);
+                            System.Diagnostics.Debug.WriteLine($"最终CZKFBJMJ值: {intersectionArea:F2}");
                         }
 
                         // 插入要素
@@ -734,35 +763,6 @@ namespace ForestResourcePlugin
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(spatialFilter);
             }
         }
-
-        /// <summary>
-        /// 删除Shapefile相关文件
-        /// </summary>
-        /// <param name="shapefilePath">Shapefile路径</param>
-        private void DeleteShapefileFiles(string shapefilePath)
-        {
-            try
-            {
-                string basePath = System.IO.Path.GetDirectoryName(shapefilePath);
-                string baseName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
-
-                string[] extensions = { ".shp", ".shx", ".dbf", ".prj", ".sbn", ".sbx", ".cpg" };
-
-                foreach (string ext in extensions)
-                {
-                    string filePath = System.IO.Path.Combine(basePath, baseName + ext);
-                    if (File.Exists(filePath))
-                    {
-                        File.Delete(filePath);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"删除Shapefile文件时出错: {ex.Message}");
-            }
-        }
-
 
         /// <summary>
         /// 创建县级Shapefile工作空间

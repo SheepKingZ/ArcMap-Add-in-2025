@@ -78,7 +78,7 @@ namespace ForestResourcePlugin
         {
             try
             {
-                // 获取源数据文件列表（原LCXZGX文件列表）
+                // 获取源数据文件列表
                 var sourceDataFiles = SharedDataManager.GetSourceDataFiles();
 
                 // 获取城镇开发边界文件列表
