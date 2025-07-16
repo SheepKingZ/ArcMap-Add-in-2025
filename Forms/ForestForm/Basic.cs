@@ -483,7 +483,6 @@ namespace ForestResourcePlugin
         }
 
         // Helper method to find the best matching field name
-        // Helper method to find the best matching field name
         private int FindBestMatchIndex(ComboBox.ObjectCollection items, string[] searchTerms)
         {
             // 第一轮：精确匹配（忽略大小写）
@@ -518,77 +517,6 @@ namespace ForestResourcePlugin
             return -1; // No match found
         }
 
-        /// <summary>
-        /// 生成多县预览数据
-        /// </summary>
-        private PreviewQueryResult GenerateMultiCountyPreview(string landTypeField, string landOwnerField, CancellationToken token)
-        {
-            var combinedResult = new PreviewQueryResult
-            {
-                PreviewData = new DataTable()
-            };
-
-            // 初始化数据表结构（增加县名列）
-            combinedResult.PreviewData.Columns.Add("县名");
-            combinedResult.PreviewData.Columns.Add("图斑编号");
-            combinedResult.PreviewData.Columns.Add("地类");
-            combinedResult.PreviewData.Columns.Add("土地权属");
-            combinedResult.PreviewData.Columns.Add("面积(公顷)");
-
-            int countyIndex = 0;
-            foreach (var countyInfo in selectedCountyData)
-            {
-                try
-                {
-                    token.ThrowIfCancellationRequested();
-
-                    if (countyInfo.SourceDataFile == null)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"县 {countyInfo.CountyName} 没有源数据，跳过");
-                        continue;
-                    }
-
-                    countyIndex++;
-                    UpdateStatus($"正在处理县 {countyInfo.CountyName} ({countyIndex}/{selectedCountyData.Count})...");
-
-                    // 计算进度
-                    int baseProgress = 20 + (countyIndex - 1) * 60 / selectedCountyData.Count;
-                    progressBar.Value = baseProgress;
-
-                    // 处理单个县的数据
-                    var countyResult = ProcessSingleCountyPreview(countyInfo, landTypeField, landOwnerField, token);
-
-                    // 合并结果
-                    foreach (DataRow row in countyResult.PreviewData.Rows)
-                    {
-                        var newRow = combinedResult.PreviewData.NewRow();
-                        newRow["县名"] = countyInfo.CountyName;
-                        newRow["图斑编号"] = row["图斑编号"];
-                        newRow["地类"] = row["地类"];
-                        newRow["土地权属"] = row["土地权属"];
-                        newRow["面积(公顷)"] = row["面积(公顷)"];
-
-                        combinedResult.PreviewData.Rows.Add(newRow);
-                    }
-
-                    combinedResult.TotalCount += countyResult.TotalCount;
-                    combinedResult.ProcessedCount += countyResult.ProcessedCount;
-
-                    // 限制预览数量
-                    if (combinedResult.ProcessedCount >= 1000)
-                    {
-                        break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"处理县 {countyInfo.CountyName} 时出错: {ex.Message}");
-                    continue;
-                }
-            }
-
-            return combinedResult;
-        }
 
         /// <summary>
         /// 处理单个县的预览数据
@@ -851,80 +779,6 @@ namespace ForestResourcePlugin
             return row;
         }
 
-        private void btnPreview_Click(object sender, EventArgs e)
-        {
-            _cancellationTokenSource = new CancellationTokenSource();
-            var token = _cancellationTokenSource.Token;
-
-            btnExecute.Enabled = false;
-            btnCancel.Enabled = true;
-            btnPreview.Enabled = false;
-            try
-            {
-                // 验证输入
-                var selectedCounties = GetSelectedCounties();
-                if (selectedCounties.Count == 0)
-                {
-                    MessageBox.Show("请至少选择一个县", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                if (selectedCountyData == null || selectedCountyData.Count == 0)
-                {
-                    MessageBox.Show("县数据未正确加载，请重新选择", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                string landTypeField = cmbLandTypeField.SelectedItem?.ToString();
-                string landOwnerField = cmbLandOwnerField.SelectedItem?.ToString();
-
-                if (string.IsNullOrEmpty(landTypeField) || string.IsNullOrEmpty(landOwnerField))
-                {
-                    MessageBox.Show("请选择地类字段和土地权属字段", "验证失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                UpdateStatus("正在生成预览...");
-                progressBar.Value = 10;
-
-                // 生成多县预览数据
-                var allPreviewData = GenerateMultiCountyPreview(landTypeField, landOwnerField, token);
-
-                // 显示结果
-                DisplayPreviewResults(allPreviewData);
-
-                progressBar.Value = 100;
-                UpdateStatus("预览生成完成");
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
-            catch (OperationCanceledException)
-            {
-                UpdateStatus("预览操作已取消");
-                progressBar.Value = 0;
-                ClearPreviewData();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"生成预览时出错: {ex.Message}", "错误",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                UpdateStatus("预览生成失败");
-                progressBar.Value = 0;
-                System.Diagnostics.Debug.WriteLine($"btnPreview_Click错误: {ex}");
-            }
-            finally
-            {
-                btnExecute.Enabled = true;
-                btnCancel.Enabled = false;
-                btnPreview.Enabled = true;
-                if (_cancellationTokenSource != null)
-                {
-                    _cancellationTokenSource.Dispose();
-                    _cancellationTokenSource = null;
-                }
-            }
-        }
 
         private bool ValidateInputs()
         {
@@ -1705,6 +1559,7 @@ namespace ForestResourcePlugin
                 { "GTDCTDQS", "qsxz" },        // 国土调查土地权属
                 { "LYJ", "lin_ye_ju" },        // 林业局
                 { "LC", "lin_chang" },         // 林场
+                { "PCDL", "di_lei" },          // 普查地类
                 { "ZTBMJ", "xbmj" },           // 株数图斑面积
                 { "LM_SUOYQ", "lmqs" },        // 林木所有权
                 { "LZ", "lin_zhong" },         // 林种
