@@ -238,6 +238,6 @@ C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.Security.Principal.Windows.xm
 C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.Text.Encoding.CodePages.xml
 C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.Threading.Tasks.Extensions.xml
 C:\Users\Realian\Desktop\LDY_Proj\obj\Debug\TestArcMapAddin2.Forms.ForestBasemapPriceAssociationForm.resources
-C:\Users\Realian\Desktop\LDY_Proj\obj\Debug\TestArcMapAddin2.csprojAssemblyReference.cache
-C:\Users\Realian\Desktop\LDY_Proj\obj\Debug\TestArcMapAddin2.csproj.CopyComplete
-C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\TestArcMapAddin2.esriAddIn
+C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.ValueTuple.dll
+C:\Users\Realian\Desktop\LDY_Proj\obj\Debug\TestArcMapAddin2.csproj.AssemblyReference.cache
+C:\Users\Realian\Desktop\LDY_Proj\obj\Debug\TestArcM.3342E52C.Up2Date

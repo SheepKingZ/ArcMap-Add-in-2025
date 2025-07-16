@@ -556,18 +556,68 @@ namespace TestArcMapAddin2.Forms
         {
             try
             {
-                // 路径：父文件夹/同名子文件夹/1-矢量数据/行政区代码+LDDJHJZDJDY.shp
-                var subFolderName = System.IO.Path.GetFileName(folderPath);
-                var vectorDataPath = System.IO.Path.Combine(folderPath, subFolderName, "1-矢量数据");
+                // 修改后的路径：父文件夹/1-矢量数据/行政区代码+LDDJHJZDJDY.shp
+                // 去掉了中间的同名子文件夹层级
+                var vectorDataPath = System.IO.Path.Combine(folderPath, "1-矢量数据");
+                
+                System.Diagnostics.Debug.WriteLine($"查找地价Shapefile: 检查路径 {vectorDataPath}");
                 
                 if (Directory.Exists(vectorDataPath))
                 {
                     var targetFileName = adminCode + "LDDJHJZDJDY.shp";
                     var targetPath = System.IO.Path.Combine(vectorDataPath, targetFileName);
                     
+                    System.Diagnostics.Debug.WriteLine($"查找地价Shapefile: 目标文件 {targetPath}");
+                    
                     if (File.Exists(targetPath))
                     {
+                        System.Diagnostics.Debug.WriteLine($"成功找到地价Shapefile: {targetPath}");
                         return targetPath;
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"未找到目标文件: {targetPath}");
+                        
+                        // 输出调试信息：列出该目录下的所有.shp文件
+                        try
+                        {
+                            var shpFiles = Directory.GetFiles(vectorDataPath, "*.shp");
+                            System.Diagnostics.Debug.WriteLine($"1-矢量数据目录下的所有.shp文件：");
+                            foreach (var file in shpFiles)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"  - {System.IO.Path.GetFileName(file)}");
+                            }
+                        }
+                        catch (Exception listEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"列出目录文件时出错: {listEx.Message}");
+                        }
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"1-矢量数据目录不存在: {vectorDataPath}");
+                    
+                    // 输出调试信息：列出父文件夹下的所有子目录
+                    try
+                    {
+                        if (Directory.Exists(folderPath))
+                        {
+                            var subDirs = Directory.GetDirectories(folderPath);
+                            System.Diagnostics.Debug.WriteLine($"父文件夹 {folderPath} 下的所有子目录：");
+                            foreach (var dir in subDirs)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"  - {System.IO.Path.GetFileName(dir)}");
+                            }
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"父文件夹也不存在: {folderPath}");
+                        }
+                    }
+                    catch (Exception listEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"列出父文件夹目录时出错: {listEx.Message}");
                     }
                 }
             }
