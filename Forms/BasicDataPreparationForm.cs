@@ -965,6 +965,7 @@ namespace TestArcMapAddin2.Forms
         }
 
         // 在 button1_Click 方法中更新县代码使用逻辑
+        // 在 button1_Click 方法中更新县代码使用逻辑
         private void button1_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(outputGDBPath))
@@ -1004,10 +1005,10 @@ namespace TestArcMapAddin2.Forms
                     ISpatialReference sourceSpatialRef = GetSpatialReferenceFromFile(firstFileInGroup);
                     if (sourceSpatialRef == null)
                     {
-                        var userChoice = MessageBox.Show($"无法自动读取{ countyName}的源数据坐标系。\n\n是否继续并使用默认的CGCS2000坐标系？", "坐标系读取失败", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                        var userChoice = MessageBox.Show($"无法自动读取{countyName}的源数据坐标系。\n\n是否继续并使用默认的CGCS2000坐标系？", "坐标系读取失败", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                         if (userChoice == DialogResult.No)
                         {
-                            MessageBox.Show($"已跳过{ countyName}的Shapefile创建。", "操作取消", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show($"已跳过{countyName}的Shapefile创建。", "操作取消", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             continue; // 跳过当前县，继续处理下一个
                         }
                         sourceSpatialRef = CreateCGCS2000SpatialReference();
@@ -1019,12 +1020,12 @@ namespace TestArcMapAddin2.Forms
                     string countyFolderPath = System.IO.Path.Combine(outputGDBPath, countyFolderName);
                     string dataSetPath = System.IO.Path.Combine(countyFolderPath, "清查数据集");
 
-                    // 定义资源类型和对应的Shapefile名称
+                    // 定义资源类型和对应的Shapefile名称（修改：在Shapefile名称前添加县代码）
                     var resourceTypes = new Dictionary<string, string[]>
                     {
-                        { "森林", new[] { "SLZYZC", "SLZYZC_DLTB" } },
-                        { "草原", new[] { "CYZYZC", "CYZYZC_DLTB" } },
-                        { "湿地", new[] { "SDZYZC", "SDZYZC_DLTB" } }
+                        { "森林", new[] { $"({countyCode})SLZYZC", $"({countyCode})SLZYZC_DLTB" } },
+                        { "草原", new[] { $"({countyCode})CYZYZC", $"({countyCode})CYZYZC_DLTB" } },
+                        { "湿地", new[] { $"({countyCode})SDZYZC", $"({countyCode})SDZYZC_DLTB" } }
                     };
 
                     bool countySuccess = true;
@@ -1033,7 +1034,7 @@ namespace TestArcMapAddin2.Forms
                         string spatialDataPath = System.IO.Path.Combine(dataSetPath, resource.Key, "空间数据");
                         if (!Directory.Exists(spatialDataPath))
                         {
-                            MessageBox.Show($"{ countyName}的目录结构不完整，找不到路径：\n{spatialDataPath}\n\n请先使用生成成果结构功能创建正确的目录。", "目录错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show($"{countyName}的目录结构不完整，找不到路径：\n{spatialDataPath}\n\n请先使用生成成果结构功能创建正确的目录。", "目录错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             countySuccess = false;
                             break;
                         }
@@ -1596,7 +1597,7 @@ namespace TestArcMapAddin2.Forms
                         {
                             // 修改：使用县代码映射器获取真实的县代码
                             string countyCode = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyCode(countyName);
-                            string countyFolderName = $"{countyName}（{countyCode}）全民所有自然资源资产清查数据成果";
+                            string countyFolderName = $"{countyName}({countyCode})全民所有自然资源资产清查数据成果";
                             string countyFolderPath = System.IO.Path.Combine(rootPath, countyFolderName);
 
                             // 创建第三级目录
