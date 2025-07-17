@@ -203,7 +203,12 @@ namespace ForestResourcePlugin
         /// GDB要素类名称（仅在IsGdb=true时有效）
         /// </summary>
         public string FeatureClassName { get; set; }
-        
+
+        /// <summary>
+        /// 县代码（六位数）
+        /// </summary>
+        public string CountyCode { get; set; }
+
         /// <summary>
         /// 几何类型
         /// </summary>

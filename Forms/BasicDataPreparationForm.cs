@@ -15,17 +15,35 @@ using System.Reflection;
 using NPOI.SS.UserModel;
 using NPOI.HSSF.UserModel;
 using NPOI.XSSF.UserModel;
-using NPOI.SS.Util; 
+using NPOI.SS.Util;
+using System.Text.RegularExpressions; // 新增：用于县代码正则匹配
 
 namespace TestArcMapAddin2.Forms
 {
     public partial class BasicDataPreparationForm : Form
     {
-        // 修改私有字段 - 合并林草湿荒普查数据和城镇开发边界数据路径为一个
-        private string dataSourcePath = "";
+        // 修改私有字段 - 分离为两个独立的数据源路径
+        private string lcxzgxDataPath = "";        // 林草湿荒普查数据路径
+        private string czkfbjSlzyDataPath = "";    // 城镇开发边界和SLZY_DLTB数据路径
         private string outputGDBPath = "";
 
+        // 存储按县代码匹配的数据
+        private Dictionary<string, CountyDataInfo> countyDataMappings = new Dictionary<string, CountyDataInfo>();
+
         public ForestResourcePlugin.Basic ParentBasicForm { get; set;}
+
+        /// <summary>
+        /// 县级数据信息类 - 用于存储按县代码匹配的数据
+        /// </summary>
+        private class CountyDataInfo
+        {
+            public string CountyCode { get; set; }
+            public string CountyName { get; set; }
+            public List<ForestResourcePlugin.SourceDataFileInfo> LcxzgxFiles { get; set; } = new List<ForestResourcePlugin.SourceDataFileInfo>();
+            public List<ForestResourcePlugin.SourceDataFileInfo> CzkfbjFiles { get; set; } = new List<ForestResourcePlugin.SourceDataFileInfo>();
+            public List<ForestResourcePlugin.SourceDataFileInfo> SlzyDltbFiles { get; set; } = new List<ForestResourcePlugin.SourceDataFileInfo>();
+        }
+
         /// <summary>
         /// CGCS2000坐标系WKT定义
         /// </summary>
@@ -44,18 +62,28 @@ namespace TestArcMapAddin2.Forms
 
         private void InitializeFormState()
         {
-     
-
-            // 初始化合并后的数据源路径状态
-            if (!string.IsNullOrEmpty(dataSourcePath))
+            // 初始化林草湿荒普查数据源路径状态
+            if (!string.IsNullOrEmpty(lcxzgxDataPath))
             {
-                txtDataPath.Text = dataSourcePath;
+                txtDataPath.Text = lcxzgxDataPath;
                 txtDataPath.ForeColor = Color.DarkGreen;
             }
             else
             {
-                txtDataPath.Text = "请选择包含林草湿荒普查与城镇开发边界数据的文件夹";
+                txtDataPath.Text = "请选择包含林草湿荒普查数据的文件夹";
                 txtDataPath.ForeColor = Color.Gray;
+            }
+
+            // 初始化城镇开发边界和SLZY_DLTB数据源路径状态
+            if (!string.IsNullOrEmpty(czkfbjSlzyDataPath))
+            {
+                txtCzkfbjSlzyPath.Text = czkfbjSlzyDataPath;
+                txtCzkfbjSlzyPath.ForeColor = Color.DarkGreen;
+            }
+            else
+            {
+                txtCzkfbjSlzyPath.Text = "请选择包含城镇开发边界和SLZY_DLTB数据的文件夹";
+                txtCzkfbjSlzyPath.ForeColor = Color.Gray;
             }
 
             if (!string.IsNullOrEmpty(outputGDBPath))
@@ -75,7 +103,8 @@ namespace TestArcMapAddin2.Forms
         private void UpdateButtonStates()
         {
             bool hasWorkspace = !string.IsNullOrEmpty(SharedWorkflowState.WorkspacePath);
-            bool hasDataSource = !string.IsNullOrEmpty(dataSourcePath);
+            bool hasLcxzgxData = !string.IsNullOrEmpty(lcxzgxDataPath);
+            bool hasCzkfbjSlzyData = !string.IsNullOrEmpty(czkfbjSlzyDataPath);
             bool hasOutputGDB = !string.IsNullOrEmpty(outputGDBPath);
 
             // 基础数据源选择按钮始终启用
@@ -83,7 +112,7 @@ namespace TestArcMapAddin2.Forms
             btnBrowseOutputGDB.Enabled = true;
 
             // OK按钮需要所有必要信息都完成后才启用
-            bool allDataSourcesSelected = hasWorkspace && hasDataSource && hasOutputGDB;
+            bool allDataSourcesSelected = hasWorkspace && hasLcxzgxData && hasCzkfbjSlzyData && hasOutputGDB;
 
             btnOK.Enabled = allDataSourcesSelected;
         }
@@ -115,50 +144,86 @@ namespace TestArcMapAddin2.Forms
             UpdateButtonStates();
         }
 
-        // 合并数据源方法
+        // 修改：第一个按钮专门用于读取林草湿荒普查数据
         private void BtnBrowseData_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
-                dialog.Description = "选择包含林草湿荒普查与城镇开发边界数据的文件夹";
-                if (!string.IsNullOrEmpty(dataSourcePath))
+                dialog.Description = "选择包含林草湿荒普查数据（LCXZGX_P）的文件夹";
+                if (!string.IsNullOrEmpty(lcxzgxDataPath))
                 {
-                    dialog.SelectedPath = dataSourcePath;
+                    dialog.SelectedPath = lcxzgxDataPath;
                 }
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    dataSourcePath = dialog.SelectedPath;
-                    txtDataPath.Text = dataSourcePath;
+                    lcxzgxDataPath = dialog.SelectedPath;
+                    txtDataPath.Text = lcxzgxDataPath;
                     txtDataPath.ForeColor = Color.DarkGreen;
 
                     // 保存到共享状态中
-                    SharedWorkflowState.DataSourcePath = dataSourcePath;
+                    SharedWorkflowState.DataSourcePath = lcxzgxDataPath;
 
                     // 查找包含LCXZGX_P的文件（林草湿荒普查数据）
-                    List<ForestResourcePlugin.SourceDataFileInfo> lcxzgxFiles = FindFilesWithPattern(dataSourcePath, "LCXZGX_P");
-
-                    // 🔥 修复：直接使用新的 SourceDataFileInfo 类型
-                    ForestResourcePlugin.SharedDataManager.SetSourceDataFiles(lcxzgxFiles);
-
-                    // 查找包含CZKFBJ的文件（城镇开发边界数据）
-                    List<ForestResourcePlugin.SourceDataFileInfo> czkfbjFiles = FindFilesWithPattern(dataSourcePath, "CZKFBJ");
-
-                    // 🔥 修复：直接使用新的 SourceDataFileInfo 类型
-                    ForestResourcePlugin.SharedDataManager.SetCZKFBJFiles(czkfbjFiles);
-
-                    // 新增：查找包含SLZY_DLTB的文件（森林资源地类图斑数据）
-                    List<ForestResourcePlugin.SourceDataFileInfo> slzyDltbFiles = FindFilesWithPattern(dataSourcePath, "SLZY_DLTB");
-
-                    // 🔥 修复：直接使用新的 SourceDataFileInfo 类型
-                    ForestResourcePlugin.SharedDataManager.SetSLZYDLTBFiles(slzyDltbFiles);
+                    List<ForestResourcePlugin.SourceDataFileInfo> lcxzgxFiles = FindFilesWithPatternAndCountyCode(lcxzgxDataPath, "LCXZGX_P");
 
                     // 显示文件搜索结果
-                    int totalFiles = lcxzgxFiles.Count + czkfbjFiles.Count + slzyDltbFiles.Count;
+                    if (lcxzgxFiles.Count > 0)
+                    {
+                        MessageBox.Show($"找到 {lcxzgxFiles.Count} 个林草湿荒普查数据文件",
+                            "文件搜索结果", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        
+                        // 更新县级数据映射
+                        UpdateCountyDataMappingsForLcxzgx(lcxzgxFiles);
+                    }
+                    else
+                    {
+                        MessageBox.Show("未找到相关林草湿荒普查数据文件，请确认选择的文件夹是否正确。", "提示",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+
+                    UpdateButtonStates();
+                }
+            }
+        }
+
+        // 新增：第二个按钮专门用于读取城镇开发边界和SLZY_DLTB数据
+        private void BtnBrowseCzkfbjSlzyData_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = "选择包含城镇开发边界（CZKFBJ）和森林资源地类图斑（SLZY_DLTB）数据的文件夹";
+                if (!string.IsNullOrEmpty(czkfbjSlzyDataPath))
+                {
+                    dialog.SelectedPath = czkfbjSlzyDataPath;
+                }
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    czkfbjSlzyDataPath = dialog.SelectedPath;
+
+                    // 更新第二个文本框的显示
+                    txtCzkfbjSlzyPath.Text = czkfbjSlzyDataPath;
+                    txtCzkfbjSlzyPath.ForeColor = Color.DarkGreen;
+
+                    // 查找包含CZKFBJ的文件（城镇开发边界数据）
+                    List<ForestResourcePlugin.SourceDataFileInfo> czkfbjFiles = FindFilesWithPatternAndCountyCode(czkfbjSlzyDataPath, "CZKFBJ");
+
+                    // 查找包含SLZY_DLTB的文件（森林资源地类图斑数据）
+                    List<ForestResourcePlugin.SourceDataFileInfo> slzyDltbFiles = FindFilesWithPatternAndCountyCode(czkfbjSlzyDataPath, "SLZY_DLTB");
+
+                    // 显示文件搜索结果
+                    int totalFiles = czkfbjFiles.Count + slzyDltbFiles.Count;
                     if (totalFiles > 0)
                     {
-                        MessageBox.Show($"在同一文件夹中找到：\n- {lcxzgxFiles.Count} 个林草湿荒普查数据文件\n- {czkfbjFiles.Count} 个城镇开发边界数据文件\n- {slzyDltbFiles.Count} 个森林资源地类图斑数据文件",
+                        MessageBox.Show($"找到：\n- {czkfbjFiles.Count} 个城镇开发边界数据文件\n- {slzyDltbFiles.Count} 个森林资源地类图斑数据文件",
                             "文件搜索结果", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        // 更新县级数据映射
+                        UpdateCountyDataMappingsForCzkfbjSlzy(czkfbjFiles, slzyDltbFiles);
+
+                        // 执行县代码匹配并更新SharedDataManager
+                        PerformCountyCodeMatching();
                     }
                     else
                     {
@@ -207,9 +272,15 @@ namespace TestArcMapAddin2.Forms
                 return;
             }
 
-            if (string.IsNullOrEmpty(dataSourcePath))
+            if (string.IsNullOrEmpty(lcxzgxDataPath))
             {
-                MessageBox.Show("请选择数据源文件夹。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("请选择林草湿荒普查数据文件夹。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(czkfbjSlzyDataPath))
+            {
+                MessageBox.Show("请选择城镇开发边界和SLZY_DLTB数据文件夹。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -218,23 +289,6 @@ namespace TestArcMapAddin2.Forms
                 MessageBox.Show("请选择输出结果GDB路径。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-
-            //为每个县创建数据库及其成果表
-            /*  if (!String.IsNullOrEmpty(dataSourcePath))
-              {
-                  System.IO.DirectoryInfo theFolder = new System.IO.DirectoryInfo(dataSourcePath);
-                  System.IO.DirectoryInfo[] dir_Countries = theFolder.GetDirectories();
-                  foreach (System.IO.DirectoryInfo dirInfo in dir_Countries) {
-                      String curDir = dirInfo.FullName;
-                      String countryName = curDir.Substring(curDir.LastIndexOf('\\')+1);
-                      if(!CreateTable4Country(outputGDBPath, countryName))
-                      {
-                          MessageBox.Show("创建"+countryName+"数据库失败");
-                      }
-                  }
-              }*/
-
-
 
             this.DialogResult = DialogResult.OK;
             this.Close();
@@ -247,7 +301,8 @@ namespace TestArcMapAddin2.Forms
         }
 
         // 更新公共属性，供外部访问选择的路径
-        public string DataSourcePath => dataSourcePath;
+        public string LcxzgxDataPath => lcxzgxDataPath;
+        public string CzkfbjSlzyDataPath => czkfbjSlzyDataPath;
         public string OutputGDBPath => outputGDBPath;
 
         private void BasicDataPreparationForm_Load(object sender, EventArgs e)
@@ -256,83 +311,122 @@ namespace TestArcMapAddin2.Forms
         }
 
         /// <summary>
-        /// 提取路径中的第一级文件夹名称（县名）
+        /// 从路径中提取六位数县代码的方法 - 一旦找到县代码立即停止搜索
         /// </summary>
-        /// <param name="filePath">文件路径</param>
-        /// <param name="rootDir">根目录</param>
-        /// <returns>第一级文件夹名称（县名）</returns>
-        private string ExtractCountyNameFromPath(string filePath, string rootDir)
+        /// <param name="path">文件或目录路径</param>
+        /// <param name="rootDir">根目录路径</param>
+        /// <returns>提取的县代码，如果未找到则返回null</returns>
+        private string ExtractCountyCodeFromPath(string path, string rootDir)
         {
             try
             {
                 // 规范化路径
                 string normalizedRoot = System.IO.Path.GetFullPath(rootDir).TrimEnd('\\', '/');
-                string normalizedFile = System.IO.Path.GetFullPath(filePath);
+                string normalizedPath = System.IO.Path.GetFullPath(path);
 
                 // 计算相对路径
                 string relativePath = "";
-                if (normalizedFile.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase))
+                if (normalizedPath.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase))
                 {
-                    relativePath = normalizedFile.Substring(normalizedRoot.Length).TrimStart('\\', '/');
+                    relativePath = normalizedPath.Substring(normalizedRoot.Length).TrimStart('\\', '/');
                 }
                 else
                 {
-                    // 路径不匹配，尝试从完整路径提取
-                    System.Diagnostics.Debug.WriteLine($"警告: 文件路径 {normalizedFile} 不在根目录 {normalizedRoot} 下");
-                    return System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(filePath));
+                    // 如果路径不在根目录下，直接使用完整路径
+                    relativePath = normalizedPath;
                 }
 
-                // 分割路径并获取第一级目录名称（县名）
+                // 正则表达式匹配六位连续数字
+                Regex countyCodePattern = new Regex(@"\b(\d{6})\b");
+                
+                // 分割路径并逐级检查目录名
                 string[] pathParts = relativePath.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
-                if (pathParts.Length >= 1)
+                
+                foreach (string part in pathParts)
                 {
-                    // 返回第一级目录名称，这应该是县名
-                    string countyName = pathParts[0];
-                    System.Diagnostics.Debug.WriteLine($"从路径 {relativePath} 提取县名: {countyName}");
-                    return countyName;
+                    Match match = countyCodePattern.Match(part);
+                    if (match.Success)
+                    {
+                        string countyCode = match.Groups[1].Value;
+                        System.Diagnostics.Debug.WriteLine($"从路径 {relativePath} 中提取到县代码: {countyCode}");
+                        return countyCode;
+                    }
                 }
-                else
+
+                // 如果目录名中没有找到，检查完整的文件名
+                string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
+                Match fileMatch = countyCodePattern.Match(fileName);
+                if (fileMatch.Success)
                 {
-                    // 兜底方案：如果路径解析失败，使用文件名
-                    string fallbackName = System.IO.Path.GetFileNameWithoutExtension(filePath);
-                    System.Diagnostics.Debug.WriteLine($"警告: 无法从路径提取县名，使用文件名: {fallbackName}");
-                    return fallbackName;
+                    string countyCode = fileMatch.Groups[1].Value;
+                    System.Diagnostics.Debug.WriteLine($"从文件名 {fileName} 中提取到县代码: {countyCode}");
+                    return countyCode;
                 }
+
+                System.Diagnostics.Debug.WriteLine($"警告: 从路径 {relativePath} 中未找到六位数县代码");
+                return null;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"提取县名时出错: {ex.Message}");
-                return System.IO.Path.GetFileNameWithoutExtension(filePath);
+                System.Diagnostics.Debug.WriteLine($"提取县代码时出错: {ex.Message}");
+                return null;
             }
         }
 
         /// <summary>
-        /// 查找指定目录下名称包含特定字符串的文件
+        /// 从县代码中提取县名的方法
+        /// </summary>
+        /// <param name="countyCode">六位数县代码</param>
+        /// <returns>县名</returns>
+        private string GetCountyNameFromCode(string countyCode)
+        {
+            try
+            {
+                // 使用县代码映射器获取县名
+                return ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyNameFromCode(countyCode);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"根据县代码 {countyCode} 获取县名时出错: {ex.Message}");
+                return $"未知县({countyCode})";
+            }
+        }
+
+        /// <summary>
+        /// 查找指定目录下名称包含特定字符串的文件，并按县代码进行分类
         /// </summary>
         /// <param name="rootDir">根目录</param>
         /// <param name="pattern">名称匹配模式</param>
         /// <returns>文件信息列表</returns>
-        private List<ForestResourcePlugin.SourceDataFileInfo> FindFilesWithPattern(string rootDir, string pattern)
+        private List<ForestResourcePlugin.SourceDataFileInfo> FindFilesWithPatternAndCountyCode(string rootDir, string pattern)
         {
             var result = new List<ForestResourcePlugin.SourceDataFileInfo>();
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"开始在 {rootDir} 目录下查找包含 {pattern} 的文件");
+                System.Diagnostics.Debug.WriteLine($"开始在 {rootDir} 目录下查找包含 {pattern} 的文件（按县代码分类）");
 
                 // 1. 首先查找GDB要素类
                 System.Diagnostics.Debug.WriteLine("第1步：查找GDB要素类...");
                 var gdbFeatureClasses = ForestResourcePlugin.GdbFeatureClassFinder.FindFeatureClassesWithPatternAsSourceData(
                     rootDir, pattern, ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon);
 
-                // 将找到的GDB要素类添加到结果中
-                result.AddRange(gdbFeatureClasses);
-                System.Diagnostics.Debug.WriteLine($"找到 {gdbFeatureClasses.Count} 个GDB要素类");
+                // 为GDB要素类提取县代码并设置DisplayName
+                foreach (var gdbItem in gdbFeatureClasses)
+                {
+                    string countyCode = ExtractCountyCodeFromPath(gdbItem.FullPath, rootDir);
+                    if (!string.IsNullOrEmpty(countyCode))
+                    {
+                        gdbItem.CountyCode = countyCode;
+                        gdbItem.DisplayName = GetCountyNameFromCode(countyCode);
+                        result.Add(gdbItem);
+                        System.Diagnostics.Debug.WriteLine($"GDB要素类匹配: {gdbItem.FullPath}, 县代码: {countyCode}, 县名: {gdbItem.DisplayName}");
+                    }
+                }
 
                 // 2. 再查找Shapefile文件
                 System.Diagnostics.Debug.WriteLine("第2步：查找Shapefile文件...");
 
-                // 确保目录存在
                 if (Directory.Exists(rootDir))
                 {
                     string[] files = System.IO.Directory.GetFiles(rootDir, "*.shp", System.IO.SearchOption.AllDirectories);
@@ -344,19 +438,28 @@ namespace TestArcMapAddin2.Forms
                     {
                         if (filePath.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
-                            // 提取县名（第一级文件夹名称）
-                            string countyName = ExtractCountyNameFromPath(filePath, rootDir);
-
-                            result.Add(new ForestResourcePlugin.SourceDataFileInfo
+                            // 提取县代码
+                            string countyCode = ExtractCountyCodeFromPath(filePath, rootDir);
+                            if (!string.IsNullOrEmpty(countyCode))
                             {
-                                FullPath = filePath,
-                                DisplayName = countyName,
-                                IsGdb = false,
-                                GeometryType = ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon // 假设为面
-                            });
+                                string countyName = GetCountyNameFromCode(countyCode);
 
-                            matchCount++;
-                            System.Diagnostics.Debug.WriteLine($"找到匹配的Shapefile文件[{matchCount}]: {filePath}, 县名: {countyName}");
+                                result.Add(new ForestResourcePlugin.SourceDataFileInfo
+                                {
+                                    FullPath = filePath,
+                                    DisplayName = countyName,
+                                    CountyCode = countyCode,
+                                    IsGdb = false,
+                                    GeometryType = ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon
+                                });
+
+                                matchCount++;
+                                System.Diagnostics.Debug.WriteLine($"Shapefile匹配[{matchCount}]: {filePath}, 县代码: {countyCode}, 县名: {countyName}");
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine($"警告: 文件 {filePath} 中未找到县代码，跳过");
+                            }
                         }
                     }
                 }
@@ -365,14 +468,7 @@ namespace TestArcMapAddin2.Forms
                     System.Diagnostics.Debug.WriteLine($"警告: 目录 {rootDir} 不存在");
                 }
 
-                System.Diagnostics.Debug.WriteLine($"共找到 {result.Count} 个匹配文件 (GDB要素类: {gdbFeatureClasses.Count}, Shapefile: {result.Count - gdbFeatureClasses.Count})");
-
-                // 输出详细的结果信息
-                for (int i = 0; i < result.Count; i++)
-                {
-                    var item = result[i];
-                    System.Diagnostics.Debug.WriteLine($"结果[{i + 1}]: {item.DisplayName}, 路径: {item.FullPath}, 类型: {(item.IsGdb ? "GDB要素类" : "Shapefile")}");
-                }
+                System.Diagnostics.Debug.WriteLine($"共找到 {result.Count} 个匹配文件，所有文件都包含有效的县代码");
             }
             catch (Exception ex)
             {
@@ -385,18 +481,139 @@ namespace TestArcMapAddin2.Forms
         }
 
         /// <summary>
-        /// 提取路径中的第二级文件夹名称
+        /// 更新县级数据映射中的林草湿荒普查数据
         /// </summary>
-        /// <param name="filePath">文件路径</param>
-        /// <param name="rootDir">根目录</param>
-        /// <returns>第二级文件夹名称</returns>
-        [Obsolete("此方法已过时，请使用 ExtractCountyNameFromPath 方法")]
-        private string ExtractSecondLevelFolderName(string filePath, string rootDir)
+        /// <param name="lcxzgxFiles">林草湿荒普查数据文件列表</param>
+        private void UpdateCountyDataMappingsForLcxzgx(List<ForestResourcePlugin.SourceDataFileInfo> lcxzgxFiles)
         {
-            // 保留原方法以维持向后兼容性，但标记为过时
-            // 现在调用新的县名提取方法
-            return ExtractCountyNameFromPath(filePath, rootDir);
+            foreach (var file in lcxzgxFiles)
+            {
+                if (!string.IsNullOrEmpty(file.CountyCode))
+                {
+                    if (!countyDataMappings.ContainsKey(file.CountyCode))
+                    {
+                        countyDataMappings[file.CountyCode] = new CountyDataInfo
+                        {
+                            CountyCode = file.CountyCode,
+                            CountyName = file.DisplayName
+                        };
+                    }
+
+                    countyDataMappings[file.CountyCode].LcxzgxFiles.Add(file);
+                }
+            }
+            
+            System.Diagnostics.Debug.WriteLine($"已更新 {countyDataMappings.Count} 个县的林草湿荒普查数据映射");
         }
+
+        /// <summary>
+        /// 更新县级数据映射中的城镇开发边界和SLZY_DLTB数据
+        /// </summary>
+        /// <param name="czkfbjFiles">城镇开发边界数据文件列表</param>
+        /// <param name="slzyDltbFiles">SLZY_DLTB数据文件列表</param>
+        private void UpdateCountyDataMappingsForCzkfbjSlzy(List<ForestResourcePlugin.SourceDataFileInfo> czkfbjFiles, List<ForestResourcePlugin.SourceDataFileInfo> slzyDltbFiles)
+        {
+            // 处理城镇开发边界数据
+            foreach (var file in czkfbjFiles)
+            {
+                if (!string.IsNullOrEmpty(file.CountyCode))
+                {
+                    if (!countyDataMappings.ContainsKey(file.CountyCode))
+                    {
+                        countyDataMappings[file.CountyCode] = new CountyDataInfo
+                        {
+                            CountyCode = file.CountyCode,
+                            CountyName = file.DisplayName
+                        };
+                    }
+
+                    countyDataMappings[file.CountyCode].CzkfbjFiles.Add(file);
+                }
+            }
+
+            // 处理SLZY_DLTB数据
+            foreach (var file in slzyDltbFiles)
+            {
+                if (!string.IsNullOrEmpty(file.CountyCode))
+                {
+                    if (!countyDataMappings.ContainsKey(file.CountyCode))
+                    {
+                        countyDataMappings[file.CountyCode] = new CountyDataInfo
+                        {
+                            CountyCode = file.CountyCode,
+                            CountyName = file.DisplayName
+                        };
+                    }
+
+                    countyDataMappings[file.CountyCode].SlzyDltbFiles.Add(file);
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLine($"已更新县级数据映射，包含CZKFBJ和SLZY_DLTB数据");
+        }
+
+        /// <summary>
+        /// 执行县代码匹配并更新SharedDataManager
+        /// </summary>
+        private void PerformCountyCodeMatching()
+        {
+            try
+            {
+                // 收集所有匹配的数据
+                var allLcxzgxFiles = new List<ForestResourcePlugin.SourceDataFileInfo>();
+                var allCzkfbjFiles = new List<ForestResourcePlugin.SourceDataFileInfo>();
+                var allSlzyDltbFiles = new List<ForestResourcePlugin.SourceDataFileInfo>();
+
+                int matchedCounties = 0;
+                int totalCounties = countyDataMappings.Count;
+
+                foreach (var countyMapping in countyDataMappings.Values)
+                {
+                    bool hasLcxzgx = countyMapping.LcxzgxFiles.Count > 0;
+                    bool hasCzkfbj = countyMapping.CzkfbjFiles.Count > 0;
+                    bool hasSlzy = countyMapping.SlzyDltbFiles.Count > 0;
+
+                    if (hasLcxzgx && (hasCzkfbj || hasSlzy))
+                    {
+                        // 该县有匹配的数据
+                        allLcxzgxFiles.AddRange(countyMapping.LcxzgxFiles);
+                        allCzkfbjFiles.AddRange(countyMapping.CzkfbjFiles);
+                        allSlzyDltbFiles.AddRange(countyMapping.SlzyDltbFiles);
+                        matchedCounties++;
+
+                        System.Diagnostics.Debug.WriteLine($"县代码 {countyMapping.CountyCode}({countyMapping.CountyName}) 数据匹配成功: " +
+                            $"LCXZGX={countyMapping.LcxzgxFiles.Count}, CZKFBJ={countyMapping.CzkfbjFiles.Count}, SLZY_DLTB={countyMapping.SlzyDltbFiles.Count}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"警告: 县代码 {countyMapping.CountyCode}({countyMapping.CountyName}) 数据不完整: " +
+                            $"LCXZGX={countyMapping.LcxzgxFiles.Count}, CZKFBJ={countyMapping.CzkfbjFiles.Count}, SLZY_DLTB={countyMapping.SlzyDltbFiles.Count}");
+                    }
+                }
+
+                // 更新SharedDataManager
+                ForestResourcePlugin.SharedDataManager.SetSourceDataFiles(allLcxzgxFiles);
+                ForestResourcePlugin.SharedDataManager.SetCZKFBJFiles(allCzkfbjFiles);
+                ForestResourcePlugin.SharedDataManager.SetSLZYDLTBFiles(allSlzyDltbFiles);
+
+                // 显示匹配结果
+                MessageBox.Show($"县代码匹配完成！\n\n成功匹配 {matchedCounties}/{totalCounties} 个县的数据\n" +
+                    $"- 林草湿荒普查数据: {allLcxzgxFiles.Count} 个文件\n" +
+                    $"- 城镇开发边界数据: {allCzkfbjFiles.Count} 个文件\n" +
+                    $"- 森林资源地类图斑数据: {allSlzyDltbFiles.Count} 个文件",
+                    "匹配结果", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                System.Diagnostics.Debug.WriteLine($"县代码匹配完成: 匹配 {matchedCounties}/{totalCounties} 个县");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"执行县代码匹配时出错: {ex.Message}");
+                MessageBox.Show($"县代码匹配时出错: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // 保留现有的其他方法，但更新为使用县代码匹配的数据...
+        // [保留所有其他现有方法，如CreateTable4Country, CreateEmptyShapefile等，这里为了简洁省略]
 
         /// <summary>
         /// 为县创建空的Shapefile文件
@@ -446,14 +663,6 @@ namespace TestArcMapAddin2.Forms
             return false;
         }
 
-        //根据成果表名创建表
-        /// <summary>
-        /// 创建空的Shapefile
-        /// </summary>
-        /// <param name="shapefileName">Shapefile名称</param>
-        /// <param name="workspace">Shapefile工作空间</param>
-        /// <returns>是否成功</returns>
-         //根据成果表名创建表
         /// <summary>
         /// 创建空的Shapefile
         /// </summary>
@@ -536,8 +745,6 @@ namespace TestArcMapAddin2.Forms
                 }
 
                 fields = (IFields)fieldsEdit;
-
-                // 创建Shapefile
 
                 // 创建Shapefile
                 featureClass = featureWorkspace.CreateFeatureClass(
@@ -887,6 +1094,7 @@ namespace TestArcMapAddin2.Forms
             public string Format { get; set; }
             public string Path { get; set; }
         }
+
         /// <summary>
         /// 从单个数据源文件获取空间参考
         /// </summary>
@@ -951,6 +1159,7 @@ namespace TestArcMapAddin2.Forms
             }
             return null;
         }
+
         private void btnResultExcel_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(outputGDBPath))

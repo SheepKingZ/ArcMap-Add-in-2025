@@ -554,6 +554,9 @@ namespace ForestResourcePlugin
                 int xzqdmIndex = targetFeatureClass.FindField("XZQDM");
                 int hsjgIndex = targetFeatureClass.FindField("HSJG");
 
+                // 🔥 新增：获取JJJZ（经济价值）字段索引
+                int jjjzIndex = targetFeatureClass.FindField("JJJZ");
+
                 // 获取对应县的LDHSJG数据
                 var ldhsjgData = GetLDHSJGDataForCounty(countyName);
                 if (ldhsjgData.featureClass != null)
@@ -638,6 +641,9 @@ namespace ForestResourcePlugin
                             System.Diagnostics.Debug.WriteLine($"最终CZKFBJMJ值: {intersectionArea:F2}");
                         }
 
+                        // 声明HSJG值变量（用于后续JJJZ计算）
+                        object hsjgValue = null;
+
                         // 处理LDHSJG相关字段
                         if (ldhsjgFeatureClass != null)
                         {
@@ -666,7 +672,42 @@ namespace ForestResourcePlugin
                             if (hsjgIndex != -1 && ldhsjgValues.HSJG != null)
                             {
                                 targetBuffer.set_Value(hsjgIndex, ldhsjgValues.HSJG);
+                                hsjgValue = ldhsjgValues.HSJG; // 保存HSJG值用于JJJZ计算
                             }
+                        }
+
+                        // 🔥 新增：计算JJJZ字段（经济价值 = GTDCTBMJ * HSJG）
+                        if (jjjzIndex != -1)
+                        {
+                            double jjjzValue = 0.0;
+
+                            // 获取GTDCTBMJ值
+                            object gtdctbmjValue = targetBuffer.get_Value(gtdctbmjIndex);
+                            double gtdctbmjArea = 0.0;
+
+                            if (gtdctbmjValue != null && double.TryParse(gtdctbmjValue.ToString(), out gtdctbmjArea))
+                            {
+                                // 获取HSJG值
+                                double hsjgNumber = 0.0;
+                                if (hsjgValue != null && double.TryParse(hsjgValue.ToString(), out hsjgNumber))
+                                {
+                                    // 计算经济价值：GTDCTBMJ * HSJG
+                                    jjjzValue = gtdctbmjArea * hsjgNumber;
+                                    System.Diagnostics.Debug.WriteLine($"JJJZ计算: GTDCTBMJ({gtdctbmjArea:F2}) * HSJG({hsjgNumber:F2}) = {jjjzValue:F2}");
+                                }
+                                else
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"警告: 无法获取有效的HSJG值，JJJZ将设为0");
+                                }
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine($"警告: 无法获取有效的GTDCTBMJ值，JJJZ将设为0");
+                            }
+
+                            // 设置JJJZ字段值
+                            targetBuffer.set_Value(jjjzIndex, jjjzValue);
+                            System.Diagnostics.Debug.WriteLine($"最终JJJZ值: {jjjzValue:F2}");
                         }
 
                         // 插入要素

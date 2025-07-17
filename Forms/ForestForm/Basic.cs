@@ -2243,6 +2243,11 @@ namespace ForestResourcePlugin
         /// </summary>
         /// <param name="rootPath">根文件夹路径</param>
         /// <returns>匹配结果列表</returns>
+        /// <summary>
+        /// 查找并匹配LDHSJG文件到对应的县
+        /// </summary>
+        /// <param name="rootPath">根文件夹路径</param>
+        /// <returns>匹配结果列表</returns>
         private List<LDHSJGFileInfo> FindAndMatchLDHSJGFiles(string rootPath)
         {
             var ldhsjgFiles = new List<LDHSJGFileInfo>();
@@ -2255,65 +2260,58 @@ namespace ForestResourcePlugin
                 var availableCounties = GetCountyNamesFromDataSources();
                 System.Diagnostics.Debug.WriteLine($"可用县名: {string.Join(", ", availableCounties)}");
 
-                // 遍历根目录下的所有文件夹（第一级）
+                // 直接遍历根目录下的所有文件夹（第一级），这些文件夹名称包含县名
                 var firstLevelDirectories = Directory.GetDirectories(rootPath);
                 System.Diagnostics.Debug.WriteLine($"找到 {firstLevelDirectories.Length} 个第一级目录");
 
                 foreach (var firstLevelDir in firstLevelDirectories)
                 {
-                    // 遍历第二级目录（这些应该包含县名）
-                    var secondLevelDirectories = Directory.GetDirectories(firstLevelDir);
-                    System.Diagnostics.Debug.WriteLine($"在 {System.IO.Path.GetFileName(firstLevelDir)} 中找到 {secondLevelDirectories.Length} 个第二级目录");
+                    string directoryName = System.IO.Path.GetFileName(firstLevelDir);
+                    System.Diagnostics.Debug.WriteLine($"正在处理第一级目录: {directoryName}");
 
-                    foreach (var secondLevelDir in secondLevelDirectories)
+                    // 尝试从第一级目录名中提取县名
+                    string extractedCountyName = ExtractCountyNameFromDirectory(directoryName, availableCounties);
+
+                    if (!string.IsNullOrEmpty(extractedCountyName))
                     {
-                        string directoryName = System.IO.Path.GetFileName(secondLevelDir);
-                        System.Diagnostics.Debug.WriteLine($"正在处理第二级目录: {directoryName}");
+                        System.Diagnostics.Debug.WriteLine($"成功匹配县名: {directoryName} -> {extractedCountyName}");
 
-                        // 尝试从目录名中提取县名
-                        string extractedCountyName = ExtractCountyNameFromDirectory(directoryName, availableCounties);
+                        // 在该目录及其子目录中查找LDHSJG文件
+                        var foundFiles = FindLDHSJGFilesInDirectory(firstLevelDir);
 
-                        if (!string.IsNullOrEmpty(extractedCountyName))
+                        foreach (var filePath in foundFiles)
                         {
-                            System.Diagnostics.Debug.WriteLine($"成功匹配县名: {directoryName} -> {extractedCountyName}");
-
-                            // 在该目录及其子目录中查找LDHSJG文件
-                            var foundFiles = FindLDHSJGFilesInDirectory(secondLevelDir);
-
-                            foreach (var filePath in foundFiles)
+                            var ldhsjgInfo = new LDHSJGFileInfo
                             {
-                                var ldhsjgInfo = new LDHSJGFileInfo
-                                {
-                                    FilePath = filePath,
-                                    CountyName = extractedCountyName,
-                                    DirectoryName = directoryName,
-                                    FileName = System.IO.Path.GetFileNameWithoutExtension(filePath),
-                                    IsMatched = true
-                                };
+                                FilePath = filePath,
+                                CountyName = extractedCountyName,
+                                DirectoryName = directoryName,
+                                FileName = System.IO.Path.GetFileNameWithoutExtension(filePath),
+                                IsMatched = true
+                            };
 
-                                ldhsjgFiles.Add(ldhsjgInfo);
-                                System.Diagnostics.Debug.WriteLine($"添加LDHSJG文件: {ldhsjgInfo.FileName} -> {extractedCountyName}");
-                            }
+                            ldhsjgFiles.Add(ldhsjgInfo);
+                            System.Diagnostics.Debug.WriteLine($"添加LDHSJG文件: {ldhsjgInfo.FileName} -> {extractedCountyName}");
                         }
-                        else
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"未能匹配县名: {directoryName}");
+
+                        // 即使未匹配到县名，也记录找到的LDHSJG文件
+                        var foundFiles = FindLDHSJGFilesInDirectory(firstLevelDir);
+                        foreach (var filePath in foundFiles)
                         {
-                            System.Diagnostics.Debug.WriteLine($"未能匹配县名: {directoryName}");
-
-                            // 即使未匹配到县名，也记录找到的LDHSJG文件
-                            var foundFiles = FindLDHSJGFilesInDirectory(secondLevelDir);
-                            foreach (var filePath in foundFiles)
+                            var ldhsjgInfo = new LDHSJGFileInfo
                             {
-                                var ldhsjgInfo = new LDHSJGFileInfo
-                                {
-                                    FilePath = filePath,
-                                    CountyName = "未匹配",
-                                    DirectoryName = directoryName,
-                                    FileName = System.IO.Path.GetFileNameWithoutExtension(filePath),
-                                    IsMatched = false
-                                };
+                                FilePath = filePath,
+                                CountyName = "未匹配",
+                                DirectoryName = directoryName,
+                                FileName = System.IO.Path.GetFileNameWithoutExtension(filePath),
+                                IsMatched = false
+                            };
 
-                                ldhsjgFiles.Add(ldhsjgInfo);
-                            }
+                            ldhsjgFiles.Add(ldhsjgInfo);
                         }
                     }
                 }

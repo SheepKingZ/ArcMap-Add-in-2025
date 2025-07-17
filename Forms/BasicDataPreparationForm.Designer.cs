@@ -3,15 +3,21 @@ namespace TestArcMapAddin2.Forms
     partial class BasicDataPreparationForm
     {
         private System.ComponentModel.IContainer components = null;
-        
-        // 修改控件声明 - 合并两个数据源为一个
+
+        // 修改控件声明 - 分离两个数据源
         private System.Windows.Forms.Label lblDataSource;
         private System.Windows.Forms.TextBox txtDataPath;
         private System.Windows.Forms.Button btnBrowseData;
+
+        // 新增：城镇开发边界和SLZY_DLTB数据源控件
+        private System.Windows.Forms.Label lblCzkfbjSlzyDataSource;
+        private System.Windows.Forms.TextBox txtCzkfbjSlzyPath;
+        private System.Windows.Forms.Button btnBrowseCzkfbjSlzyData;
+
         private System.Windows.Forms.Label lblOutputGDBPath;
         private System.Windows.Forms.TextBox txtOutputGDBPath;
         private System.Windows.Forms.Button btnBrowseOutputGDB;
-        
+
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Panel topPanel;
@@ -35,6 +41,9 @@ namespace TestArcMapAddin2.Forms
             this.lblDataSource = new System.Windows.Forms.Label();
             this.txtDataPath = new System.Windows.Forms.TextBox();
             this.btnBrowseData = new System.Windows.Forms.Button();
+            this.lblCzkfbjSlzyDataSource = new System.Windows.Forms.Label();
+            this.txtCzkfbjSlzyPath = new System.Windows.Forms.TextBox();
+            this.btnBrowseCzkfbjSlzyData = new System.Windows.Forms.Button();
             this.lblOutputGDBPath = new System.Windows.Forms.Label();
             this.txtOutputGDBPath = new System.Windows.Forms.TextBox();
             this.btnBrowseOutputGDB = new System.Windows.Forms.Button();
@@ -54,6 +63,9 @@ namespace TestArcMapAddin2.Forms
             this.topPanel.Controls.Add(this.lblDataSource);
             this.topPanel.Controls.Add(this.txtDataPath);
             this.topPanel.Controls.Add(this.btnBrowseData);
+            this.topPanel.Controls.Add(this.lblCzkfbjSlzyDataSource);
+            this.topPanel.Controls.Add(this.txtCzkfbjSlzyPath);
+            this.topPanel.Controls.Add(this.btnBrowseCzkfbjSlzyData);
             this.topPanel.Controls.Add(this.lblOutputGDBPath);
             this.topPanel.Controls.Add(this.txtOutputGDBPath);
             this.topPanel.Controls.Add(this.btnBrowseOutputGDB);
@@ -87,7 +99,7 @@ namespace TestArcMapAddin2.Forms
             this.lblDataSource.Name = "lblDataSource";
             this.lblDataSource.Size = new System.Drawing.Size(560, 30);
             this.lblDataSource.TabIndex = 5;
-            this.lblDataSource.Text = "基础数据源（包含林草湿荒普查数据与城镇开发边界数据）：";
+            this.lblDataSource.Text = "林草湿荒普查数据源（LCXZGX_P）：";
             this.lblDataSource.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // txtDataPath
@@ -99,7 +111,7 @@ namespace TestArcMapAddin2.Forms
             this.txtDataPath.ReadOnly = true;
             this.txtDataPath.Size = new System.Drawing.Size(808, 28);
             this.txtDataPath.TabIndex = 6;
-            this.txtDataPath.Text = "请选择包含林草湿荒普查与城镇开发边界数据的文件夹";
+            this.txtDataPath.Text = "请选择包含林草湿荒普查数据的文件夹";
             // 
             // btnBrowseData
             // 
@@ -113,11 +125,46 @@ namespace TestArcMapAddin2.Forms
             this.btnBrowseData.UseVisualStyleBackColor = true;
             this.btnBrowseData.Click += new System.EventHandler(this.BtnBrowseData_Click);
             // 
+            // lblCzkfbjSlzyDataSource
+            // 
+            this.lblCzkfbjSlzyDataSource.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lblCzkfbjSlzyDataSource.ForeColor = System.Drawing.Color.Black;
+            this.lblCzkfbjSlzyDataSource.Location = new System.Drawing.Point(19, 154);
+            this.lblCzkfbjSlzyDataSource.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblCzkfbjSlzyDataSource.Name = "lblCzkfbjSlzyDataSource";
+            this.lblCzkfbjSlzyDataSource.Size = new System.Drawing.Size(560, 30);
+            this.lblCzkfbjSlzyDataSource.TabIndex = 8;
+            this.lblCzkfbjSlzyDataSource.Text = "城镇开发边界与森林资源地类图斑数据源（CZKFBJ、SLZY_DLTB）：";
+            this.lblCzkfbjSlzyDataSource.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // txtCzkfbjSlzyPath
+            // 
+            this.txtCzkfbjSlzyPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.txtCzkfbjSlzyPath.Location = new System.Drawing.Point(19, 192);
+            this.txtCzkfbjSlzyPath.Margin = new System.Windows.Forms.Padding(4);
+            this.txtCzkfbjSlzyPath.Name = "txtCzkfbjSlzyPath";
+            this.txtCzkfbjSlzyPath.ReadOnly = true;
+            this.txtCzkfbjSlzyPath.Size = new System.Drawing.Size(808, 28);
+            this.txtCzkfbjSlzyPath.TabIndex = 9;
+            this.txtCzkfbjSlzyPath.Text = "请选择包含城镇开发边界和SLZY_DLTB数据的文件夹";
+            // 
+            // btnBrowseCzkfbjSlzyData
+            // 
+            this.btnBrowseCzkfbjSlzyData.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnBrowseCzkfbjSlzyData.Location = new System.Drawing.Point(852, 192);
+            this.btnBrowseCzkfbjSlzyData.Margin = new System.Windows.Forms.Padding(4);
+            this.btnBrowseCzkfbjSlzyData.Name = "btnBrowseCzkfbjSlzyData";
+            this.btnBrowseCzkfbjSlzyData.Size = new System.Drawing.Size(105, 34);
+            this.btnBrowseCzkfbjSlzyData.TabIndex = 10;
+            this.btnBrowseCzkfbjSlzyData.Text = "浏览...";
+            this.btnBrowseCzkfbjSlzyData.UseVisualStyleBackColor = true;
+            this.btnBrowseCzkfbjSlzyData.Click += new System.EventHandler(this.BtnBrowseCzkfbjSlzyData_Click);
+            // 
             // lblOutputGDBPath
             // 
             this.lblOutputGDBPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblOutputGDBPath.ForeColor = System.Drawing.Color.Black;
-            this.lblOutputGDBPath.Location = new System.Drawing.Point(19, 164);
+            this.lblOutputGDBPath.Location = new System.Drawing.Point(19, 234);
             this.lblOutputGDBPath.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblOutputGDBPath.Name = "lblOutputGDBPath";
             this.lblOutputGDBPath.Size = new System.Drawing.Size(225, 30);
@@ -129,7 +176,7 @@ namespace TestArcMapAddin2.Forms
             // txtOutputGDBPath
             // 
             this.txtOutputGDBPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.txtOutputGDBPath.Location = new System.Drawing.Point(19, 202);
+            this.txtOutputGDBPath.Location = new System.Drawing.Point(19, 272);
             this.txtOutputGDBPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtOutputGDBPath.Name = "txtOutputGDBPath";
             this.txtOutputGDBPath.ReadOnly = true;
@@ -140,7 +187,7 @@ namespace TestArcMapAddin2.Forms
             // btnBrowseOutputGDB
             // 
             this.btnBrowseOutputGDB.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnBrowseOutputGDB.Location = new System.Drawing.Point(852, 202);
+            this.btnBrowseOutputGDB.Location = new System.Drawing.Point(852, 272);
             this.btnBrowseOutputGDB.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseOutputGDB.Name = "btnBrowseOutputGDB";
             this.btnBrowseOutputGDB.Size = new System.Drawing.Size(105, 34);
