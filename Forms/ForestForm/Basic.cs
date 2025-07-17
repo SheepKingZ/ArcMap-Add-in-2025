@@ -2559,6 +2559,604 @@ namespace ForestResourcePlugin
                 return $"{FileName} -> {CountyName} ({(IsMatched ? "已匹配" : "未匹配")})";
             }
         }
+
+        private void buttonForestExcel_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 验证是否选择了县
+                var selectedCounties = GetSelectedCounties();
+                if (selectedCounties.Count == 0)
+                {
+                    MessageBox.Show("请至少选择一个县", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // 验证输出路径
+                if (string.IsNullOrEmpty(txtOutputPath.Text))
+                {
+                    MessageBox.Show("请设置输出路径", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // 显示进度
+                buttonForestExcel.Enabled = false;
+                UpdateStatus("正在生成森林资源汇总表...");
+
+                int successCount = 0;
+
+                // 为每个县处理数据并写入A2表格
+                foreach (var countyName in selectedCounties)
+                {
+                    try
+                    {
+                        UpdateStatus($"正在处理县：{countyName}");
+
+                        // 查找县的SLZYZC数据
+                        var slzyzcPath = FindSLZYZCPath(countyName);
+                        if (string.IsNullOrEmpty(slzyzcPath))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"未找到县 {countyName} 的SLZYZC数据");
+                            continue;
+                        }
+
+                        // 统计数据
+                        var forestStatistics = CalculateForestStatistics(slzyzcPath);
+
+                        // 查找A2表格文件并写入数据
+                        var a2FilePath = FindA2TablePath(countyName);
+                        if (!string.IsNullOrEmpty(a2FilePath) && File.Exists(a2FilePath))
+                        {
+                            WriteDataToA2Table(a2FilePath, countyName, forestStatistics);
+                            successCount++;
+                            System.Diagnostics.Debug.WriteLine($"已为县 {countyName} 写入A2表格数据：{a2FilePath}");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"未找到县 {countyName} 的A2表格文件");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"处理县 {countyName} 时出错: {ex.Message}");
+                        MessageBox.Show($"处理县 {countyName} 时出错: {ex.Message}", "错误",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+
+                UpdateStatus("森林资源汇总表数据写入完成");
+                MessageBox.Show($"已成功为 {successCount} 个县写入森林资源汇总表数据", "生成完成",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"生成森林资源汇总表时发生错误：{ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Debug.WriteLine($"buttonForestExcel_Click错误: {ex}");
+            }
+            finally
+            {
+                buttonForestExcel.Enabled = true;
+            }
+        }
+
+        /// <summary>
+        /// 查找指定县的SLZYZC数据路径
+        /// </summary>
+        /// <param name="countyName">县名</param>
+        /// <returns>SLZYZC数据路径</returns>
+        private string FindSLZYZCPath(string countyName)
+        {
+            try
+            {
+                // 获取县代码
+                string countyCode = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyCode(countyName);
+
+                // 构建可能的路径
+                string countyFolderName = $"{countyName}({countyCode})全民所有自然资源资产清查数据成果";
+                string baseCountyPath = System.IO.Path.Combine(txtOutputPath.Text, countyFolderName);
+
+                // 方法1：查找GDB中的SLZYZC要素类
+                string gdbPath = System.IO.Path.Combine(baseCountyPath, "清查数据集", "森林", "空间数据", $"{countyName}.gdb");
+                if (Directory.Exists(gdbPath))
+                {
+                    return gdbPath; // 返回GDB路径，要素类名为SLZYZC
+                }
+
+                // 方法2：查找Shapefile
+                string shapefilePath = System.IO.Path.Combine(baseCountyPath, "清查数据集", "森林", "空间数据", "SLZYZC.shp");
+                if (File.Exists(shapefilePath))
+                {
+                    return shapefilePath;
+                }
+
+                // 方法3：查找带县代码的Shapefile
+                string codeShapefilePath = System.IO.Path.Combine(baseCountyPath, "清查数据集", "森林", "空间数据", $"({countyCode})SLZYZC.shp");
+                if (File.Exists(codeShapefilePath))
+                {
+                    return codeShapefilePath;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"未找到县 {countyName} 的SLZYZC数据路径");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"查找县 {countyName} SLZYZC路径时出错: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 查找指定县的A2表格文件路径
+        /// </summary>
+        /// <param name="countyName">县名</param>
+        /// <returns>A2表格文件路径</returns>
+        private string FindA2TablePath(string countyName)
+        {
+            try
+            {
+                // 获取县代码
+                string countyCode = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyCode(countyName);
+
+                // 构建A2表格文件路径
+                string countyFolderName = $"{countyName}（{countyCode}）全民所有自然资源资产清查数据成果";
+                string tableA2Name = $"（{countyCode}）全民所有森林资源资产清查实物量汇总表.xls";
+                string tableA2Path = System.IO.Path.Combine(txtOutputPath.Text, countyFolderName, "汇总表格", "森林", tableA2Name);
+
+                return tableA2Path;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"查找县 {countyName} A2表格路径时出错: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 计算森林资源统计数据
+        /// </summary>
+        /// <param name="slzyzcPath">SLZYZC数据路径</param>
+        /// <returns>森林统计数据</returns>
+        private ForestStatistics CalculateForestStatistics(string slzyzcPath)
+        {
+            var statistics = new ForestStatistics();
+            IFeatureClass featureClass = null;
+
+            try
+            {
+                // 加载要素类
+                if (slzyzcPath.EndsWith(".gdb"))
+                {
+                    // 从GDB加载
+                    featureClass = ForestResourcePlugin.GdbFeatureClassFinder.OpenFeatureClassFromGdb(slzyzcPath, "SLZYZC");
+                }
+                else
+                {
+                    // 从Shapefile加载
+                    string directory = System.IO.Path.GetDirectoryName(slzyzcPath);
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(slzyzcPath);
+                    IWorkspaceFactory workspaceFactory = new ShapefileWorkspaceFactory();
+                    IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(directory, 0);
+                    featureClass = featureWorkspace.OpenFeatureClass(fileName);
+                }
+
+                if (featureClass == null)
+                {
+                    throw new Exception($"无法加载要素类：{slzyzcPath}");
+                }
+
+                // 获取字段索引
+                var fieldIndices = GetSlzyzcFieldIndices(featureClass);
+
+                // 遍历所有要素进行统计
+                IFeatureCursor cursor = null;
+                IFeature feature = null;
+
+                try
+                {
+                    cursor = featureClass.Search(null, false);
+                    while ((feature = cursor.NextFeature()) != null)
+                    {
+                        try
+                        {
+                            ProcessFeatureForStatistics(feature, fieldIndices, statistics);
+                        }
+                        finally
+                        {
+                            if (feature != null)
+                            {
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                                feature = null;
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    if (cursor != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                }
+            }
+            finally
+            {
+                if (featureClass != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);
+            }
+
+            return statistics;
+        }
+
+        /// <summary>
+        /// 获取SLZYZC字段索引
+        /// </summary>
+        /// <param name="featureClass">要素类</param>
+        /// <returns>字段索引结构</returns>
+        private SlzyzcFieldIndices GetSlzyzcFieldIndices(IFeatureClass featureClass)
+        {
+            return new SlzyzcFieldIndices
+            {
+                GTDCDLBM = featureClass.FindField("GTDCDLBM"),      // 国土调查地类编码
+                GTDCTDQS = featureClass.FindField("GTDCTDQS"),      // 国土调查土地权属
+                LM_SUOYQ = featureClass.FindField("LM_SUOYQ"),      // 林木所有权
+                LZ = featureClass.FindField("LZ"),                  // 林种
+                QY = featureClass.FindField("QY"),                  // 起源
+                ZTBMJ = featureClass.FindField("ZTBMJ"),            // 子图斑面积
+                ZTBXJ = featureClass.FindField("ZTBXJ"),            // 子图斑蓄积
+                LING_ZU = featureClass.FindField("LING_ZU"),        // 龄组
+                MGQZS = featureClass.FindField("MGQZS"),            // 每公顷株数
+                PCDL = featureClass.FindField("PCDL")               // 普查地类
+            };
+        }
+
+        /// <summary>
+        /// 处理单个要素进行统计
+        /// </summary>
+        /// <param name="feature">要素</param>
+        /// <param name="fieldIndices">字段索引</param>
+        /// <param name="statistics">统计数据</param>
+        private void ProcessFeatureForStatistics(IFeature feature, SlzyzcFieldIndices fieldIndices, ForestStatistics statistics)
+        {
+            try
+            {
+                // 获取基础字段值
+                string landTypeCode = GetFieldStringValue(feature, fieldIndices.GTDCDLBM);
+                string landOwnership = GetFieldStringValue(feature, fieldIndices.GTDCTDQS);
+                string forestOwnership = GetFieldStringValue(feature, fieldIndices.LM_SUOYQ);
+                string forestType = GetFieldStringValue(feature, fieldIndices.LZ);
+                string origin = GetFieldStringValue(feature, fieldIndices.QY);
+                string ageGroup = GetFieldStringValue(feature, fieldIndices.LING_ZU);
+                string surveyLandType = GetFieldStringValue(feature, fieldIndices.PCDL);
+
+                double area = GetFieldDoubleValue(feature, fieldIndices.ZTBMJ);
+                double volume = GetFieldDoubleValue(feature, fieldIndices.ZTBXJ);
+                int stocksPerHectare = GetFieldIntValue(feature, fieldIndices.MGQZS);
+
+                // 创建统计键值（用于分组统计）
+                string statisticsKey = $"{landOwnership}|{forestOwnership}|{forestType}|{origin}";
+
+                // 确保统计项存在
+                if (!statistics.StatisticsItems.ContainsKey(statisticsKey))
+                {
+                    statistics.StatisticsItems[statisticsKey] = new ForestStatisticsItem
+                    {
+                        LandOwnership = landOwnership,
+                        ForestOwnership = forestOwnership,
+                        ForestType = forestType,
+                        Origin = origin
+                    };
+                }
+
+                var item = statistics.StatisticsItems[statisticsKey];
+
+                // 根据普查地类进行分类统计
+                switch (surveyLandType)
+                {
+                    case "乔木林地":
+                        item.TreeLandArea += area;
+                        item.TreeLandVolume += volume;
+
+                        // 按龄组统计乔木林地
+                        switch (ageGroup)
+                        {
+                            case "1":
+                                item.YoungForestArea += area;
+                                item.YoungForestVolume += volume;
+                                break;
+                            case "2":
+                                item.MiddleAgedForestArea += area;
+                                item.MiddleAgedForestVolume += volume;
+                                break;
+                            case "3":
+                                item.NearMatureForestArea += area;
+                                item.NearMatureForestVolume += volume;
+                                break;
+                            case "4":
+                                item.MatureForestArea += area;
+                                item.MatureForestVolume += volume;
+                                break;
+                            case "5":
+                                item.OverMatureForestArea += area;
+                                item.OverMatureForestVolume += volume;
+                                break;
+                        }
+                        break;
+
+                    case "竹林地":
+                        item.BambooLandArea += area;
+                        item.BambooStocks += stocksPerHectare * (area / 10000); // 转换为总株数
+                        break;
+
+                    case "灌木林地":
+                        item.ShrubLandArea += area;
+                        break;
+
+                    case "其他林地":
+                        item.OtherForestLandArea += area;
+                        break;
+                }
+
+                // 计算总面积
+                item.TotalArea += area;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"处理要素统计时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 获取字符串字段值
+        /// </summary>
+        private string GetFieldStringValue(IFeature feature, int fieldIndex)
+        {
+            if (fieldIndex == -1) return "";
+
+            object value = feature.get_Value(fieldIndex);
+            return value?.ToString() ?? "";
+        }
+
+        /// <summary>
+        /// 获取双精度字段值
+        /// </summary>
+        private double GetFieldDoubleValue(IFeature feature, int fieldIndex)
+        {
+            if (fieldIndex == -1) return 0.0;
+
+            object value = feature.get_Value(fieldIndex);
+            if (value != null && double.TryParse(value.ToString(), out double result))
+                return result;
+            return 0.0;
+        }
+
+        /// <summary>
+        /// 获取整数字段值
+        /// </summary>
+        private int GetFieldIntValue(IFeature feature, int fieldIndex)
+        {
+            if (fieldIndex == -1) return 0;
+
+            object value = feature.get_Value(fieldIndex);
+            if (value != null && int.TryParse(value.ToString(), out int result))
+                return result;
+            return 0;
+        }
+
+        /// <summary>
+        /// 将统计数据写入A2表格
+        /// </summary>
+        /// <param name="filePath">Excel文件路径</param>
+        /// <param name="countyName">县名</param>
+        /// <param name="statistics">统计数据</param>
+        private void WriteDataToA2Table(string filePath, string countyName, ForestStatistics statistics)
+        {
+            try
+            {
+                // 读取现有Excel文件
+                NPOI.HSSF.UserModel.HSSFWorkbook workbook = null;
+                using (FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    workbook = new NPOI.HSSF.UserModel.HSSFWorkbook(file);
+                }
+
+                NPOI.SS.UserModel.ISheet sheet = workbook.GetSheet("A2");
+                if (sheet == null)
+                {
+                    throw new Exception("未找到A2工作表");
+                }
+
+                // 获取县代码
+                string countyCode = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyCode(countyName);
+
+                // 从第3行开始写入数据（前3行是表头）
+                int currentRow = 3;
+
+                foreach (var item in statistics.StatisticsItems.Values)
+                {
+                    NPOI.SS.UserModel.IRow dataRow = sheet.CreateRow(currentRow);
+
+                    // 列0: 行政区名称
+                    dataRow.CreateCell(0).SetCellValue(countyName);
+
+                    // 列1: 行政区代码
+                    dataRow.CreateCell(1).SetCellValue(countyCode);
+
+                    // 列2: 国土变更调查权属
+                    dataRow.CreateCell(2).SetCellValue(TranslateLandOwnership(item.LandOwnership));
+
+                    // 列3: 林木所有权
+                    dataRow.CreateCell(3).SetCellValue(TranslateForestOwnership(item.ForestOwnership));
+
+                    // 列4: 林种
+                    dataRow.CreateCell(4).SetCellValue(TranslateForestType(item.ForestType));
+
+                    // 列5: 起源
+                    dataRow.CreateCell(5).SetCellValue(TranslateOrigin(item.Origin));
+
+                    // 列6: 面积合计
+                    dataRow.CreateCell(6).SetCellValue(item.TotalArea);
+
+                    // 列7-8: 乔木林地小计 - 面积和蓄积
+                    dataRow.CreateCell(7).SetCellValue(item.TreeLandArea);
+                    dataRow.CreateCell(8).SetCellValue(item.TreeLandVolume);
+
+                    // 列9-10: 幼龄林 - 面积和蓄积
+                    dataRow.CreateCell(9).SetCellValue(item.YoungForestArea);
+                    dataRow.CreateCell(10).SetCellValue(item.YoungForestVolume);
+
+                    // 列11-12: 中龄林 - 面积和蓄积
+                    dataRow.CreateCell(11).SetCellValue(item.MiddleAgedForestArea);
+                    dataRow.CreateCell(12).SetCellValue(item.MiddleAgedForestVolume);
+
+                    // 列13-14: 近熟林 - 面积和蓄积
+                    dataRow.CreateCell(13).SetCellValue(item.NearMatureForestArea);
+                    dataRow.CreateCell(14).SetCellValue(item.NearMatureForestVolume);
+
+                    // 列15-16: 成熟林 - 面积和蓄积
+                    dataRow.CreateCell(15).SetCellValue(item.MatureForestArea);
+                    dataRow.CreateCell(16).SetCellValue(item.MatureForestVolume);
+
+                    // 列17-18: 过熟林 - 面积和蓄积
+                    dataRow.CreateCell(17).SetCellValue(item.OverMatureForestArea);
+                    dataRow.CreateCell(18).SetCellValue(item.OverMatureForestVolume);
+
+                    // 列19-20: 竹林地 - 面积和株数
+                    dataRow.CreateCell(19).SetCellValue(item.BambooLandArea);
+                    dataRow.CreateCell(20).SetCellValue(item.BambooStocks);
+
+                    // 列21: 灌木林地面积
+                    dataRow.CreateCell(21).SetCellValue(item.ShrubLandArea);
+
+                    // 列22: 其他林地面积
+                    dataRow.CreateCell(22).SetCellValue(item.OtherForestLandArea);
+
+                    currentRow++;
+                }
+
+                // 保存文件
+                using (FileStream file = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                {
+                    workbook.Write(file);
+                }
+
+                System.Diagnostics.Debug.WriteLine($"成功写入县 {countyName} 的A2表格数据，共 {statistics.StatisticsItems.Count} 行");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"写入A2表格数据时出错: {ex.Message}", ex);
+            }
+        }
+
+        // 翻译方法
+        private string TranslateLandOwnership(string code)
+        {
+            switch (code)
+            {
+                case "10": return "国有";
+                case "20": return "国有";
+                case "30": return "集体";
+                case "40": return "集体";
+                default: return code;
+            }
+        }
+
+        private string TranslateForestOwnership(string code)
+        {
+            switch (code)
+            {
+                case "10": return "国有";
+                case "20": return "国有";
+                case "30": return "集体";
+                case "40": return "集体";
+                default: return code;
+            }
+        }
+
+        private string TranslateForestType(string code)
+        {
+            // 根据实际林种编码进行翻译
+            switch (code)
+            {
+                case "110": return "生态公益林";
+                case "120": return "商品林";
+                case "210": return "防护林";
+                case "220": return "特用林";
+                case "310": return "用材林";
+                case "320": return "经济林";
+                case "330": return "薪炭林";
+                default: return code;
+            }
+        }
+
+        private string TranslateOrigin(string code)
+        {
+            switch (code)
+            {
+                case "1": return "人工";
+                case "2": return "天然";
+                default: return code;
+            }
+        }
+
+        /// <summary>
+        /// 森林统计数据类
+        /// </summary>
+        private class ForestStatistics
+        {
+            public Dictionary<string, ForestStatisticsItem> StatisticsItems { get; set; } = new Dictionary<string, ForestStatisticsItem>();
+        }
+
+        /// <summary>
+        /// 森林统计项目类
+        /// </summary>
+        private class ForestStatisticsItem
+        {
+            public string LandOwnership { get; set; }           // 土地权属
+            public string ForestOwnership { get; set; }         // 林木所有权
+            public string ForestType { get; set; }              // 林种
+            public string Origin { get; set; }                  // 起源
+
+            public double TotalArea { get; set; }               // 总面积
+
+            // 乔木林地
+            public double TreeLandArea { get; set; }            // 乔木林地面积
+            public double TreeLandVolume { get; set; }          // 乔木林地蓄积
+
+            // 按龄组分类的乔木林地
+            public double YoungForestArea { get; set; }         // 幼龄林面积
+            public double YoungForestVolume { get; set; }       // 幼龄林蓄积
+            public double MiddleAgedForestArea { get; set; }     // 中龄林面积
+            public double MiddleAgedForestVolume { get; set; }   // 中龄林蓄积
+            public double NearMatureForestArea { get; set; }     // 近熟林面积
+            public double NearMatureForestVolume { get; set; }   // 近熟林蓄积
+            public double MatureForestArea { get; set; }         // 成熟林面积
+            public double MatureForestVolume { get; set; }       // 成熟林蓄积
+            public double OverMatureForestArea { get; set; }     // 过熟林面积
+            public double OverMatureForestVolume { get; set; }   // 过熟林蓄积
+
+            // 其他林地类型
+            public double BambooLandArea { get; set; }           // 竹林地面积
+            public double BambooStocks { get; set; }             // 竹林株数
+            public double ShrubLandArea { get; set; }            // 灌木林地面积
+            public double OtherForestLandArea { get; set; }      // 其他林地面积
+        }
+
+        /// <summary>
+        /// SLZYZC字段索引类
+        /// </summary>
+        private class SlzyzcFieldIndices
+        {
+            public int GTDCDLBM { get; set; } = -1;    // 国土调查地类编码
+            public int GTDCTDQS { get; set; } = -1;    // 国土调查土地权属
+            public int LM_SUOYQ { get; set; } = -1;    // 林木所有权
+            public int LZ { get; set; } = -1;          // 林种
+            public int QY { get; set; } = -1;          // 起源
+            public int ZTBMJ { get; set; } = -1;       // 子图斑面积
+            public int ZTBXJ { get; set; } = -1;       // 子图斑蓄积
+            public int LING_ZU { get; set; } = -1;     // 龄组
+            public int MGQZS { get; set; } = -1;       // 每公顷株数
+            public int PCDL { get; set; } = -1;        // 普查地类
+        }
     }
 
     /// <summary>

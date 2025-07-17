@@ -74,9 +74,9 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainProcessingTabsForm));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.mainPanel = new System.Windows.Forms.Panel();
             this.titleLabel = new System.Windows.Forms.Label();
             this.tabControlMain = new System.Windows.Forms.TabControl();
@@ -123,7 +123,6 @@
             this.forestResultsTextBox = new System.Windows.Forms.TextBox();
             this.forestResourceChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.forestWorkflowImage = new System.Windows.Forms.PictureBox();
-            this.buttonForestExcel = new System.Windows.Forms.Button();
             this.mainPanel.SuspendLayout();
             this.tabControlMain.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -177,7 +176,6 @@
             // 
             // tabPage2
             // 
-            this.tabPage2.Controls.Add(this.buttonForestExcel);
             this.tabPage2.Controls.Add(this.showForestWorkflowDetails);
             this.tabPage2.Controls.Add(this.forestDetailPanel);
             this.tabPage2.Controls.Add(this.btnForestExtractScope);
@@ -686,17 +684,17 @@
             // 
             // forestResourceChart
             // 
-            chartArea1.Name = "ChartArea1";
-            this.forestResourceChart.ChartAreas.Add(chartArea1);
-            legend1.Name = "Legend1";
-            this.forestResourceChart.Legends.Add(legend1);
+            chartArea2.Name = "ChartArea1";
+            this.forestResourceChart.ChartAreas.Add(chartArea2);
+            legend2.Name = "Legend1";
+            this.forestResourceChart.Legends.Add(legend2);
             this.forestResourceChart.Location = new System.Drawing.Point(420, 190);
             this.forestResourceChart.Name = "forestResourceChart";
-            series1.ChartArea = "ChartArea1";
-            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
-            series1.Legend = "Legend1";
-            series1.Name = "Series1";
-            this.forestResourceChart.Series.Add(series1);
+            series2.ChartArea = "ChartArea1";
+            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
+            series2.Legend = "Legend1";
+            series2.Name = "Series1";
+            this.forestResourceChart.Series.Add(series2);
             this.forestResourceChart.Size = new System.Drawing.Size(400, 200);
             this.forestResourceChart.TabIndex = 13;
             this.forestResourceChart.Text = "森林资源清查进度";
@@ -712,18 +710,6 @@
             this.forestWorkflowImage.TabIndex = 14;
             this.forestWorkflowImage.TabStop = false;
             this.forestWorkflowImage.Visible = false;
-            // 
-            // buttonForestExcel
-            // 
-            this.buttonForestExcel.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.buttonForestExcel.Location = new System.Drawing.Point(933, 45);
-            this.buttonForestExcel.Margin = new System.Windows.Forms.Padding(4);
-            this.buttonForestExcel.Name = "buttonForestExcel";
-            this.buttonForestExcel.Size = new System.Drawing.Size(202, 45);
-            this.buttonForestExcel.TabIndex = 11;
-            this.buttonForestExcel.Text = "4. 导出汇总表";
-            this.buttonForestExcel.UseVisualStyleBackColor = true;
-            this.buttonForestExcel.Click += new System.EventHandler(this.buttonForestExcel_Click);
             // 
             // MainProcessingTabsForm
             // 
@@ -756,7 +742,5 @@
             this.ResumeLayout(false);
 
         }
-
-        private System.Windows.Forms.Button buttonForestExcel;
     }
 }

@@ -19,6 +19,7 @@ namespace ForestResourcePlugin
         {
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabDataSource = new System.Windows.Forms.TabPage();
+            this.buttonForestExcel = new System.Windows.Forms.Button();
             this.groupBoxFiles = new System.Windows.Forms.GroupBox();
             this.buttonLDHSJGPath = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
@@ -98,6 +99,7 @@ namespace ForestResourcePlugin
             // 
             // tabDataSource
             // 
+            this.tabDataSource.Controls.Add(this.buttonForestExcel);
             this.tabDataSource.Controls.Add(this.groupBoxFiles);
             this.tabDataSource.Controls.Add(this.groupBoxOptions);
             this.tabDataSource.Location = new System.Drawing.Point(4, 28);
@@ -108,6 +110,17 @@ namespace ForestResourcePlugin
             this.tabDataSource.TabIndex = 0;
             this.tabDataSource.Text = "数据源配置";
             this.tabDataSource.UseVisualStyleBackColor = true;
+            // 
+            // buttonForestExcel
+            // 
+            this.buttonForestExcel.Location = new System.Drawing.Point(940, 258);
+            this.buttonForestExcel.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonForestExcel.Name = "buttonForestExcel";
+            this.buttonForestExcel.Size = new System.Drawing.Size(233, 41);
+            this.buttonForestExcel.TabIndex = 5;
+            this.buttonForestExcel.Text = "导出数据表格";
+            this.buttonForestExcel.UseVisualStyleBackColor = true;
+            this.buttonForestExcel.Click += new System.EventHandler(this.buttonForestExcel_Click);
             // 
             // groupBoxFiles
             // 
@@ -764,5 +777,6 @@ namespace ForestResourcePlugin
         private System.Windows.Forms.Button buttonLDHSJGPath;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button buttonForestExcel;
     }
 }

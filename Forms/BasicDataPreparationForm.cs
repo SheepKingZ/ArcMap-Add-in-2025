@@ -721,27 +721,30 @@ namespace TestArcMapAddin2.Forms
                 geometryFieldEdit.GeometryDef_2 = geometryDef;
                 fieldsEdit.AddField(geometryField);
 
-                // 根据Shapefile名称添加相应的业务字段
-                switch (shapefileName)
+                // 根据Shapefile名称添加相应的业务字段（支持部分匹配）
+                if (ContainsKeyword(shapefileName, "SLZYZC") && !ContainsKeyword(shapefileName, "DLTB"))
                 {
-                    case "SLZYZC":
-                        FeatureClassFieldsTemplate.GenerateSlzyzcFields(fieldsEdit);
-                        break;
-                    case "SLZYZC_DLTB":
-                        FeatureClassFieldsTemplate.GenerateSlzyzc_dltbFields(fieldsEdit);
-                        break;
-                    case "CYZYZC":
-                        FeatureClassFieldsTemplate.GenerateCyzyzcFields(fieldsEdit);
-                        break;
-                    case "CYZYZC_DLTB":
-                        FeatureClassFieldsTemplate.GenerateCyzyzc_dltbFields(fieldsEdit);
-                        break;
-                    case "SDZYZC":
-                        FeatureClassFieldsTemplate.GenerateSdzyzcFields(fieldsEdit);
-                        break;
-                    case "SDZYZC_DLTB":
-                        FeatureClassFieldsTemplate.GenerateSdzyzc_dltbFields(fieldsEdit);
-                        break;
+                    FeatureClassFieldsTemplate.GenerateSlzyzcFields(fieldsEdit);
+                }
+                else if (ContainsKeyword(shapefileName, "SLZYZC") && ContainsKeyword(shapefileName, "DLTB"))
+                {
+                    FeatureClassFieldsTemplate.GenerateSlzyzc_dltbFields(fieldsEdit);
+                }
+                else if (ContainsKeyword(shapefileName, "CYZYZC") && !ContainsKeyword(shapefileName, "DLTB"))
+                {
+                    FeatureClassFieldsTemplate.GenerateCyzyzcFields(fieldsEdit);
+                }
+                else if (ContainsKeyword(shapefileName, "CYZYZC") && ContainsKeyword(shapefileName, "DLTB"))
+                {
+                    FeatureClassFieldsTemplate.GenerateCyzyzc_dltbFields(fieldsEdit);
+                }
+                else if (ContainsKeyword(shapefileName, "SDZYZC") && !ContainsKeyword(shapefileName, "DLTB"))
+                {
+                    FeatureClassFieldsTemplate.GenerateSdzyzcFields(fieldsEdit);
+                }
+                else if (ContainsKeyword(shapefileName, "SDZYZC") && ContainsKeyword(shapefileName, "DLTB"))
+                {
+                    FeatureClassFieldsTemplate.GenerateSdzyzc_dltbFields(fieldsEdit);
                 }
 
                 fields = (IFields)fieldsEdit;
@@ -781,7 +784,20 @@ namespace TestArcMapAddin2.Forms
                 }
             }
         }
-
+        /// <summary>
+        /// 检查字符串是否包含指定关键词（不区分大小写）
+        /// </summary>
+        /// <param name="source">源字符串</param>
+        /// <param name="keyword">要查找的关键词</param>
+        /// <returns>如果包含关键词返回true，否则返回false</returns>
+        private bool ContainsKeyword(string source, string keyword)
+        {
+            if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(keyword))
+            {
+                return false;
+            }
+            return source.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
         /// <summary>
         /// 创建CGCS2000投影坐标系（优先使用3度带37带投影坐标系）
         /// </summary>
@@ -965,7 +981,6 @@ namespace TestArcMapAddin2.Forms
         }
 
         // 在 button1_Click 方法中更新县代码使用逻辑
-        // 在 button1_Click 方法中更新县代码使用逻辑
         private void button1_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(outputGDBPath))
@@ -1016,7 +1031,7 @@ namespace TestArcMapAddin2.Forms
 
                     // 修改：使用县代码映射器获取真实的县代码
                     string countyCode = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyCode(countyName);
-                    string countyFolderName = $"{countyName}（{countyCode}）全民所有自然资源资产清查数据成果";
+                    string countyFolderName = $"{countyName}({countyCode})全民所有自然资源资产清查数据成果";
                     string countyFolderPath = System.IO.Path.Combine(outputGDBPath, countyFolderName);
                     string dataSetPath = System.IO.Path.Combine(countyFolderPath, "清查数据集");
 
@@ -1199,7 +1214,7 @@ namespace TestArcMapAddin2.Forms
 
                     // 使用县代码映射器获取真实的县代码
                     string countyCode = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyCode(countyName);
-                    string countyFolderName = $"{countyName}（{countyCode}）全民所有自然资源资产清查数据成果";
+                    string countyFolderName = $"{countyName}({countyCode})全民所有自然资源资产清查数据成果";
                     string countyFolderPath = System.IO.Path.Combine(outputGDBPath, countyFolderName);
                     string summaryTablePath = System.IO.Path.Combine(countyFolderPath, "汇总表格");
                     string forestTablePath = System.IO.Path.Combine(summaryTablePath, "森林");
@@ -1216,7 +1231,7 @@ namespace TestArcMapAddin2.Forms
                     // 生成第一个表格：全民所有森林资源资产清查实物量汇总表
                     try
                     {
-                        string tableA2Name = $"（{countyCode}）全民所有森林资源资产清查实物量汇总表.xls";
+                        string tableA2Name = $"({countyCode})全民所有森林资源资产清查实物量汇总表.xls";
                         string tableA2Path = System.IO.Path.Combine(forestTablePath, tableA2Name);
                         CreateTableA2(tableA2Path);
                         totalTables++;
@@ -1231,7 +1246,7 @@ namespace TestArcMapAddin2.Forms
                     // 生成第二个表格：全民所有森林资源资产清查价值量汇总表
                     try
                     {
-                        string tableA4Name = $"（{countyCode}）全民所有森林资源资产清查价值量汇总表.xls";
+                        string tableA4Name = $"({countyCode})全民所有森林资源资产清查价值量汇总表.xls";
                         string tableA4Path = System.IO.Path.Combine(forestTablePath, tableA4Name);
                         CreateTableA4(tableA4Path);
                         totalTables++;
@@ -1246,7 +1261,7 @@ namespace TestArcMapAddin2.Forms
                     // 生成第三个表格：全民所有森林资源资产清查林地汇总表
                     try
                     {
-                        string tableA6Name = $"（{countyCode}）全民所有森林资源资产清查林地汇总表.xls";
+                        string tableA6Name = $"({countyCode})全民所有森林资源资产清查林地汇总表.xls";
                         string tableA6Path = System.IO.Path.Combine(forestTablePath, tableA6Name);
                         CreateTableA6(tableA6Path);
                         totalTables++;

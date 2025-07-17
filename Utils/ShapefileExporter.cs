@@ -22,102 +22,311 @@ namespace ForestResourcePlugin
         /// <param name="message">当前操作描述信息</param>
         public delegate void ProgressCallback(int percentage, string message);
 
-        /// <summary>
-        /// 将处理后的县级数据直接输出为SLZYZC Shapefile
-        /// </summary>
-        /// <param name="processedFeatures">处理后的要素列表</param>
-        /// <param name="sourceFeatureClass">源要素类</param>
-        /// <param name="countyName">县名</param>
-        /// <param name="outputPath">输出路径</param>
-        /// <param name="fieldMappings">字段映射配置</param>
-        /// <param name="progressCallback">进度回调</param>
         public void ExportToShapefile(
-            List<IFeature> processedFeatures,
-            IFeatureClass sourceFeatureClass,
-            string countyName,
-            string outputPath,
-            Dictionary<string, string> fieldMappings,
-            ProgressCallback progressCallback = null)
+    List<IFeature> processedFeatures,
+    IFeatureClass sourceFeatureClass,
+    string countyName,
+    string outputPath,
+    Dictionary<string, string> fieldMappings,
+    ProgressCallback progressCallback = null)
         {
-            // 参数验证 - 确保输入数据的有效性
-            if (processedFeatures == null || processedFeatures.Count == 0)
-            {
-                throw new ArgumentException("处理后的要素列表不能为空");
-            }
-
-            if (string.IsNullOrEmpty(countyName))
-            {
-                throw new ArgumentException("县名不能为空");
-            }
-
-            if (string.IsNullOrEmpty(outputPath))
-            {
-                throw new ArgumentException("输出路径不能为空");
-            }
-
-            // 从输出路径提取真实的县名
-            string extractedCountyName = ExtractCountyNameFromOutputPath(outputPath, countyName);
-            if (!string.IsNullOrEmpty(extractedCountyName))
-            {
-                countyName = extractedCountyName;
-                System.Diagnostics.Debug.WriteLine($"从输出路径提取到县名: '{countyName}'");
-            }
-
-            progressCallback?.Invoke(5, $"正在创建{countyName}的Shapefile输出目录...");
-
-            // COM对象声明 - 需要在finally块中显式释放以避免内存泄漏
-            IWorkspace shapefileWorkspace = null;
-            IFeatureClass slzyzcFeatureClass = null;
+            System.Diagnostics.Debug.WriteLine($"开始执行ExportToShapefile - 县名: {countyName}, 输出路径: {outputPath}");
 
             try
             {
-                // 创建县级Shapefile工作空间
-                shapefileWorkspace = CreateCountyShapefileWorkspace(outputPath, countyName);
-                if (shapefileWorkspace == null)
+                // 参数验证 - 确保输入数据的有效性
+                if (processedFeatures == null)
                 {
-                    throw new Exception($"无法创建{countyName}的Shapefile工作空间");
+                    string errorMsg = "参数验证失败: processedFeatures 为 null";
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
+                    throw new ArgumentNullException(nameof(processedFeatures), errorMsg);
                 }
 
-                progressCallback?.Invoke(15, $"正在创建{countyName}的SLZYZC Shapefile...");
-
-                // 直接从当前处理的要素获取几何类型和空间参考，确保与源数据一致
-                IFeature firstFeature = processedFeatures[0];
-                esriGeometryType geometryType = firstFeature.Shape.GeometryType;
-                ISpatialReference spatialReference = firstFeature.Shape.SpatialReference;
-
-                // 直接创建SLZYZC要素类
-                slzyzcFeatureClass = CreateSLZYZCShapefile(shapefileWorkspace, geometryType, spatialReference);
-                if (slzyzcFeatureClass == null)
+                if (processedFeatures.Count == 0)
                 {
-                    throw new Exception($"无法创建{countyName}的SLZYZC Shapefile");
+                    string errorMsg = "参数验证失败: processedFeatures 列表为空";
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
+                    throw new ArgumentException(errorMsg, nameof(processedFeatures));
                 }
 
-                progressCallback?.Invoke(25, $"开始向{countyName}的SLZYZC Shapefile写入数据...");
+                System.Diagnostics.Debug.WriteLine($"processedFeatures 验证通过，包含 {processedFeatures.Count} 个要素");
 
-                // 执行数据写入操作 - 直接写入SLZYZC格式
-                WriteFeaturesToShapefile(processedFeatures, sourceFeatureClass, slzyzcFeatureClass,
-                    fieldMappings, countyName, progressCallback);
+                if (string.IsNullOrEmpty(countyName))
+                {
+                    string errorMsg = "参数验证失败: 县名不能为空或null";
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
+                    throw new ArgumentException(errorMsg, nameof(countyName));
+                }
 
-                progressCallback?.Invoke(80, $"成功将 {processedFeatures.Count} 个要素写入到{countyName}的SLZYZC Shapefile");
+                if (string.IsNullOrWhiteSpace(countyName))
+                {
+                    string errorMsg = $"参数验证失败: 县名不能为空白字符串，当前值: '{countyName}'";
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
+                    throw new ArgumentException(errorMsg, nameof(countyName));
+                }
 
-                System.Diagnostics.Debug.WriteLine($"县{countyName}的数据已成功写入SLZYZC Shapefile");
+                System.Diagnostics.Debug.WriteLine($"县名验证通过: '{countyName}'");
 
-                // 执行SLZYZC_DLTB操作
-                PerformAutoConversion(countyName, outputPath, progressCallback);
+                if (string.IsNullOrEmpty(outputPath))
+                {
+                    string errorMsg = "参数验证失败: 输出路径不能为空或null";
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
+                    throw new ArgumentException(errorMsg, nameof(outputPath));
+                }
 
-                progressCallback?.Invoke(100, $"{countyName}的数据导入和转换已全部完成");
+                if (string.IsNullOrWhiteSpace(outputPath))
+                {
+                    string errorMsg = $"参数验证失败: 输出路径不能为空白字符串，当前值: '{outputPath}'";
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
+                    throw new ArgumentException(errorMsg, nameof(outputPath));
+                }
+
+                if (!Directory.Exists(outputPath))
+                {
+                    string errorMsg = $"参数验证失败: 输出路径不存在 - '{outputPath}'";
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
+                    throw new DirectoryNotFoundException(errorMsg);
+                }
+
+                System.Diagnostics.Debug.WriteLine($"输出路径验证通过: '{outputPath}'");
+
+                if (sourceFeatureClass == null)
+                {
+                    string errorMsg = "参数验证失败: sourceFeatureClass 为 null";
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
+                    throw new ArgumentNullException(nameof(sourceFeatureClass), errorMsg);
+                }
+
+                System.Diagnostics.Debug.WriteLine($"sourceFeatureClass 验证通过，类型: {sourceFeatureClass.AliasName}");
+
+                // 验证要素的有效性
+                for (int i = 0; i < Math.Min(processedFeatures.Count, 5); i++)
+                {
+                    var feature = processedFeatures[i];
+                    if (feature == null)
+                    {
+                        string errorMsg = $"要素验证失败: 第 {i} 个要素为 null";
+                        System.Diagnostics.Debug.WriteLine(errorMsg);
+                        throw new ArgumentException(errorMsg, nameof(processedFeatures));
+                    }
+
+                    if (feature.Shape == null)
+                    {
+                        string errorMsg = $"要素验证失败: 第 {i} 个要素的几何形状为 null (OID: {feature.OID})";
+                        System.Diagnostics.Debug.WriteLine(errorMsg);
+                        throw new ArgumentException(errorMsg, nameof(processedFeatures));
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine("要素列表验证通过");
+
+                // 从输出路径提取真实的县名
+                string extractedCountyName = null;
+                try
+                {
+                    extractedCountyName = ExtractCountyNameFromOutputPath(outputPath, countyName);
+                    if (!string.IsNullOrEmpty(extractedCountyName))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"从输出路径提取到县名: '{extractedCountyName}'，原县名: '{countyName}'");
+                        countyName = extractedCountyName;
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"未能从输出路径提取县名，使用原县名: '{countyName}'");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    string errorMsg = $"从输出路径提取县名时出错: {ex.Message}";
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
+                    System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
+                    // 不抛出异常，继续使用原县名
+                }
+
+                progressCallback?.Invoke(5, $"正在创建{countyName}的Shapefile输出目录...");
+
+                // COM对象声明 - 需要在finally块中显式释放以避免内存泄漏
+                IWorkspace shapefileWorkspace = null;
+                IFeatureClass slzyzcFeatureClass = null;
+
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine($"开始创建县级Shapefile工作空间 - 县名: {countyName}");
+
+                    // 创建县级Shapefile工作空间
+                    try
+                    {
+                        shapefileWorkspace = CreateCountyShapefileWorkspace(outputPath, countyName);
+                    }
+                    catch (Exception ex)
+                    {
+                        string errorMsg = $"创建县级Shapefile工作空间失败 - 县名: {countyName}, 路径: {outputPath}";
+                        System.Diagnostics.Debug.WriteLine(errorMsg);
+                        System.Diagnostics.Debug.WriteLine($"CreateCountyShapefileWorkspace异常: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
+                        throw new Exception(errorMsg, ex);
+                    }
+
+                    if (shapefileWorkspace == null)
+                    {
+                        string errorMsg = $"创建县级Shapefile工作空间返回null - 县名: {countyName}, 路径: {outputPath}";
+                        System.Diagnostics.Debug.WriteLine(errorMsg);
+                        throw new Exception(errorMsg);
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"县级Shapefile工作空间创建成功 - 县名: {countyName}");
+
+                    progressCallback?.Invoke(15, $"正在创建{countyName}的SLZYZC Shapefile...");
+
+                    // 验证和获取第一个要素的几何信息
+                    IFeature firstFeature = null;
+                    esriGeometryType geometryType;
+                    ISpatialReference spatialReference = null;
+
+                    try
+                    {
+                        firstFeature = processedFeatures[0];
+                        if (firstFeature?.Shape == null)
+                        {
+                            string errorMsg = $"第一个要素或其几何形状为null - 县名: {countyName}";
+                            System.Diagnostics.Debug.WriteLine(errorMsg);
+                            throw new Exception(errorMsg);
+                        }
+
+                        geometryType = firstFeature.Shape.GeometryType;
+                        spatialReference = firstFeature.Shape.SpatialReference;
+
+                        System.Diagnostics.Debug.WriteLine($"几何信息获取成功 - 类型: {geometryType}, 空间参考: {spatialReference?.Name ?? "未知"}");
+                    }
+                    catch (Exception ex)
+                    {
+                        string errorMsg = $"获取要素几何信息失败 - 县名: {countyName}";
+                        System.Diagnostics.Debug.WriteLine(errorMsg);
+                        System.Diagnostics.Debug.WriteLine($"几何信息获取异常: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
+                        throw new Exception(errorMsg, ex);
+                    }
+
+                    // 创建SLZYZC要素类
+                    try
+                    {
+                        System.Diagnostics.Debug.WriteLine($"开始创建SLZYZC Shapefile - 县名: {countyName}");
+                        slzyzcFeatureClass = CreateSLZYZCShapefile(shapefileWorkspace, geometryType, spatialReference);
+                    }
+                    catch (Exception ex)
+                    {
+                        string errorMsg = $"创建SLZYZC Shapefile失败 - 县名: {countyName}";
+                        System.Diagnostics.Debug.WriteLine(errorMsg);
+                        System.Diagnostics.Debug.WriteLine($"CreateSLZYZCShapefile异常: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
+                        throw new Exception(errorMsg, ex);
+                    }
+
+                    if (slzyzcFeatureClass == null)
+                    {
+                        string errorMsg = $"创建SLZYZC Shapefile返回null - 县名: {countyName}";
+                        System.Diagnostics.Debug.WriteLine(errorMsg);
+                        throw new Exception(errorMsg);
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"SLZYZC Shapefile创建成功 - 县名: {countyName}");
+
+                    progressCallback?.Invoke(25, $"开始向{countyName}的SLZYZC Shapefile写入数据...");
+
+                    // 执行数据写入操作
+                    try
+                    {
+                        System.Diagnostics.Debug.WriteLine($"开始写入要素到Shapefile - 县名: {countyName}, 要素数量: {processedFeatures.Count}");
+
+                        WriteFeaturesToShapefile(processedFeatures, sourceFeatureClass, slzyzcFeatureClass,
+                            fieldMappings, countyName, progressCallback);
+
+                        System.Diagnostics.Debug.WriteLine($"要素写入完成 - 县名: {countyName}");
+                    }
+                    catch (Exception ex)
+                    {
+                        string errorMsg = $"写入要素到Shapefile失败 - 县名: {countyName}, 要素数量: {processedFeatures.Count}";
+                        System.Diagnostics.Debug.WriteLine(errorMsg);
+                        System.Diagnostics.Debug.WriteLine($"WriteFeaturesToShapefile异常: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
+                        throw new Exception(errorMsg, ex);
+                    }
+
+                    progressCallback?.Invoke(80, $"成功将 {processedFeatures.Count} 个要素写入到{countyName}的SLZYZC Shapefile");
+
+                    System.Diagnostics.Debug.WriteLine($"县{countyName}的数据已成功写入SLZYZC Shapefile");
+
+                    // 执行SLZYZC_DLTB操作
+                    try
+                    {
+                        System.Diagnostics.Debug.WriteLine($"开始执行自动转换 - 县名: {countyName}");
+                        PerformAutoConversion(countyName, outputPath, progressCallback);
+                        System.Diagnostics.Debug.WriteLine($"自动转换完成 - 县名: {countyName}");
+                    }
+                    catch (Exception ex)
+                    {
+                        string errorMsg = $"执行自动转换失败 - 县名: {countyName}";
+                        System.Diagnostics.Debug.WriteLine(errorMsg);
+                        System.Diagnostics.Debug.WriteLine($"PerformAutoConversion异常: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
+                        // 注意：这里可以选择是否抛出异常，或者仅记录警告
+                        throw new Exception(errorMsg, ex);
+                    }
+
+                    progressCallback?.Invoke(100, $"{countyName}的数据导入和转换已全部完成");
+                    System.Diagnostics.Debug.WriteLine($"ExportToShapefile完成 - 县名: {countyName}");
+                }
+                catch (Exception ex)
+                {
+                    string errorMsg = $"ExportToShapefile主要处理过程中出错 - 县名: {countyName}";
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
+                    System.Diagnostics.Debug.WriteLine($"主要处理异常: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
+
+                    // 重新抛出异常，保留原始堆栈跟踪
+                    throw new Exception(errorMsg, ex);
+                }
+                finally
+                {
+                    // 重要：释放ArcGIS COM对象，防止内存泄漏
+                    try
+                    {
+                        if (slzyzcFeatureClass != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"释放slzyzcFeatureClass COM对象 - 县名: {countyName}");
+                            System.Runtime.InteropServices.Marshal.ReleaseComObject(slzyzcFeatureClass);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"释放slzyzcFeatureClass COM对象时出错: {ex.Message}");
+                    }
+
+                    try
+                    {
+                        if (shapefileWorkspace != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"释放shapefileWorkspace COM对象 - 县名: {countyName}");
+                            System.Runtime.InteropServices.Marshal.ReleaseComObject(shapefileWorkspace);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"释放shapefileWorkspace COM对象时出错: {ex.Message}");
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"ExportToShapefile finally块完成 - 县名: {countyName}");
+                }
             }
-            finally
+            catch (Exception ex)
             {
-                // 重要：释放ArcGIS COM对象，防止内存泄漏
-                if (slzyzcFeatureClass != null)
-                {
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(slzyzcFeatureClass);
-                }
-                if (shapefileWorkspace != null)
-                {
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(shapefileWorkspace);
-                }
+                string errorMsg = $"ExportToShapefile顶级异常 - 县名: {countyName ?? "未知"}";
+                System.Diagnostics.Debug.WriteLine(errorMsg);
+                System.Diagnostics.Debug.WriteLine($"顶级异常: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"完整异常信息: {ex}");
+
+                // 抛出包含详细信息的异常
+                throw new Exception($"{errorMsg}: {ex.Message}", ex);
             }
         }
 
@@ -286,22 +495,23 @@ namespace ForestResourcePlugin
 
                 // 构建已存在的SLZYZC_DLTB文件路径
                 string countyCode = Utils.CountyCodeMapper.GetCountyCode(countyName);
-                string countyFolderName = $"{countyName}（{countyCode}）全民所有自然资源资产清查数据成果";
+                string countyFolderName = $"{countyName}({countyCode})全民所有自然资源资产清查数据成果";
                 string countyPath = System.IO.Path.Combine(outputPath, countyFolderName);
                 string dataSetPath = System.IO.Path.Combine(countyPath, "清查数据集");
                 string forestPath = System.IO.Path.Combine(dataSetPath, "森林");
                 string spatialDataPath = System.IO.Path.Combine(forestPath, "空间数据");
-                string slzyzcDltbShapefilePath = System.IO.Path.Combine(spatialDataPath, "SLZYZC_DLTB.shp");
 
-                System.Diagnostics.Debug.WriteLine($"SLZYZC_DLTB目标文件路径: {slzyzcDltbShapefilePath}");
+                // 查找SLZYZC_DLTB文件（支持多种命名模式）
+                string slzyzcDltbShapefilePath = FindSLZYZCDLTBShapefilePath(spatialDataPath);
 
-                // 检查SLZYZC_DLTB文件是否存在
-                if (!File.Exists(slzyzcDltbShapefilePath))
+                if (string.IsNullOrEmpty(slzyzcDltbShapefilePath))
                 {
-                    System.Diagnostics.Debug.WriteLine($"错误: SLZYZC_DLTB文件不存在: {slzyzcDltbShapefilePath}");
+                    System.Diagnostics.Debug.WriteLine($"错误: 未找到SLZYZC_DLTB文件在路径: {spatialDataPath}");
                     progressCallback?.Invoke(99, $"{countyName}的SLZYZC_DLTB文件不存在，请先创建空的Shapefile结构");
                     return;
                 }
+
+                System.Diagnostics.Debug.WriteLine($"SLZYZC_DLTB目标文件路径: {slzyzcDltbShapefilePath}");
 
                 // 获取对应县的SLZY_DLTB源数据
                 string slzyDltbPath = GetSLZYDLTBShapefilePath(countyName);
@@ -349,6 +559,84 @@ namespace ForestResourcePlugin
 
                 // 记录详细错误信息
                 System.Diagnostics.Debug.WriteLine($"错误详情: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// 在指定路径中查找SLZYZC_DLTB Shapefile文件
+        /// 支持以下命名模式：
+        /// 1. (县代码)SLZYZC_DLTB.shp
+        /// 2. SLZYZC_DLTB.shp
+        /// </summary>
+        /// <param name="spatialDataPath">空间数据路径</param>
+        /// <returns>找到的SLZYZC_DLTB文件完整路径，如果未找到返回null</returns>
+        private string FindSLZYZCDLTBShapefilePath(string spatialDataPath)
+        {
+            try
+            {
+                if (!Directory.Exists(spatialDataPath))
+                {
+                    System.Diagnostics.Debug.WriteLine($"空间数据路径不存在: {spatialDataPath}");
+                    return null;
+                }
+
+                // 获取所有.shp文件
+                string[] shapefiles = Directory.GetFiles(spatialDataPath, "*.shp");
+                System.Diagnostics.Debug.WriteLine($"空间数据路径中找到 {shapefiles.Length} 个Shapefile文件");
+
+                // 列出所有找到的文件
+                foreach (string file in shapefiles)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(file);
+                    System.Diagnostics.Debug.WriteLine($"  发现Shapefile: {fileName}");
+                }
+
+                // 优先查找带县代码的SLZYZC_DLTB文件：(县代码)SLZYZC_DLTB.shp
+                foreach (string shapefilePath in shapefiles)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
+
+                    // 模式1: (数字)SLZYZC_DLTB 或 （数字）SLZYZC_DLTB
+                    if (System.Text.RegularExpressions.Regex.IsMatch(fileName, @"^[（(]\d+[）)]SLZYZC_DLTB$"))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到带县代码的SLZYZC_DLTB文件: {fileName}");
+                        return shapefilePath;
+                    }
+                }
+
+                // 如果没有找到带县代码的，查找标准的SLZYZC_DLTB文件
+                foreach (string shapefilePath in shapefiles)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
+
+                    // 模式2: 精确匹配 SLZYZC_DLTB
+                    if (fileName.Equals("SLZYZC_DLTB", StringComparison.OrdinalIgnoreCase))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到标准SLZYZC_DLTB文件: {fileName}");
+                        return shapefilePath;
+                    }
+                }
+
+                // 最后尝试模糊匹配包含SLZYZC_DLTB的文件
+                foreach (string shapefilePath in shapefiles)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
+
+                    // 模式3: 包含SLZYZC_DLTB的文件
+                    if (fileName.Contains("SLZYZC_DLTB"))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到包含SLZYZC_DLTB的文件: {fileName}");
+                        return shapefilePath;
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine("未找到任何符合模式的SLZYZC_DLTB Shapefile文件");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"查找SLZYZC_DLTB Shapefile文件时出错: {ex.Message}");
+                return null;
             }
         }
 
@@ -1008,7 +1296,7 @@ namespace ForestResourcePlugin
             {
                 // 修改：使用县代码映射器获取真实的县代码
                 string countyCode = Utils.CountyCodeMapper.GetCountyCode(countyName);
-                string countyFolderName = $"{countyName}（{countyCode}）全民所有自然资源资产清查数据成果";
+                string countyFolderName = $"{countyName}({countyCode})全民所有自然资源资产清查数据成果";
                 string countyFolderPath = System.IO.Path.Combine(outputPath, countyFolderName);
                 string dataSetPath = System.IO.Path.Combine(countyFolderPath, "清查数据集");
                 string forestPath = System.IO.Path.Combine(dataSetPath, "森林");
@@ -1040,22 +1328,201 @@ namespace ForestResourcePlugin
         /// <returns>SLZYZC要素类接口</returns>
         private IFeatureClass CreateSLZYZCShapefile(IWorkspace workspace, esriGeometryType geometryType, ISpatialReference spatialReference)
         {
-            
-                IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspace;
+            IFeatureWorkspace featureWorkspace = null;
 
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"开始创建SLZYZC Shapefile，工作空间路径: {workspace.PathName}");
 
-                string featureClassName = "SLZYZC";
-       
-                
-                    IFeatureClass existingFeatureClass = featureWorkspace.OpenFeatureClass(featureClassName);
+                featureWorkspace = (IFeatureWorkspace)workspace;
 
-                    System.Diagnostics.Debug.WriteLine($"SLZYZC Shapefile已存在，将使用现有文件并清空数据");
+                // 检查工作空间路径是否存在
+                string workspacePath = workspace.PathName;
+                if (!Directory.Exists(workspacePath))
+                {
+                    string errorMsg = $"工作空间路径不存在: {workspacePath}";
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
+                    throw new DirectoryNotFoundException(errorMsg);
+                }
+
+                // 查找符合模式的SLZYZC Shapefile文件
+                string targetFeatureClassName = FindSLZYZCShapefileName(workspacePath);
+
+                if (string.IsNullOrEmpty(targetFeatureClassName))
+                {
+                    string errorMsg = $"未找到符合模式的SLZYZC Shapefile文件: {workspacePath}";
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
+                    throw new FileNotFoundException(errorMsg);
+                }
+
+                System.Diagnostics.Debug.WriteLine($"找到目标Shapefile: {targetFeatureClassName}");
+
+                // 检查相关的Shapefile组件文件是否完整
+                string[] requiredExtensions = { ".shx", ".dbf" };
+                foreach (string ext in requiredExtensions)
+                {
+                    string componentFile = System.IO.Path.Combine(workspacePath, $"{targetFeatureClassName}{ext}");
+                    if (!File.Exists(componentFile))
+                    {
+                        string errorMsg = $"Shapefile组件文件缺失: {componentFile}";
+                        System.Diagnostics.Debug.WriteLine(errorMsg);
+                        throw new FileNotFoundException(errorMsg, componentFile);
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"Shapefile文件完整性检查通过: {targetFeatureClassName}");
+
+                // 检查文件是否被锁定
+                string shapefilePath = System.IO.Path.Combine(workspacePath, $"{targetFeatureClassName}.shp");
+                try
+                {
+                    using (System.IO.FileStream fs = File.OpenRead(shapefilePath))
+                    {
+                        // 如果能打开文件，说明没有被锁定
+                    }
+                }
+                catch (IOException ex)
+                {
+                    string errorMsg = $"Shapefile文件被锁定或无法访问: {shapefilePath}, 错误: {ex.Message}";
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
+                    throw new IOException(errorMsg, ex);
+                }
+
+                // 尝试打开要素类
+                System.Diagnostics.Debug.WriteLine($"尝试打开要素类: {targetFeatureClassName}");
+
+                try
+                {
+                    IFeatureClass existingFeatureClass = featureWorkspace.OpenFeatureClass(targetFeatureClassName);
+
+                    if (existingFeatureClass == null)
+                    {
+                        string errorMsg = $"OpenFeatureClass返回null: {targetFeatureClassName}";
+                        System.Diagnostics.Debug.WriteLine(errorMsg);
+                        throw new Exception(errorMsg);
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"成功打开要素类: {targetFeatureClassName}");
+                    System.Diagnostics.Debug.WriteLine($"要素类当前要素数量: {existingFeatureClass.FeatureCount(null)}");
 
                     // 清空现有数据
+                    System.Diagnostics.Debug.WriteLine("开始清空现有Shapefile数据...");
                     ClearExistingShapefileData(existingFeatureClass);
+                    System.Diagnostics.Debug.WriteLine("Shapefile数据清空完成");
 
                     return existingFeatureClass;
+                }
+                catch (System.Runtime.InteropServices.COMException comEx)
+                {
+                    string errorMsg = $"COM异常 - 无法打开要素类 '{targetFeatureClassName}': HRESULT=0x{comEx.HResult:X8}, 消息={comEx.Message}";
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
+                    System.Diagnostics.Debug.WriteLine($"COM异常详情: {comEx}");
 
+                    // 提供更详细的错误分析
+                    switch ((uint)comEx.HResult)
+                    {
+                        case 0x80040351:
+                            errorMsg += "\n原因分析: 要素类不存在或无法访问";
+                            break;
+                        case 0x80040352:
+                            errorMsg += "\n原因分析: 工作空间类型不支持";
+                            break;
+                        case 0x80040353:
+                            errorMsg += "\n原因分析: 数据源损坏或格式错误";
+                            break;
+                        default:
+                            errorMsg += $"\n原因分析: 未知的COM错误 (HRESULT: 0x{comEx.HResult:X8})";
+                            break;
+                    }
+
+                    throw new Exception(errorMsg, comEx);
+                }
+            }
+            catch (Exception ex)
+            {
+                string errorMsg = $"创建SLZYZC Shapefile时发生错误: {ex.Message}";
+                System.Diagnostics.Debug.WriteLine(errorMsg);
+                System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 在指定路径中查找符合模式的SLZYZC Shapefile文件名
+        /// 支持以下命名模式：
+        /// 1. (县代码)SLZYZC.shp
+        /// 2. SLZYZC.shp
+        /// </summary>
+        /// <param name="workspacePath">工作空间路径</param>
+        /// <returns>找到的Shapefile文件名（不含扩展名），如果未找到返回null</returns>
+        private string FindSLZYZCShapefileName(string workspacePath)
+        {
+            try
+            {
+                if (!Directory.Exists(workspacePath))
+                {
+                    System.Diagnostics.Debug.WriteLine($"工作空间路径不存在: {workspacePath}");
+                    return null;
+                }
+
+                // 获取所有.shp文件
+                string[] shapefiles = Directory.GetFiles(workspacePath, "*.shp");
+                System.Diagnostics.Debug.WriteLine($"工作空间中找到 {shapefiles.Length} 个Shapefile文件");
+
+                // 列出所有找到的文件
+                foreach (string file in shapefiles)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(file);
+                    System.Diagnostics.Debug.WriteLine($"  发现Shapefile: {fileName}");
+                }
+
+                // 优先查找带县代码的SLZYZC文件：(县代码)SLZYZC.shp
+                foreach (string shapefilePath in shapefiles)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
+
+                    // 模式1: (数字)SLZYZC 或 （数字）SLZYZC
+                    if (System.Text.RegularExpressions.Regex.IsMatch(fileName, @"^[（(]\d+[）)]SLZYZC$"))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到带县代码的SLZYZC文件: {fileName}");
+                        return fileName;
+                    }
+                }
+
+                // 如果没有找到带县代码的，查找标准的SLZYZC文件
+                foreach (string shapefilePath in shapefiles)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
+
+                    // 模式2: 精确匹配 SLZYZC
+                    if (fileName.Equals("SLZYZC", StringComparison.OrdinalIgnoreCase))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到标准SLZYZC文件: {fileName}");
+                        return fileName;
+                    }
+                }
+
+                // 最后尝试模糊匹配包含SLZYZC的文件
+                foreach (string shapefilePath in shapefiles)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
+
+                    // 模式3: 包含SLZYZC的文件
+                    if (fileName.Contains("SLZYZC"))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到包含SLZYZC的文件: {fileName}");
+                        return fileName;
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine("未找到任何符合模式的SLZYZC Shapefile文件");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"查找SLZYZC Shapefile文件时出错: {ex.Message}");
+                return null;
+            }
         }
 
         /// <summary>
