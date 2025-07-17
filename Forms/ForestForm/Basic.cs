@@ -2700,8 +2700,8 @@ namespace ForestResourcePlugin
                 string countyCode = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyCode(countyName);
 
                 // 构建A2表格文件路径
-                string countyFolderName = $"{countyName}（{countyCode}）全民所有自然资源资产清查数据成果";
-                string tableA2Name = $"（{countyCode}）全民所有森林资源资产清查实物量汇总表.xls";
+                string countyFolderName = $"{countyName}({countyCode})全民所有自然资源资产清查数据成果";
+                string tableA2Name = $"({countyCode})全民所有森林资源资产清查实物量汇总表.xls";
                 string tableA2Path = System.IO.Path.Combine(txtOutputPath.Text, countyFolderName, "汇总表格", "森林", tableA2Name);
 
                 return tableA2Path;
@@ -2805,7 +2805,7 @@ namespace ForestResourcePlugin
                 ZTBXJ = featureClass.FindField("ZTBXJ"),            // 子图斑蓄积
                 LING_ZU = featureClass.FindField("LING_ZU"),        // 龄组
                 MGQZS = featureClass.FindField("MGQZS"),            // 每公顷株数
-                PCDL = featureClass.FindField("PCDL")               // 普查地类
+                GTDCDLMC = featureClass.FindField("GTDCDLMC")               // 普查地类
             };
         }
 
@@ -2826,24 +2826,24 @@ namespace ForestResourcePlugin
                 string forestType = GetFieldStringValue(feature, fieldIndices.LZ);
                 string origin = GetFieldStringValue(feature, fieldIndices.QY);
                 string ageGroup = GetFieldStringValue(feature, fieldIndices.LING_ZU);
-                string surveyLandType = GetFieldStringValue(feature, fieldIndices.PCDL);
+                string surveyLandType = GetFieldStringValue(feature, fieldIndices.GTDCDLMC);
 
                 double area = GetFieldDoubleValue(feature, fieldIndices.ZTBMJ);
                 double volume = GetFieldDoubleValue(feature, fieldIndices.ZTBXJ);
                 int stocksPerHectare = GetFieldIntValue(feature, fieldIndices.MGQZS);
 
-                // 创建统计键值（用于分组统计）
-                string statisticsKey = $"{landOwnership}|{forestOwnership}|{forestType}|{origin}";
+                // 创建统计键值（用于分组统计）- 允许各组成部分为空
+                string statisticsKey = CreateUniqueStatisticsKey(landOwnership, forestOwnership, forestType, origin);
 
                 // 确保统计项存在
                 if (!statistics.StatisticsItems.ContainsKey(statisticsKey))
                 {
                     statistics.StatisticsItems[statisticsKey] = new ForestStatisticsItem
                     {
-                        LandOwnership = landOwnership,
-                        ForestOwnership = forestOwnership,
-                        ForestType = forestType,
-                        Origin = origin
+                        LandOwnership = landOwnership ?? "",
+                        ForestOwnership = forestOwnership ?? "",
+                        ForestType = forestType ?? "",
+                        Origin = origin ?? ""
                     };
                 }
 
@@ -2904,7 +2904,25 @@ namespace ForestResourcePlugin
                 System.Diagnostics.Debug.WriteLine($"处理要素统计时出错: {ex.Message}");
             }
         }
+        /// <summary>
+        /// 创建唯一的统计键值，允许各组成部分为空
+        /// </summary>
+        /// <param name="landOwnership">土地权属</param>
+        /// <param name="forestOwnership">林木所有权</param>
+        /// <param name="forestType">林种</param>
+        /// <param name="origin">起源</param>
+        /// <returns>唯一的统计键值</returns>
+        private string CreateUniqueStatisticsKey(string landOwnership, string forestOwnership, string forestType, string origin)
+        {
+            // 将null值转换为空字符串，确保一致性
+            string normalizedLandOwnership = landOwnership ?? "";
+            string normalizedForestOwnership = forestOwnership ?? "";
+            string normalizedForestType = forestType ?? "";
+            string normalizedOrigin = origin ?? "";
 
+            // 使用特殊分隔符创建唯一键，避免不同组合产生相同键值
+            return $"{normalizedLandOwnership}|{normalizedForestOwnership}|{normalizedForestType}|{normalizedOrigin}";
+        }
         /// <summary>
         /// 获取字符串字段值
         /// </summary>
@@ -3155,7 +3173,7 @@ namespace ForestResourcePlugin
             public int ZTBXJ { get; set; } = -1;       // 子图斑蓄积
             public int LING_ZU { get; set; } = -1;     // 龄组
             public int MGQZS { get; set; } = -1;       // 每公顷株数
-            public int PCDL { get; set; } = -1;        // 普查地类
+            public int GTDCDLMC { get; set; } = -1;        // 国土调查地类名称
         }
     }
 
