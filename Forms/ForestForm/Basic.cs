@@ -910,12 +910,6 @@ namespace ForestResourcePlugin
                 progressBar.Value = 100;
                 UpdateStatus("批量处理完成！");
 
-                // 6. 询问是否打开输出文件夹
-                if (MessageBox.Show("是否打开输出文件夹？", "处理完成",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                {
-                    System.Diagnostics.Process.Start("explorer.exe", txtOutputPath.Text);
-                }
             }
             catch (OperationCanceledException)
             {
@@ -2205,6 +2199,367 @@ namespace ForestResourcePlugin
             public DataTable PreviewData { get; set; }
             public int TotalCount { get; set; } = 0;
             public int ProcessedCount { get; set; } = 0;
+        }
+
+        private void buttonLDHSJGPath_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (var dialog = new FolderBrowserDialog())
+                {
+                    dialog.Description = "请选择包含LDHSJG数据的根文件夹";
+                    dialog.ShowNewFolderButton = false;
+
+                    if (dialog.ShowDialog() == DialogResult.OK)
+                    {
+                        string selectedPath = dialog.SelectedPath;
+
+                        // 显示选择的路径到textbox（假设textbox名称为txtLDHSJGPath）
+                        // 如果textbox不存在，您需要添加一个
+                        if (this.Controls.Find("txtLDHSJGPath", true).FirstOrDefault() is TextBox txtLDHSJG)
+                        {
+                            txtLDHSJG.Text = selectedPath;
+                        }
+
+                        // 查找并匹配LDHSJG文件
+                        var ldhsjgFiles = FindAndMatchLDHSJGFiles(selectedPath);
+
+                        // 显示匹配结果
+                        DisplayLDHSJGMatchResults(ldhsjgFiles);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"选择LDHSJG数据路径时出错：{ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                UpdateStatus("选择LDHSJG数据路径失败");
+                System.Diagnostics.Debug.WriteLine($"buttonLDHSJGPath_Click出错: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// 查找并匹配LDHSJG文件到对应的县
+        /// </summary>
+        /// <param name="rootPath">根文件夹路径</param>
+        /// <returns>匹配结果列表</returns>
+        private List<LDHSJGFileInfo> FindAndMatchLDHSJGFiles(string rootPath)
+        {
+            var ldhsjgFiles = new List<LDHSJGFileInfo>();
+
+            try
+            {
+                UpdateStatus("正在搜索LDHSJG数据文件...");
+
+                // 获取已加载的县名列表
+                var availableCounties = GetCountyNamesFromDataSources();
+                System.Diagnostics.Debug.WriteLine($"可用县名: {string.Join(", ", availableCounties)}");
+
+                // 遍历根目录下的所有文件夹（第一级）
+                var firstLevelDirectories = Directory.GetDirectories(rootPath);
+                System.Diagnostics.Debug.WriteLine($"找到 {firstLevelDirectories.Length} 个第一级目录");
+
+                foreach (var firstLevelDir in firstLevelDirectories)
+                {
+                    // 遍历第二级目录（这些应该包含县名）
+                    var secondLevelDirectories = Directory.GetDirectories(firstLevelDir);
+                    System.Diagnostics.Debug.WriteLine($"在 {System.IO.Path.GetFileName(firstLevelDir)} 中找到 {secondLevelDirectories.Length} 个第二级目录");
+
+                    foreach (var secondLevelDir in secondLevelDirectories)
+                    {
+                        string directoryName = System.IO.Path.GetFileName(secondLevelDir);
+                        System.Diagnostics.Debug.WriteLine($"正在处理第二级目录: {directoryName}");
+
+                        // 尝试从目录名中提取县名
+                        string extractedCountyName = ExtractCountyNameFromDirectory(directoryName, availableCounties);
+
+                        if (!string.IsNullOrEmpty(extractedCountyName))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"成功匹配县名: {directoryName} -> {extractedCountyName}");
+
+                            // 在该目录及其子目录中查找LDHSJG文件
+                            var foundFiles = FindLDHSJGFilesInDirectory(secondLevelDir);
+
+                            foreach (var filePath in foundFiles)
+                            {
+                                var ldhsjgInfo = new LDHSJGFileInfo
+                                {
+                                    FilePath = filePath,
+                                    CountyName = extractedCountyName,
+                                    DirectoryName = directoryName,
+                                    FileName = System.IO.Path.GetFileNameWithoutExtension(filePath),
+                                    IsMatched = true
+                                };
+
+                                ldhsjgFiles.Add(ldhsjgInfo);
+                                System.Diagnostics.Debug.WriteLine($"添加LDHSJG文件: {ldhsjgInfo.FileName} -> {extractedCountyName}");
+                            }
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"未能匹配县名: {directoryName}");
+
+                            // 即使未匹配到县名，也记录找到的LDHSJG文件
+                            var foundFiles = FindLDHSJGFilesInDirectory(secondLevelDir);
+                            foreach (var filePath in foundFiles)
+                            {
+                                var ldhsjgInfo = new LDHSJGFileInfo
+                                {
+                                    FilePath = filePath,
+                                    CountyName = "未匹配",
+                                    DirectoryName = directoryName,
+                                    FileName = System.IO.Path.GetFileNameWithoutExtension(filePath),
+                                    IsMatched = false
+                                };
+
+                                ldhsjgFiles.Add(ldhsjgInfo);
+                            }
+                        }
+                    }
+                }
+
+                UpdateStatus($"LDHSJG文件搜索完成，找到 {ldhsjgFiles.Count} 个文件");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"查找LDHSJG文件时出错: {ex.Message}");
+                UpdateStatus("搜索LDHSJG文件时出错");
+                throw;
+            }
+
+            return ldhsjgFiles;
+        }
+
+        /// <summary>
+        /// 在指定目录中查找包含LDHSJG的shapefile文件
+        /// </summary>
+        /// <param name="directory">要搜索的目录</param>
+        /// <returns>找到的文件路径列表</returns>
+        private List<string> FindLDHSJGFilesInDirectory(string directory)
+        {
+            var foundFiles = new List<string>();
+
+            try
+            {
+                // 递归搜索所有.shp文件
+                var shapefiles = Directory.GetFiles(directory, "*.shp", SearchOption.AllDirectories);
+
+                // 筛选包含LDHSJG的文件
+                foreach (var shpFile in shapefiles)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(shpFile);
+                    if (fileName.IndexOf("LDHSJG", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        foundFiles.Add(shpFile);
+                        System.Diagnostics.Debug.WriteLine($"找到LDHSJG文件: {shpFile}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"在目录 {directory} 中搜索LDHSJG文件时出错: {ex.Message}");
+            }
+
+            return foundFiles;
+        }
+
+        /// <summary>
+        /// 从目录名中提取县名
+        /// </summary>
+        /// <param name="directoryName">目录名称</param>
+        /// <param name="availableCounties">可用的县名列表</param>
+        /// <returns>匹配的县名，如果没有匹配则返回空字符串</returns>
+        private string ExtractCountyNameFromDirectory(string directoryName, HashSet<string> availableCounties)
+        {
+            try
+            {
+                // 方法1：直接匹配
+                foreach (var countyName in availableCounties)
+                {
+                    if (directoryName.Contains(countyName))
+                    {
+                        return countyName;
+                    }
+                }
+
+                // 方法2：清理目录名后再匹配
+                string cleanedDirectoryName = CleanDirectoryName(directoryName);
+
+                foreach (var countyName in availableCounties)
+                {
+                    if (cleanedDirectoryName.Contains(countyName) || countyName.Contains(cleanedDirectoryName))
+                    {
+                        return countyName;
+                    }
+                }
+
+                // 方法3：模糊匹配 - 去除常见后缀后匹配
+                var commonSuffixes = new[] { "县", "市", "区", "全民所有自然资源资产清查数据成果", "成果", "数据" };
+                string simplifiedName = directoryName;
+
+                foreach (var suffix in commonSuffixes)
+                {
+                    simplifiedName = simplifiedName.Replace(suffix, "");
+                }
+
+                foreach (var countyName in availableCounties)
+                {
+                    string simplifiedCounty = countyName;
+                    foreach (var suffix in commonSuffixes)
+                    {
+                        simplifiedCounty = simplifiedCounty.Replace(suffix, "");
+                    }
+
+                    if (simplifiedName.Contains(simplifiedCounty) || simplifiedCounty.Contains(simplifiedName))
+                    {
+                        return countyName;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"提取县名时出错: {ex.Message}");
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// 清理目录名称，移除特殊字符和编码
+        /// </summary>
+        /// <param name="directoryName">原始目录名</param>
+        /// <returns>清理后的目录名</returns>
+        private string CleanDirectoryName(string directoryName)
+        {
+            if (string.IsNullOrEmpty(directoryName))
+                return string.Empty;
+
+            // 移除括号及其内容
+            string cleaned = System.Text.RegularExpressions.Regex.Replace(directoryName, @"[（(].*?[）)]", "");
+
+            // 移除特定关键词
+            var keywordsToRemove = new[] { "全民所有自然资源资产清查数据成果", "成果", "数据", "清查" };
+            foreach (var keyword in keywordsToRemove)
+            {
+                cleaned = cleaned.Replace(keyword, "");
+            }
+
+            return cleaned.Trim();
+        }
+
+        /// <summary>
+        /// 显示LDHSJG文件匹配结果
+        /// </summary>
+        /// <param name="ldhsjgFiles">匹配结果列表</param>
+        private void DisplayLDHSJGMatchResults(List<LDHSJGFileInfo> ldhsjgFiles)
+        {
+            try
+            {
+                var matchedFiles = ldhsjgFiles.Where(f => f.IsMatched).ToList();
+                var unmatchedFiles = ldhsjgFiles.Where(f => !f.IsMatched).ToList();
+
+                // 将匹配的LDHSJG文件转换为SourceDataFileInfo格式并保存到SharedDataManager
+                var sourceDataFiles = new List<SourceDataFileInfo>();
+                foreach (var ldhsjgFile in matchedFiles)
+                {
+                    var sourceDataFile = new SourceDataFileInfo
+                    {
+                        FullPath = ldhsjgFile.FilePath,
+                        DisplayName = ldhsjgFile.CountyName,
+                        IsGdb = false,
+                        GeometryType = ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon
+                    };
+                    sourceDataFiles.Add(sourceDataFile);
+                }
+
+                // 保存到SharedDataManager
+                ForestResourcePlugin.SharedDataManager.SetLDHSJGFiles(sourceDataFiles);
+
+                string message = $"LDHSJG文件搜索完成！\n\n";
+                message += $"搜索结果统计：\n";
+                message += $"总文件数：{ldhsjgFiles.Count}\n";
+                message += $"成功匹配：{matchedFiles.Count} 个文件\n";
+                message += $"未匹配：{unmatchedFiles.Count} 个文件\n\n";
+
+                if (matchedFiles.Count > 0)
+                {
+                    message += "成功匹配的文件：\n";
+                    var groupedByCounty = matchedFiles.GroupBy(f => f.CountyName);
+                    foreach (var group in groupedByCounty)
+                    {
+                        message += $"▶ {group.Key}: {group.Count()} 个文件\n";
+                        foreach (var file in group.Take(3)) // 只显示前3个
+                        {
+                            message += $"  - {file.FileName}\n";
+                        }
+                        if (group.Count() > 3)
+                        {
+                            message += $"  - ... 还有 {group.Count() - 3} 个文件\n";
+                        }
+                    }
+                    message += "\n";
+                }
+
+                if (unmatchedFiles.Count > 0)
+                {
+                    message += "未匹配的文件：\n";
+                    foreach (var file in unmatchedFiles.Take(5)) // 只显示前5个
+                    {
+                        message += $"- {file.FileName} (目录: {file.DirectoryName})\n";
+                    }
+                    if (unmatchedFiles.Count > 5)
+                    {
+                        message += $"- ... 还有 {unmatchedFiles.Count - 5} 个未匹配文件\n";
+                    }
+                }
+
+                MessageBox.Show(message, "LDHSJG文件搜索结果",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                UpdateStatus($"LDHSJG数据加载完成：{matchedFiles.Count} 个文件已匹配并保存到共享数据管理器");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"显示LDHSJG匹配结果时出错: {ex.Message}");
+                MessageBox.Show($"显示搜索结果时出错：{ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// LDHSJG文件信息类
+        /// </summary>
+        private class LDHSJGFileInfo
+        {
+            /// <summary>
+            /// 文件完整路径
+            /// </summary>
+            public string FilePath { get; set; }
+
+            /// <summary>
+            /// 匹配的县名
+            /// </summary>
+            public string CountyName { get; set; }
+
+            /// <summary>
+            /// 所在目录名称
+            /// </summary>
+            public string DirectoryName { get; set; }
+
+            /// <summary>
+            /// 文件名（不含扩展名）
+            /// </summary>
+            public string FileName { get; set; }
+
+            /// <summary>
+            /// 是否成功匹配到县
+            /// </summary>
+            public bool IsMatched { get; set; }
+
+            public override string ToString()
+            {
+                return $"{FileName} -> {CountyName} ({(IsMatched ? "已匹配" : "未匹配")})";
+            }
         }
     }
 

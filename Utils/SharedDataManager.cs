@@ -57,6 +57,50 @@ namespace ForestResourcePlugin
             return new List<SourceDataFileInfo>(sourceDataFiles);
         }
 
+        // 添加LDHSJG文件管理
+        private static List<SourceDataFileInfo> ldhsjgFiles = new List<SourceDataFileInfo>();
+
+        /// <summary>
+        /// 设置LDHSJG文件列表
+        /// </summary>
+        /// <param name="files">LDHSJG文件列表</param>
+        public static void SetLDHSJGFiles(List<SourceDataFileInfo> files)
+        {
+            ldhsjgFiles = files ?? new List<SourceDataFileInfo>();
+            System.Diagnostics.Debug.WriteLine($"SharedDataManager: 设置了 {ldhsjgFiles.Count} 个LDHSJG文件");
+        }
+
+        /// <summary>
+        /// 获取LDHSJG文件列表
+        /// </summary>
+        /// <returns>LDHSJG文件列表</returns>
+        public static List<SourceDataFileInfo> GetLDHSJGFiles()
+        {
+            return new List<SourceDataFileInfo>(ldhsjgFiles);
+        }
+
+        /// <summary>
+        /// 添加LDHSJG文件
+        /// </summary>
+        /// <param name="file">要添加的LDHSJG文件</param>
+        public static void AddLDHSJGFile(SourceDataFileInfo file)
+        {
+            if (file != null)
+            {
+                ldhsjgFiles.Add(file);
+                System.Diagnostics.Debug.WriteLine($"SharedDataManager: 添加了LDHSJG文件 {file.DisplayName}");
+            }
+        }
+
+        /// <summary>
+        /// 清空LDHSJG文件列表
+        /// </summary>
+        public static void ClearLDHSJGFiles()
+        {
+            ldhsjgFiles.Clear();
+            System.Diagnostics.Debug.WriteLine("SharedDataManager: 已清空LDHSJG文件列表");
+        }
+
         /// <summary>
         /// 设置CZKFBJ文件列表（城镇开发边界数据）
         /// </summary>

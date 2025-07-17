@@ -123,6 +123,7 @@
             this.forestResultsTextBox = new System.Windows.Forms.TextBox();
             this.forestResourceChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.forestWorkflowImage = new System.Windows.Forms.PictureBox();
+            this.buttonForestExcel = new System.Windows.Forms.Button();
             this.mainPanel.SuspendLayout();
             this.tabControlMain.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -176,6 +177,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.buttonForestExcel);
             this.tabPage2.Controls.Add(this.showForestWorkflowDetails);
             this.tabPage2.Controls.Add(this.forestDetailPanel);
             this.tabPage2.Controls.Add(this.btnForestExtractScope);
@@ -711,6 +713,18 @@
             this.forestWorkflowImage.TabStop = false;
             this.forestWorkflowImage.Visible = false;
             // 
+            // buttonForestExcel
+            // 
+            this.buttonForestExcel.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.buttonForestExcel.Location = new System.Drawing.Point(933, 45);
+            this.buttonForestExcel.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonForestExcel.Name = "buttonForestExcel";
+            this.buttonForestExcel.Size = new System.Drawing.Size(202, 45);
+            this.buttonForestExcel.TabIndex = 11;
+            this.buttonForestExcel.Text = "4. 导出汇总表";
+            this.buttonForestExcel.UseVisualStyleBackColor = true;
+            this.buttonForestExcel.Click += new System.EventHandler(this.buttonForestExcel_Click);
+            // 
             // MainProcessingTabsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
@@ -742,5 +756,7 @@
             this.ResumeLayout(false);
 
         }
+
+        private System.Windows.Forms.Button buttonForestExcel;
     }
 }

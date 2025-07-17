@@ -513,6 +513,7 @@ namespace ForestResourcePlugin
             IFeatureCursor sourceCursor = null;
             IFeatureBuffer targetBuffer = null;
             IFeatureCursor insertCursor = null;
+            IFeatureClass ldhsjgFeatureClass = null;
 
             try
             {
@@ -546,6 +547,26 @@ namespace ForestResourcePlugin
                 int czkfbjmjIndex = targetFeatureClass.FindField("CZKFBJMJ");
                 int gtdctbmjIndex = targetFeatureClass.FindField("GTDCTBMJ");
 
+                // 获取LDHSJG相关字段索引
+                int zcqcbsmIndex = targetFeatureClass.FindField("ZCQCBSM");
+                int ysdmIndex = targetFeatureClass.FindField("YSDM");
+                int xzqmcIndex = targetFeatureClass.FindField("XZQMC");
+                int xzqdmIndex = targetFeatureClass.FindField("XZQDM");
+                int hsjgIndex = targetFeatureClass.FindField("HSJG");
+
+                // 获取对应县的LDHSJG数据
+                var ldhsjgData = GetLDHSJGDataForCounty(countyName);
+                if (ldhsjgData.featureClass != null)
+                {
+                    ldhsjgFeatureClass = ldhsjgData.featureClass;
+                    int ldhsjgFeatureCount = ldhsjgFeatureClass.FeatureCount(null);
+                    System.Diagnostics.Debug.WriteLine($"找到{countyName}的LDHSJG数据，包含{ldhsjgFeatureCount}个要素");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"警告：未找到{countyName}的LDHSJG数据");
+                }
+
                 // 创建游标
                 sourceCursor = sourceFeatureClass.Search(null, false);
                 targetBuffer = targetFeatureClass.CreateFeatureBuffer();
@@ -563,7 +584,7 @@ namespace ForestResourcePlugin
                             targetBuffer.Shape = sourceFeature.ShapeCopy;
                         }
 
-                        // 复制属性
+                        // 复制基本属性
                         foreach (var mapping in fieldMappings)
                         {
                             string targetField = mapping.Key;
@@ -617,6 +638,37 @@ namespace ForestResourcePlugin
                             System.Diagnostics.Debug.WriteLine($"最终CZKFBJMJ值: {intersectionArea:F2}");
                         }
 
+                        // 处理LDHSJG相关字段
+                        if (ldhsjgFeatureClass != null)
+                        {
+                            var ldhsjgValues = GetLDHSJGValuesForFeature(sourceFeature, ldhsjgFeatureClass, countyName);
+
+                            if (zcqcbsmIndex != -1 && !string.IsNullOrEmpty(ldhsjgValues.ZCQCBSM))
+                            {
+                                targetBuffer.set_Value(zcqcbsmIndex, ldhsjgValues.ZCQCBSM);
+                            }
+
+                            if (ysdmIndex != -1 && !string.IsNullOrEmpty(ldhsjgValues.YSDM))
+                            {
+                                targetBuffer.set_Value(ysdmIndex, ldhsjgValues.YSDM);
+                            }
+
+                            if (xzqmcIndex != -1 && !string.IsNullOrEmpty(ldhsjgValues.XZQMC))
+                            {
+                                targetBuffer.set_Value(xzqmcIndex, ldhsjgValues.XZQMC);
+                            }
+
+                            if (xzqdmIndex != -1 && !string.IsNullOrEmpty(ldhsjgValues.XZQDM))
+                            {
+                                targetBuffer.set_Value(xzqdmIndex, ldhsjgValues.XZQDM);
+                            }
+
+                            if (hsjgIndex != -1 && ldhsjgValues.HSJG != null)
+                            {
+                                targetBuffer.set_Value(hsjgIndex, ldhsjgValues.HSJG);
+                            }
+                        }
+
                         // 插入要素
                         insertCursor.InsertFeature(targetBuffer);
                         successCount++;
@@ -658,7 +710,146 @@ namespace ForestResourcePlugin
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(targetBuffer);
                 if (insertCursor != null)
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(insertCursor);
+                if (ldhsjgFeatureClass != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(ldhsjgFeatureClass);
             }
+        }
+
+        /// <summary>
+        /// 获取指定县的LDHSJG数据
+        /// </summary>
+        /// <param name="countyName">县名</param>
+        /// <returns>LDHSJG要素类和工作空间</returns>
+        private (IWorkspace workspace, IFeatureClass featureClass) GetLDHSJGDataForCounty(string countyName)
+        {
+            try
+            {
+                // 从SharedDataManager获取LDHSJG文件列表
+                var ldhsjgFiles = SharedDataManager.GetLDHSJGFiles();
+
+                foreach (var fileInfo in ldhsjgFiles)
+                {
+                    if (fileInfo.DisplayName.Equals(countyName, StringComparison.OrdinalIgnoreCase) ||
+                        fileInfo.DisplayName.Contains(countyName))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到{countyName}的LDHSJG文件: {fileInfo.FullPath}");
+                        return OpenShapefileFeatureClass(fileInfo.FullPath);
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"未找到{countyName}的LDHSJG文件");
+                return (null, null);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"获取{countyName}的LDHSJG数据时出错: {ex.Message}");
+                return (null, null);
+            }
+        }
+
+        /// <summary>
+        /// LDHSJG字段值结构
+        /// </summary>
+        private struct LDHSJGValues
+        {
+            public string ZCQCBSM { get; set; }
+            public string YSDM { get; set; }
+            public string XZQMC { get; set; }
+            public string XZQDM { get; set; }
+            public object HSJG { get; set; }
+        }
+
+        /// <summary>
+        /// 为当前要素获取对应的LDHSJG字段值
+        /// </summary>
+        /// <param name="sourceFeature">源要素</param>
+        /// <param name="ldhsjgFeatureClass">LDHSJG要素类</param>
+        /// <param name="countyName">县名</param>
+        /// <returns>LDHSJG字段值</returns>
+        private LDHSJGValues GetLDHSJGValuesForFeature(IFeature sourceFeature, IFeatureClass ldhsjgFeatureClass, string countyName)
+        {
+            var result = new LDHSJGValues();
+
+            try
+            {
+                if (sourceFeature?.Shape == null || ldhsjgFeatureClass == null)
+                {
+                    return result;
+                }
+
+                // 获取LDHSJG字段索引
+                int zcqcbsmFieldIndex = ldhsjgFeatureClass.FindField("ZCQCBSM");
+                int ysdmFieldIndex = ldhsjgFeatureClass.FindField("YSDM");
+                int xjxzmcFieldIndex = ldhsjgFeatureClass.FindField("XJXZMC");
+                int xjxzdmFieldIndex = ldhsjgFeatureClass.FindField("XJXZDM");
+                int xjldpjjFieldIndex = ldhsjgFeatureClass.FindField("XJLDPJJ");
+
+                // 使用空间查询找到相交的LDHSJG要素
+                ISpatialFilter spatialFilter = null;
+                IFeatureCursor ldhsjgCursor = null;
+
+                try
+                {
+                    spatialFilter = new SpatialFilterClass();
+                    spatialFilter.Geometry = sourceFeature.Shape;
+                    spatialFilter.GeometryField = ldhsjgFeatureClass.ShapeFieldName;
+                    spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
+
+                    ldhsjgCursor = ldhsjgFeatureClass.Search(spatialFilter, false);
+                    IFeature ldhsjgFeature = ldhsjgCursor.NextFeature();
+
+                    if (ldhsjgFeature != null)
+                    {
+                        // 获取字段值
+                        if (zcqcbsmFieldIndex != -1)
+                        {
+                            result.ZCQCBSM = ldhsjgFeature.get_Value(zcqcbsmFieldIndex)?.ToString() ?? "";
+                        }
+
+                        if (ysdmFieldIndex != -1)
+                        {
+                            result.YSDM = ldhsjgFeature.get_Value(ysdmFieldIndex)?.ToString() ?? "";
+                        }
+
+                        if (xjxzmcFieldIndex != -1)
+                        {
+                            result.XZQMC = ldhsjgFeature.get_Value(xjxzmcFieldIndex)?.ToString() ?? "";
+                        }
+
+                        if (xjxzdmFieldIndex != -1)
+                        {
+                            result.XZQDM = ldhsjgFeature.get_Value(xjxzdmFieldIndex)?.ToString() ?? "";
+                        }
+
+                        if (xjldpjjFieldIndex != -1)
+                        {
+                            result.HSJG = ldhsjgFeature.get_Value(xjldpjjFieldIndex);
+                        }
+
+                        System.Diagnostics.Debug.WriteLine($"成功获取{countyName}的LDHSJG字段值: ZCQCBSM={result.ZCQCBSM}, YSDM={result.YSDM}");
+
+                        // 释放要素
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(ldhsjgFeature);
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"警告：未找到与当前要素相交的{countyName}的LDHSJG要素");
+                    }
+                }
+                finally
+                {
+                    if (ldhsjgCursor != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(ldhsjgCursor);
+                    if (spatialFilter != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(spatialFilter);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"获取{countyName}的LDHSJG字段值时出错: {ex.Message}");
+            }
+
+            return result;
         }
 
         /// <summary>
