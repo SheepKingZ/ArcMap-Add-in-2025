@@ -2809,7 +2809,7 @@ namespace ForestResourcePlugin
             };
         }
 
-        /// <summary>
+                /// <summary>
         /// 处理单个要素进行统计
         /// </summary>
         /// <param name="feature">要素</param>
@@ -2835,6 +2835,12 @@ namespace ForestResourcePlugin
                 // 创建统计键值（用于分组统计）- 允许各组成部分为空
                 string statisticsKey = CreateUniqueStatisticsKey(landOwnership, forestOwnership, forestType, origin);
 
+                // 添加详细的调试信息
+                System.Diagnostics.Debug.WriteLine($"处理要素 OID:{feature.OID}");
+                System.Diagnostics.Debug.WriteLine($"  landOwnership='{landOwnership}', forestOwnership='{forestOwnership}', forestType='{forestType}', origin='{origin}'");
+                System.Diagnostics.Debug.WriteLine($"  统计键值: {statisticsKey}");
+                System.Diagnostics.Debug.WriteLine($"  surveyLandType='{surveyLandType}', area={area}, volume={volume}");
+
                 // 确保统计项存在
                 if (!statistics.StatisticsItems.ContainsKey(statisticsKey))
                 {
@@ -2845,6 +2851,11 @@ namespace ForestResourcePlugin
                         ForestType = forestType ?? "",
                         Origin = origin ?? ""
                     };
+                    System.Diagnostics.Debug.WriteLine($"  创建新的统计项: {statisticsKey}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"  使用已存在的统计项: {statisticsKey}");
                 }
 
                 var item = statistics.StatisticsItems[statisticsKey];
@@ -2855,6 +2866,7 @@ namespace ForestResourcePlugin
                     case "乔木林地":
                         item.TreeLandArea += area;
                         item.TreeLandVolume += volume;
+                        System.Diagnostics.Debug.WriteLine($"  添加到乔木林地: area={area}, volume={volume}");
 
                         // 按龄组统计乔木林地
                         switch (ageGroup)
@@ -2862,22 +2874,30 @@ namespace ForestResourcePlugin
                             case "1":
                                 item.YoungForestArea += area;
                                 item.YoungForestVolume += volume;
+                                System.Diagnostics.Debug.WriteLine($"  添加到幼龄林: area={area}, volume={volume}");
                                 break;
                             case "2":
                                 item.MiddleAgedForestArea += area;
                                 item.MiddleAgedForestVolume += volume;
+                                System.Diagnostics.Debug.WriteLine($"  添加到中龄林: area={area}, volume={volume}");
                                 break;
                             case "3":
                                 item.NearMatureForestArea += area;
                                 item.NearMatureForestVolume += volume;
+                                System.Diagnostics.Debug.WriteLine($"  添加到近熟林: area={area}, volume={volume}");
                                 break;
                             case "4":
                                 item.MatureForestArea += area;
                                 item.MatureForestVolume += volume;
+                                System.Diagnostics.Debug.WriteLine($"  添加到成熟林: area={area}, volume={volume}");
                                 break;
                             case "5":
                                 item.OverMatureForestArea += area;
                                 item.OverMatureForestVolume += volume;
+                                System.Diagnostics.Debug.WriteLine($"  添加到过熟林: area={area}, volume={volume}");
+                                break;
+                            default:
+                                System.Diagnostics.Debug.WriteLine($"  未识别的龄组: '{ageGroup}'");
                                 break;
                         }
                         break;
@@ -2885,19 +2905,27 @@ namespace ForestResourcePlugin
                     case "竹林地":
                         item.BambooLandArea += area;
                         item.BambooStocks += stocksPerHectare * (area / 10000); // 转换为总株数
+                        System.Diagnostics.Debug.WriteLine($"  添加到竹林地: area={area}, stocks={stocksPerHectare * (area / 10000)}");
                         break;
 
                     case "灌木林地":
                         item.ShrubLandArea += area;
+                        System.Diagnostics.Debug.WriteLine($"  添加到灌木林地: area={area}");
                         break;
 
                     case "其他林地":
                         item.OtherForestLandArea += area;
+                        System.Diagnostics.Debug.WriteLine($"  添加到其他林地: area={area}");
+                        break;
+
+                    default:
+                        System.Diagnostics.Debug.WriteLine($"  未匹配的普查地类: '{surveyLandType}'");
                         break;
                 }
 
                 // 计算总面积
                 item.TotalArea += area;
+                System.Diagnostics.Debug.WriteLine($"  更新总面积: {item.TotalArea}");
             }
             catch (Exception ex)
             {
@@ -2920,8 +2948,9 @@ namespace ForestResourcePlugin
             string normalizedForestType = forestType ?? "";
             string normalizedOrigin = origin ?? "";
 
-            // 使用特殊分隔符创建唯一键，避免不同组合产生相同键值
-            return $"{normalizedLandOwnership}|{normalizedForestOwnership}|{normalizedForestType}|{normalizedOrigin}";
+            // 使用更明确的分隔符和长度标识符来避免冲突
+            // 格式: [长度:值]|[长度:值]|[长度:值]|[长度:值]
+            return $"[{normalizedLandOwnership.Length}:{normalizedLandOwnership}]|[{normalizedForestOwnership.Length}:{normalizedForestOwnership}]|[{normalizedForestType.Length}:{normalizedForestType}]|[{normalizedOrigin.Length}:{normalizedOrigin}]";
         }
         /// <summary>
         /// 获取字符串字段值
@@ -3070,10 +3099,10 @@ namespace ForestResourcePlugin
         {
             switch (code)
             {
-                case "10": return "国有";
-                case "20": return "国有";
-                case "30": return "集体";
-                case "40": return "集体";
+                case "10": return "10";
+                case "20": return "20";
+                case "30": return "30";
+                case "40": return "40";
                 default: return code;
             }
         }
