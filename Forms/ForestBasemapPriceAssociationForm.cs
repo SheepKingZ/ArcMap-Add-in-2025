@@ -11,6 +11,7 @@ using ESRI.ArcGIS.Geodatabase;
 using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.DataSourcesFile;
 using ESRI.ArcGIS.DataSourcesGDB;
+using ESRI.ArcGIS.esriSystem;
 
 namespace TestArcMapAddin2.Forms
 {
@@ -184,7 +185,7 @@ namespace TestArcMapAddin2.Forms
             // 初始化模板说明文本
             InitializeTemplateText();
             
-            // 更新映射状态
+            // 更新映射狀態
             UpdatePriceMappingDisplay();
         }
 
@@ -1166,6 +1167,8 @@ namespace TestArcMapAddin2.Forms
             // 🔥 增强进度跟踪：获取总图斑数和添加详细统计
             int totalFeatures = statusFC.FeatureCount(null);
             int processedFeatures = 0;
+            int successfulFeatures = 0;  // 🔥 新增：成功处理的要素数
+            int failedFeatures = 0;      // 🔥 新增：失败的要素数
             var processingStartTime = DateTime.Now;
             var lastProgressUpdate = DateTime.Now;
 
@@ -1176,12 +1179,42 @@ namespace TestArcMapAddin2.Forms
             {
                 try
                 {
+                    // 🔥 增强：验证状态要素的有效性
+                    if (statusFeature.Shape == null || statusFeature.Shape.IsEmpty)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"{pair.AdminName}: 跳过空几何要素 OID={statusFeature.OID}");
+                        failedFeatures++;
+                        processedFeatures++;
+                        continue;
+                    }
+
                     var outputFeatureBuffer = outputFC.CreateFeatureBuffer();
                     outputFeatureBuffer.Shape = statusFeature.Shape;
-                    SetLDHSJGFieldValues(outputFeatureBuffer, statusFeature, priceFC, pair, sequenceNumber);
-                    outputCursor.InsertFeature(outputFeatureBuffer);
                     
-                    sequenceNumber++;
+                    // 🔥 增强：安全的字段值设置
+                    try
+                    {
+                        SetLDHSJGFieldValues(outputFeatureBuffer, statusFeature, priceFC, pair, sequenceNumber);
+                        outputCursor.InsertFeature(outputFeatureBuffer);
+                        successfulFeatures++;
+                        sequenceNumber++;
+                    }
+                    catch (Exception fieldEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"{pair.AdminName}: 设置字段值时出错 (OID={statusFeature.OID}): {fieldEx.Message}");
+                        failedFeatures++;
+                        
+                        // 🔥 如果是连州市的特定错误，记录详细信息
+                        if (pair.AdminName == "连州市")
+                        {
+                            System.Diagnostics.Debug.WriteLine($"连州市特定错误详情: {fieldEx.GetType().Name} - {fieldEx.Message}");
+                            if (fieldEx.InnerException != null)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"内部异常: {fieldEx.InnerException.Message}");
+                            }
+                        }
+                    }
+                    
                     processedFeatures++;
                     
                     // 🔥 增强进度显示：每处理10个图斑或每3秒更新一次进度
@@ -1209,6 +1242,12 @@ namespace TestArcMapAddin2.Forms
                             }
                         }
                         
+                        // 🔥 增强：显示成功/失败统计
+                        if (failedFeatures > 0)
+                        {
+                            statusMessage += $" | 成功: {successfulFeatures}, 失败: {failedFeatures}";
+                        }
+                        
                         // 🔥 线程安全的UI更新
                         try
                         {
@@ -1234,6 +1273,7 @@ namespace TestArcMapAddin2.Forms
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"{pair.AdminName}: 处理图斑 {processedFeatures + 1} 时出错: {ex.Message}");
+                    failedFeatures++;
                     processedFeatures++;
                 }
                 finally
@@ -1251,8 +1291,18 @@ namespace TestArcMapAddin2.Forms
             
             // 🔥 处理完成后的最终统计
             var totalTime = DateTime.Now - processingStartTime;
-            var finalStatus = $"✅ 完成 {pair.AdminName} 处理 - 总计: {processedFeatures} 个图斑，用时: {totalTime:mm\\:ss}";
+            var finalStatus = $"✅ 完成 {pair.AdminName} 处理 - 总计: {processedFeatures} 个图斑，成功: {successfulFeatures}，失败: {failedFeatures}，用时: {totalTime:mm\\:ss}";
             System.Diagnostics.Debug.WriteLine(finalStatus);
+            
+            // 🔥 增强：如果失败率过高，给出警告
+            if (failedFeatures > 0)
+            {
+                double failureRate = (double)failedFeatures / processedFeatures * 100;
+                if (failureRate > 10) // 失败率超过10%
+                {
+                    System.Diagnostics.Debug.WriteLine($"警告：{pair.AdminName} 的失败率较高 ({failureRate:F1}%)，建议检查数据质量");
+                }
+            }
             
             try
             {
@@ -1324,8 +1374,23 @@ namespace TestArcMapAddin2.Forms
             
             try
             {
+                // 🔥 增强：验证输入参数
+                if (statusFeature?.Shape == null || statusFeature.Shape.IsEmpty)
+                {
+                    System.Diagnostics.Debug.WriteLine("警告：状态要素的几何对象为空或无效");
+                    return "";
+                }
+
+                // 🔥 增强：验证几何对象的有效性
+                var statusGeometry = statusFeature.Shape;
+                if (statusGeometry.GeometryType != esriGeometryType.esriGeometryPolygon)
+                {
+                    System.Diagnostics.Debug.WriteLine($"警告：状态要素几何类型异常: {statusGeometry.GeometryType}");
+                    return "";
+                }
+
                 spatialFilter = new SpatialFilterClass();
-                spatialFilter.Geometry = statusFeature.Shape;
+                spatialFilter.Geometry = statusGeometry;
                 spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
                 
                 cursor = priceFC.Search(spatialFilter, false);
@@ -1338,31 +1403,99 @@ namespace TestArcMapAddin2.Forms
                 {
                     try
                     {
-                        // 计算相交面积
-                        var intersectionGeom = ((ITopologicalOperator)statusFeature.Shape).Intersect(priceFeature.Shape, esriGeometryDimension.esriGeometry2Dimension);
-                        var intersectionArea = ((IArea)intersectionGeom).Area;
-                        
-                        if (intersectionArea > maxArea)
+                        // 🔥 增强：验证地价要素的几何对象
+                        if (priceFeature.Shape == null || priceFeature.Shape.IsEmpty)
                         {
-                            maxArea = intersectionArea;
+                            System.Diagnostics.Debug.WriteLine($"跳过空几何的地价要素: OID={priceFeature.OID}");
+                            continue;
+                        }
+
+                        // 🔥 增强：坐标系检查和投影
+                        var priceGeometry = priceFeature.Shape;
+                        var statusSR = statusGeometry.SpatialReference;
+                        var priceSR = priceGeometry.SpatialReference;
+
+                        // 如果坐标系不匹配，尝试投影
+                        if (statusSR != null && priceSR != null && !statusSR.Equals(priceSR))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"检测到坐标系不匹配，正在投影...");
+                            var clonedGeometry = ((IClone)priceGeometry).Clone() as IGeometry;
+                            clonedGeometry.Project(statusSR);
+                            priceGeometry = clonedGeometry;
+                        }
+
+                        // 🔥 增强：安全的几何计算
+                        IGeometry intersectionGeom = null;
+                        try
+                        {
+                            var topoOperator = (ITopologicalOperator)statusGeometry;
+                            intersectionGeom = topoOperator.Intersect(priceGeometry, esriGeometryDimension.esriGeometry2Dimension);
                             
-                            // 获取SPLJB字段值
-                            var spljbField = priceFeature.Fields.FindField("SPLJB");
-                            if (spljbField >= 0)
+                            if (intersectionGeom != null && !intersectionGeom.IsEmpty)
                             {
-                                resultGrade = priceFeature.get_Value(spljbField)?.ToString() ?? "";
+                                var intersectionArea = Math.Abs(((IArea)intersectionGeom).Area);
+                                
+                                if (intersectionArea > maxArea)
+                                {
+                                    maxArea = intersectionArea;
+                                    
+                                    // 获取SPLJB字段值
+                                    var spljbField = priceFeature.Fields.FindField("SPLJB");
+                                    if (spljbField >= 0)
+                                    {
+                                        var fieldValue = priceFeature.get_Value(spljbField);
+                                        resultGrade = fieldValue?.ToString()?.Trim() ?? "";
+                                        
+                                        // 🔥 增强：验证字段值的有效性
+                                        if (string.IsNullOrWhiteSpace(resultGrade))
+                                        {
+                                            System.Diagnostics.Debug.WriteLine($"地价要素 OID={priceFeature.OID} 的SPLJB字段值为空");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        System.Diagnostics.Debug.WriteLine("警告：地价要素类中未找到SPLJB字段");
+                                    }
+                                }
                             }
                         }
-                        
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(intersectionGeom);
+                        catch (Exception geomEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"几何计算出错 (地价要素OID={priceFeature.OID}): {geomEx.Message}");
+                            // 继续处理下一个要素，不中断整个流程
+                        }
+                        finally
+                        {
+                            if (intersectionGeom != null)
+                            {
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(intersectionGeom);
+                            }
+                        }
+                    }
+                    catch (Exception featureEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"处理地价要素时出错 (OID={priceFeature.OID}): {featureEx.Message}");
+                        // 继续处理下一个要素
                     }
                     finally
                     {
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(priceFeature);
+                        if (priceFeature != null)
+                        {
+                            System.Runtime.InteropServices.Marshal.ReleaseComObject(priceFeature);
+                        }
                     }
                 }
                 
+                System.Diagnostics.Debug.WriteLine($"空间查询完成，最大相交面积: {maxArea:F2}, 林地级别: '{resultGrade}'");
                 return resultGrade;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"空间查询过程中发生严重错误: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"错误详情: {ex.StackTrace}");
+                
+                // 🔥 增强：返回空值而不是抛出异常，让程序能够继续处理其他要素
+                return "";
             }
             finally
             {

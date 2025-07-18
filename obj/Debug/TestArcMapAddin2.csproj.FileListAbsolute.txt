@@ -241,3 +241,4 @@ C:\Users\Realian\Desktop\LDY_Proj\obj\Debug\TestArcMapAddin2.Forms.ForestBasemap
 C:\Users\Realian\Desktop\LDY_Proj\bin\Debug\System.ValueTuple.dll
 C:\Users\Realian\Desktop\LDY_Proj\obj\Debug\TestArcMapAddin2.csproj.AssemblyReference.cache
 C:\Users\Realian\Desktop\LDY_Proj\obj\Debug\TestArcM.3342E52C.Up2Date
+C:\Users\Realian\Desktop\LDY_Proj\obj\Debug\TestArcMapAddin2.Forms.ForestPriceSupplementForm.resources

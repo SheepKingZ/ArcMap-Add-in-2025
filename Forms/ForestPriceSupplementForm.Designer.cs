@@ -189,9 +189,9 @@ namespace TestArcMapAddin2.Forms
             // 
             this.label2.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 35);
+            this.label2.Location = new System.Drawing.Point(3, 40);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(86, 35);
+            this.label2.Size = new System.Drawing.Size(86, 24);
             this.label2.TabIndex = 3;
             this.label2.Text = "输出路径:";
             // 
@@ -221,7 +221,7 @@ namespace TestArcMapAddin2.Forms
             // 
             this.btnImportPriceMapping.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.btnImportPriceMapping.BackColor = System.Drawing.Color.LightBlue;
-            this.btnImportPriceMapping.Location = new System.Drawing.Point(10, 84);
+            this.btnImportPriceMapping.Location = new System.Drawing.Point(10, 82);
             this.btnImportPriceMapping.Name = "btnImportPriceMapping";
             this.btnImportPriceMapping.Size = new System.Drawing.Size(130, 30);
             this.btnImportPriceMapping.TabIndex = 6;
@@ -235,7 +235,7 @@ namespace TestArcMapAddin2.Forms
             this.btnScanData.BackColor = System.Drawing.Color.LightGreen;
             this.btnScanData.Enabled = false;
             this.btnScanData.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnScanData.Location = new System.Drawing.Point(512, 84);
+            this.btnScanData.Location = new System.Drawing.Point(452, 82);
             this.btnScanData.Name = "btnScanData";
             this.btnScanData.Size = new System.Drawing.Size(120, 30);
             this.btnScanData.TabIndex = 7;
@@ -399,7 +399,8 @@ namespace TestArcMapAddin2.Forms
             this.txtTemplate.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtTemplate.Size = new System.Drawing.Size(1074, 125);
             this.txtTemplate.TabIndex = 0;
-            this.txtTemplate.Text = "价格映射表格式说明：\r\n第1列：行政区名称\r\n第2列：行政区代码（6位数字）\r\n第3-7列：1-5级林地价格（万元/公顷）\r\n\r\n文件格式：CSV格式，逗号分隔\r\n编码要求：UTF-8编码";
+            this.txtTemplate.Text = "价格映射表格式说明：\r\n第1列：行政区名称\r\n第2列：行政区代码（6位数字）\r\n第3-7列：1-5级林地价格（万元/公顷）\r\n\r\n文件格式：CSV格式，逗号分隔\r" +
+    "\n编码要求：UTF-8编码";
             // 
             // btnExportTemplate
             // 
@@ -458,7 +459,7 @@ namespace TestArcMapAddin2.Forms
             // 
             // ForestPriceSupplementForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1100, 700);
             this.Controls.Add(this.mainTabControl);

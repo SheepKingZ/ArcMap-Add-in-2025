@@ -296,6 +296,9 @@
     <EmbeddedResource Include="Forms\ForestForm\Basic.resx">
       <DependentUpon>Basic.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ForestPriceSupplementForm.resx">
+      <DependentUpon>ForestPriceSupplementForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\MainProcessingTabsForm.resx">
       <DependentUpon>MainProcessingTabsForm.cs</DependentUpon>
     </EmbeddedResource>
