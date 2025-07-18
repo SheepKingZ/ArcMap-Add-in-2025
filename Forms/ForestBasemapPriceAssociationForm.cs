@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -16,16 +16,16 @@ namespace TestArcMapAddin2.Forms
 {
     public partial class ForestBasemapPriceAssociationForm : Form
     {
-        // Êı¾İÂ·¾¶
+        // æ•°æ®è·¯å¾„
         private string landGradePricePath = "";
         private string forestResourcePath = "";
         private string outputPath = "";
         private string priceExcelPath = "";
 
-        // Åä¶ÔÊı¾İ
+        // é…å¯¹æ•°æ®
         private List<DataPairInfo> dataPairs = new List<DataPairInfo>();
 
-        // ¼Û¸ñÓ³Éä±í
+        // ä»·æ ¼æ˜ å°„è¡¨
         private Dictionary<string, Dictionary<string, double>> priceMapping = new Dictionary<string, Dictionary<string, double>>();
 
         public ForestBasemapPriceAssociationForm()
@@ -36,19 +36,19 @@ namespace TestArcMapAddin2.Forms
 
         private void InitializeForm()
         {
-            // ³õÊ¼»¯¿Ø¼ş×´Ì¬
+            // åˆå§‹åŒ–æ§ä»¶çŠ¶æ€
             btnPairData.Enabled = false;
             btnProcessData.Enabled = false;
             btnImportPriceMapping.Enabled = true;
 
-            // ÉèÖÃ½ø¶ÈÌõ
+            // è®¾ç½®è¿›åº¦æ¡
             progressBar.Value = 0;
-            statusLabel.Text = "¾ÍĞ÷";
+            statusLabel.Text = "å°±ç»ª";
 
-            // ³õÊ¼»¯Êı¾İÍø¸ñ
+            // åˆå§‹åŒ–æ•°æ®ç½‘æ ¼
             InitializeDataGrid();
             
-            // ³õÊ¼»¯¼Û¸ñÓ³Éä±í½çÃæ
+            // åˆå§‹åŒ–ä»·æ ¼æ˜ å°„è¡¨ç•Œé¢
             InitializePriceMappingInterface();
         }
 
@@ -57,76 +57,76 @@ namespace TestArcMapAddin2.Forms
             dataGridViewPairs.AutoGenerateColumns = false;
             dataGridViewPairs.Columns.Clear();
 
-            // Ìí¼Ó¸´Ñ¡¿òÁĞ
+            // æ·»åŠ å¤é€‰æ¡†åˆ—
             var checkColumn = new DataGridViewCheckBoxColumn
             {
                 Name = "Selected",
-                HeaderText = "Ñ¡Ôñ",
+                HeaderText = "é€‰æ‹©",
                 Width = 50,
                 DataPropertyName = "Selected"
             };
             dataGridViewPairs.Columns.Add(checkColumn);
 
-            // Ìí¼ÓĞĞÕşÇø´úÂëÁĞ
+            // æ·»åŠ è¡Œæ”¿åŒºä»£ç åˆ—
             var codeColumn = new DataGridViewTextBoxColumn
             {
                 Name = "AdminCode",
-                HeaderText = "ĞĞÕşÇø´úÂë",
+                HeaderText = "è¡Œæ”¿åŒºä»£ç ",
                 Width = 100,
                 DataPropertyName = "AdminCode",
                 ReadOnly = true
             };
             dataGridViewPairs.Columns.Add(codeColumn);
 
-            // Ìí¼ÓĞĞÕşÇøÃû³ÆÁĞ
+            // æ·»åŠ è¡Œæ”¿åŒºåç§°åˆ—
             var nameColumn = new DataGridViewTextBoxColumn
             {
                 Name = "AdminName",
-                HeaderText = "ĞĞÕşÇøÃû³Æ",
+                HeaderText = "è¡Œæ”¿åŒºåç§°",
                 Width = 150,
                 DataPropertyName = "AdminName",
                 ReadOnly = true
             };
             dataGridViewPairs.Columns.Add(nameColumn);
 
-            // Ìí¼ÓµØ¼ÛÊı¾İ×´Ì¬ÁĞ
+            // æ·»åŠ åœ°ä»·æ•°æ®çŠ¶æ€åˆ—
             var priceStatusColumn = new DataGridViewTextBoxColumn
             {
                 Name = "PriceDataStatus",
-                HeaderText = "µØ¼ÛÊı¾İ×´Ì¬",
+                HeaderText = "åœ°ä»·æ•°æ®çŠ¶æ€",
                 Width = 120,
                 DataPropertyName = "PriceDataStatus",
                 ReadOnly = true
             };
             dataGridViewPairs.Columns.Add(priceStatusColumn);
 
-            // Ìí¼ÓÏÖ×´Êı¾İ×´Ì¬ÁĞ
+            // æ·»åŠ ç°çŠ¶æ•°æ®çŠ¶æ€åˆ—
             var statusColumn = new DataGridViewTextBoxColumn
             {
                 Name = "StatusDataStatus",
-                HeaderText = "ÏÖ×´Êı¾İ×´Ì¬",
+                HeaderText = "ç°çŠ¶æ•°æ®çŠ¶æ€",
                 Width = 120,
                 DataPropertyName = "StatusDataStatus",
                 ReadOnly = true
             };
             dataGridViewPairs.Columns.Add(statusColumn);
 
-            // Ìí¼ÓµØ¼ÛÊı¾İÂ·¾¶ÁĞ
+            // æ·»åŠ åœ°ä»·æ•°æ®è·¯å¾„åˆ—
             var pricePathColumn = new DataGridViewTextBoxColumn
             {
                 Name = "PriceDataPath",
-                HeaderText = "µØ¼ÛÊı¾İÂ·¾¶",
+                HeaderText = "åœ°ä»·æ•°æ®è·¯å¾„",
                 Width = 200,
                 DataPropertyName = "PriceDataPath",
                 ReadOnly = true
             };
             dataGridViewPairs.Columns.Add(pricePathColumn);
 
-            // Ìí¼ÓÏÖ×´Êı¾İÂ·¾¶ÁĞ
+            // æ·»åŠ ç°çŠ¶æ•°æ®è·¯å¾„åˆ—
             var statusPathColumn = new DataGridViewTextBoxColumn
             {
                 Name = "StatusDataPath",
-                HeaderText = "ÏÖ×´Êı¾İÂ·¾¶",
+                HeaderText = "ç°çŠ¶æ•°æ®è·¯å¾„",
                 Width = 200,
                 DataPropertyName = "StatusDataPath",
                 ReadOnly = true
@@ -136,39 +136,39 @@ namespace TestArcMapAddin2.Forms
 
         private void InitializePriceMappingInterface()
         {
-            // ³õÊ¼»¯¼Û¸ñÓ³ÉäDataGridView
+            // åˆå§‹åŒ–ä»·æ ¼æ˜ å°„DataGridView
             dataGridViewPriceMapping.AutoGenerateColumns = false;
             dataGridViewPriceMapping.Columns.Clear();
 
-            // Ìí¼ÓĞĞÕşÇø´úÂëÁĞ
+            // æ·»åŠ è¡Œæ”¿åŒºä»£ç åˆ—
             var codeColumn = new DataGridViewTextBoxColumn
             {
                 Name = "AdminCode",
-                HeaderText = "ĞĞÕşÇø´úÂë",
+                HeaderText = "è¡Œæ”¿åŒºä»£ç ",
                 Width = 100,
                 DataPropertyName = "AdminCode",
                 ReadOnly = true
             };
             dataGridViewPriceMapping.Columns.Add(codeColumn);
 
-            // Ìí¼ÓĞĞÕşÇøÃû³ÆÁĞ
+            // æ·»åŠ è¡Œæ”¿åŒºåç§°åˆ—
             var nameColumn = new DataGridViewTextBoxColumn
             {
                 Name = "AdminName", 
-                HeaderText = "ĞĞÕşÇøÃû³Æ",
+                HeaderText = "è¡Œæ”¿åŒºåç§°",
                 Width = 120,
                 DataPropertyName = "AdminName",
                 ReadOnly = true
             };
             dataGridViewPriceMapping.Columns.Add(nameColumn);
 
-            // Ìí¼Ó1-5¼¶¼Û¸ñÁĞ
+            // æ·»åŠ 1-5çº§ä»·æ ¼åˆ—
             for (int i = 1; i <= 5; i++)
             {
                 var priceColumn = new DataGridViewTextBoxColumn
                 {
                     Name = $"Grade{i}Price",
-                    HeaderText = $"{i}¼¶ÁÖµØ¼Û¸ñ(ÍòÔª/¹«Çê)",
+                    HeaderText = $"{i}çº§æ—åœ°ä»·æ ¼(ä¸‡å…ƒ/å…¬é¡·)",
                     Width = 130,
                     DataPropertyName = $"Grade{i}Price",
                     ReadOnly = true,
@@ -181,55 +181,55 @@ namespace TestArcMapAddin2.Forms
                 dataGridViewPriceMapping.Columns.Add(priceColumn);
             }
 
-            // ³õÊ¼»¯Ä£°åËµÃ÷ÎÄ±¾
+            // åˆå§‹åŒ–æ¨¡æ¿è¯´æ˜æ–‡æœ¬
             InitializeTemplateText();
             
-            // ¸üĞÂÓ³Éä×´Ì¬
+            // æ›´æ–°æ˜ å°„çŠ¶æ€
             UpdatePriceMappingDisplay();
         }
 
         private void InitializeTemplateText()
         {
-            txtTemplate.Text = @"¼Û¸ñÓ³Éä±íExcelÎÄ¼ş¸ñÊ½ËµÃ÷:
+            txtTemplate.Text = @"ä»·æ ¼æ˜ å°„è¡¨Excelæ–‡ä»¶æ ¼å¼è¯´æ˜:
 
-¡¾ÎÄ¼ş¸ñÊ½ÒªÇó¡¿
-1. Ö§³Ö .xlsx »ò .xls ¸ñÊ½µÄExcelÎÄ¼ş
-2. Ò²¿ÉÒÔÁí´æÎª .csv ¸ñÊ½£¨ÍÆ¼öÊ¹ÓÃ¶ººÅ·Ö¸ô£©
+ã€æ–‡ä»¶æ ¼å¼è¦æ±‚ã€‘
+1. æ”¯æŒ .xlsx æˆ– .xls æ ¼å¼çš„Excelæ–‡ä»¶
+2. ä¹Ÿå¯ä»¥å¦å­˜ä¸º .csv æ ¼å¼ï¼ˆæ¨èä½¿ç”¨é€—å·åˆ†éš”ï¼‰
 
-¡¾±í¸ñ½á¹¹ËµÃ÷¡¿
-- µÚ1ĞĞºÍµÚ2ĞĞ£º±íÍ·ĞÅÏ¢£¨ÏµÍ³»á×Ô¶¯Ìø¹ı£©
-- µÚ3ĞĞ¿ªÊ¼£º¾ßÌåµÄ¼Û¸ñÊı¾İ
+ã€è¡¨æ ¼ç»“æ„è¯´æ˜ã€‘
+- ç¬¬1è¡Œå’Œç¬¬2è¡Œï¼šè¡¨å¤´ä¿¡æ¯ï¼ˆç³»ç»Ÿä¼šè‡ªåŠ¨è·³è¿‡ï¼‰
+- ç¬¬3è¡Œå¼€å§‹ï¼šå…·ä½“çš„ä»·æ ¼æ•°æ®
 
-¡¾ÁĞ½á¹¹ÒªÇó¡¿
-µÚ1ÁĞ£ºĞĞÕşÇøÃû³Æ£¨Èç£ºµÂÇìÏØ¡¢»İÀ´ÏØµÈ£©
-µÚ2ÁĞ£ºĞĞÕşÇø´úÂë£¨6Î»Êı×Ö£¬Èç£º441226¡¢441322µÈ£©
-µÚ3ÁĞ£º1¼¶ÁÖµØ¼Û¸ñ£¨ÍòÔª/¹«Çê£©
-µÚ4ÁĞ£º2¼¶ÁÖµØ¼Û¸ñ£¨ÍòÔª/¹«Çê£©
-µÚ5ÁĞ£º3¼¶ÁÖµØ¼Û¸ñ£¨ÍòÔª/¹«Çê£©
-µÚ6ÁĞ£º4¼¶ÁÖµØ¼Û¸ñ£¨ÍòÔª/¹«Çê£©
-µÚ7ÁĞ£º5¼¶ÁÖµØ¼Û¸ñ£¨ÍòÔª/¹«Çê£©
+ã€åˆ—ç»“æ„è¦æ±‚ã€‘
+ç¬¬1åˆ—ï¼šè¡Œæ”¿åŒºåç§°ï¼ˆå¦‚ï¼šå¾·åº†å¿ã€æƒ æ¥å¿ç­‰ï¼‰
+ç¬¬2åˆ—ï¼šè¡Œæ”¿åŒºä»£ç ï¼ˆ6ä½æ•°å­—ï¼Œå¦‚ï¼š441226ã€441322ç­‰ï¼‰
+ç¬¬3åˆ—ï¼š1çº§æ—åœ°ä»·æ ¼ï¼ˆä¸‡å…ƒ/å…¬é¡·ï¼‰
+ç¬¬4åˆ—ï¼š2çº§æ—åœ°ä»·æ ¼ï¼ˆä¸‡å…ƒ/å…¬é¡·ï¼‰
+ç¬¬5åˆ—ï¼š3çº§æ—åœ°ä»·æ ¼ï¼ˆä¸‡å…ƒ/å…¬é¡·ï¼‰
+ç¬¬6åˆ—ï¼š4çº§æ—åœ°ä»·æ ¼ï¼ˆä¸‡å…ƒ/å…¬é¡·ï¼‰
+ç¬¬7åˆ—ï¼š5çº§æ—åœ°ä»·æ ¼ï¼ˆä¸‡å…ƒ/å…¬é¡·ï¼‰
 
-¡¾Ê¾ÀıÊı¾İ¡¿
-ĞĞÕşÇøÃû³Æ  | ĞĞÕşÇø´úÂë | 1¼¶¼Û¸ñ | 2¼¶¼Û¸ñ | 3¼¶¼Û¸ñ | 4¼¶¼Û¸ñ | 5¼¶¼Û¸ñ
-µÂÇìÏØ     | 441226    | 8.72   | 6.45   | 4.23   | 3.15   | 2.45
-»İÀ´ÏØ     | 441322    | 7.89   | 5.67   | 3.98   | 2.87   | 2.12
-Â½·áÊĞ     | 441781    | 9.12   | 6.88   | 4.56   | 3.33   | 2.78
+ã€ç¤ºä¾‹æ•°æ®ã€‘
+è¡Œæ”¿åŒºåç§°  | è¡Œæ”¿åŒºä»£ç  | 1çº§ä»·æ ¼ | 2çº§ä»·æ ¼ | 3çº§ä»·æ ¼ | 4çº§ä»·æ ¼ | 5çº§ä»·æ ¼
+å¾·åº†å¿     | 441226    | 8.72   | 6.45   | 4.23   | 3.15   | 2.45
+æƒ æ¥å¿     | 441322    | 7.89   | 5.67   | 3.98   | 2.87   | 2.12
+é™†ä¸°å¸‚     | 441781    | 9.12   | 6.88   | 4.56   | 3.33   | 2.78
 
-¡¾×¢ÒâÊÂÏî¡¿
-1. ĞĞÕşÇø´úÂë±ØĞëÊÇ6Î»Êı×Ö
-2. ¼Û¸ñÊı¾İ¿ÉÒÔÊÇÕûÊı»òĞ¡Êı
-3. Èç¹ûÄ³¸öĞĞÕşÇøÈ±ÉÙÄ³¼¶±ğµÄ¼Û¸ñ£¬¿ÉÒÔÁô¿Õ»òÌî0
-4. È·±£ÎÄ¼ş±àÂëÎªUTF-8£¬±ÜÃâÖĞÎÄÂÒÂë
-5. ½¨ÒéÏÈÓÃ±¾ÏµÍ³µÄ'µ¼³öÄ£°å'¹¦ÄÜÉú³É±ê×¼Ä£°å";
+ã€æ³¨æ„äº‹é¡¹ã€‘
+1. è¡Œæ”¿åŒºä»£ç å¿…é¡»æ˜¯6ä½æ•°å­—
+2. ä»·æ ¼æ•°æ®å¯ä»¥æ˜¯æ•´æ•°æˆ–å°æ•°
+3. å¦‚æœæŸä¸ªè¡Œæ”¿åŒºç¼ºå°‘æŸçº§åˆ«çš„ä»·æ ¼ï¼Œå¯ä»¥ç•™ç©ºæˆ–å¡«0
+4. ç¡®ä¿æ–‡ä»¶ç¼–ç ä¸ºUTF-8ï¼Œé¿å…ä¸­æ–‡ä¹±ç 
+5. å»ºè®®å…ˆç”¨æœ¬ç³»ç»Ÿçš„'å¯¼å‡ºæ¨¡æ¿'åŠŸèƒ½ç”Ÿæˆæ ‡å‡†æ¨¡æ¿";
         }
 
-        #region ÊÂ¼ş´¦Àí³ÌĞò
+        #region äº‹ä»¶å¤„ç†ç¨‹åº
 
         private void btnBrowseLandGradePrice_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
-                dialog.Description = "Ñ¡ÔñÁÖµØ»ù×¼µØ¼Û¶¨¼¶Êı¾İÎÄ¼ş¼Ğ";
+                dialog.Description = "é€‰æ‹©æ—åœ°åŸºå‡†åœ°ä»·å®šçº§æ•°æ®æ–‡ä»¶å¤¹";
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     landGradePricePath = dialog.SelectedPath;
@@ -244,7 +244,7 @@ namespace TestArcMapAddin2.Forms
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
-                dialog.Description = "Ñ¡ÔñÉ­ÁÖ×ÊÔ´µØÀàÍ¼°ßÊı¾İÎÄ¼ş¼Ğ";
+                dialog.Description = "é€‰æ‹©æ£®æ—èµ„æºåœ°ç±»å›¾æ–‘æ•°æ®æ–‡ä»¶å¤¹";
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     forestResourcePath = dialog.SelectedPath;
@@ -259,7 +259,7 @@ namespace TestArcMapAddin2.Forms
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
-                dialog.Description = "Ñ¡ÔñÊä³ö½á¹ûÂ·¾¶";
+                dialog.Description = "é€‰æ‹©è¾“å‡ºç»“æœè·¯å¾„";
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     outputPath = dialog.SelectedPath;
@@ -274,8 +274,8 @@ namespace TestArcMapAddin2.Forms
         {
             using (OpenFileDialog dialog = new OpenFileDialog())
             {
-                dialog.Filter = "ExcelÎÄ¼ş (*.xlsx)|*.xlsx|ExcelÎÄ¼ş (*.xls)|*.xls|CSVÎÄ¼ş (*.csv)|*.csv|ËùÓĞÖ§³ÖµÄÎÄ¼ş|*.xlsx;*.xls;*.csv";
-                dialog.Title = "Ñ¡Ôñ¼Û¸ñÓ³Éä±íÎÄ¼ş";
+                dialog.Filter = "Excelæ–‡ä»¶ (*.xlsx)|*.xlsx|Excelæ–‡ä»¶ (*.xls)|*.xls|CSVæ–‡ä»¶ (*.csv)|*.csv|æ‰€æœ‰æ”¯æŒçš„æ–‡ä»¶|*.xlsx;*.xls;*.csv";
+                dialog.Title = "é€‰æ‹©ä»·æ ¼æ˜ å°„è¡¨æ–‡ä»¶";
                 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
@@ -283,54 +283,54 @@ namespace TestArcMapAddin2.Forms
                     {
                         priceExcelPath = dialog.FileName;
                         
-                        // ÏÔÊ¾µ¼Èë½ø¶È
-                        statusLabel.Text = "ÕıÔÚµ¼Èë¼Û¸ñÓ³Éä±í...";
+                        // æ˜¾ç¤ºå¯¼å…¥è¿›åº¦
+                        statusLabel.Text = "æ­£åœ¨å¯¼å…¥ä»·æ ¼æ˜ å°„è¡¨...";
                         progressBar.Style = ProgressBarStyle.Marquee;
                         Application.DoEvents();
                         
                         LoadPriceMappingFromExcel(priceExcelPath);
                         
-                        // »Ö¸´½ø¶ÈÌõ
+                        // æ¢å¤è¿›åº¦æ¡
                         progressBar.Style = ProgressBarStyle.Continuous;
                         progressBar.Value = 0;
-                        statusLabel.Text = "¾ÍĞ÷";
+                        statusLabel.Text = "å°±ç»ª";
                         
-                        // ¸üĞÂ¼Û¸ñÓ³ÉäÏÔÊ¾
+                        // æ›´æ–°ä»·æ ¼æ˜ å°„æ˜¾ç¤º
                         UpdatePriceMappingDisplay();
                         
-                        // ÏÔÊ¾µ¼Èë½á¹û
-                        var message = $"¼Û¸ñÓ³Éä±íµ¼Èë³É¹¦£¡\n\nµ¼ÈëÍ³¼Æ£º\n- ¹²µ¼Èë {priceMapping.Count} ¸öĞĞÕşÇøµÄ¼Û¸ñÊı¾İ\n- ÎÄ¼şÂ·¾¶£º{System.IO.Path.GetFileName(priceExcelPath)}";
+                        // æ˜¾ç¤ºå¯¼å…¥ç»“æœ
+                        var message = $"ä»·æ ¼æ˜ å°„è¡¨å¯¼å…¥æˆåŠŸï¼\n\nå¯¼å…¥ç»Ÿè®¡ï¼š\n- å…±å¯¼å…¥ {priceMapping.Count} ä¸ªè¡Œæ”¿åŒºçš„ä»·æ ¼æ•°æ®\n- æ–‡ä»¶è·¯å¾„ï¼š{System.IO.Path.GetFileName(priceExcelPath)}";
                         
                         if (priceMapping.Count > 0)
                         {
-                            message += "\n\nÄú¿ÉÒÔµã»÷'²é¿´Ó³Éä±í'°´Å¥²é¿´ÏêÏ¸µÄÓ³Éä¹ØÏµ¡£";
+                            message += "\n\næ‚¨å¯ä»¥ç‚¹å‡»'æŸ¥çœ‹æ˜ å°„è¡¨'æŒ‰é’®æŸ¥çœ‹è¯¦ç»†çš„æ˜ å°„å…³ç³»ã€‚";
                         }
                         
-                        MessageBox.Show(message, "µ¼Èë³É¹¦", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(message, "å¯¼å…¥æˆåŠŸ", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         
-                        // ×Ô¶¯ÇĞ»»µ½¼Û¸ñÓ³Éä±íÒ³ÃæÏÔÊ¾½á¹û
+                        // è‡ªåŠ¨åˆ‡æ¢åˆ°ä»·æ ¼æ˜ å°„è¡¨é¡µé¢æ˜¾ç¤ºç»“æœ
                         if (priceMapping.Count > 0)
                         {
-                            var result = MessageBox.Show("ÊÇ·ñÁ¢¼´²é¿´µ¼ÈëµÄ¼Û¸ñÓ³ÉäÊı¾İ£¿", "²é¿´Êı¾İ", 
+                            var result = MessageBox.Show("æ˜¯å¦ç«‹å³æŸ¥çœ‹å¯¼å…¥çš„ä»·æ ¼æ˜ å°„æ•°æ®ï¼Ÿ", "æŸ¥çœ‹æ•°æ®", 
                                 MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                             if (result == DialogResult.Yes)
                             {
-                                mainTabControl.SelectedIndex = 1; // ÇĞ»»µ½¼Û¸ñÓ³Éä±íÑ¡Ïî¿¨
+                                mainTabControl.SelectedIndex = 1; // åˆ‡æ¢åˆ°ä»·æ ¼æ˜ å°„è¡¨é€‰é¡¹å¡
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        // »Ö¸´½ø¶ÈÌõ
+                        // æ¢å¤è¿›åº¦æ¡
                         progressBar.Style = ProgressBarStyle.Continuous;
                         progressBar.Value = 0;
-                        statusLabel.Text = "µ¼ÈëÊ§°Ü";
+                        statusLabel.Text = "å¯¼å…¥å¤±è´¥";
                         
-                        // ¸üĞÂÏÔÊ¾£¨¼´Ê¹Ê§°ÜÒ²Òª¸üĞÂ£¬¿ÉÄÜÓĞ²¿·ÖÊı¾İ£©
+                        // æ›´æ–°æ˜¾ç¤ºï¼ˆå³ä½¿å¤±è´¥ä¹Ÿè¦æ›´æ–°ï¼Œå¯èƒ½æœ‰éƒ¨åˆ†æ•°æ®ï¼‰
                         UpdatePriceMappingDisplay();
                         
-                        MessageBox.Show($"µ¼Èë¼Û¸ñÓ³Éä±íÊ§°Ü£º\n\n{ex.Message}\n\nÇë¼ì²éÎÄ¼ş¸ñÊ½ÊÇ·ñÕıÈ·£¬»òÊ¹ÓÃ'µ¼³öÄ£°å'¹¦ÄÜ»ñÈ¡±ê×¼Ä£°å¡£", 
-                            "µ¼ÈëÊ§°Ü", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"å¯¼å…¥ä»·æ ¼æ˜ å°„è¡¨å¤±è´¥ï¼š\n\n{ex.Message}\n\nè¯·æ£€æŸ¥æ–‡ä»¶æ ¼å¼æ˜¯å¦æ­£ç¡®ï¼Œæˆ–ä½¿ç”¨'å¯¼å‡ºæ¨¡æ¿'åŠŸèƒ½è·å–æ ‡å‡†æ¨¡æ¿ã€‚", 
+                            "å¯¼å…¥å¤±è´¥", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -340,17 +340,17 @@ namespace TestArcMapAddin2.Forms
         {
             try
             {
-                statusLabel.Text = "ÕıÔÚÅä¶ÔÊı¾İ...";
+                statusLabel.Text = "æ­£åœ¨é…å¯¹æ•°æ®...";
                 progressBar.Style = ProgressBarStyle.Marquee;
                 Application.DoEvents();
 
                 dataPairs.Clear();
                 
-                // É¨ÃèÁ½¸öÂ·¾¶ÏÂµÄÎÄ¼ş¼Ğ
+                // æ‰«æä¸¤ä¸ªè·¯å¾„ä¸‹çš„æ–‡ä»¶å¤¹
                 var landGradeFolders = ScanLandGradeFolders(landGradePricePath);
                 var forestResourceFolders = ScanForestResourceFolders(forestResourcePath);
 
-                // ¸ù¾İĞĞÕşÇø´úÂë½øĞĞÅä¶Ô
+                // æ ¹æ®è¡Œæ”¿åŒºä»£ç è¿›è¡Œé…å¯¹
                 foreach (var landGradeFolder in landGradeFolders)
                 {
                     var matchingForestFolder = forestResourceFolders.FirstOrDefault(f => f.AdminCode == landGradeFolder.AdminCode);
@@ -362,19 +362,19 @@ namespace TestArcMapAddin2.Forms
                         Selected = true,
                         PriceDataPath = landGradeFolder.ShapefilePath,
                         StatusDataPath = matchingForestFolder?.ShapefilePath ?? "",
-                        PriceDataStatus = !string.IsNullOrEmpty(landGradeFolder.ShapefilePath) ? "ÒÑÕÒµ½" : "Î´ÕÒµ½",
-                        StatusDataStatus = matchingForestFolder != null ? "ÒÑÕÒµ½" : "Î´ÕÒµ½"
+                        PriceDataStatus = !string.IsNullOrEmpty(landGradeFolder.ShapefilePath) ? "å·²æ‰¾åˆ°" : "æœªæ‰¾åˆ°",
+                        StatusDataStatus = matchingForestFolder != null ? "å·²æ‰¾åˆ°" : "æœªæ‰¾åˆ°"
                     };
 
                     dataPairs.Add(pairInfo);
                 }
 
-                // ¸üĞÂÊı¾İÍø¸ñ
+                // æ›´æ–°æ•°æ®ç½‘æ ¼
                 dataGridViewPairs.DataSource = new BindingList<DataPairInfo>(dataPairs);
 
                 progressBar.Style = ProgressBarStyle.Continuous;
                 progressBar.Value = 100;
-                statusLabel.Text = $"Åä¶ÔÍê³É£¬¹²ÕÒµ½ {dataPairs.Count} ¸öĞĞÕşÇøÊı¾İ";
+                statusLabel.Text = $"é…å¯¹å®Œæˆï¼Œå…±æ‰¾åˆ° {dataPairs.Count} ä¸ªè¡Œæ”¿åŒºæ•°æ®";
 
                 UpdateButtonStates();
             }
@@ -382,8 +382,8 @@ namespace TestArcMapAddin2.Forms
             {
                 progressBar.Style = ProgressBarStyle.Continuous;
                 progressBar.Value = 0;
-                statusLabel.Text = "Åä¶ÔÊ§°Ü";
-                MessageBox.Show($"Åä¶ÔÊı¾İÊ±·¢Éú´íÎó£º{ex.Message}", "´íÎó", 
+                statusLabel.Text = "é…å¯¹å¤±è´¥";
+                MessageBox.Show($"é…å¯¹æ•°æ®æ—¶å‘ç”Ÿé”™è¯¯ï¼š{ex.Message}", "é”™è¯¯", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -398,7 +398,7 @@ namespace TestArcMapAddin2.Forms
 
                 if (selectedPairs.Count == 0)
                 {
-                    MessageBox.Show("ÇëÖÁÉÙÑ¡ÔñÒ»¸öÓĞĞ§µÄÊı¾İÅä¶Ô½øĞĞ´¦Àí¡£", "ÌáÊ¾", 
+                    MessageBox.Show("è¯·è‡³å°‘é€‰æ‹©ä¸€ä¸ªæœ‰æ•ˆçš„æ•°æ®é…å¯¹è¿›è¡Œå¤„ç†ã€‚", "æç¤º", 
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
@@ -410,7 +410,7 @@ namespace TestArcMapAddin2.Forms
                 for (int i = 0; i < selectedPairs.Count; i++)
                 {
                     var pair = selectedPairs[i];
-                    statusLabel.Text = $"ÕıÔÚ´¦Àí {pair.AdminName} ({i + 1}/{selectedPairs.Count})...";
+                    statusLabel.Text = $"æ­£åœ¨å¤„ç† {pair.AdminName} ({i + 1}/{selectedPairs.Count})...";
                     Application.DoEvents();
 
                     ProcessSingleDataPair(pair);
@@ -418,17 +418,17 @@ namespace TestArcMapAddin2.Forms
                     progressBar.Value = i + 1;
                 }
 
-                statusLabel.Text = "ËùÓĞÊı¾İ´¦ÀíÍê³É";
-                MessageBox.Show($"³É¹¦´¦ÀíÁË {selectedPairs.Count} ¸öĞĞÕşÇøµÄÊı¾İ£¡", "´¦ÀíÍê³É", 
+                statusLabel.Text = "æ‰€æœ‰æ•°æ®å¤„ç†å®Œæˆ";
+                MessageBox.Show($"æˆåŠŸå¤„ç†äº† {selectedPairs.Count} ä¸ªè¡Œæ”¿åŒºçš„æ•°æ®ï¼", "å¤„ç†å®Œæˆ", 
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
-                // ÉèÖÃ¶Ô»°¿ò½á¹ûÎªOK
+                // è®¾ç½®å¯¹è¯æ¡†ç»“æœä¸ºOK
                 this.DialogResult = DialogResult.OK;
             }
             catch (Exception ex)
             {
-                statusLabel.Text = "´¦ÀíÊ§°Ü";
-                MessageBox.Show($"´¦ÀíÊı¾İÊ±·¢Éú´íÎó£º{ex.Message}", "´íÎó", 
+                statusLabel.Text = "å¤„ç†å¤±è´¥";
+                MessageBox.Show($"å¤„ç†æ•°æ®æ—¶å‘ç”Ÿé”™è¯¯ï¼š{ex.Message}", "é”™è¯¯", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -441,10 +441,10 @@ namespace TestArcMapAddin2.Forms
 
         private void btnViewPriceMapping_Click(object sender, EventArgs e)
         {
-            // ÇĞ»»µ½¼Û¸ñÓ³Éä±íÑ¡Ïî¿¨
+            // åˆ‡æ¢åˆ°ä»·æ ¼æ˜ å°„è¡¨é€‰é¡¹å¡
             mainTabControl.SelectedIndex = 1;
             
-            // ¸üĞÂÏÔÊ¾
+            // æ›´æ–°æ˜¾ç¤º
             UpdatePriceMappingDisplay();
         }
 
@@ -454,28 +454,28 @@ namespace TestArcMapAddin2.Forms
             {
                 using (SaveFileDialog dialog = new SaveFileDialog())
                 {
-                    dialog.Filter = "CSVÎÄ¼ş (*.csv)|*.csv|ExcelÎÄ¼ş (*.xlsx)|*.xlsx";
-                    dialog.Title = "µ¼³ö¼Û¸ñÓ³Éä±íÄ£°å";
-                    dialog.FileName = "ÁÖµØ¼Û¸ñÓ³Éä±íÄ£°å.csv";
+                    dialog.Filter = "CSVæ–‡ä»¶ (*.csv)|*.csv|Excelæ–‡ä»¶ (*.xlsx)|*.xlsx";
+                    dialog.Title = "å¯¼å‡ºä»·æ ¼æ˜ å°„è¡¨æ¨¡æ¿";
+                    dialog.FileName = "æ—åœ°ä»·æ ¼æ˜ å°„è¡¨æ¨¡æ¿.csv";
                     
                     if (dialog.ShowDialog() == DialogResult.OK)
                     {
                         ExportPriceMappingTemplate(dialog.FileName);
-                        MessageBox.Show($"Ä£°åÒÑ³É¹¦µ¼³öµ½£º\n{dialog.FileName}\n\nÇë°´ÕÕÄ£°å¸ñÊ½ÌîĞ´¼Û¸ñÊı¾İ£¬È»ºóÊ¹ÓÃ'µ¼Èë¼Û¸ñÓ³Éä±í'¹¦ÄÜµ¼Èë¡£", 
-                            "µ¼³ö³É¹¦", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show($"æ¨¡æ¿å·²æˆåŠŸå¯¼å‡ºåˆ°ï¼š\n{dialog.FileName}\n\nè¯·æŒ‰ç…§æ¨¡æ¿æ ¼å¼å¡«å†™ä»·æ ¼æ•°æ®ï¼Œç„¶åä½¿ç”¨'å¯¼å…¥ä»·æ ¼æ˜ å°„è¡¨'åŠŸèƒ½å¯¼å…¥ã€‚", 
+                            "å¯¼å‡ºæˆåŠŸ", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"µ¼³öÄ£°åÊ§°Ü£º{ex.Message}", "´íÎó", 
+                MessageBox.Show($"å¯¼å‡ºæ¨¡æ¿å¤±è´¥ï¼š{ex.Message}", "é”™è¯¯", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         #endregion
 
-        #region Êı¾İ´¦Àí·½·¨
+        #region æ•°æ®å¤„ç†æ–¹æ³•
 
         private void UpdateButtonStates()
         {
@@ -498,13 +498,13 @@ namespace TestArcMapAddin2.Forms
             {
                 var dirName = System.IO.Path.GetFileName(dir);
                 
-                // ÌáÈ¡6Î»ĞĞÕşÇø´úÂë£¨´ÓÎÄ¼ş¼ĞÃû³Æ¿ªÍ·£©
+                // æå–6ä½è¡Œæ”¿åŒºä»£ç ï¼ˆä»æ–‡ä»¶å¤¹åç§°å¼€å¤´ï¼‰
                 if (dirName.Length >= 6 && dirName.Substring(0, 6).All(char.IsDigit))
                 {
                     var adminCode = dirName.Substring(0, 6);
                     var adminName = ExtractAdminNameFromFolder(dirName);
                     
-                    // ²éÕÒÄ¿±êShapefile
+                    // æŸ¥æ‰¾ç›®æ ‡Shapefile
                     var shapefilePath = FindLandGradeShapefile(dir, adminCode);
                     
                     result.Add(new FolderInfo
@@ -529,14 +529,14 @@ namespace TestArcMapAddin2.Forms
             {
                 var dirName = System.IO.Path.GetFileName(dir);
                 
-                // ´ÓÎÄ¼ş¼ĞÃû³ÆÖĞÌáÈ¡ĞĞÕşÇø´úÂë£¨À¨ºÅÄÚµÄ6Î»Êı×Ö£©
+                // ä»æ–‡ä»¶å¤¹åç§°ä¸­æå–è¡Œæ”¿åŒºä»£ç ï¼ˆæ‹¬å·å†…çš„6ä½æ•°å­—ï¼‰
                 var codeMatch = System.Text.RegularExpressions.Regex.Match(dirName, @"\((\d{6})\)");
                 if (codeMatch.Success)
                 {
                     var adminCode = codeMatch.Groups[1].Value;
                     var adminName = ExtractAdminNameFromForestFolder(dirName);
                     
-                    // ²éÕÒÄ¿±êShapefile
+                    // æŸ¥æ‰¾ç›®æ ‡Shapefile
                     var shapefilePath = FindForestResourceShapefile(dir, adminCode);
                     
                     result.Add(new FolderInfo
@@ -556,33 +556,33 @@ namespace TestArcMapAddin2.Forms
         {
             try
             {
-                // ĞŞ¸ÄºóµÄÂ·¾¶£º¸¸ÎÄ¼ş¼Ğ/1-Ê¸Á¿Êı¾İ/ĞĞÕşÇø´úÂë+LDDJHJZDJDY.shp
-                // È¥µôÁËÖĞ¼äµÄÍ¬Ãû×ÓÎÄ¼ş¼Ğ²ã¼¶
-                var vectorDataPath = System.IO.Path.Combine(folderPath, "1-Ê¸Á¿Êı¾İ");
+                // ä¿®æ”¹åçš„è·¯å¾„ï¼šçˆ¶æ–‡ä»¶å¤¹/1-çŸ¢é‡æ•°æ®/è¡Œæ”¿åŒºä»£ç +LDDJHJZDJDY.shp
+                // å»æ‰äº†ä¸­é—´çš„åŒåå­æ–‡ä»¶å¤¹å±‚çº§
+                var vectorDataPath = System.IO.Path.Combine(folderPath, "1-çŸ¢é‡æ•°æ®");
                 
-                System.Diagnostics.Debug.WriteLine($"²éÕÒµØ¼ÛShapefile: ¼ì²éÂ·¾¶ {vectorDataPath}");
+                System.Diagnostics.Debug.WriteLine($"æŸ¥æ‰¾åœ°ä»·Shapefile: æ£€æŸ¥è·¯å¾„ {vectorDataPath}");
                 
                 if (Directory.Exists(vectorDataPath))
                 {
                     var targetFileName = adminCode + "LDDJHJZDJDY.shp";
                     var targetPath = System.IO.Path.Combine(vectorDataPath, targetFileName);
                     
-                    System.Diagnostics.Debug.WriteLine($"²éÕÒµØ¼ÛShapefile: Ä¿±êÎÄ¼ş {targetPath}");
+                    System.Diagnostics.Debug.WriteLine($"æŸ¥æ‰¾åœ°ä»·Shapefile: ç›®æ ‡æ–‡ä»¶ {targetPath}");
                     
                     if (File.Exists(targetPath))
                     {
-                        System.Diagnostics.Debug.WriteLine($"³É¹¦ÕÒµ½µØ¼ÛShapefile: {targetPath}");
+                        System.Diagnostics.Debug.WriteLine($"æˆåŠŸæ‰¾åˆ°åœ°ä»·Shapefile: {targetPath}");
                         return targetPath;
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"Î´ÕÒµ½Ä¿±êÎÄ¼ş: {targetPath}");
+                        System.Diagnostics.Debug.WriteLine($"æœªæ‰¾åˆ°ç›®æ ‡æ–‡ä»¶: {targetPath}");
                         
-                        // Êä³öµ÷ÊÔĞÅÏ¢£ºÁĞ³ö¸ÃÄ¿Â¼ÏÂµÄËùÓĞ.shpÎÄ¼ş
+                        // è¾“å‡ºè°ƒè¯•ä¿¡æ¯ï¼šåˆ—å‡ºè¯¥ç›®å½•ä¸‹çš„æ‰€æœ‰.shpæ–‡ä»¶
                         try
                         {
                             var shpFiles = Directory.GetFiles(vectorDataPath, "*.shp");
-                            System.Diagnostics.Debug.WriteLine($"1-Ê¸Á¿Êı¾İÄ¿Â¼ÏÂµÄËùÓĞ.shpÎÄ¼ş£º");
+                            System.Diagnostics.Debug.WriteLine($"1-çŸ¢é‡æ•°æ®ç›®å½•ä¸‹çš„æ‰€æœ‰.shpæ–‡ä»¶ï¼š");
                             foreach (var file in shpFiles)
                             {
                                 System.Diagnostics.Debug.WriteLine($"  - {System.IO.Path.GetFileName(file)}");
@@ -590,21 +590,21 @@ namespace TestArcMapAddin2.Forms
                         }
                         catch (Exception listEx)
                         {
-                            System.Diagnostics.Debug.WriteLine($"ÁĞ³öÄ¿Â¼ÎÄ¼şÊ±³ö´í: {listEx.Message}");
+                            System.Diagnostics.Debug.WriteLine($"åˆ—å‡ºç›®å½•æ–‡ä»¶æ—¶å‡ºé”™: {listEx.Message}");
                         }
                     }
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"1-Ê¸Á¿Êı¾İÄ¿Â¼²»´æÔÚ: {vectorDataPath}");
+                    System.Diagnostics.Debug.WriteLine($"1-çŸ¢é‡æ•°æ®ç›®å½•ä¸å­˜åœ¨: {vectorDataPath}");
                     
-                    // Êä³öµ÷ÊÔĞÅÏ¢£ºÁĞ³ö¸¸ÎÄ¼ş¼ĞÏÂµÄËùÓĞ×ÓÄ¿Â¼
+                    // è¾“å‡ºè°ƒè¯•ä¿¡æ¯ï¼šåˆ—å‡ºçˆ¶æ–‡ä»¶å¤¹ä¸‹çš„æ‰€æœ‰å­ç›®å½•
                     try
                     {
                         if (Directory.Exists(folderPath))
                         {
                             var subDirs = Directory.GetDirectories(folderPath);
-                            System.Diagnostics.Debug.WriteLine($"¸¸ÎÄ¼ş¼Ğ {folderPath} ÏÂµÄËùÓĞ×ÓÄ¿Â¼£º");
+                            System.Diagnostics.Debug.WriteLine($"çˆ¶æ–‡ä»¶å¤¹ {folderPath} ä¸‹çš„æ‰€æœ‰å­ç›®å½•ï¼š");
                             foreach (var dir in subDirs)
                             {
                                 System.Diagnostics.Debug.WriteLine($"  - {System.IO.Path.GetFileName(dir)}");
@@ -612,18 +612,18 @@ namespace TestArcMapAddin2.Forms
                         }
                         else
                         {
-                            System.Diagnostics.Debug.WriteLine($"¸¸ÎÄ¼ş¼ĞÒ²²»´æÔÚ: {folderPath}");
+                            System.Diagnostics.Debug.WriteLine($"çˆ¶æ–‡ä»¶å¤¹ä¹Ÿä¸å­˜åœ¨: {folderPath}");
                         }
                     }
                     catch (Exception listEx)
                     {
-                        System.Diagnostics.Debug.WriteLine($"ÁĞ³ö¸¸ÎÄ¼ş¼ĞÄ¿Â¼Ê±³ö´í: {listEx.Message}");
+                        System.Diagnostics.Debug.WriteLine($"åˆ—å‡ºçˆ¶æ–‡ä»¶å¤¹ç›®å½•æ—¶å‡ºé”™: {listEx.Message}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"²éÕÒµØ¼ÛShapefileÊ±³ö´í£º{ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"æŸ¥æ‰¾åœ°ä»·Shapefileæ—¶å‡ºé”™ï¼š{ex.Message}");
             }
             
             return "";
@@ -633,31 +633,31 @@ namespace TestArcMapAddin2.Forms
         {
             try
             {
-                // Â·¾¶£º¿Õ¼äÊı¾İ/Çå²é·¶Î§Êı¾İ/(ĞĞÕşÇø´úÂë)SLZY_DLTB.shp
-                var surveyDataPath = System.IO.Path.Combine(folderPath, "¿Õ¼äÊı¾İ", "Çå²é·¶Î§Êı¾İ");
+                // è·¯å¾„ï¼šç©ºé—´æ•°æ®/æ¸…æŸ¥èŒƒå›´æ•°æ®/(è¡Œæ”¿åŒºä»£ç )SLZY_DLTB.shp
+                var surveyDataPath = System.IO.Path.Combine(folderPath, "ç©ºé—´æ•°æ®", "æ¸…æŸ¥èŒƒå›´æ•°æ®");
                 
                 if (Directory.Exists(surveyDataPath))
                 {
-                    // ĞŞÕıÎÄ¼şÃû¸ñÊ½£ºÀ¨ºÅ+ĞĞÕşÇø´úÂë+SLZY_DLTB
+                    // ä¿®æ­£æ–‡ä»¶åæ ¼å¼ï¼šæ‹¬å·+è¡Œæ”¿åŒºä»£ç +SLZY_DLTB
                     var targetFileName = $"({adminCode})SLZY_DLTB.shp";
                     var targetPath = System.IO.Path.Combine(surveyDataPath, targetFileName);
                     
-                    System.Diagnostics.Debug.WriteLine($"²éÕÒÏÖ×´Shapefile: {targetPath}");
+                    System.Diagnostics.Debug.WriteLine($"æŸ¥æ‰¾ç°çŠ¶Shapefile: {targetPath}");
                     
                     if (File.Exists(targetPath))
                     {
-                        System.Diagnostics.Debug.WriteLine($"³É¹¦ÕÒµ½ÏÖ×´Shapefile: {targetPath}");
+                        System.Diagnostics.Debug.WriteLine($"æˆåŠŸæ‰¾åˆ°ç°çŠ¶Shapefile: {targetPath}");
                         return targetPath;
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"Î´ÕÒµ½Ä¿±êÎÄ¼ş: {targetPath}");
+                        System.Diagnostics.Debug.WriteLine($"æœªæ‰¾åˆ°ç›®æ ‡æ–‡ä»¶: {targetPath}");
                         
-                        // Êä³öµ÷ÊÔĞÅÏ¢£ºÁĞ³ö¸ÃÄ¿Â¼ÏÂµÄËùÓĞ.shpÎÄ¼ş
+                        // è¾“å‡ºè°ƒè¯•ä¿¡æ¯ï¼šåˆ—å‡ºè¯¥ç›®å½•ä¸‹çš„æ‰€æœ‰.shpæ–‡ä»¶
                         try
                         {
                             var shpFiles = Directory.GetFiles(surveyDataPath, "*.shp");
-                            System.Diagnostics.Debug.WriteLine($"Çå²é·¶Î§Êı¾İÄ¿Â¼ÏÂµÄËùÓĞ.shpÎÄ¼ş£º");
+                            System.Diagnostics.Debug.WriteLine($"æ¸…æŸ¥èŒƒå›´æ•°æ®ç›®å½•ä¸‹çš„æ‰€æœ‰.shpæ–‡ä»¶ï¼š");
                             foreach (var file in shpFiles)
                             {
                                 System.Diagnostics.Debug.WriteLine($"  - {System.IO.Path.GetFileName(file)}");
@@ -665,22 +665,22 @@ namespace TestArcMapAddin2.Forms
                         }
                         catch (Exception listEx)
                         {
-                            System.Diagnostics.Debug.WriteLine($"ÁĞ³öÄ¿Â¼ÎÄ¼şÊ±³ö´í: {listEx.Message}");
+                            System.Diagnostics.Debug.WriteLine($"åˆ—å‡ºç›®å½•æ–‡ä»¶æ—¶å‡ºé”™: {listEx.Message}");
                         }
                     }
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"Çå²é·¶Î§Êı¾İÄ¿Â¼²»´æÔÚ: {surveyDataPath}");
+                    System.Diagnostics.Debug.WriteLine($"æ¸…æŸ¥èŒƒå›´æ•°æ®ç›®å½•ä¸å­˜åœ¨: {surveyDataPath}");
                     
-                    // Êä³öµ÷ÊÔĞÅÏ¢£ºÁĞ³ö¿Õ¼äÊı¾İÄ¿Â¼ÏÂµÄËùÓĞ×ÓÄ¿Â¼
+                    // è¾“å‡ºè°ƒè¯•ä¿¡æ¯ï¼šåˆ—å‡ºç©ºé—´æ•°æ®ç›®å½•ä¸‹çš„æ‰€æœ‰å­ç›®å½•
                     try
                     {
-                        var spatialDataPath = System.IO.Path.Combine(folderPath, "¿Õ¼äÊı¾İ");
+                        var spatialDataPath = System.IO.Path.Combine(folderPath, "ç©ºé—´æ•°æ®");
                         if (Directory.Exists(spatialDataPath))
                         {
                             var subDirs = Directory.GetDirectories(spatialDataPath);
-                            System.Diagnostics.Debug.WriteLine($"¿Õ¼äÊı¾İÄ¿Â¼ÏÂµÄËùÓĞ×ÓÄ¿Â¼£º");
+                            System.Diagnostics.Debug.WriteLine($"ç©ºé—´æ•°æ®ç›®å½•ä¸‹çš„æ‰€æœ‰å­ç›®å½•ï¼š");
                             foreach (var dir in subDirs)
                             {
                                 System.Diagnostics.Debug.WriteLine($"  - {System.IO.Path.GetFileName(dir)}");
@@ -688,18 +688,18 @@ namespace TestArcMapAddin2.Forms
                         }
                         else
                         {
-                            System.Diagnostics.Debug.WriteLine($"¿Õ¼äÊı¾İÄ¿Â¼Ò²²»´æÔÚ: {spatialDataPath}");
+                            System.Diagnostics.Debug.WriteLine($"ç©ºé—´æ•°æ®ç›®å½•ä¹Ÿä¸å­˜åœ¨: {spatialDataPath}");
                         }
                     }
                     catch (Exception listEx)
                     {
-                        System.Diagnostics.Debug.WriteLine($"ÁĞ³ö¿Õ¼äÊı¾İÄ¿Â¼Ê±³ö´í: {listEx.Message}");
+                        System.Diagnostics.Debug.WriteLine($"åˆ—å‡ºç©ºé—´æ•°æ®ç›®å½•æ—¶å‡ºé”™: {listEx.Message}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"²éÕÒÏÖ×´ShapefileÊ±³ö´í£º{ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"æŸ¥æ‰¾ç°çŠ¶Shapefileæ—¶å‡ºé”™ï¼š{ex.Message}");
             }
             
             return "";
@@ -707,11 +707,11 @@ namespace TestArcMapAddin2.Forms
 
         private string ExtractAdminNameFromFolder(string folderName)
         {
-            // ´ÓĞÎÈç"441226µÂÇìÏØÁÖµØ¶¨¼¶ºÍ»ù×¼µØ¼ÛÊı¾İ³É¹û"µÄÎÄ¼ş¼ĞÃûÖĞÌáÈ¡ÏØÃû
+            // ä»å½¢å¦‚"441226å¾·åº†å¿æ—åœ°å®šçº§å’ŒåŸºå‡†åœ°ä»·æ•°æ®æˆæœ"çš„æ–‡ä»¶å¤¹åä¸­æå–å¿å
             if (folderName.Length > 6)
             {
                 var nameWithSuffix = folderName.Substring(6);
-                var name = nameWithSuffix.Replace("ÁÖµØ¶¨¼¶ºÍ»ù×¼µØ¼ÛÊı¾İ³É¹û", "").Trim();
+                var name = nameWithSuffix.Replace("æ—åœ°å®šçº§å’ŒåŸºå‡†åœ°ä»·æ•°æ®æˆæœ", "").Trim();
                 return name;
             }
             return folderName;
@@ -719,26 +719,26 @@ namespace TestArcMapAddin2.Forms
 
         private string ExtractAdminNameFromForestFolder(string folderName)
         {
-            // ´ÓĞÎÈç"¹ã¶«Ê¡ÕØÇìÊĞµÂÇìÏØ(441226)È«ÃñËùÓĞ×ÔÈ»×ÊÔ´×Ê²úÇå²é2023Äê¶È¹¤×÷µ×Í¼³É¹û_É­ÁÖ"ÌáÈ¡ÏØÃû
-            var match = System.Text.RegularExpressions.Regex.Match(folderName, @"(\w+ÏØ)\(");
+            // ä»å½¢å¦‚"å¹¿ä¸œçœè‚‡åº†å¸‚å¾·åº†å¿(441226)å…¨æ°‘æ‰€æœ‰è‡ªç„¶èµ„æºèµ„äº§æ¸…æŸ¥2023å¹´åº¦å·¥ä½œåº•å›¾æˆæœ_æ£®æ—"æå–å¿å
+            var match = System.Text.RegularExpressions.Regex.Match(folderName, @"(\w+å¿)\(");
             if (match.Success)
             {
                 return match.Groups[1].Value;
             }
             
-            // ±¸Ñ¡·½°¸£ºÌáÈ¡À¨ºÅÇ°µÄ×îºóÒ»¸öÏØÃû
+            // å¤‡é€‰æ–¹æ¡ˆï¼šæå–æ‹¬å·å‰çš„æœ€åä¸€ä¸ªå¿å
             var parts = folderName.Split('(');
             if (parts.Length > 0)
             {
                 var beforeBracket = parts[0];
-                var countyMatch = System.Text.RegularExpressions.Regex.Match(beforeBracket, @"(\w+ÏØ)");
+                var countyMatch = System.Text.RegularExpressions.Regex.Match(beforeBracket, @"(\w+å¿)");
                 if (countyMatch.Success)
                 {
                     return countyMatch.Groups[1].Value;
                 }
             }
             
-            return "Î´Öª";
+            return "æœªçŸ¥";
         }
 
         private void LoadPriceMappingFromExcel(string excelPath)
@@ -749,18 +749,18 @@ namespace TestArcMapAddin2.Forms
             
             try
             {
-                // Ê¾Àı£ºÎª³£¼ûµÄ¹ã¶«Ê¡ÏØ¼¶ĞĞÕşÇø´úÂë´´½¨¼Û¸ñÓ³Éä
+                // ç¤ºä¾‹ï¼šä¸ºå¸¸è§çš„å¹¿ä¸œçœå¿çº§è¡Œæ”¿åŒºä»£ç åˆ›å»ºä»·æ ¼æ˜ å°„
                 var sampleData = new Dictionary<string, Dictionary<string, double>>
                 {
-                    ["441226"] = new Dictionary<string, double> // µÂÇìÏØÊ¾Àı
+                    ["441226"] = new Dictionary<string, double> // å¾·åº†å¿ç¤ºä¾‹
                     {
-                        ["1"] = 8.72, // 1¼¶ÁÖµØ¼Û¸ñ£¨ÍòÔª/¹«Çê£©
+                        ["1"] = 8.72, // 1çº§æ—åœ°ä»·æ ¼ï¼ˆä¸‡å…ƒ/å…¬é¡·ï¼‰
                         ["2"] = 6.45,
                         ["3"] = 4.23,
                         ["4"] = 3.15,
                         ["5"] = 2.45
                     },
-                    ["441322"] = new Dictionary<string, double> // »İÀ´ÏØÊ¾Àı
+                    ["441322"] = new Dictionary<string, double> // æƒ æ¥å¿ç¤ºä¾‹
                     {
                         ["1"] = 7.89,
                         ["2"] = 5.67,
@@ -768,7 +768,7 @@ namespace TestArcMapAddin2.Forms
                         ["4"] = 2.87,
                         ["5"] = 2.12
                     },
-                    ["441781"] = new Dictionary<string, double> // Â½·áÊĞÊ¾Àı
+                    ["441781"] = new Dictionary<string, double> // é™†ä¸°å¸‚ç¤ºä¾‹
                     {
                         ["1"] = 9.12,
                         ["2"] = 6.88,
@@ -780,7 +780,7 @@ namespace TestArcMapAddin2.Forms
 
                 bool fileProcessed = false;
                 
-                // Èç¹ûÎÄ¼ş´æÔÚ£¬³¢ÊÔ¶ÁÈ¡
+                // å¦‚æœæ–‡ä»¶å­˜åœ¨ï¼Œå°è¯•è¯»å–
                 if (File.Exists(excelPath))
                 {
                     try
@@ -789,58 +789,58 @@ namespace TestArcMapAddin2.Forms
                         
                         if (fileExtension == ".csv")
                         {
-                            // ´¦ÀíCSVÎÄ¼ş
-                            importLog.Add("¼ì²âµ½CSVÎÄ¼ş£¬¿ªÊ¼½âÎö...");
+                            // å¤„ç†CSVæ–‡ä»¶
+                            importLog.Add("æ£€æµ‹åˆ°CSVæ–‡ä»¶ï¼Œå¼€å§‹è§£æ...");
                             fileProcessed = ProcessCsvFile(excelPath, importLog, errorLog);
                         }
                         else if (fileExtension == ".xlsx" || fileExtension == ".xls")
                         {
-                            // ³¢ÊÔ×÷ÎªCSV¸ñÊ½¶ÁÈ¡ExcelÎÄ¼ş
-                            importLog.Add("¼ì²âµ½ExcelÎÄ¼ş£¬³¢ÊÔ°´CSV¸ñÊ½½âÎö...");
+                            // å°è¯•ä½œä¸ºCSVæ ¼å¼è¯»å–Excelæ–‡ä»¶
+                            importLog.Add("æ£€æµ‹åˆ°Excelæ–‡ä»¶ï¼Œå°è¯•æŒ‰CSVæ ¼å¼è§£æ...");
                             fileProcessed = ProcessCsvFile(excelPath, importLog, errorLog);
                             
                             if (!fileProcessed)
                             {
-                                importLog.Add("CSV¸ñÊ½½âÎöÊ§°Ü£¬Õâ¿ÉÄÜÊÇÒ»¸öÕæÕıµÄExcelÎÄ¼ş¡£");
-                                errorLog.Add("Ôİ²»Ö§³ÖÖ±½Ó¶ÁÈ¡ExcelÎÄ¼ş£¬Çë½«ExcelÎÄ¼şÁí´æÎªCSV¸ñÊ½ºóÖØÊÔ¡£");
+                                importLog.Add("CSVæ ¼å¼è§£æå¤±è´¥ï¼Œè¿™å¯èƒ½æ˜¯ä¸€ä¸ªçœŸæ­£çš„Excelæ–‡ä»¶ã€‚");
+                                errorLog.Add("æš‚ä¸æ”¯æŒç›´æ¥è¯»å–Excelæ–‡ä»¶ï¼Œè¯·å°†Excelæ–‡ä»¶å¦å­˜ä¸ºCSVæ ¼å¼åé‡è¯•ã€‚");
                             }
                         }
                     }
                     catch (Exception fileEx)
                     {
-                        errorLog.Add($"ÎÄ¼ş½âÎö³ö´í: {fileEx.Message}");
-                        System.Diagnostics.Debug.WriteLine($"ÎÄ¼ş½âÎöÊ§°Ü: {fileEx.Message}");
+                        errorLog.Add($"æ–‡ä»¶è§£æå‡ºé”™: {fileEx.Message}");
+                        System.Diagnostics.Debug.WriteLine($"æ–‡ä»¶è§£æå¤±è´¥: {fileEx.Message}");
                     }
                 }
                 else
                 {
-                    errorLog.Add("Ñ¡ÔñµÄÎÄ¼ş²»´æÔÚ");
+                    errorLog.Add("é€‰æ‹©çš„æ–‡ä»¶ä¸å­˜åœ¨");
                 }
 
-                // Èç¹ûÎÄ¼ş´¦ÀíÊ§°Ü»òÃ»ÓĞÊı¾İ£¬Ê¹ÓÃÊ¾ÀıÊı¾İ
+                // å¦‚æœæ–‡ä»¶å¤„ç†å¤±è´¥æˆ–æ²¡æœ‰æ•°æ®ï¼Œä½¿ç”¨ç¤ºä¾‹æ•°æ®
                 if (!fileProcessed || priceMapping.Count == 0)
                 {
-                    importLog.Add("Ê¹ÓÃÄÚÖÃÊ¾ÀıÊı¾İ...");
+                    importLog.Add("ä½¿ç”¨å†…ç½®ç¤ºä¾‹æ•°æ®...");
                     priceMapping = new Dictionary<string, Dictionary<string, double>>(sampleData);
-                    importLog.Add($"ÒÑ¼ÓÔØ {priceMapping.Count} ¸öÊ¾ÀıĞĞÕşÇøµÄ¼Û¸ñÊı¾İ");
+                    importLog.Add($"å·²åŠ è½½ {priceMapping.Count} ä¸ªç¤ºä¾‹è¡Œæ”¿åŒºçš„ä»·æ ¼æ•°æ®");
                 }
                 
                 UpdateButtonStates();
                 
-                // Èç¹ûÓĞ´íÎó»ò¾¯¸æ£¬ÏÔÊ¾ÏêÏ¸ĞÅÏ¢
+                // å¦‚æœæœ‰é”™è¯¯æˆ–è­¦å‘Šï¼Œæ˜¾ç¤ºè¯¦ç»†ä¿¡æ¯
                 if (errorLog.Count > 0)
                 {
-                    var errorMessage = "µ¼Èë¹ı³ÌÖĞÓöµ½ÒÔÏÂÎÊÌâ£º\n\n" + string.Join("\n", errorLog);
+                    var errorMessage = "å¯¼å…¥è¿‡ç¨‹ä¸­é‡åˆ°ä»¥ä¸‹é—®é¢˜ï¼š\n\n" + string.Join("\n", errorLog);
                     if (priceMapping.Count > 0)
                     {
-                        errorMessage += $"\n\nÒÑ³É¹¦µ¼Èë {priceMapping.Count} ¸öĞĞÕşÇøµÄÊı¾İ¡£";
+                        errorMessage += $"\n\nå·²æˆåŠŸå¯¼å…¥ {priceMapping.Count} ä¸ªè¡Œæ”¿åŒºçš„æ•°æ®ã€‚";
                     }
                     throw new Exception(errorMessage);
                 }
             }
             catch (Exception ex)
             {
-                // Èç¹ûËùÓĞ·½·¨¶¼Ê§°Ü£¬ÖÁÉÙÈ·±£ÓĞÒ»Ğ©»ù´¡Êı¾İ
+                // å¦‚æœæ‰€æœ‰æ–¹æ³•éƒ½å¤±è´¥ï¼Œè‡³å°‘ç¡®ä¿æœ‰ä¸€äº›åŸºç¡€æ•°æ®
                 if (priceMapping.Count == 0)
                 {
                     priceMapping = new Dictionary<string, Dictionary<string, double>>
@@ -852,13 +852,13 @@ namespace TestArcMapAddin2.Forms
                     };
                 }
                 
-                // ÖØĞÂÅ×³öÒì³££¬°üº¬¸ü¶àĞÅÏ¢
+                // é‡æ–°æŠ›å‡ºå¼‚å¸¸ï¼ŒåŒ…å«æ›´å¤šä¿¡æ¯
                 var detailedMessage = ex.Message;
                 if (importLog.Count > 0)
                 {
-                    detailedMessage += "\n\nµ¼ÈëÈÕÖ¾£º\n" + string.Join("\n", importLog);
+                    detailedMessage += "\n\nå¯¼å…¥æ—¥å¿—ï¼š\n" + string.Join("\n", importLog);
                 }
-                detailedMessage += "\n\nÌáÊ¾£ºÇëÈ·±£ÎÄ¼şÎªCSV¸ñÊ½£¬°üº¬ÁĞ£ºĞĞÕşÇøÃû³Æ,ĞĞÕşÇø´úÂë,1¼¶¼Û¸ñ,2¼¶¼Û¸ñ,3¼¶¼Û¸ñ,4¼¶¼Û¸ñ,5¼¶¼Û¸ñ";
+                detailedMessage += "\n\næç¤ºï¼šè¯·ç¡®ä¿æ–‡ä»¶ä¸ºCSVæ ¼å¼ï¼ŒåŒ…å«åˆ—ï¼šè¡Œæ”¿åŒºåç§°,è¡Œæ”¿åŒºä»£ç ,1çº§ä»·æ ¼,2çº§ä»·æ ¼,3çº§ä»·æ ¼,4çº§ä»·æ ¼,5çº§ä»·æ ¼";
                 
                 throw new Exception(detailedMessage);
             }
@@ -869,11 +869,11 @@ namespace TestArcMapAddin2.Forms
             try
             {
                 var lines = File.ReadAllLines(filePath, Encoding.UTF8);
-                importLog.Add($"³É¹¦¶ÁÈ¡ÎÄ¼ş£¬¹² {lines.Length} ĞĞ");
+                importLog.Add($"æˆåŠŸè¯»å–æ–‡ä»¶ï¼Œå…± {lines.Length} è¡Œ");
                 
                 if (lines.Length <= 2)
                 {
-                    errorLog.Add("ÎÄ¼şĞĞÊıÌ«ÉÙ£¬ÖÁÉÙĞèÒª3ĞĞ£¨2ĞĞ±íÍ· + 1ĞĞÊı¾İ£©");
+                    errorLog.Add("æ–‡ä»¶è¡Œæ•°å¤ªå°‘ï¼Œè‡³å°‘éœ€è¦3è¡Œï¼ˆ2è¡Œè¡¨å¤´ + 1è¡Œæ•°æ®ï¼‰");
                     return false;
                 }
 
@@ -881,11 +881,11 @@ namespace TestArcMapAddin2.Forms
                 int skipCount = 0;
                 int errorCount = 0;
 
-                for (int i = 2; i < lines.Length; i++) // Ìø¹ıÇ°Á½ĞĞ±íÍ·
+                for (int i = 2; i < lines.Length; i++) // è·³è¿‡å‰ä¸¤è¡Œè¡¨å¤´
                 {
                     var line = lines[i].Trim();
                     
-                    // Ìø¹ı¿ÕĞĞºÍ×¢ÊÍĞĞ
+                    // è·³è¿‡ç©ºè¡Œå’Œæ³¨é‡Šè¡Œ
                     if (string.IsNullOrEmpty(line) || line.StartsWith("#"))
                     {
                         skipCount++;
@@ -894,7 +894,7 @@ namespace TestArcMapAddin2.Forms
                     
                     try
                     {
-                        var parts = line.Split(',', '\t'); // Ö§³Ö¶ººÅ»òÖÆ±í·û·Ö¸ô
+                        var parts = line.Split(',', '\t'); // æ”¯æŒé€—å·æˆ–åˆ¶è¡¨ç¬¦åˆ†éš”
                         if (parts.Length >= 7)
                         {
                             var adminName = parts[0]?.Trim().Trim('"');
@@ -904,12 +904,12 @@ namespace TestArcMapAddin2.Forms
                             {
                                 var prices = new Dictionary<string, double>();
                                 
-                                // ¶ÁÈ¡1-5¼¶¼Û¸ñ£¨ÁĞË÷Òı2-6£©
+                                // è¯»å–1-5çº§ä»·æ ¼ï¼ˆåˆ—ç´¢å¼•2-6ï¼‰
                                 for (int j = 2; j <= 6; j++)
                                 {
                                     if (double.TryParse(parts[j]?.Trim().Trim('"'), out double price) && price > 0)
                                     {
-                                        var grade = (j - 1).ToString(); // 1-5¼¶
+                                        var grade = (j - 1).ToString(); // 1-5çº§
                                         prices[grade] = price;
                                     }
                                 }
@@ -918,40 +918,40 @@ namespace TestArcMapAddin2.Forms
                                 {
                                     priceMapping[adminCode] = prices;
                                     successCount++;
-                                    importLog.Add($"³É¹¦µ¼Èë: {adminName}({adminCode}) - {prices.Count}¸öµÈ¼¶");
+                                    importLog.Add($"æˆåŠŸå¯¼å…¥: {adminName}({adminCode}) - {prices.Count}ä¸ªç­‰çº§");
                                 }
                                 else
                                 {
-                                    errorLog.Add($"µÚ{i+1}ĞĞ: {adminName}({adminCode}) - Ã»ÓĞÓĞĞ§µÄ¼Û¸ñÊı¾İ");
+                                    errorLog.Add($"ç¬¬{i+1}è¡Œ: {adminName}({adminCode}) - æ²¡æœ‰æœ‰æ•ˆçš„ä»·æ ¼æ•°æ®");
                                     errorCount++;
                                 }
                             }
                             else
                             {
-                                errorLog.Add($"µÚ{i+1}ĞĞ: ĞĞÕşÇø´úÂë¸ñÊ½´íÎó - '{adminCode}'");
+                                errorLog.Add($"ç¬¬{i+1}è¡Œ: è¡Œæ”¿åŒºä»£ç æ ¼å¼é”™è¯¯ - '{adminCode}'");
                                 errorCount++;
                             }
                         }
                         else
                         {
-                            errorLog.Add($"µÚ{i+1}ĞĞ: ÁĞÊı²»×ã£¬ÆÚÍû7ÁĞ£¬Êµ¼Ê{parts.Length}ÁĞ");
+                            errorLog.Add($"ç¬¬{i+1}è¡Œ: åˆ—æ•°ä¸è¶³ï¼ŒæœŸæœ›7åˆ—ï¼Œå®é™…{parts.Length}åˆ—");
                             errorCount++;
                         }
                     }
                     catch (Exception lineEx)
                     {
-                        errorLog.Add($"µÚ{i+1}ĞĞ: ½âÎö´íÎó - {lineEx.Message}");
+                        errorLog.Add($"ç¬¬{i+1}è¡Œ: è§£æé”™è¯¯ - {lineEx.Message}");
                         errorCount++;
                     }
                 }
 
-                importLog.Add($"´¦ÀíÍê³É: ³É¹¦{successCount}ĞĞ, Ìø¹ı{skipCount}ĞĞ, ´íÎó{errorCount}ĞĞ");
+                importLog.Add($"å¤„ç†å®Œæˆ: æˆåŠŸ{successCount}è¡Œ, è·³è¿‡{skipCount}è¡Œ, é”™è¯¯{errorCount}è¡Œ");
                 
                 return successCount > 0;
             }
             catch (Exception ex)
             {
-                errorLog.Add($"ÎÄ¼ş¶ÁÈ¡Ê§°Ü: {ex.Message}");
+                errorLog.Add($"æ–‡ä»¶è¯»å–å¤±è´¥: {ex.Message}");
                 return false;
             }
         }
@@ -959,21 +959,21 @@ namespace TestArcMapAddin2.Forms
         {
             try
             {
-                // ´´½¨Êä³öÎÄ¼ş¼Ğ
+                // åˆ›å»ºè¾“å‡ºæ–‡ä»¶å¤¹
                 var outputFolderName = $"{pair.AdminCode}{pair.AdminName}LDHSJG";
                 var outputFolderPath = System.IO.Path.Combine(outputPath, outputFolderName);
                 Directory.CreateDirectory(outputFolderPath);
 
-                // ´´½¨Êä³öShapefile
+                // åˆ›å»ºè¾“å‡ºShapefile
                 var outputShapefileName = $"{pair.AdminCode}LDHSJG";
                 var outputShapefilePath = System.IO.Path.Combine(outputFolderPath, outputShapefileName + ".shp");
 
-                // ´¦Àí¿Õ¼äÊı¾İ¹ØÁªºÍÊôĞÔ¼ÆËã
+                // å¤„ç†ç©ºé—´æ•°æ®å…³è”å’Œå±æ€§è®¡ç®—
                 ProcessSpatialDataAssociation(pair.StatusDataPath, pair.PriceDataPath, outputShapefilePath, pair);
             }
             catch (Exception ex)
             {
-                throw new Exception($"´¦Àí {pair.AdminName} Êı¾İÊ±³ö´í£º{ex.Message}");
+                throw new Exception($"å¤„ç† {pair.AdminName} æ•°æ®æ—¶å‡ºé”™ï¼š{ex.Message}");
             }
         }
 
@@ -987,27 +987,27 @@ namespace TestArcMapAddin2.Forms
 
             try
             {
-                // ´ò¿ªÏÖ×´Shapefile
+                // æ‰“å¼€ç°çŠ¶Shapefile
                 Type statusWorkspaceFactoryType = Type.GetTypeFromProgID("esriDataSourcesFile.ShapefileWorkspaceFactory");
                 var statusWorkspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(statusWorkspaceFactoryType);
                 statusWorkspace = statusWorkspaceFactory.OpenFromFile(System.IO.Path.GetDirectoryName(statusShpPath), 0);
                 statusFeatureClass = ((IFeatureWorkspace)statusWorkspace).OpenFeatureClass(System.IO.Path.GetFileNameWithoutExtension(statusShpPath));
 
-                // ´ò¿ªµØ¼ÛShapefile
+                // æ‰“å¼€åœ°ä»·Shapefile
                 Type priceWorkspaceFactoryType = Type.GetTypeFromProgID("esriDataSourcesFile.ShapefileWorkspaceFactory");
                 var priceWorkspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(priceWorkspaceFactoryType);
                 priceWorkspace = priceWorkspaceFactory.OpenFromFile(System.IO.Path.GetDirectoryName(priceShpPath), 0);
                 priceFeatureClass = ((IFeatureWorkspace)priceWorkspace).OpenFeatureClass(System.IO.Path.GetFileNameWithoutExtension(priceShpPath));
 
-                // ´´½¨Êä³öShapefile
+                // åˆ›å»ºè¾“å‡ºShapefile
                 outputFeatureClass = CreateLDHSJGShapefile(outputShpPath, statusFeatureClass);
 
-                // ´¦ÀíÃ¿¸öÏÖ×´ÒªËØ
+                // å¤„ç†æ¯ä¸ªç°çŠ¶è¦ç´ 
                 ProcessFeatures(statusFeatureClass, priceFeatureClass, outputFeatureClass, pair);
             }
             finally
             {
-                // ÊÍ·ÅCOM¶ÔÏó
+                // é‡Šæ”¾COMå¯¹è±¡
                 if (outputFeatureClass != null) System.Runtime.InteropServices.Marshal.ReleaseComObject(outputFeatureClass);
                 if (priceFeatureClass != null) System.Runtime.InteropServices.Marshal.ReleaseComObject(priceFeatureClass);
                 if (statusFeatureClass != null) System.Runtime.InteropServices.Marshal.ReleaseComObject(statusFeatureClass);
@@ -1023,18 +1023,18 @@ namespace TestArcMapAddin2.Forms
             var workspace = workspaceFactory.OpenFromFile(System.IO.Path.GetDirectoryName(outputPath), 0);
             var featureWorkspace = (IFeatureWorkspace)workspace;
 
-            // ´´½¨×Ö¶Î¼¯ºÏ
+            // åˆ›å»ºå­—æ®µé›†åˆ
             var fields = new FieldsClass();
             var fieldsEdit = (IFieldsEdit)fields;
 
-            // Ìí¼ÓOID×Ö¶Î
+            // æ·»åŠ OIDå­—æ®µ
             var oidField = new FieldClass();
             var oidFieldEdit = (IFieldEdit)oidField;
             oidFieldEdit.Name_2 = "FID";
             oidFieldEdit.Type_2 = esriFieldType.esriFieldTypeOID;
             fieldsEdit.AddField(oidField);
 
-            // Ìí¼Ó¼¸ºÎ×Ö¶Î
+            // æ·»åŠ å‡ ä½•å­—æ®µ
             var geometryField = new FieldClass();
             var geometryFieldEdit = (IFieldEdit)geometryField;
             geometryFieldEdit.Name_2 = "Shape";
@@ -1044,10 +1044,10 @@ namespace TestArcMapAddin2.Forms
                 CreateGeometryDef(null);
             fieldsEdit.AddField(geometryField);
 
-            // Ìí¼ÓÒµÎñ×Ö¶Î
+            // æ·»åŠ ä¸šåŠ¡å­—æ®µ
             AddLDHSJGBusinessFields(fieldsEdit);
 
-            // ´´½¨ÒªËØÀà
+            // åˆ›å»ºè¦ç´ ç±»
             var featureClass = featureWorkspace.CreateFeatureClass(
                 System.IO.Path.GetFileNameWithoutExtension(outputPath),
                 fields,
@@ -1074,37 +1074,37 @@ namespace TestArcMapAddin2.Forms
 
         private void AddLDHSJGBusinessFields(IFieldsEdit fieldsEdit)
         {
-            // 1. ×Ê²úÇå²é±êÊ¶Âë
+            // 1. èµ„äº§æ¸…æŸ¥æ ‡è¯†ç 
             AddField(fieldsEdit, "ZCQCBSM", esriFieldType.esriFieldTypeString, 22);
             
-            // 2. ÒªËØ´úÂë
+            // 2. è¦ç´ ä»£ç 
             AddField(fieldsEdit, "YSDM", esriFieldType.esriFieldTypeString, 10);
             
-            // 3. ËùÔÚÊ¡·İĞĞÕş´úÂë
+            // 3. æ‰€åœ¨çœä»½è¡Œæ”¿ä»£ç 
             AddField(fieldsEdit, "SZSFXZDM", esriFieldType.esriFieldTypeString, 2);
             
-            // 4. ËùÔÚÊ¡·İĞĞÕşÃû³Æ
+            // 4. æ‰€åœ¨çœä»½è¡Œæ”¿åç§°
             AddField(fieldsEdit, "SZSFXZMC", esriFieldType.esriFieldTypeString, 100);
             
-            // 5. ÏØ¼¶ĞĞÕş´úÂë
+            // 5. å¿çº§è¡Œæ”¿ä»£ç 
             AddField(fieldsEdit, "XJXZDM", esriFieldType.esriFieldTypeString, 6);
             
-            // 6. ÏØ¼¶ĞĞÕşÃû³Æ
+            // 6. å¿çº§è¡Œæ”¿åç§°
             AddField(fieldsEdit, "XJXZMC", esriFieldType.esriFieldTypeString, 100);
             
-            // 7. ÁÖµØ¼¶±ğ
+            // 7. æ—åœ°çº§åˆ«
             AddField(fieldsEdit, "LDJB", esriFieldType.esriFieldTypeString, 10);
             
-            // 8. ¶ş¼¶µØÀà´úÂë
+            // 8. äºŒçº§åœ°ç±»ä»£ç 
             AddField(fieldsEdit, "EJDLDM", esriFieldType.esriFieldTypeString, 5);
             
-            // 9. ¶ş¼¶µØÀàÃû³Æ
+            // 9. äºŒçº§åœ°ç±»åç§°
             AddField(fieldsEdit, "EJDLMC", esriFieldType.esriFieldTypeString, 50);
             
-            // 10. ÏØ¼¶ÁÖµØÆ½¾ù¼Û
+            // 10. å¿çº§æ—åœ°å¹³å‡ä»·
             AddField(fieldsEdit, "XJLDPJJ", esriFieldType.esriFieldTypeDouble, 15, 5);
             
-            // 11. ÇøÓòÀ©Õ¹´úÂë
+            // 11. åŒºåŸŸæ‰©å±•ä»£ç 
             AddField(fieldsEdit, "QYKZDM", esriFieldType.esriFieldTypeString, 19);
         }
 
@@ -1116,14 +1116,14 @@ namespace TestArcMapAddin2.Forms
             fieldEdit.Type_2 = type;
             fieldEdit.Length_2 = length;
             
-            // ¶ÔÓÚDoubleÀàĞÍ×Ö¶Î£¬ĞèÒªÌØ±ğ´¦Àí¾«¶ÈÉèÖÃ
+            // å¯¹äºDoubleç±»å‹å­—æ®µï¼Œéœ€è¦ç‰¹åˆ«å¤„ç†ç²¾åº¦è®¾ç½®
             if (type == esriFieldType.esriFieldTypeDouble)
             {
-                // ¶ÔÓÚDoubleÀàĞÍ£¬precision±íÊ¾×ÜÎ»Êı£¬scale±íÊ¾Ğ¡ÊıÎ»Êı
-                // ArcGISÖĞDouble×Ö¶Î²»ĞèÒªÉèÖÃLength£¬ÏµÍ³»á×Ô¶¯´¦Àí
-                fieldEdit.Precision_2 = 15; // ×Ü¾«¶È15Î»
-                fieldEdit.Scale_2 = 5;      // Ğ¡Êıµãºó5Î»
-                System.Diagnostics.Debug.WriteLine($"´´½¨Double×Ö¶Î {name}: ×Ü¾«¶È=15, Ğ¡ÊıÎ»=5");
+                // å¯¹äºDoubleç±»å‹ï¼Œprecisionè¡¨ç¤ºæ€»ä½æ•°ï¼Œscaleè¡¨ç¤ºå°æ•°ä½æ•°
+                // ArcGISä¸­Doubleå­—æ®µä¸éœ€è¦è®¾ç½®Lengthï¼Œç³»ç»Ÿä¼šè‡ªåŠ¨å¤„ç†
+                fieldEdit.Precision_2 = 15; // æ€»ç²¾åº¦15ä½
+                fieldEdit.Scale_2 = 5;      // å°æ•°ç‚¹å5ä½
+                System.Diagnostics.Debug.WriteLine($"åˆ›å»ºDoubleå­—æ®µ {name}: æ€»ç²¾åº¦=15, å°æ•°ä½=5");
             }
             else if (precision > 0)
             {
@@ -1144,16 +1144,16 @@ namespace TestArcMapAddin2.Forms
             {
                 try
                 {
-                    // ´´½¨ĞÂÒªËØ
+                    // åˆ›å»ºæ–°è¦ç´ 
                     var outputFeatureBuffer = outputFC.CreateFeatureBuffer();
                     
-                    // ¸´ÖÆ¼¸ºÎÍ¼ĞÎ
+                    // å¤åˆ¶å‡ ä½•å›¾å½¢
                     outputFeatureBuffer.Shape = statusFeature.Shape;
                     
-                    // ÉèÖÃ×Ö¶ÎÖµ
+                    // è®¾ç½®å­—æ®µå€¼
                     SetLDHSJGFieldValues(outputFeatureBuffer, statusFeature, priceFC, pair, sequenceNumber);
                     
-                    // ±£´æÒªËØ
+                    // ä¿å­˜è¦ç´ 
                     outputCursor.InsertFeature(outputFeatureBuffer);
                     
                     sequenceNumber++;
@@ -1173,38 +1173,38 @@ namespace TestArcMapAddin2.Forms
 
         private void SetLDHSJGFieldValues(IFeatureBuffer outputFeature, IFeature statusFeature, IFeatureClass priceFC, DataPairInfo pair, int sequenceNumber)
         {
-            // 1. ×Ê²úÇå²é±êÊ¶Âë (ZCQCBSM)
+            // 1. èµ„äº§æ¸…æŸ¥æ ‡è¯†ç  (ZCQCBSM)
             var identifier = $"{pair.AdminCode}4140{sequenceNumber:D12}";
             outputFeature.set_Value(outputFeature.Fields.FindField("ZCQCBSM"), identifier);
             
-            // 2. ÒªËØ´úÂë (YSDM)
+            // 2. è¦ç´ ä»£ç  (YSDM)
             outputFeature.set_Value(outputFeature.Fields.FindField("YSDM"), "2150201040");
             
-            // 3. ËùÔÚÊ¡·İĞĞÕş´úÂë (SZSFXZDM)
+            // 3. æ‰€åœ¨çœä»½è¡Œæ”¿ä»£ç  (SZSFXZDM)
             outputFeature.set_Value(outputFeature.Fields.FindField("SZSFXZDM"), "44");
             
-            // 4. ËùÔÚÊ¡·İĞĞÕşÃû³Æ (SZSFXZMC)
-            outputFeature.set_Value(outputFeature.Fields.FindField("SZSFXZMC"), "¹ã¶«Ê¡");
+            // 4. æ‰€åœ¨çœä»½è¡Œæ”¿åç§° (SZSFXZMC)
+            outputFeature.set_Value(outputFeature.Fields.FindField("SZSFXZMC"), "å¹¿ä¸œçœ");
             
-            // 5. ÏØ¼¶ĞĞÕş´úÂë (XJXZDM)
+            // 5. å¿çº§è¡Œæ”¿ä»£ç  (XJXZDM)
             outputFeature.set_Value(outputFeature.Fields.FindField("XJXZDM"), pair.AdminCode);
             
-            // 6. ÏØ¼¶ĞĞÕşÃû³Æ (XJXZMC)
+            // 6. å¿çº§è¡Œæ”¿åç§° (XJXZMC)
             outputFeature.set_Value(outputFeature.Fields.FindField("XJXZMC"), pair.AdminName);
             
-            // 7. ÁÖµØ¼¶±ğ (LDJB) - Í¨¹ı¿Õ¼ä²éÑ¯»ñÈ¡
+            // 7. æ—åœ°çº§åˆ« (LDJB) - é€šè¿‡ç©ºé—´æŸ¥è¯¢è·å–
             var landGrade = GetLandGradeFromSpatialQuery(statusFeature, priceFC);
             outputFeature.set_Value(outputFeature.Fields.FindField("LDJB"), landGrade);
             
-            // 8-9. ¶ş¼¶µØÀà´úÂëºÍÃû³ÆÔİÊ±Îª¿Õ
+            // 8-9. äºŒçº§åœ°ç±»ä»£ç å’Œåç§°æš‚æ—¶ä¸ºç©º
             outputFeature.set_Value(outputFeature.Fields.FindField("EJDLDM"), "");
             outputFeature.set_Value(outputFeature.Fields.FindField("EJDLMC"), "");
             
-            // 10. ÏØ¼¶ÁÖµØÆ½¾ù¼Û (XJLDPJJ)
+            // 10. å¿çº§æ—åœ°å¹³å‡ä»· (XJLDPJJ)
             var averagePrice = GetAveragePrice(pair.AdminCode, landGrade);
             outputFeature.set_Value(outputFeature.Fields.FindField("XJLDPJJ"), averagePrice);
             
-            // 11. ÇøÓòÀ©Õ¹´úÂëÔİÊ±Îª¿Õ
+            // 11. åŒºåŸŸæ‰©å±•ä»£ç æš‚æ—¶ä¸ºç©º
             outputFeature.set_Value(outputFeature.Fields.FindField("QYKZDM"), "");
         }
 
@@ -1229,7 +1229,7 @@ namespace TestArcMapAddin2.Forms
                 {
                     try
                     {
-                        // ¼ÆËãÏà½»Ãæ»ı
+                        // è®¡ç®—ç›¸äº¤é¢ç§¯
                         var intersectionGeom = ((ITopologicalOperator)statusFeature.Shape).Intersect(priceFeature.Shape, esriGeometryDimension.esriGeometry2Dimension);
                         var intersectionArea = ((IArea)intersectionGeom).Area;
                         
@@ -1237,7 +1237,7 @@ namespace TestArcMapAddin2.Forms
                         {
                             maxArea = intersectionArea;
                             
-                            // »ñÈ¡SPLJB×Ö¶ÎÖµ
+                            // è·å–SPLJBå­—æ®µå€¼
                             var spljbField = priceFeature.Fields.FindField("SPLJB");
                             if (spljbField >= 0)
                             {
@@ -1275,13 +1275,13 @@ namespace TestArcMapAddin2.Forms
         {
             var lines = new List<string>
             {
-                "# ÁÖµØ¼Û¸ñÓ³Éä±íÄ£°å",
-                "ĞĞÕşÇøÃû³Æ,ĞĞÕşÇø´úÂë,1¼¶¼Û¸ñ,2¼¶¼Û¸ñ,3¼¶¼Û¸ñ,4¼¶¼Û¸ñ,5¼¶¼Û¸ñ",
-                "µÂÇìÏØ,441226,8.72,6.45,4.23,3.15,2.45",
-                "»İÀ´ÏØ,441322,7.89,5.67,3.98,2.87,2.12",
-                "Â½·áÊĞ,441781,9.12,6.88,4.56,3.33,2.78",
-                "# ÇëÔÚÉÏÃæµÄÊ¾ÀıÊı¾İ»ù´¡ÉÏĞŞ¸Ä»òÌí¼ÓÄúµÄÊµ¼ÊÊı¾İ",
-                "# ×¢Òâ£ºÇ°Á½ĞĞÎª±íÍ·£¬´ÓµÚ3ĞĞ¿ªÊ¼²ÅÊÇÊı¾İ"
+                "# æ—åœ°ä»·æ ¼æ˜ å°„è¡¨æ¨¡æ¿",
+                "è¡Œæ”¿åŒºåç§°,è¡Œæ”¿åŒºä»£ç ,1çº§ä»·æ ¼,2çº§ä»·æ ¼,3çº§ä»·æ ¼,4çº§ä»·æ ¼,5çº§ä»·æ ¼",
+                "å¾·åº†å¿,441226,8.72,6.45,4.23,3.15,2.45",
+                "æƒ æ¥å¿,441322,7.89,5.67,3.98,2.87,2.12",
+                "é™†ä¸°å¸‚,441781,9.12,6.88,4.56,3.33,2.78",
+                "# è¯·åœ¨ä¸Šé¢çš„ç¤ºä¾‹æ•°æ®åŸºç¡€ä¸Šä¿®æ”¹æˆ–æ·»åŠ æ‚¨çš„å®é™…æ•°æ®",
+                "# æ³¨æ„ï¼šå‰ä¸¤è¡Œä¸ºè¡¨å¤´ï¼Œä»ç¬¬3è¡Œå¼€å§‹æ‰æ˜¯æ•°æ®"
             };
             
             File.WriteAllLines(filePath, lines, Encoding.UTF8);
@@ -1291,19 +1291,19 @@ namespace TestArcMapAddin2.Forms
         {
             try
             {
-                // ¸üĞÂ×´Ì¬±êÇ©
+                // æ›´æ–°çŠ¶æ€æ ‡ç­¾
                 if (priceMapping.Count == 0)
                 {
-                    lblMappingStatus.Text = "×´Ì¬£ºÉĞÎ´µ¼ÈëÈÎºÎ¼Û¸ñÓ³ÉäÊı¾İ";
+                    lblMappingStatus.Text = "çŠ¶æ€ï¼šå°šæœªå¯¼å…¥ä»»ä½•ä»·æ ¼æ˜ å°„æ•°æ®";
                     lblMappingStatus.ForeColor = Color.Gray;
                 }
                 else
                 {
-                    lblMappingStatus.Text = $"×´Ì¬£ºÒÑµ¼Èë {priceMapping.Count} ¸öĞĞÕşÇøµÄ¼Û¸ñÊı¾İ";
+                    lblMappingStatus.Text = $"çŠ¶æ€ï¼šå·²å¯¼å…¥ {priceMapping.Count} ä¸ªè¡Œæ”¿åŒºçš„ä»·æ ¼æ•°æ®";
                     lblMappingStatus.ForeColor = Color.DarkGreen;
                 }
 
-                // ×¼±¸ÏÔÊ¾Êı¾İ
+                // å‡†å¤‡æ˜¾ç¤ºæ•°æ®
                 var displayData = new List<PriceMappingDisplayItem>();
                 
                 foreach (var mapping in priceMapping)
@@ -1311,7 +1311,7 @@ namespace TestArcMapAddin2.Forms
                     var adminCode = mapping.Key;
                     var prices = mapping.Value;
                     
-                    // ²éÕÒ¶ÔÓ¦µÄĞĞÕşÇøÃû³Æ
+                    // æŸ¥æ‰¾å¯¹åº”çš„è¡Œæ”¿åŒºåç§°
                     var adminName = GetAdminNameByCode(adminCode);
                     
                     var item = new PriceMappingDisplayItem
@@ -1328,58 +1328,217 @@ namespace TestArcMapAddin2.Forms
                     displayData.Add(item);
                 }
 
-                // °´ĞĞÕşÇø´úÂëÅÅĞò
+                // æŒ‰è¡Œæ”¿åŒºä»£ç æ’åº
                 displayData = displayData.OrderBy(x => x.AdminCode).ToList();
                 
-                // °ó¶¨µ½DataGridView
+                // ç»‘å®šåˆ°DataGridView
                 dataGridViewPriceMapping.DataSource = new BindingList<PriceMappingDisplayItem>(displayData);
                 
-                // ¸üĞÂ²é¿´Ó³Éä±í°´Å¥µÄ×´Ì¬
+                // æ›´æ–°æŸ¥çœ‹æ˜ å°„è¡¨æŒ‰é’®çš„çŠ¶æ€
                 btnViewPriceMapping.Enabled = priceMapping.Count > 0;
                 if (priceMapping.Count > 0)
                 {
-                    btnViewPriceMapping.Text = $"²é¿´Ó³Éä±í({priceMapping.Count})";
+                    btnViewPriceMapping.Text = $"æŸ¥çœ‹æ˜ å°„è¡¨({priceMapping.Count})";
                 }
                 else
                 {
-                    btnViewPriceMapping.Text = "²é¿´Ó³Éä±í";
+                    btnViewPriceMapping.Text = "æŸ¥çœ‹æ˜ å°„è¡¨";
                 }
             }
             catch (Exception ex)
             {
-                lblMappingStatus.Text = $"×´Ì¬£ºÏÔÊ¾Ó³ÉäÊı¾İÊ±³ö´í - {ex.Message}";
+                lblMappingStatus.Text = $"çŠ¶æ€ï¼šæ˜¾ç¤ºæ˜ å°„æ•°æ®æ—¶å‡ºé”™ - {ex.Message}";
                 lblMappingStatus.ForeColor = Color.Red;
             }
         }
 
         private string GetAdminNameByCode(string adminCode)
         {
-            // ³¢ÊÔ´ÓÒÑÅä¶ÔµÄÊı¾İÖĞ²éÕÒĞĞÕşÇøÃû³Æ
+            // å°è¯•ä»å·²é…å¯¹çš„æ•°æ®ä¸­æŸ¥æ‰¾è¡Œæ”¿åŒºåç§°
             var pair = dataPairs.FirstOrDefault(p => p.AdminCode == adminCode);
             if (pair != null)
             {
                 return pair.AdminName;
             }
             
-            // Ê¹ÓÃÔ¤¶¨ÒåµÄÓ³Éä
+            // ğŸ”¥ æ›´æ–°ï¼šä½¿ç”¨å®Œæ•´çš„å¹¿ä¸œçœè¡Œæ”¿åŒºæ˜ å°„è¡¨
             var knownNames = new Dictionary<string, string>
             {
-                ["441226"] = "µÂÇìÏØ",
-                ["441322"] = "»İÀ´ÏØ", 
-                ["441781"] = "Â½·áÊĞ",
-                ["440105"] = "º£ÖéÇø",
-                ["440106"] = "ÌìºÓÇø"
-                // ¿ÉÒÔ¼ÌĞøÌí¼Ó¸ü¶àÒÑÖªµÄÓ³Éä
+                // å¹¿å·å¸‚
+                ["440103"] = "è”æ¹¾åŒº",
+                ["440104"] = "è¶Šç§€åŒº",
+                ["440105"] = "æµ·ç åŒº",
+                ["440106"] = "å¤©æ²³åŒº",
+                ["440111"] = "ç™½äº‘åŒº",
+                ["440112"] = "é»„åŸ”åŒº",
+                ["440113"] = "ç•ªç¦ºåŒº",
+                ["440114"] = "èŠ±éƒ½åŒº",
+                ["440115"] = "å—æ²™åŒº",
+                ["440116"] = "èå²—åŒº",
+                ["440183"] = "å¢åŸåŒº",
+                ["440118"] = "ä»åŒ–åŒº",
+                
+                // éŸ¶å…³å¸‚
+                ["440203"] = "æ­¦æ±ŸåŒº",
+                ["440204"] = "æµˆæ±ŸåŒº",
+                ["440205"] = "æ›²æ±ŸåŒº",
+                ["440222"] = "å§‹å…´å¿",
+                ["440224"] = "ä»åŒ–å¿",
+                ["440229"] = "ç¿æºå¿",
+                ["440232"] = "ä¹³æºç‘¶æ—è‡ªæ²»å¿",
+                ["440233"] = "æ–°ä¸°å¿",
+                ["440281"] = "ä¹æ˜Œå¸‚",
+                ["440282"] = "å—é›„å¸‚",
+                
+                // æ·±åœ³å¸‚
+                ["440303"] = "ç½—æ¹–åŒº",
+                ["440304"] = "ç¦ç”°åŒº",
+                ["440305"] = "å—å±±åŒº",
+                ["440306"] = "å®å®‰åŒº",
+                ["440307"] = "é¾™å²—åŒº",
+                ["440308"] = "ç›ç”°åŒº",
+                ["440309"] = "é¾™ååŒº",
+                ["440310"] = "åªå±±åŒº",
+                ["440311"] = "å…‰æ˜åŒº",
+                
+                // ç æµ·å¸‚
+                ["440402"] = "é¦™æ´²åŒº",
+                ["440403"] = "æ–—é—¨åŒº",
+                ["440404"] = "é‡‘æ¹¾åŒº",
+                
+                // æ±•å¤´å¸‚
+                ["440507"] = "é¾™æ¹–åŒº",
+                ["440511"] = "é‡‘å¹³åŒº",
+                ["440512"] = "æ¿ æ±ŸåŒº",
+                ["440513"] = "æ½®é˜³åŒº",
+                ["440514"] = "æ½®å—åŒº",
+                ["440515"] = "æ¾„æµ·åŒº",
+                ["440523"] = "å—æ¾³å¿",
+                
+                // ä½›å±±å¸‚
+                ["440604"] = "ç¦…åŸåŒº",
+                ["440605"] = "å—æµ·åŒº",
+                ["440606"] = "é¡ºå¾·åŒº",
+                ["440607"] = "ä¸‰æ°´åŒº",
+                ["440608"] = "é«˜æ˜åŒº",
+                
+                // æ±Ÿé—¨å¸‚
+                ["440703"] = "è“¬æ±ŸåŒº",
+                ["440704"] = "æ±Ÿæµ·åŒº",
+                ["440705"] = "æ–°ä¼šåŒº",
+                ["440781"] = "å°å±±å¸‚",
+                ["440783"] = "å¼€å¹³å¸‚",
+                ["440784"] = "é¹¤å±±å¸‚",
+                ["440785"] = "æ©å¹³å¸‚",
+                
+                // æ¹›æ±Ÿå¸‚
+                ["440802"] = "èµ¤ååŒº",
+                ["440803"] = "éœå±±åŒº",
+                ["440804"] = "å¡å¤´åŒº",
+                ["440811"] = "éº»ç« åŒº",
+                ["440823"] = "é‚æºªå¿",
+                ["440825"] = "å¾é—»å¿",
+                ["440881"] = "å»‰æ±Ÿå¸‚",
+                ["440882"] = "é›·å·å¸‚",
+                ["440883"] = "å´å·å¸‚",
+                
+                // èŒ‚åå¸‚
+                ["440902"] = "èŒ‚å—åŒº",
+                ["440903"] = "èŒ‚æ¸¯åŒº",
+                ["440904"] = "ç”µç™½åŒº",
+                ["440981"] = "é«˜å·å¸‚",
+                ["440982"] = "åŒ–å·å¸‚",
+                ["440983"] = "ä¿¡å®œå¸‚",
+                
+                // è‚‡åº†å¸‚
+                ["441202"] = "ç«¯å·åŒº",
+                ["441203"] = "é¼æ¹–åŒº",
+                ["441223"] = "å¹¿å®å¿",
+                ["441224"] = "æ€€é›†å¿",
+                ["441225"] = "å°å¼€å¿",
+                ["441226"] = "å¾·åº†å¿",
+                ["441204"] = "é«˜è¦åŒº",
+                ["441284"] = "å››ä¼šå¸‚",
+                
+                // æƒ å·å¸‚
+                ["441302"] = "æƒ åŸåŒº",
+                ["441303"] = "æƒ é˜³åŒº",
+                ["441322"] = "åšç½—å¿",
+                ["441323"] = "æƒ ä¸œå¿",
+                ["441324"] = "é¾™é—¨å¿",
+                
+                // æ¢…å·å¸‚
+                ["441402"] = "æ¢…æ±ŸåŒº",
+                ["441403"] = "æ¢…å¿åŒº",
+                ["441422"] = "å¤§åŸ”å¿",
+                ["441423"] = "ä¸°é¡ºå¿",
+                ["441424"] = "äº”åå¿",
+                ["441426"] = "å¹³è¿œå¿",
+                ["441427"] = "è•‰å²­å¿",
+                ["441481"] = "å…´å®å¸‚",
+                
+                // æ±•å°¾å¸‚
+                ["441502"] = "æ±•å°¾å¸‚åŸåŒº",
+                ["441521"] = "æµ·ä¸°å¿",
+                ["441523"] = "é™†æ²³å¿",
+                ["441581"] = "é™†ä¸°å¸‚",
+                
+                // æ²³æºå¸‚
+                ["441602"] = "æºåŸåŒº",
+                ["441621"] = "ç´«é‡‘å¿",
+                ["441622"] = "é¾™å·å¿",
+                ["441623"] = "è¿å¹³å¿",
+                ["441624"] = "å’Œå¹³å¿",
+                ["441625"] = "ä¸œæºå¿",
+                
+                // é˜³æ±Ÿå¸‚
+                ["441702"] = "æ±ŸåŸåŒº",
+                ["441721"] = "é˜³è¥¿å¿",
+                ["441704"] = "é˜³ä¸œåŒº",
+                ["441781"] = "é˜³æ˜¥å¸‚",
+                
+                // æ¸…è¿œå¸‚
+                ["441802"] = "æ¸…åŸåŒº",
+                ["441821"] = "ä½›å†ˆå¿",
+                ["441823"] = "é˜³å±±å¿",
+                ["441825"] = "è¿å±±å£®æ—ç‘¶æ—è‡ªæ²»å¿",
+                ["441826"] = "è¿å—ç‘¶æ—è‡ªæ²»å¿",
+                ["441803"] = "æ¸…æ–°åŒº",
+                ["441881"] = "è‹±å¾·å¸‚",
+                ["441882"] = "è¿å·å¸‚",
+                
+                // åœ°çº§å¸‚
+                ["441900"] = "ä¸œèå¸‚",
+                ["442000"] = "ä¸­å±±å¸‚",
+                
+                // æ½®å·å¸‚
+                ["445102"] = "æ¹˜æ¡¥åŒº",
+                ["445103"] = "æ½®å®‰åŒº",
+                ["445122"] = "é¥¶å¹³å¿",
+                
+                // æ­é˜³å¸‚
+                ["445202"] = "æ¦•åŸåŒº",
+                ["445203"] = "æ­ä¸œåŒº",
+                ["445222"] = "æ­è¥¿å¿",
+                ["445224"] = "æƒ æ¥å¿",
+                ["445281"] = "æ™®å®å¸‚",
+                
+                // äº‘æµ®å¸‚
+                ["445302"] = "äº‘åŸåŒº",
+                ["445321"] = "æ–°å…´å¿",
+                ["445322"] = "éƒå—å¿",
+                ["445303"] = "äº‘å®‰åŒº",
+                ["445381"] = "ç½—å®šå¸‚"
             };
             
-            return knownNames.ContainsKey(adminCode) ? knownNames[adminCode] : $"Î´Öª({adminCode})";
+            return knownNames.ContainsKey(adminCode) ? knownNames[adminCode] : $"æœªçŸ¥({adminCode})";
         }
 
         #endregion
 
     }
 
-    #region Êı¾İ½á¹¹
+    #region æ•°æ®ç»“æ„
 
     public class DataPairInfo
     {
