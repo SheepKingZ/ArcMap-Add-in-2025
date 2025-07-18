@@ -612,57 +612,6 @@ namespace TestArcMapAddin2.Forms
             }
         }
 
-        // 保留现有的其他方法，但更新为使用县代码匹配的数据...
-        // [保留所有其他现有方法，如CreateTable4Country, CreateEmptyShapefile等，这里为了简洁省略]
-
-        /// <summary>
-        /// 为县创建空的Shapefile文件
-        /// </summary>
-        /// <param name="path">输出路径</param>
-        /// <param name="countryName">县名</param>
-        /// <param name="spatialReference">要使用的空间参考</param>
-        /// <returns>是否成功</returns>
-        private Boolean CreateTable4Country(String path, String countryName, ISpatialReference spatialReference)
-        {
-            if (!String.IsNullOrEmpty(path) && !String.IsNullOrEmpty(countryName))
-            {
-                DirectoryInfo sourceFolder = new DirectoryInfo(path);
-                DirectoryInfo countryFolder = sourceFolder.CreateSubdirectory(countryName);
-                if (countryFolder.Exists)
-                {
-                    try
-                    {
-                        // 创建Shapefile工作空间
-                        Type factoryType = Type.GetTypeFromProgID("esriDataSourcesFile.ShapefileWorkspaceFactory");
-                        IWorkspaceFactory workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
-                        IWorkspace workspace = workspaceFactory.OpenFromFile(countryFolder.FullName, 0);
-
-                        // 创建两个空的Shapefile，并传入空间参考
-                        if (!CreateEmptyShapefile("SLZYZC", workspace, spatialReference))
-                        {
-                            MessageBox.Show("创建SLZYZC Shapefile失败");
-                            return false;
-                        }
-                        if (!CreateEmptyShapefile("SLZYZC_DLTB", workspace, spatialReference))
-                        {
-                            MessageBox.Show("创建SLZYZC_DLTB Shapefile失败");
-                            return false;
-                        }
-
-                        System.Diagnostics.Debug.WriteLine($"成功为{countryName}创建两个空的Shapefile");
-                        return true;
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"为{countryName}创建Shapefile时出错: {ex.Message}");
-                        MessageBox.Show($"为{countryName}创建Shapefile时出错: {ex.Message}");
-                        return false;
-                    }
-                }
-            }
-            return false;
-        }
-
         /// <summary>
         /// 创建空的Shapefile
         /// </summary>
@@ -956,7 +905,7 @@ namespace TestArcMapAddin2.Forms
 
                     if (spatialRefFactory != null)
                     {
-                        // 创建WGS84地理坐标系作为备用
+                        // 创建WGS84地理坐标系作为备用能够
                         IGeographicCoordinateSystem wgs84CS = spatialRefFactory.CreateGeographicCoordinateSystem((int)esriSRGeoCSType.esriSRGeoCS_WGS1984);
                         if (wgs84CS != null)
                         {

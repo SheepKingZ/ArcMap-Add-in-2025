@@ -1429,7 +1429,7 @@ namespace ForestResourcePlugin
         {
             return new Dictionary<string, string>
             {
-                { "YSDM", "ysdm" },            // 要素代码
+               // { "YSDM", "ysdm" },            // 要素代码
                 { "XZQDM", "xian" },           // 行政区代码
                 { "GTDCTBBSM", "bsm" },        // 国土调查图斑编码
                 { "GTDCTBBH", "tbbh" },        // 国土调查图斑编号
@@ -1775,8 +1775,8 @@ namespace ForestResourcePlugin
         {
             var descriptions = new Dictionary<string, string>
             {
-                { "YSDM", "要素代码" },
-                { "XZQDM", "行政区代码" },
+                //{ "YSDM", "要素代码" },
+                //{ "XZQDM", "行政区代码" },
                 { "GTDCTBBSM", "国土调查图斑编码" },
                 { "GTDCDLBM", "国土调查地类编码" },
                 { "GTDCDLMC", "国土调查地类名称" },
@@ -2761,7 +2761,7 @@ namespace ForestResourcePlugin
 
                     case "竹林地":
                         item.BambooLandArea += area;
-                        item.BambooStocks += stocksPerHectare * (area / 10000); // 转换为总株数
+                        item.BambooStocks += Math.Round(stocksPerHectare * (area / 10000)); // 转换为总株数
                         //System.Diagnostics.Debug.WriteLine($"  添加到竹林地: area={area}, stocks={stocksPerHectare * (area / 10000)}");
                         break;
 

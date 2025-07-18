@@ -1999,7 +1999,7 @@ namespace TestArcMapAddin2
             IField field29 = new FieldClass();
             IFieldEdit fieldEdit29 = (IFieldEdit)field29;
             fieldEdit29.Name_2 = "MGQZS";
-            fieldEdit29.Type_2 = esriFieldType.esriFieldTypeInteger;
+            fieldEdit29.Type_2 = esriFieldType.esriFieldTypeSmallInteger;
             fieldEdit29.IsNullable_2 = true;
             fieldEdit29.AliasName_2 = "每公顷株树";
             fieldEdit29.DefaultValue_2 = 0;

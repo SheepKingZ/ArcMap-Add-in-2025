@@ -781,7 +781,6 @@ namespace ForestResourcePlugin
             }
         }
 
-
         /// <summary>
         /// 复制和处理要素数据
         /// </summary>
@@ -858,10 +857,17 @@ namespace ForestResourcePlugin
                     System.Diagnostics.Debug.WriteLine($"警告：未找到{countyName}的LDHSJG数据");
                 }
 
+                // 🔥 新增：预先获取该县的XZQDM值（从LDHSJG数据中获取）
+                string countyXZQDM = GetCountyXZQDMFromLDHSJG(ldhsjgFeatureClass, countyName);
+                System.Diagnostics.Debug.WriteLine($"从LDHSJG获取到{countyName}的XZQDM: {countyXZQDM}");
+
                 // 创建游标
                 sourceCursor = sourceFeatureClass.Search(null, false);
                 targetBuffer = targetFeatureClass.CreateFeatureBuffer();
                 insertCursor = targetFeatureClass.Insert(true);
+
+                // 🔥 新增：初始化序号计数器
+                int sequenceNumber = 1;
 
                 // 处理每个要素
                 IFeature sourceFeature;
@@ -889,6 +895,13 @@ namespace ForestResourcePlugin
                             }
                         }
 
+                        // 🔥 新增：设置YSDM字段为固定值
+                        if (ysdmIndex != -1)
+                        {
+                            targetBuffer.set_Value(ysdmIndex, "2150201010");
+                            //System.Diagnostics.Debug.WriteLine($"设置YSDM字段: 2150201010");
+                        }
+
                         // 计算CZKFBJMJ字段（增加与GTDCTBMJ的比较逻辑）
                         if (czkfbjmjIndex != -1)
                         {
@@ -911,7 +924,7 @@ namespace ForestResourcePlugin
                                     // 如果计算出的CZKFBJMJ大于GTDCTBMJ，则使用GTDCTBMJ的值
                                     if (intersectionArea > gtdctbmjArea)
                                     {
-                                        System.Diagnostics.Debug.WriteLine($"CZKFBJMJ({intersectionArea:F2})超过GTDCTBMJ({gtdctbmjArea:F2})，使用GTDCTBMJ值");
+                                        //System.Diagnostics.Debug.WriteLine($"CZKFBJMJ({intersectionArea:F2})超过GTDCTBMJ({gtdctbmjArea:F2})，使用GTDCTBMJ值");
                                         intersectionArea = gtdctbmjArea;
                                     }
                                 }
@@ -926,7 +939,7 @@ namespace ForestResourcePlugin
                             }
 
                             targetBuffer.set_Value(czkfbjmjIndex, intersectionArea);
-                            System.Diagnostics.Debug.WriteLine($"最终CZKFBJMJ值: {intersectionArea:F2}");
+                            //System.Diagnostics.Debug.WriteLine($"最终CZKFBJMJ值: {intersectionArea:F2}");
                         }
 
                         // 声明HSJG值变量（用于后续JJJZ计算）
@@ -936,16 +949,6 @@ namespace ForestResourcePlugin
                         if (ldhsjgFeatureClass != null)
                         {
                             var ldhsjgValues = GetLDHSJGValuesForFeature(sourceFeature, ldhsjgFeatureClass, countyName);
-
-                            if (zcqcbsmIndex != -1 && !string.IsNullOrEmpty(ldhsjgValues.ZCQCBSM))
-                            {
-                                targetBuffer.set_Value(zcqcbsmIndex, ldhsjgValues.ZCQCBSM);
-                            }
-
-                            if (ysdmIndex != -1 && !string.IsNullOrEmpty(ldhsjgValues.YSDM))
-                            {
-                                targetBuffer.set_Value(ysdmIndex, ldhsjgValues.YSDM);
-                            }
 
                             if (xzqmcIndex != -1 && !string.IsNullOrEmpty(ldhsjgValues.XZQMC))
                             {
@@ -981,26 +984,40 @@ namespace ForestResourcePlugin
                                 {
                                     // 计算经济价值：GTDCTBMJ * HSJG
                                     jjjzValue = gtdctbmjArea * hsjgNumber;
-                                    System.Diagnostics.Debug.WriteLine($"JJJZ计算: GTDCTBMJ({gtdctbmjArea:F2}) * HSJG({hsjgNumber:F2}) = {jjjzValue:F2}");
+                                    //System.Diagnostics.Debug.WriteLine($"JJJZ计算: GTDCTBMJ({gtdctbmjArea:F2}) * HSJG({hsjgNumber:F2}) = {jjjzValue:F2}");
                                 }
                                 else
                                 {
-                                    System.Diagnostics.Debug.WriteLine($"警告: 无法获取有效的HSJG值，JJJZ将设为0");
+                                    //System.Diagnostics.Debug.WriteLine($"警告: 无法获取有效的HSJG值，JJJZ将设为0");
                                 }
                             }
                             else
                             {
-                                System.Diagnostics.Debug.WriteLine($"警告: 无法获取有效的GTDCTBMJ值，JJJZ将设为0");
+                                //System.Diagnostics.Debug.WriteLine($"警告: 无法获取有效的GTDCTBMJ值，JJJZ将设为0");
                             }
 
                             // 设置JJJZ字段值
                             targetBuffer.set_Value(jjjzIndex, jjjzValue);
-                            System.Diagnostics.Debug.WriteLine($"最终JJJZ值: {jjjzValue:F2}");
+                            //System.Diagnostics.Debug.WriteLine($"最终JJJZ值: {jjjzValue:F2}");
+                        }
+
+                        // 🔥 修改：生成ZCQCBSM字段值，使用从LDHSJG获取的XZQDM
+                        if (zcqcbsmIndex != -1)
+                        {
+                            string zcqcbsmValue = GenerateZCQCBSMForSLZYZCDLTBWithCountyXZQDM(countyXZQDM, sequenceNumber);
+                            if (!string.IsNullOrEmpty(zcqcbsmValue))
+                            {
+                                targetBuffer.set_Value(zcqcbsmIndex, zcqcbsmValue);
+                                //System.Diagnostics.Debug.WriteLine($"生成ZCQCBSM字段: {zcqcbsmValue}");
+                            }
                         }
 
                         // 插入要素
                         insertCursor.InsertFeature(targetBuffer);
                         successCount++;
+
+                        // 🔥 新增：递增序号计数器
+                        sequenceNumber++;
 
                         processedCount++;
 
@@ -1041,6 +1058,199 @@ namespace ForestResourcePlugin
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(insertCursor);
                 if (ldhsjgFeatureClass != null)
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(ldhsjgFeatureClass);
+            }
+        }
+
+        /// <summary>
+        /// 🔥 新增：从LDHSJG数据中获取该县的XZQDM值
+        /// </summary>
+        /// <param name="ldhsjgFeatureClass">LDHSJG要素类</param>
+        /// <param name="countyName">县名</param>
+        /// <returns>该县的XZQDM值</returns>
+        private string GetCountyXZQDMFromLDHSJG(IFeatureClass ldhsjgFeatureClass, string countyName)
+        {
+            if (ldhsjgFeatureClass == null)
+            {
+                System.Diagnostics.Debug.WriteLine($"警告：{countyName}的LDHSJG要素类为null，使用默认XZQDM");
+                return "000000"; // 默认值
+            }
+
+            IFeatureCursor cursor = null;
+            try
+            {
+                // 获取XJXZDM字段索引（行政区代码）
+                int xjxzdmFieldIndex = ldhsjgFeatureClass.FindField("XJXZDM");
+                if (xjxzdmFieldIndex == -1)
+                {
+                    System.Diagnostics.Debug.WriteLine($"警告：未找到{countyName}的LDHSJG中的XJXZDM字段，使用默认XZQDM");
+                    return "000000";
+                }
+
+                // 获取第一个要素的XZQDM值（同一个县的所有要素XZQDM应该相同）
+                cursor = ldhsjgFeatureClass.Search(null, false);
+                IFeature firstFeature = cursor.NextFeature();
+
+                if (firstFeature != null)
+                {
+                    object xzqdmValue = firstFeature.get_Value(xjxzdmFieldIndex);
+                    string xzqdm = xzqdmValue?.ToString() ?? "";
+
+                    // 确保XZQDM是6位数字
+                    if (string.IsNullOrEmpty(xzqdm))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"警告：{countyName}的LDHSJG中XJXZDM字段为空，使用默认值");
+                        return "000000";
+                    }
+                    else if (xzqdm.Length > 6)
+                    {
+                        xzqdm = xzqdm.Substring(0, 6);
+                        System.Diagnostics.Debug.WriteLine($"{countyName}的XZQDM长度超过6位，截取前6位: {xzqdm}");
+                    }
+                    else if (xzqdm.Length < 6)
+                    {
+                        xzqdm = xzqdm.PadLeft(6, '0');
+                        System.Diagnostics.Debug.WriteLine($"{countyName}的XZQDM长度不足6位，前补0: {xzqdm}");
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"成功从{countyName}的LDHSJG获取XZQDM: {xzqdm}");
+
+                    // 释放要素
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(firstFeature);
+
+                    return xzqdm;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"警告：{countyName}的LDHSJG中没有要素，使用默认XZQDM");
+                    return "000000";
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"从{countyName}的LDHSJG获取XZQDM时出错: {ex.Message}");
+                return "000000"; // 出错时返回默认值
+            }
+            finally
+            {
+                if (cursor != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+            }
+        }
+
+        /// <summary>
+        /// 🔥 新增：使用县级XZQDM生成SLZYZC_DLTB的ZCQCBSM字段值
+        /// 格式：XZQDM(6位) + "4110" + 序号(12位，从1开始，前补0)
+        /// 总长度：22位
+        /// </summary>
+        /// <param name="countyXZQDM">县级XZQDM（6位）</param>
+        /// <param name="sequenceNumber">序号（从1开始）</param>
+        /// <returns>22位的ZCQCBSM值</returns>
+        private string GenerateZCQCBSMForSLZYZCDLTBWithCountyXZQDM(string countyXZQDM, int sequenceNumber)
+        {
+            try
+            {
+                // 确保XZQDM是6位数字
+                string xzqdm = countyXZQDM ?? "000000";
+
+                if (string.IsNullOrEmpty(xzqdm))
+                {
+                    xzqdm = "000000"; // 默认值
+                    System.Diagnostics.Debug.WriteLine("警告: 县级XZQDM为空，使用默认值000000");
+                }
+                else if (xzqdm.Length > 6)
+                {
+                    xzqdm = xzqdm.Substring(0, 6);
+                    System.Diagnostics.Debug.WriteLine($"县级XZQDM长度超过6位，截取前6位: {xzqdm}");
+                }
+                else if (xzqdm.Length < 6)
+                {
+                    xzqdm = xzqdm.PadLeft(6, '0');
+                    System.Diagnostics.Debug.WriteLine($"县级XZQDM长度不足6位，前补0: {xzqdm}");
+                }
+
+                // 固定中间4位为"4110"
+                string middlePart = "4110";
+
+                // 序号格式化为12位，前补0
+                string sequencePart = sequenceNumber.ToString("D12");
+
+                // 组合成22位的ZCQCBSM
+                string zcqcbsm = $"{xzqdm}{middlePart}{sequencePart}";
+
+                //System.Diagnostics.Debug.WriteLine($"生成ZCQCBSM: 县级XZQDM={xzqdm} + 4110 + {sequencePart} = {zcqcbsm} (长度: {zcqcbsm.Length})");
+
+                return zcqcbsm;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"生成ZCQCBSM时出错: {ex.Message}");
+
+                // 出错时返回默认值
+                string defaultZcqcbsm = $"000000411{sequenceNumber.ToString("D12")}";
+                System.Diagnostics.Debug.WriteLine($"使用默认ZCQCBSM: {defaultZcqcbsm}");
+                return defaultZcqcbsm;
+            }
+        }
+
+        /// <summary>
+        /// 🔥 新增：为SLZYZC_DLTB生成ZCQCBSM字段值
+        /// 格式：XZQDM(6位) + "4110" + 序号(12位，从1开始，前补0)
+        /// 总长度：22位
+        /// </summary>
+        /// <param name="sourceFeature">源要素</param>
+        /// <param name="xzqdmFieldIndex">XZQDM字段索引</param>
+        /// <param name="sequenceNumber">序号（从1开始）</param>
+        /// <returns>22位的ZCQCBSM值</returns>
+        private string GenerateZCQCBSMForSLZYZCDLTB(IFeature sourceFeature, int xzqdmFieldIndex, int sequenceNumber)
+        {
+            try
+            {
+                // 获取XZQDM值
+                string xzqdm = "";
+                if (xzqdmFieldIndex != -1)
+                {
+                    object xzqdmValue = sourceFeature.get_Value(xzqdmFieldIndex);
+                    xzqdm = xzqdmValue?.ToString() ?? "";
+                }
+
+                // 确保XZQDM是6位数字
+                if (string.IsNullOrEmpty(xzqdm))
+                {
+                    xzqdm = "000000"; // 默认值
+                    System.Diagnostics.Debug.WriteLine("警告: XZQDM字段为空，使用默认值000000");
+                }
+                else if (xzqdm.Length > 6)
+                {
+                    xzqdm = xzqdm.Substring(0, 6);
+                    System.Diagnostics.Debug.WriteLine($"XZQDM长度超过6位，截取前6位: {xzqdm}");
+                }
+                else if (xzqdm.Length < 6)
+                {
+                    xzqdm = xzqdm.PadLeft(6, '0');
+                    System.Diagnostics.Debug.WriteLine($"XZQDM长度不足6位，前补0: {xzqdm}");
+                }
+
+                // 固定中间4位为"4110"
+                string middlePart = "4110";
+
+                // 序号格式化为12位，前补0
+                string sequencePart = sequenceNumber.ToString("D12");
+
+                // 组合成22位的ZCQCBSM
+                string zcqcbsm = $"{xzqdm}{middlePart}{sequencePart}";
+
+                System.Diagnostics.Debug.WriteLine($"生成ZCQCBSM: XZQDM={xzqdm} + 4110 + {sequencePart} = {zcqcbsm} (长度: {zcqcbsm.Length})");
+
+                return zcqcbsm;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"生成ZCQCBSM时出错: {ex.Message}");
+
+                // 出错时返回默认值
+                string defaultZcqcbsm = $"000000411{sequenceNumber.ToString("D12")}";
+                System.Diagnostics.Debug.WriteLine($"使用默认ZCQCBSM: {defaultZcqcbsm}");
+                return defaultZcqcbsm;
             }
         }
 
@@ -1155,7 +1365,7 @@ namespace ForestResourcePlugin
                             result.HSJG = ldhsjgFeature.get_Value(xjldpjjFieldIndex);
                         }
 
-                        System.Diagnostics.Debug.WriteLine($"成功获取{countyName}的LDHSJG字段值: ZCQCBSM={result.ZCQCBSM}, YSDM={result.YSDM}");
+                        //System.Diagnostics.Debug.WriteLine($"成功获取{countyName}的LDHSJG字段值: ZCQCBSM={result.ZCQCBSM}, YSDM={result.YSDM}");
 
                         // 释放要素
                         System.Runtime.InteropServices.Marshal.ReleaseComObject(ldhsjgFeature);
@@ -1621,6 +1831,7 @@ namespace ForestResourcePlugin
 
                 // 预先获取所有字段索引，减少重复查找
                 int zcqcbsmIndex = targetFeatureClass.FindField("ZCQCBSM");
+                int ysdmIndex = targetFeatureClass.FindField("YSDM");  // 🔥 新增：获取YSDM字段索引
                 int czkfbjmjIndex = targetFeatureClass.FindField("CZKFBJMJ");
                 int pctbbmIndex = targetFeatureClass.FindField("PCTBBM");
                 int ztbxjIndex = targetFeatureClass.FindField("ZTBXJ");
@@ -1630,11 +1841,11 @@ namespace ForestResourcePlugin
                 int xianIndex = sourceFeatureClass.FindField("XIAN");
                 int linBanIndex = sourceFeatureClass.FindField("LIN_BAN");
                 int xiaoBanIndex = sourceFeatureClass.FindField("XIAO_BAN");
-                int xbmjIndex = sourceFeatureClass.FindField("XBMJ");
+                int xbmjIndex = sourceFeatureClass.FindField("ZTBMJ");
                 int field65Index = sourceFeatureClass.FindField("MEI_GQ_XJ");
                 int xzqdmSourceIndex = xianIndex != -1 ? xianIndex : sourceFeatureClass.FindField("XZQDM");
 
-                System.Diagnostics.Debug.WriteLine($"预缓存字段索引完成: PCTBBM={pctbbmIndex}, ZTBXJ={ztbxjIndex}, XZQMC={xzqmcIndex}");
+                System.Diagnostics.Debug.WriteLine($"预缓存字段索引完成: YSDM={ysdmIndex}, PCTBBM={pctbbmIndex}, ZTBXJ={ztbxjIndex}, XZQMC={xzqmcIndex}");
 
                 // 逐个处理要素
                 foreach (IFeature sourceFeature in sourceFeatures)
@@ -1680,6 +1891,13 @@ namespace ForestResourcePlugin
                             {
                                 System.Diagnostics.Debug.WriteLine($"复制{countyName}字段{targetFieldName}时出错: {ex.Message}");
                             }
+                        }
+
+                        // 🔥 新增：设置YSDM字段为固定值 2150201020
+                        if (ysdmIndex != -1)
+                        {
+                            featureBuffer.set_Value(ysdmIndex, "2150201020");
+                            //System.Diagnostics.Debug.WriteLine($"设置YSDM字段: 2150201020");
                         }
 
                         // 处理特殊字段：PCTBBM (xian + lin_ban + xiao_ban)
@@ -1833,7 +2051,7 @@ namespace ForestResourcePlugin
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(czkfbjFeatureClass);
                 }
             }
-        } 
+        }
 
         /// <summary>
         /// 获取默认SLZYZC字段映射
@@ -1843,7 +2061,7 @@ namespace ForestResourcePlugin
         {
             return new Dictionary<string, string>
             {
-                { "YSDM", "ysdm" },            // 要素代码
+                //{ "YSDM", "ysdm" },            // 要素代码
                 { "XZQDM", "xian" },           // 行政区代码
                 { "XZQMC", "SPECIAL_XZQMC" },  // 行政区名称（基于XZQDM字段获取）
                 { "GTDCTBBSM", "bsm" },        // 国土调查图斑编码
