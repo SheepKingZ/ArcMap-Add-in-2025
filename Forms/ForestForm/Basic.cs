@@ -341,14 +341,15 @@ namespace ForestResourcePlugin
 
         private void btnBrowseOutput_Click(object sender, EventArgs e)
         {
-            using (var dialog = new FolderBrowserDialog())
-            {
-                dialog.Description = "请选择输出文件夹";
-                if (dialog.ShowDialog() == DialogResult.OK)
-                {
-                    txtOutputPath.Text = dialog.SelectedPath;
-                }
-            }
+            //using (var dialog = new FolderBrowserDialog())
+            //{
+            //    dialog.Description = "请选择输出文件夹";
+            //    if (dialog.ShowDialog() == DialogResult.OK)
+            //    {
+            //        txtOutputPath.Text = dialog.SelectedPath;
+            //    }
+            //}
+            txtOutputPath.Text = TestArcMapAddin2.SharedWorkflowState.OutputGDBPath;
         }
 
         private void btnRefreshLayers_Click(object sender, EventArgs e)
@@ -372,117 +373,6 @@ namespace ForestResourcePlugin
                 btnRefreshLayers.Text = "刷新数据源";
             }
         }
-
-        // 城镇开发边界图层下拉框选择改变事件
-        private void cmbCZKFBJPath_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"城镇开发边界图层选择改变，索引: {cmbCZKFBJPath.SelectedIndex}");
-
-                // 如果选择的是提示项，则不执行任何操作
-                if (cmbCZKFBJPath.SelectedIndex == 0)
-                {
-                    czkfbjFeatureClass = null;
-                    System.Diagnostics.Debug.WriteLine("选择了提示项，清空要素类");
-                    return;
-                }
-
-                // 获取选择的项
-                object selectedItem = cmbCZKFBJPath.SelectedItem;
-                System.Diagnostics.Debug.WriteLine($"选择的项类型: {selectedItem?.GetType().Name}");
-
-                if (selectedItem is SourceDataFileInfo fileInfo)
-                {
-                    System.Diagnostics.Debug.WriteLine($"从共享数据源加载: {fileInfo.DisplayName}");
-                    LoadCZKFBJFromPath(fileInfo.FullPath);
-                }
-                else if (selectedItem is string filePath && !string.IsNullOrEmpty(filePath) && File.Exists(filePath))
-                {
-                    System.Diagnostics.Debug.WriteLine($"从文件路径加载: {filePath}");
-                    LoadCZKFBJFromPath(filePath);
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"无效的选择项: {selectedItem}");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"加载城镇开发边界图层失败: {ex.Message}");
-                MessageBox.Show($"加载城镇开发边界图层失败: {ex.Message}", "错误",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                UpdateStatus("加载城镇开发边界图层失败");
-            }
-        }
-
-        // 从文件路径加载城镇开发边界图层
-        private void LoadCZKFBJFromPath(string path)
-        {
-            try
-            {
-                // 检查选择项是否为GDB要素类
-                object selectedItem = cmbCZKFBJPath.SelectedItem;
-                System.Diagnostics.Debug.WriteLine($"LoadCZKFBJFromPath: 当前选择项类型 {selectedItem?.GetType().Name ?? "null"}");
-
-                if (selectedItem is ForestResourcePlugin.SourceDataFileInfo fileInfo)
-                {
-                    System.Diagnostics.Debug.WriteLine($"LoadCZKFBJFromPath: 文件信息 - IsGdb={fileInfo.IsGdb}, Path={fileInfo.FullPath}, FeatureClassName={fileInfo.FeatureClassName}");
-
-                    if (fileInfo.IsGdb)
-                    {
-                        // 从GDB加载要素类
-                        System.Diagnostics.Debug.WriteLine($"从GDB加载城镇开发边界图层: {fileInfo.FullPath}, 要素类: {fileInfo.FeatureClassName}");
-                        try
-                        {
-                            czkfbjFeatureClass = ForestResourcePlugin.GdbFeatureClassFinder.OpenFeatureClassFromGdb(
-                                fileInfo.FullPath, fileInfo.FeatureClassName);
-
-                            if (czkfbjFeatureClass != null)
-                            {
-                                System.Diagnostics.Debug.WriteLine($"成功加载GDB要素类，要素数: {czkfbjFeatureClass.FeatureCount(null)}");
-                                return;
-                            }
-                            else
-                            {
-                                System.Diagnostics.Debug.WriteLine("GDB要素类加载失败: 返回为null");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"GDB要素类加载异常: {ex.Message}");
-                            throw;
-                        }
-                    }
-                }
-
-                // 如果不是GDB要素类或加载GDB失败，尝试从Shapefile加载
-                System.Diagnostics.Debug.WriteLine($"从Shapefile加载城镇开发边界图层: {path}");
-                string directory = System.IO.Path.GetDirectoryName(path);
-                string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
-
-                // 创建工作空间工厂并打开Shapefile
-                IWorkspaceFactory workspaceFactory = new ShapefileWorkspaceFactory();
-                IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(directory, 0);
-                czkfbjFeatureClass = featureWorkspace.OpenFeatureClass(fileName);
-
-                if (czkfbjFeatureClass != null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"成功加载Shapefile，要素数: {czkfbjFeatureClass.FeatureCount(null)}");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("Shapefile加载失败: 返回为null");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"加载城镇开发边界图层失败: {ex.Message}");
-                throw new Exception($"加载城镇开发边界图层失败: {ex.Message}", ex);
-            }
-        }
-
-        // Helper method to find the best matching field name
         private int FindBestMatchIndex(ComboBox.ObjectCollection items, string[] searchTerms)
         {
             // 第一轮：精确匹配（忽略大小写）
@@ -2010,39 +1900,6 @@ namespace ForestResourcePlugin
                 var czkfbjFiles = ForestResourcePlugin.SharedDataManager.GetCZKFBJFiles();
                 System.Diagnostics.Debug.WriteLine($"从SharedDataManager加载 {czkfbjFiles.Count} 个CZKFBJ文件");
 
-                // 清空下拉框
-                cmbCZKFBJPath.Items.Clear();
-
-                // 添加提示项
-                cmbCZKFBJPath.Items.Add("-- 请选择城镇开发边界图层 --");
-
-                // 添加找到的文件
-                if (czkfbjFiles.Count > 0)
-                {
-                    foreach (var file in czkfbjFiles)
-                    {
-                        cmbCZKFBJPath.Items.Add(file);
-                        System.Diagnostics.Debug.WriteLine($"添加CZKFBJ文件到下拉框: {file.DisplayName} -> {file.FullPath}");
-                    }
-
-                    // 如果有文件，选择第一个文件项（索引为1）
-                    if (cmbCZKFBJPath.Items.Count > 1)
-                    {
-                        cmbCZKFBJPath.SelectedIndex = 1;
-                        System.Diagnostics.Debug.WriteLine($"自动选择第一个CZKFBJ文件: {((SourceDataFileInfo)cmbCZKFBJPath.SelectedItem).DisplayName}");
-                    }
-                    else
-                    {
-                        cmbCZKFBJPath.SelectedIndex = 0;
-                    }
-                }
-                else
-                {
-                    // 没有文件时选择提示项
-                    cmbCZKFBJPath.SelectedIndex = 0;
-                    System.Diagnostics.Debug.WriteLine("没有CZKFBJ文件可用");
-                }
-
                 // 更新状态提示
                 if (czkfbjFiles.Count > 0)
                 {
@@ -2835,11 +2692,11 @@ namespace ForestResourcePlugin
                 // 创建统计键值（用于分组统计）- 允许各组成部分为空
                 string statisticsKey = CreateUniqueStatisticsKey(landOwnership, forestOwnership, forestType, origin);
 
-                // 添加详细的调试信息
-                System.Diagnostics.Debug.WriteLine($"处理要素 OID:{feature.OID}");
-                System.Diagnostics.Debug.WriteLine($"  landOwnership='{landOwnership}', forestOwnership='{forestOwnership}', forestType='{forestType}', origin='{origin}'");
-                System.Diagnostics.Debug.WriteLine($"  统计键值: {statisticsKey}");
-                System.Diagnostics.Debug.WriteLine($"  surveyLandType='{surveyLandType}', area={area}, volume={volume}");
+                //// 添加详细的调试信息
+                //System.Diagnostics.Debug.WriteLine($"处理要素 OID:{feature.OID}");
+                //System.Diagnostics.Debug.WriteLine($"  landOwnership='{landOwnership}', forestOwnership='{forestOwnership}', forestType='{forestType}', origin='{origin}'");
+                //System.Diagnostics.Debug.WriteLine($"  统计键值: {statisticsKey}");
+                //System.Diagnostics.Debug.WriteLine($"  surveyLandType='{surveyLandType}', area={area}, volume={volume}");
 
                 // 确保统计项存在
                 if (!statistics.StatisticsItems.ContainsKey(statisticsKey))
@@ -2851,11 +2708,11 @@ namespace ForestResourcePlugin
                         ForestType = forestType ?? "",
                         Origin = origin ?? ""
                     };
-                    System.Diagnostics.Debug.WriteLine($"  创建新的统计项: {statisticsKey}");
+                   //System.Diagnostics.Debug.WriteLine($"  创建新的统计项: {statisticsKey}");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"  使用已存在的统计项: {statisticsKey}");
+                   //System.Diagnostics.Debug.WriteLine($"  使用已存在的统计项: {statisticsKey}");
                 }
 
                 var item = statistics.StatisticsItems[statisticsKey];
@@ -2866,7 +2723,7 @@ namespace ForestResourcePlugin
                     case "乔木林地":
                         item.TreeLandArea += area;
                         item.TreeLandVolume += volume;
-                        System.Diagnostics.Debug.WriteLine($"  添加到乔木林地: area={area}, volume={volume}");
+                        //System.Diagnostics.Debug.WriteLine($"  添加到乔木林地: area={area}, volume={volume}");
 
                         // 按龄组统计乔木林地
                         switch (ageGroup)
@@ -2874,30 +2731,30 @@ namespace ForestResourcePlugin
                             case "1":
                                 item.YoungForestArea += area;
                                 item.YoungForestVolume += volume;
-                                System.Diagnostics.Debug.WriteLine($"  添加到幼龄林: area={area}, volume={volume}");
+                                //System.Diagnostics.Debug.WriteLine($"  添加到幼龄林: area={area}, volume={volume}");
                                 break;
                             case "2":
                                 item.MiddleAgedForestArea += area;
                                 item.MiddleAgedForestVolume += volume;
-                                System.Diagnostics.Debug.WriteLine($"  添加到中龄林: area={area}, volume={volume}");
+                                //System.Diagnostics.Debug.WriteLine($"  添加到中龄林: area={area}, volume={volume}");
                                 break;
                             case "3":
                                 item.NearMatureForestArea += area;
                                 item.NearMatureForestVolume += volume;
-                                System.Diagnostics.Debug.WriteLine($"  添加到近熟林: area={area}, volume={volume}");
+                                //System.Diagnostics.Debug.WriteLine($"  添加到近熟林: area={area}, volume={volume}");
                                 break;
                             case "4":
                                 item.MatureForestArea += area;
                                 item.MatureForestVolume += volume;
-                                System.Diagnostics.Debug.WriteLine($"  添加到成熟林: area={area}, volume={volume}");
+                                //System.Diagnostics.Debug.WriteLine($"  添加到成熟林: area={area}, volume={volume}");
                                 break;
                             case "5":
                                 item.OverMatureForestArea += area;
                                 item.OverMatureForestVolume += volume;
-                                System.Diagnostics.Debug.WriteLine($"  添加到过熟林: area={area}, volume={volume}");
+                                //System.Diagnostics.Debug.WriteLine($"  添加到过熟林: area={area}, volume={volume}");
                                 break;
                             default:
-                                System.Diagnostics.Debug.WriteLine($"  未识别的龄组: '{ageGroup}'");
+                                //System.Diagnostics.Debug.WriteLine($"  未识别的龄组: '{ageGroup}'");
                                 break;
                         }
                         break;
@@ -2905,27 +2762,27 @@ namespace ForestResourcePlugin
                     case "竹林地":
                         item.BambooLandArea += area;
                         item.BambooStocks += stocksPerHectare * (area / 10000); // 转换为总株数
-                        System.Diagnostics.Debug.WriteLine($"  添加到竹林地: area={area}, stocks={stocksPerHectare * (area / 10000)}");
+                        //System.Diagnostics.Debug.WriteLine($"  添加到竹林地: area={area}, stocks={stocksPerHectare * (area / 10000)}");
                         break;
 
                     case "灌木林地":
                         item.ShrubLandArea += area;
-                        System.Diagnostics.Debug.WriteLine($"  添加到灌木林地: area={area}");
+                        //System.Diagnostics.Debug.WriteLine($"  添加到灌木林地: area={area}");
                         break;
 
                     case "其他林地":
                         item.OtherForestLandArea += area;
-                        System.Diagnostics.Debug.WriteLine($"  添加到其他林地: area={area}");
+                        //System.Diagnostics.Debug.WriteLine($"  添加到其他林地: area={area}");
                         break;
 
                     default:
-                        System.Diagnostics.Debug.WriteLine($"  未匹配的普查地类: '{surveyLandType}'");
+                        //System.Diagnostics.Debug.WriteLine($"  未匹配的普查地类: '{surveyLandType}'");
                         break;
                 }
 
                 // 计算总面积
                 item.TotalArea += area;
-                System.Diagnostics.Debug.WriteLine($"  更新总面积: {item.TotalArea}");
+                //System.Diagnostics.Debug.WriteLine($"  更新总面积: {item.TotalArea}");
             }
             catch (Exception ex)
             {
@@ -3029,16 +2886,16 @@ namespace ForestResourcePlugin
                     dataRow.CreateCell(1).SetCellValue(countyCode);
 
                     // 列2: 国土变更调查权属
-                    dataRow.CreateCell(2).SetCellValue(TranslateLandOwnership(item.LandOwnership));
+                    dataRow.CreateCell(2).SetCellValue(item.LandOwnership);
 
                     // 列3: 林木所有权
-                    dataRow.CreateCell(3).SetCellValue(TranslateForestOwnership(item.ForestOwnership));
+                    dataRow.CreateCell(3).SetCellValue(item.ForestOwnership);
 
                     // 列4: 林种
-                    dataRow.CreateCell(4).SetCellValue(TranslateForestType(item.ForestType));
+                    dataRow.CreateCell(4).SetCellValue(item.ForestType);
 
                     // 列5: 起源
-                    dataRow.CreateCell(5).SetCellValue(TranslateOrigin(item.Origin));
+                    dataRow.CreateCell(5).SetCellValue(item.Origin);
 
                     // 列6: 面积合计
                     dataRow.CreateCell(6).SetCellValue(item.TotalArea);
@@ -3091,57 +2948,6 @@ namespace ForestResourcePlugin
             catch (Exception ex)
             {
                 throw new Exception($"写入A2表格数据时出错: {ex.Message}", ex);
-            }
-        }
-
-        // 翻译方法
-        private string TranslateLandOwnership(string code)
-        {
-            switch (code)
-            {
-                case "10": return "10";
-                case "20": return "20";
-                case "30": return "30";
-                case "40": return "40";
-                default: return code;
-            }
-        }
-
-        private string TranslateForestOwnership(string code)
-        {
-            switch (code)
-            {
-                case "10": return "国有";
-                case "20": return "国有";
-                case "30": return "集体";
-                case "40": return "集体";
-                default: return code;
-            }
-        }
-
-        private string TranslateForestType(string code)
-        {
-            // 根据实际林种编码进行翻译
-            switch (code)
-            {
-                case "110": return "生态公益林";
-                case "120": return "商品林";
-                case "210": return "防护林";
-                case "220": return "特用林";
-                case "310": return "用材林";
-                case "320": return "经济林";
-                case "330": return "薪炭林";
-                default: return code;
-            }
-        }
-
-        private string TranslateOrigin(string code)
-        {
-            switch (code)
-            {
-                case "1": return "人工";
-                case "2": return "天然";
-                default: return code;
             }
         }
 

@@ -74,9 +74,9 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainProcessingTabsForm));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.mainPanel = new System.Windows.Forms.Panel();
             this.titleLabel = new System.Windows.Forms.Label();
             this.tabControlMain = new System.Windows.Forms.TabControl();
@@ -156,7 +156,7 @@
             this.titleLabel.Name = "titleLabel";
             this.titleLabel.Size = new System.Drawing.Size(1275, 45);
             this.titleLabel.TabIndex = 0;
-            this.titleLabel.Text = "广东省全民所有自然资源（森林、草地、湿地）资产清查工具 - 主处理模块";
+            this.titleLabel.Text = "广东省全民所有自然资源（森林、草地、湿地）资产清查工具";
             this.titleLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // tabControlMain
@@ -684,17 +684,17 @@
             // 
             // forestResourceChart
             // 
-            chartArea2.Name = "ChartArea1";
-            this.forestResourceChart.ChartAreas.Add(chartArea2);
-            legend2.Name = "Legend1";
-            this.forestResourceChart.Legends.Add(legend2);
+            chartArea1.Name = "ChartArea1";
+            this.forestResourceChart.ChartAreas.Add(chartArea1);
+            legend1.Name = "Legend1";
+            this.forestResourceChart.Legends.Add(legend1);
             this.forestResourceChart.Location = new System.Drawing.Point(420, 190);
             this.forestResourceChart.Name = "forestResourceChart";
-            series2.ChartArea = "ChartArea1";
-            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
-            series2.Legend = "Legend1";
-            series2.Name = "Series1";
-            this.forestResourceChart.Series.Add(series2);
+            series1.ChartArea = "ChartArea1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
+            series1.Legend = "Legend1";
+            series1.Name = "Series1";
+            this.forestResourceChart.Series.Add(series1);
             this.forestResourceChart.Size = new System.Drawing.Size(400, 200);
             this.forestResourceChart.TabIndex = 13;
             this.forestResourceChart.Text = "森林资源清查进度";
@@ -725,7 +725,7 @@
             this.MinimizeBox = false;
             this.Name = "MainProcessingTabsForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "广东省全民所有自然资源资产清查工具 - 主处理";
+            this.Text = "广东省全民所有自然资源资产清查工具";
             this.mainPanel.ResumeLayout(false);
             this.tabControlMain.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);

@@ -721,7 +721,7 @@ namespace TestArcMapAddin2.Forms
                 geometryFieldEdit.GeometryDef_2 = geometryDef;
                 fieldsEdit.AddField(geometryField);
 
-                // 根据Shapefile名称添加相应的业务字段（支持部分匹配）
+                // 根据Shapefile名称添加相应的业务字段（部分匹配）
                 if (ContainsKeyword(shapefileName, "SLZYZC") && !ContainsKeyword(shapefileName, "DLTB"))
                 {
                     FeatureClassFieldsTemplate.GenerateSlzyzcFields(fieldsEdit);
@@ -1648,6 +1648,7 @@ namespace TestArcMapAddin2.Forms
 
                         txtOutputGDBPath.Text = rootPath;
                         outputGDBPath = rootPath; // 更新全局变量
+                        SharedWorkflowState.OutputGDBPath = outputGDBPath; // 更新共享工作流状态
                     }
                     catch (Exception ex)
                     {

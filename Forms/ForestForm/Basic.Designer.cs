@@ -28,10 +28,8 @@ namespace ForestResourcePlugin
             this.btnRefreshLayers = new System.Windows.Forms.Button();
             this.btnBrowseOutput = new System.Windows.Forms.Button();
             this.txtOutputPath = new System.Windows.Forms.TextBox();
-            this.lblCZKFBJ = new System.Windows.Forms.Label();
             this.lblOutput = new System.Windows.Forms.Label();
             this.chkListCounties = new System.Windows.Forms.CheckedListBox();
-            this.cmbCZKFBJPath = new System.Windows.Forms.ComboBox();
             this.groupBoxOptions = new System.Windows.Forms.GroupBox();
             this.chkTopologyCheck = new System.Windows.Forms.CheckBox();
             this.chkGeometryValidation = new System.Windows.Forms.CheckBox();
@@ -131,10 +129,8 @@ namespace ForestResourcePlugin
             this.groupBoxFiles.Controls.Add(this.btnRefreshLayers);
             this.groupBoxFiles.Controls.Add(this.btnBrowseOutput);
             this.groupBoxFiles.Controls.Add(this.txtOutputPath);
-            this.groupBoxFiles.Controls.Add(this.lblCZKFBJ);
             this.groupBoxFiles.Controls.Add(this.lblOutput);
             this.groupBoxFiles.Controls.Add(this.chkListCounties);
-            this.groupBoxFiles.Controls.Add(this.cmbCZKFBJPath);
             this.groupBoxFiles.Location = new System.Drawing.Point(9, 8);
             this.groupBoxFiles.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxFiles.Name = "groupBoxFiles";
@@ -199,7 +195,7 @@ namespace ForestResourcePlugin
             // 
             // btnBrowseOutput
             // 
-            this.btnBrowseOutput.Location = new System.Drawing.Point(596, 162);
+            this.btnBrowseOutput.Location = new System.Drawing.Point(596, 74);
             this.btnBrowseOutput.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseOutput.Name = "btnBrowseOutput";
             this.btnBrowseOutput.Size = new System.Drawing.Size(112, 32);
@@ -210,27 +206,17 @@ namespace ForestResourcePlugin
             // 
             // txtOutputPath
             // 
-            this.txtOutputPath.Location = new System.Drawing.Point(210, 162);
+            this.txtOutputPath.Location = new System.Drawing.Point(210, 77);
             this.txtOutputPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtOutputPath.Name = "txtOutputPath";
             this.txtOutputPath.ReadOnly = true;
             this.txtOutputPath.Size = new System.Drawing.Size(360, 28);
             this.txtOutputPath.TabIndex = 7;
             // 
-            // lblCZKFBJ
-            // 
-            this.lblCZKFBJ.AutoSize = true;
-            this.lblCZKFBJ.Location = new System.Drawing.Point(8, 82);
-            this.lblCZKFBJ.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblCZKFBJ.Name = "lblCZKFBJ";
-            this.lblCZKFBJ.Size = new System.Drawing.Size(197, 18);
-            this.lblCZKFBJ.TabIndex = 3;
-            this.lblCZKFBJ.Text = "城镇开发边界(CZKFBJ):";
-            // 
             // lblOutput
             // 
             this.lblOutput.AutoSize = true;
-            this.lblOutput.Location = new System.Drawing.Point(14, 166);
+            this.lblOutput.Location = new System.Drawing.Point(14, 80);
             this.lblOutput.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblOutput.Name = "lblOutput";
             this.lblOutput.Size = new System.Drawing.Size(89, 18);
@@ -245,17 +231,6 @@ namespace ForestResourcePlugin
             this.chkListCounties.Name = "chkListCounties";
             this.chkListCounties.Size = new System.Drawing.Size(274, 154);
             this.chkListCounties.TabIndex = 10;
-            // 
-            // cmbCZKFBJPath
-            // 
-            this.cmbCZKFBJPath.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbCZKFBJPath.FormattingEnabled = true;
-            this.cmbCZKFBJPath.Location = new System.Drawing.Point(210, 80);
-            this.cmbCZKFBJPath.Margin = new System.Windows.Forms.Padding(4);
-            this.cmbCZKFBJPath.Name = "cmbCZKFBJPath";
-            this.cmbCZKFBJPath.Size = new System.Drawing.Size(523, 26);
-            this.cmbCZKFBJPath.TabIndex = 4;
-            this.cmbCZKFBJPath.SelectedIndexChanged += new System.EventHandler(this.cmbCZKFBJPath_SelectedIndexChanged);
             // 
             // groupBoxOptions
             // 
@@ -725,10 +700,8 @@ namespace ForestResourcePlugin
         private System.Windows.Forms.Button btnRefreshLayers; // 刷新图层按钮
         private System.Windows.Forms.Button btnBrowseOutput;
         private System.Windows.Forms.TextBox txtOutputPath;
-        private System.Windows.Forms.Label lblCZKFBJ;
         private System.Windows.Forms.Label lblOutput;
         private System.Windows.Forms.CheckedListBox chkListCounties;
-        private System.Windows.Forms.ComboBox cmbCZKFBJPath;
 
         private System.Windows.Forms.GroupBox groupBoxOptions;
         private System.Windows.Forms.CheckBox chkTopologyCheck;

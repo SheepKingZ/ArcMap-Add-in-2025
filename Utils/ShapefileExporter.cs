@@ -1358,7 +1358,7 @@ namespace ForestResourcePlugin
                 System.Diagnostics.Debug.WriteLine($"找到目标Shapefile: {targetFeatureClassName}");
 
                 // 检查相关的Shapefile组件文件是否完整
-                string[] requiredExtensions = { ".shx", ".dbf" };
+                string[] requiredExtensions = { ".shx", ".dbf",".prj" };
                 foreach (string ext in requiredExtensions)
                 {
                     string componentFile = System.IO.Path.Combine(workspacePath, $"{targetFeatureClassName}{ext}");
