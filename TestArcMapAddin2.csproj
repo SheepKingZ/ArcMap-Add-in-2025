@@ -203,6 +203,12 @@
     <Compile Include="Forms\ForestForm\Basic.Designer.cs">
       <DependentUpon>Basic.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\ForestPriceSupplementForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ForestPriceSupplementForm.Designer.cs">
+      <DependentUpon>ForestPriceSupplementForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\MainProcessingTabsForm.cs">
       <SubType>Form</SubType>
     </Compile>

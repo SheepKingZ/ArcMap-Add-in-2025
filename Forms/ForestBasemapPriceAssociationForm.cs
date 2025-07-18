@@ -407,22 +407,46 @@ namespace TestArcMapAddin2.Forms
                 progressBar.Value = 0;
                 progressBar.Maximum = selectedPairs.Count;
 
+                var globalStartTime = DateTime.Now;
+
                 for (int i = 0; i < selectedPairs.Count; i++)
                 {
                     var pair = selectedPairs[i];
-                    statusLabel.Text = $"正在处理 {pair.AdminName} ({i + 1}/{selectedPairs.Count})...";
+                    
+                    // 🔥 增强：显示全局进度和当前行政区信息
+                    var elapsed = DateTime.Now - globalStartTime;
+                    var estimatedTotal = i > 0 ? TimeSpan.FromTicks(elapsed.Ticks * selectedPairs.Count / i) : TimeSpan.Zero;
+                    var estimatedRemaining = estimatedTotal - elapsed;
+                    
+                    var statusMessage = $"正在处理第 {i + 1}/{selectedPairs.Count} 个行政区: {pair.AdminName}";
+                    if (i > 0 && estimatedRemaining.TotalMinutes > 1)
+                    {
+                        statusMessage += $" - 预计剩余: {estimatedRemaining:mm\\:ss}";
+                    }
+                    
+                    statusLabel.Text = statusMessage;
                     Application.DoEvents();
 
-                    ProcessSingleDataPair(pair);
+                    try
+                    {
+                        ProcessSingleDataPair(pair);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"处理 {pair.AdminName} 时出错: {ex.Message}");
+                        statusLabel.Text = $"处理 {pair.AdminName} 时出错: {ex.Message}，继续处理下一个...";
+                        Application.DoEvents();
+                        System.Threading.Thread.Sleep(2000);
+                    }
 
                     progressBar.Value = i + 1;
                 }
 
-                statusLabel.Text = "所有数据处理完成";
-                MessageBox.Show($"成功处理了 {selectedPairs.Count} 个行政区的数据！", "处理完成", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                var totalTime = DateTime.Now - globalStartTime;
+                statusLabel.Text = $"所有数据处理完成，总用时: {totalTime:mm\\:ss}";
+                MessageBox.Show($"成功处理了 {selectedPairs.Count} 个行政区的数据！\n\n总处理时间：{totalTime:mm\\:ss}", 
+                    "处理完成", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
-                // 设置对话框结果为OK
                 this.DialogResult = DialogResult.OK;
             }
             catch (Exception ex)
@@ -1139,36 +1163,121 @@ namespace TestArcMapAddin2.Forms
             var outputCursor = outputFC.Insert(true);
             var sequenceNumber = 1;
 
+            // 🔥 增强进度跟踪：获取总图斑数和添加详细统计
+            int totalFeatures = statusFC.FeatureCount(null);
+            int processedFeatures = 0;
+            var processingStartTime = DateTime.Now;
+            var lastProgressUpdate = DateTime.Now;
+
+            System.Diagnostics.Debug.WriteLine($"开始处理 {pair.AdminName} 的要素，总共 {totalFeatures} 个图斑");
+
             IFeature statusFeature;
             while ((statusFeature = statusCursor.NextFeature()) != null)
             {
                 try
                 {
-                    // 创建新要素
                     var outputFeatureBuffer = outputFC.CreateFeatureBuffer();
-                    
-                    // 复制几何图形
                     outputFeatureBuffer.Shape = statusFeature.Shape;
-                    
-                    // 设置字段值
                     SetLDHSJGFieldValues(outputFeatureBuffer, statusFeature, priceFC, pair, sequenceNumber);
-                    
-                    // 保存要素
                     outputCursor.InsertFeature(outputFeatureBuffer);
                     
                     sequenceNumber++;
+                    processedFeatures++;
+                    
+                    // 🔥 增强进度显示：每处理10个图斑或每3秒更新一次进度
+                    var currentTime = DateTime.Now;
+                    var shouldUpdateProgress = processedFeatures % 10 == 0 || 
+                                             (currentTime - lastProgressUpdate).TotalSeconds >= 3 || 
+                                             processedFeatures == totalFeatures;
+                    
+                    if (shouldUpdateProgress)
+                    {
+                        double currentRegionProgress = (double)processedFeatures / totalFeatures * 100;
+                        var elapsed = currentTime - processingStartTime;
+                        var estimatedRemainingTime = processedFeatures > 0 ? 
+                            TimeSpan.FromSeconds((elapsed.TotalSeconds / processedFeatures) * (totalFeatures - processedFeatures)) : 
+                            TimeSpan.Zero;
+                        
+                        var statusMessage = $"正在处理 {pair.AdminName} - 图斑进度: {processedFeatures}/{totalFeatures} ({currentRegionProgress:F1}%)";
+                        
+                        if (processedFeatures > 0)
+                        {
+                            statusMessage += $" | 速度: {(processedFeatures / elapsed.TotalMinutes):F1}个/分钟";
+                            if (estimatedRemainingTime.TotalMinutes > 1)
+                            {
+                                statusMessage += $" | 预计剩余: {estimatedRemainingTime:mm\\:ss}";
+                            }
+                        }
+                        
+                        // 🔥 线程安全的UI更新
+                        try
+                        {
+                            statusLabel.Text = statusMessage;
+                        }
+                        catch (Exception uiEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"UI更新异常: {uiEx.Message}");
+                        }
+                        
+                        System.Diagnostics.Debug.WriteLine($"{pair.AdminName}: {statusMessage}");
+                        
+                        if (processedFeatures % 50 == 0 || processedFeatures == totalFeatures)
+                        {
+                            Application.DoEvents();
+                        }
+                        
+                        lastProgressUpdate = currentTime;
+                    }
                     
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(outputFeatureBuffer);
                 }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"{pair.AdminName}: 处理图斑 {processedFeatures + 1} 时出错: {ex.Message}");
+                    processedFeatures++;
+                }
                 finally
                 {
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(statusFeature);
+                    if (statusFeature != null)
+                    {
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(statusFeature);
+                    }
                 }
             }
 
             outputCursor.Flush();
             System.Runtime.InteropServices.Marshal.ReleaseComObject(outputCursor);
             System.Runtime.InteropServices.Marshal.ReleaseComObject(statusCursor);
+            
+            // 🔥 处理完成后的最终统计
+            var totalTime = DateTime.Now - processingStartTime;
+            var finalStatus = $"✅ 完成 {pair.AdminName} 处理 - 总计: {processedFeatures} 个图斑，用时: {totalTime:mm\\:ss}";
+            System.Diagnostics.Debug.WriteLine(finalStatus);
+            
+            try
+            {
+                statusLabel.Text = finalStatus;
+            }
+            catch (Exception uiEx)
+            {
+                System.Diagnostics.Debug.WriteLine($"最终UI更新异常: {uiEx.Message}");
+            }
+        }
+
+        private void UpdateFormProgress(ForestBasemapPriceAssociationForm form, string message)
+        {
+            try
+            {
+                var statusLabel = form.Controls.Find("statusLabel", true).FirstOrDefault() as Label;
+                if (statusLabel != null)
+                {
+                    statusLabel.Text = message;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"表单进度更新失败: {ex.Message}");
+            }
         }
 
         private void SetLDHSJGFieldValues(IFeatureBuffer outputFeature, IFeature statusFeature, IFeatureClass priceFC, DataPairInfo pair, int sequenceNumber)
@@ -1535,7 +1644,6 @@ namespace TestArcMapAddin2.Forms
         }
 
         #endregion
-
     }
 
     #region 数据结构

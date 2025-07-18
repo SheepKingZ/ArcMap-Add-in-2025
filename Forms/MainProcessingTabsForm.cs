@@ -120,7 +120,7 @@ namespace TestArcMapAddin2.Forms
             // 草地选项卡按钮 - 移除基础数据依赖，允许独立使用
             btnGrasslandExtractScope.Enabled = true;
             btnGrasslandCreateBasemapLinkPrice.Enabled = true; // 移除依赖
-            btnGrasslandSupplementPrice.Enabled = true; // 移除依赖
+            btnGrasslandSupplementPrice.Enabled = true; // 秮除依赖
             btnGrasslandCalculateValue.Enabled = true; // 移除依赖
             btnGrasslandCleanQA.Enabled = true; // 移除依赖
             btnGrasslandBuildDBTables.Enabled = true; // 移除依赖
@@ -267,25 +267,45 @@ namespace TestArcMapAddin2.Forms
 
         private void BtnForestSupplementPrice_Click(object sender, EventArgs e)
         {
-            UpdateProgress("正在补充森林基准价格...");
+            try
+            {
+                // 打开森林价格数据补充处理窗体
+                var forestPriceSupplementForm = new ForestPriceSupplementForm();
+                var result = forestPriceSupplementForm.ShowDialog();
+                
+                if (result == DialogResult.OK)
+                {
+                    // 处理完成后更新状态
+                    forestTasksCompleted["supplementPrice"] = true;
+                    lblForestProcessingStatus.Text = "森林基准价格补充完成";
+                    lblForestProcessingStatus.ForeColor = Color.DarkGreen;
+                    UpdateProgress("森林基准价格补充完成");
 
-            // 待实现：实际逻辑
-            forestTasksCompleted["supplementPrice"] = true;
-            lblForestProcessingStatus.Text = "森林基准价格补充完成";
-            lblForestProcessingStatus.ForeColor = Color.DarkGreen; // 保持 DarkGreen 表示成功
-            UpdateProgress("森林基准价格补充完成");
+                    // 更新工作流状态和按钮状态
+                    UpdateWorkflowState();
+                    UpdateButtonStates();
 
-            // 更新工作流状态和按钮状态
-            UpdateWorkflowState();
-            UpdateButtonStates();
-
-            // 更新详细结果文本
-            forestResultsTextBox.AppendText("=== 森林基准价格补充 ===\r\n");
-            forestResultsTextBox.AppendText("- 提取林地定级指标及权重信息\r\n");
-            forestResultsTextBox.AppendText("- 提取基准价格信息\r\n");
-            forestResultsTextBox.AppendText("- 补充落空图斑价格\r\n");
-            forestResultsTextBox.AppendText("- 补充成功: 27图斑\r\n");
-            forestResultsTextBox.AppendText("- 基准价格范围: 2.45-8.72万元/公顷\r\n\r\n");
+                    // 更新详细结果文本
+                    if (forestResultsTextBox != null)
+                    {
+                        forestResultsTextBox.AppendText("=== 森林基准价格补充 ===\r\n");
+                        forestResultsTextBox.AppendText("- 读取核算价格shp数据完成\r\n");
+                        forestResultsTextBox.AppendText("- 价格数据估计补充完成\r\n");
+                        forestResultsTextBox.AppendText("- 补充缺失图斑价格信息\r\n");
+                        forestResultsTextBox.AppendText("- 输出处理结果数据完成\r\n\r\n");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打开森林价格数据补充窗口时出错: {ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                
+                // 更新进度显示为失败状态
+                UpdateProgress("森林基准价格补充处理失败");
+                lblForestProcessingStatus.Text = "森林基准价格补充处理失败";
+                lblForestProcessingStatus.ForeColor = Color.Red;
+            }
         }
 
         private void BtnForestCalculateValue_Click(object sender, EventArgs e)
