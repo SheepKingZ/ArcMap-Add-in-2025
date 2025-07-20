@@ -14,6 +14,10 @@ namespace ForestResourcePlugin
 {
     public partial class Basic : Form
     {
+        // 防抖动机制相关字段
+        private System.Windows.Forms.Timer _countySelectionTimer;
+        private volatile bool _isLoadingFields = false;
+        private Dictionary<string, List<string>> _fieldCache = new Dictionary<string, List<string>>();
         private CancellationTokenSource _cancellationTokenSource;
         private DataTable previewData;
         private DataTable mappingData;
@@ -59,6 +63,18 @@ namespace ForestResourcePlugin
 
             // 加载县列表
             LoadCounties();
+
+            InitializeDebounceTimer();
+        }
+
+        /// <summary>
+        /// 初始化防抖动定时器
+        /// </summary>
+        private void InitializeDebounceTimer()
+        {
+            _countySelectionTimer = new System.Windows.Forms.Timer();
+            _countySelectionTimer.Interval = 500; // 500ms延迟
+            _countySelectionTimer.Tick += CountySelectionTimer_Tick;
         }
 
         /// <summary>
@@ -138,89 +154,46 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 根据选中的县加载字段信息
+        /// 根据选中的县加载字段信息 - 兼容性包装方法
         /// </summary>
         private void LoadFieldsFromSelectedCounties()
         {
-            try
+            // 如果正在异步加载，直接返回
+            if (_isLoadingFields)
             {
-                var selectedCounties = GetSelectedCounties();
-
-                // 清空字段下拉框
-                cmbLandTypeField.Items.Clear();
-                cmbLandOwnerField.Items.Clear();
-
-                if (selectedCounties.Count == 0)
-                {
-                    UpdateStatus("请选择至少一个县");
-                    return;
-                }
-
-                // 准备选中县的数据信息
-                selectedCountyData = new List<CountyDataInfo>();
-
-                // 获取共享数据
-                var sourceDataFiles = SharedDataManager.GetSourceDataFiles();
-                var czkfbjFiles = SharedDataManager.GetCZKFBJFiles();
-
-                var allFieldNames = new HashSet<string>();
-
-                foreach (var countyName in selectedCounties)
-                {
-                    var countyInfo = new CountyDataInfo { CountyName = countyName };
-
-                    // 查找该县的源数据文件
-                    var sourceDataFile = sourceDataFiles.FirstOrDefault(f => f.DisplayName == countyName);
-                    if (sourceDataFile != null)
-                    {
-                        countyInfo.SourceDataFile = sourceDataFile;
-
-                        // 获取该文件的字段
-                        var fields = GetFieldsFromFile(sourceDataFile);
-                        foreach (var field in fields)
-                        {
-                            allFieldNames.Add(field);
-                        }
-                    }
-
-                    // 查找该县的城镇开发边界数据
-                    var czkfbjFile = czkfbjFiles.FirstOrDefault(f => f.DisplayName == countyName);
-                    if (czkfbjFile != null)
-                    {
-                        countyInfo.CZKFBJFile = czkfbjFile;
-                    }
-
-                    selectedCountyData.Add(countyInfo);
-                    System.Diagnostics.Debug.WriteLine($"县 {countyName}: 源数据={sourceDataFile?.FullPath ?? "无"}, CZKFBJ={czkfbjFile?.FullPath ?? "无"}");
-                }
-
-                // 将所有字段添加到下拉框
-                var sortedFields = allFieldNames.OrderBy(name => name).ToList();
-                foreach (var fieldName in sortedFields)
-                {
-                    cmbLandTypeField.Items.Add(fieldName);
-                    cmbLandOwnerField.Items.Add(fieldName);
-                }
-
-                // 选择默认字段
-                if (cmbLandTypeField.Items.Count > 0)
-                {
-                    int landTypeIndex = FindBestMatchIndex(cmbLandTypeField.Items, new[] { "DLBM" });
-                    cmbLandTypeField.SelectedIndex = landTypeIndex >= 0 ? landTypeIndex : 0;
-
-                    int landOwnerIndex = FindBestMatchIndex(cmbLandOwnerField.Items, new[] { "QSXZ" });
-                    cmbLandOwnerField.SelectedIndex = landOwnerIndex >= 0 ? landOwnerIndex : 0;
-                }
-
-                UpdateStatus($"已加载 {selectedCounties.Count} 个县的数据，共 {sortedFields.Count} 个字段");
+                UpdateStatus("字段信息正在加载中，请稍候...");
+                return;
             }
-            catch (Exception ex)
+
+            // 触发异步加载
+            LoadFieldsFromSelectedCountiesAsync();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                System.Diagnostics.Debug.WriteLine($"加载字段时出错: {ex.Message}");
-                UpdateStatus("加载字段失败");
-                MessageBox.Show($"加载字段时出错: {ex.Message}", "错误",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // 清理防抖动定时器
+                if (_countySelectionTimer != null)
+                {
+                    _countySelectionTimer.Stop();
+                    _countySelectionTimer.Dispose();
+                    _countySelectionTimer = null;
+                }
+
+                // 清理取消令牌
+                if (_cancellationTokenSource != null)
+                {
+                    _cancellationTokenSource.Dispose();
+                    _cancellationTokenSource = null;
+                }
+
+                if (components != null)
+                {
+                    components.Dispose();
+                }
             }
+            base.Dispose(disposing);
         }
 
         /// <summary>
@@ -259,33 +232,225 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 县列表选择变化事件处理
+        /// 县列表选择变化事件处理 - 添加防抖动机制
         /// </summary>
         private void ChkListCounties_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            // 使用BeginInvoke确保事件在UI更新后执行
+            // 如果正在加载字段，忽略新的选择变化
+            if (_isLoadingFields)
+            {
+                return;
+            }
+
+            // 重置定时器
+            _countySelectionTimer.Stop();
+            _countySelectionTimer.Start();
+
+            // 立即更新状态显示
             this.BeginInvoke(new Action(() =>
             {
                 try
                 {
-                    var selectedCounties = GetSelectedCounties();
-                    System.Diagnostics.Debug.WriteLine($"选中的县: {string.Join(", ", selectedCounties)}");
+                    var selectedCount = GetSelectedCounties().Count;
+                    string itemName = chkListCounties.Items[e.Index].ToString();
+                    string action = e.NewValue == CheckState.Checked ? "选中" : "取消选中";
 
-                    // 更新字段下拉框
-                    LoadFieldsFromSelectedCounties();
-
-                    // 清空预览数据
-                    ClearPreviewData();
-
-                    UpdateStatus($"已选择 {selectedCounties.Count} 个县");
+                    UpdateStatus($"{action}县: {itemName}，已选择 {selectedCount} 个县，正在准备加载字段...");
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"处理县选择变化时出错: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"更新选择状态时出错: {ex.Message}");
                 }
             }));
         }
 
+        /// <summary>
+        /// 防抖动定时器事件 - 延迟加载字段
+        /// </summary>
+        private void CountySelectionTimer_Tick(object sender, EventArgs e)
+        {
+            _countySelectionTimer.Stop();
+
+            // 在后台线程中加载字段
+            LoadFieldsFromSelectedCountiesAsync();
+        }
+        /// <summary>
+        /// 异步加载选中县的字段信息
+        /// </summary>
+        private async void LoadFieldsFromSelectedCountiesAsync()
+        {
+            if (_isLoadingFields) return;
+
+            try
+            {
+                _isLoadingFields = true;
+                UpdateStatus("正在加载字段信息...");
+
+                // 在后台线程中执行耗时操作
+                var result = await System.Threading.Tasks.Task.Run(() => LoadFieldsFromSelectedCountiesInternal());
+
+                // 在UI线程中更新界面
+                ApplyFieldLoadingResult(result);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"异步加载字段时出错: {ex.Message}");
+                UpdateStatus("加载字段失败");
+                MessageBox.Show($"加载字段时出错: {ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                _isLoadingFields = false;
+            }
+        }
+
+        /// <summary>
+        /// 内部字段加载逻辑（在后台线程中执行）
+        /// </summary>
+        private FieldLoadingResult LoadFieldsFromSelectedCountiesInternal()
+        {
+            var result = new FieldLoadingResult();
+
+            try
+            {
+                var selectedCounties = GetSelectedCounties();
+                if (selectedCounties.Count == 0)
+                {
+                    return result;
+                }
+
+                // 获取共享数据
+                var sourceDataFiles = SharedDataManager.GetSourceDataFiles();
+                var czkfbjFiles = SharedDataManager.GetCZKFBJFiles();
+
+                var allFieldNames = new HashSet<string>();
+                result.CountyDataInfos = new List<CountyDataInfo>();
+
+                foreach (var countyName in selectedCounties)
+                {
+                    var countyInfo = new CountyDataInfo { CountyName = countyName };
+
+                    // 查找该县的源数据文件
+                    var sourceDataFile = sourceDataFiles.FirstOrDefault(f => f.DisplayName == countyName);
+                    if (sourceDataFile != null)
+                    {
+                        countyInfo.SourceDataFile = sourceDataFile;
+
+                        // 使用缓存获取字段（这是主要优化点）
+                        var fields = GetFieldsFromFileWithCache(sourceDataFile);
+                        foreach (var field in fields)
+                        {
+                            allFieldNames.Add(field);
+                        }
+                    }
+
+                    // 查找该县的城镇开发边界数据
+                    var czkfbjFile = czkfbjFiles.FirstOrDefault(f => f.DisplayName == countyName);
+                    if (czkfbjFile != null)
+                    {
+                        countyInfo.CZKFBJFile = czkfbjFile;
+                    }
+
+                    result.CountyDataInfos.Add(countyInfo);
+                }
+
+                result.AllFieldNames = allFieldNames.OrderBy(name => name).ToList();
+                result.Success = true;
+            }
+            catch (Exception ex)
+            {
+                result.ErrorMessage = ex.Message;
+                result.Success = false;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 应用字段加载结果到UI
+        /// </summary>
+        private void ApplyFieldLoadingResult(FieldLoadingResult result)
+        {
+            try
+            {
+                if (!result.Success)
+                {
+                    UpdateStatus($"加载字段失败: {result.ErrorMessage}");
+                    return;
+                }
+
+                // 更新全局变量
+                selectedCountyData = result.CountyDataInfos;
+
+                // 清空并更新字段下拉框
+                cmbLandTypeField.Items.Clear();
+                cmbLandOwnerField.Items.Clear();
+
+                foreach (var fieldName in result.AllFieldNames)
+                {
+                    cmbLandTypeField.Items.Add(fieldName);
+                    cmbLandOwnerField.Items.Add(fieldName);
+                }
+
+                // 选择默认字段
+                if (cmbLandTypeField.Items.Count > 0)
+                {
+                    int landTypeIndex = FindBestMatchIndex(cmbLandTypeField.Items, new[] { "DLBM" });
+                    cmbLandTypeField.SelectedIndex = landTypeIndex >= 0 ? landTypeIndex : 0;
+
+                    int landOwnerIndex = FindBestMatchIndex(cmbLandOwnerField.Items, new[] { "QSXZ" });
+                    cmbLandOwnerField.SelectedIndex = landOwnerIndex >= 0 ? landOwnerIndex : 0;
+                }
+
+                // 清空预览数据
+                ClearPreviewData();
+
+                UpdateStatus($"已加载 {result.CountyDataInfos.Count} 个县的数据，共 {result.AllFieldNames.Count} 个字段");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"应用字段加载结果时出错: {ex.Message}");
+                UpdateStatus("应用字段加载结果失败");
+            }
+        }
+
+        /// <summary>
+        /// 带缓存的获取文件字段列表
+        /// </summary>
+        private List<string> GetFieldsFromFileWithCache(SourceDataFileInfo fileInfo)
+        {
+            if (fileInfo == null) return new List<string>();
+
+            string cacheKey = $"{fileInfo.FullPath}|{fileInfo.FeatureClassName}";
+
+            // 检查缓存
+            if (_fieldCache.ContainsKey(cacheKey))
+            {
+                System.Diagnostics.Debug.WriteLine($"从缓存获取字段: {cacheKey}");
+                return _fieldCache[cacheKey];
+            }
+
+            // 缓存未命中，读取字段
+            System.Diagnostics.Debug.WriteLine($"读取并缓存字段: {cacheKey}");
+            var fields = GetFieldsFromFile(fileInfo);
+
+            // 缓存结果
+            _fieldCache[cacheKey] = fields;
+
+            return fields;
+        }
+
+        /// <summary>
+        /// 字段加载结果类
+        /// </summary>
+        private class FieldLoadingResult
+        {
+            public bool Success { get; set; } = false;
+            public List<CountyDataInfo> CountyDataInfos { get; set; }
+            public List<string> AllFieldNames { get; set; }
+            public string ErrorMessage { get; set; }
+        }
         /// <summary>
         /// 获取选中的县名列表
         /// </summary>
@@ -2131,7 +2296,7 @@ namespace ForestResourcePlugin
 
                     if (!string.IsNullOrEmpty(extractedCountyName))
                     {
-                        System.Diagnostics.Debug.WriteLine($"成功匹配县名: {directoryName} -> {extractedCountyName}");
+                        //System.Diagnostics.Debug.WriteLine($"成功匹配县名: {directoryName} -> {extractedCountyName}");
 
                         // 在该目录及其子目录中查找LDHSJG文件
                         var foundFiles = FindLDHSJGFilesInDirectory(firstLevelDir);
@@ -2336,35 +2501,35 @@ namespace ForestResourcePlugin
                 message += $"成功匹配：{matchedFiles.Count} 个文件\n";
                 message += $"未匹配：{unmatchedFiles.Count} 个文件\n\n";
 
-                if (matchedFiles.Count > 0)
-                {
-                    message += "成功匹配的文件：\n";
-                    var groupedByCounty = matchedFiles.GroupBy(f => f.CountyName);
-                    foreach (var group in groupedByCounty)
-                    {
-                        message += $"▶ {group.Key}: {group.Count()} 个文件\n";
-                        foreach (var file in group.Take(3)) // 只显示前3个
-                        {
-                            message += $"  - {file.FileName}\n";
-                        }
-                        if (group.Count() > 3)
-                        {
-                            message += $"  - ... 还有 {group.Count() - 3} 个文件\n";
-                        }
-                    }
-                    message += "\n";
-                }
+                //if (matchedFiles.Count > 0)
+                //{
+                //    message += "成功匹配的文件：\n";
+                //    var groupedByCounty = matchedFiles.GroupBy(f => f.CountyName);
+                //    foreach (var group in groupedByCounty)
+                //    {
+                //        message += $"▶ {group.Key}: {group.Count()} 个文件\n";
+                //        foreach (var file in group.Take(3)) // 只显示前3个
+                //        {
+                //            message += $"  - {file.FileName}\n";
+                //        }
+                //        if (group.Count() > 3)
+                //        {
+                //            message += $"  - ... 还有 {group.Count() - 3} 个文件\n";
+                //        }
+                //    }
+                //    message += "\n";
+                //}
 
                 if (unmatchedFiles.Count > 0)
                 {
                     message += "未匹配的文件：\n";
-                    foreach (var file in unmatchedFiles.Take(5)) // 只显示前5个
+                    foreach (var file in unmatchedFiles.Take(100)) // 只显示前5个
                     {
                         message += $"- {file.FileName} (目录: {file.DirectoryName})\n";
                     }
-                    if (unmatchedFiles.Count > 5)
+                    if (unmatchedFiles.Count > 100)
                     {
-                        message += $"- ... 还有 {unmatchedFiles.Count - 5} 个未匹配文件\n";
+                        message += $"- ... 还有 {unmatchedFiles.Count - 100} 个未匹配文件\n";
                     }
                 }
 

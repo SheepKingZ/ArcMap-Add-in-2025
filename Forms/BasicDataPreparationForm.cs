@@ -144,7 +144,7 @@ namespace TestArcMapAddin2.Forms
             UpdateButtonStates();
         }
 
-        // 修改：第一个按钮专门用于读取林草湿荒普查数据
+        // 第一个按钮专门用于读取林草湿荒普查数据
         private void BtnBrowseData_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
