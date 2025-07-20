@@ -1529,20 +1529,53 @@ namespace ForestResourcePlugin
             {
                 UpdateStatus("正在执行自动字段映射...");
 
-                // 1. 获取可用的源字段列表
+                // 1. 检查是否已选择县和加载字段数据
+                var selectedCounties = GetSelectedCounties();
+                if (selectedCounties.Count == 0)
+                {
+                    MessageBox.Show("请先选择至少一个县，然后等待字段加载完成。", "操作提示",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    UpdateStatus("自动映射失败：未选择县");
+                    return;
+                }
+
+                // 2. 检查是否正在加载字段
+                if (_isLoadingFields)
+                {
+                    MessageBox.Show("字段信息正在加载中，请稍等加载完成后再进行自动映射。", "操作提示",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    UpdateStatus("自动映射失败：字段正在加载");
+                    return;
+                }
+
+                // 3. 检查字段下拉框是否有数据
+                if (cmbLandTypeField.Items.Count == 0 || cmbLandOwnerField.Items.Count == 0)
+                {
+                    MessageBox.Show("未找到可用的源字段。请确认：\n" +
+                                   "1. 已选择县\n" +
+                                   "2. 字段加载已完成\n" +
+                                   "3. 数据文件包含有效字段",
+                                   "操作提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    UpdateStatus("自动映射失败：无可用字段");
+                    return;
+                }
+
+                // 4. 获取可用的源字段列表
                 var availableSourceFields = GetAvailableSourceFields();
                 if (availableSourceFields.Count == 0)
                 {
-                    MessageBox.Show("无法进行自动映射，因为没有可用的源字段。\n\n请先在左侧选择至少一个县。",
-                        "操作提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("无法获取源字段列表，请重新选择县或刷新数据源。",
+                                   "操作提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     UpdateStatus("自动映射失败：无源字段");
                     return;
                 }
 
-                // 2. 获取SLZYZC字段映射规则
+                System.Diagnostics.Debug.WriteLine($"可用源字段: {string.Join(", ", availableSourceFields)}");
+
+                // 5. 获取SLZYZC字段映射规则
                 var defaultMappings = GetDefaultSLZYZCMappingRules();
 
-                // 3. 清空并重新填充映射表格
+                // 6. 清空并重新填充映射表格
                 mappingData.Clear();
                 int mappedCount = 0;
 
@@ -1555,28 +1588,44 @@ namespace ForestResourcePlugin
                     string matchedSourceField = availableSourceFields.FirstOrDefault(f =>
                         f.Equals(idealSourceField, StringComparison.OrdinalIgnoreCase));
 
+                    // 如果没有精确匹配，尝试模糊匹配
+                    if (string.IsNullOrEmpty(matchedSourceField))
+                    {
+                        matchedSourceField = availableSourceFields.FirstOrDefault(f =>
+                            f.IndexOf(idealSourceField, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                            idealSourceField.IndexOf(f, StringComparison.OrdinalIgnoreCase) >= 0);
+                    }
+
                     string status;
                     if (!string.IsNullOrEmpty(matchedSourceField))
                     {
                         status = "已映射";
                         mappedCount++;
+                        System.Diagnostics.Debug.WriteLine($"映射成功: {targetField} -> {matchedSourceField}");
                     }
                     else
                     {
                         status = "未映射";
                         matchedSourceField = ""; // 如果未找到匹配，则源字段为空
+                        System.Diagnostics.Debug.WriteLine($"映射失败: {targetField} (理想字段: {idealSourceField})");
                     }
 
                     mappingData.Rows.Add(targetField, matchedSourceField, status);
                 }
 
-                // 刷新表格显示
+                // 7. 刷新表格显示
                 dgvMapping.DataSource = mappingData;
                 dgvMapping.Refresh();
 
+                // 8. 自动设置地类和权属字段下拉框
+                TrySetFieldSelections(availableSourceFields);
+
                 UpdateStatus($"自动映射完成，成功映射 {mappedCount} / {defaultMappings.Count} 个字段");
-                MessageBox.Show($"自动映射完成！\n\n成功匹配 {mappedCount} 个字段。", "操作成功",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"自动映射完成！\n\n" +
+                               $"成功匹配 {mappedCount} 个字段\n" +
+                               $"总字段数 {defaultMappings.Count} 个\n" +
+                               $"匹配率 {(mappedCount * 100.0 / defaultMappings.Count):F1}%",
+                               "操作成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -1584,6 +1633,43 @@ namespace ForestResourcePlugin
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 UpdateStatus("自动映射失败");
                 System.Diagnostics.Debug.WriteLine($"btnAutoMapping_Click 错误: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// 尝试自动设置地类和权属字段下拉框选择
+        /// </summary>
+        private void TrySetFieldSelections(List<string> availableFields)
+        {
+            try
+            {
+                // 设置地类字段
+                if (cmbLandTypeField.Items.Count > 0 && cmbLandTypeField.SelectedIndex == -1)
+                {
+                    int landTypeIndex = FindBestMatchIndex(cmbLandTypeField.Items,
+                        new[] { "DLBM", "dlbm", "地类编码", "地类" });
+                    if (landTypeIndex >= 0)
+                    {
+                        cmbLandTypeField.SelectedIndex = landTypeIndex;
+                        System.Diagnostics.Debug.WriteLine($"自动设置地类字段: {cmbLandTypeField.SelectedItem}");
+                    }
+                }
+
+                // 设置权属字段
+                if (cmbLandOwnerField.Items.Count > 0 && cmbLandOwnerField.SelectedIndex == -1)
+                {
+                    int landOwnerIndex = FindBestMatchIndex(cmbLandOwnerField.Items,
+                        new[] { "QSXZ", "qsxz", "权属性质", "土地权属", "TDQS", "tdqs" });
+                    if (landOwnerIndex >= 0)
+                    {
+                        cmbLandOwnerField.SelectedIndex = landOwnerIndex;
+                        System.Diagnostics.Debug.WriteLine($"自动设置权属字段: {cmbLandOwnerField.SelectedItem}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"设置字段选择时出错: {ex.Message}");
             }
         }
 
@@ -1909,19 +1995,66 @@ namespace ForestResourcePlugin
         /// <summary>
         /// 获取可用的源字段列表
         /// </summary>
+        /// <summary>
+        /// 获取可用的源字段列表 - 改进版
+        /// </summary>
         private List<string> GetAvailableSourceFields()
         {
             var fields = new List<string>();
 
-            if (cmbLandTypeField.Items.Count > 0)
+            try
             {
-                foreach (object item in cmbLandTypeField.Items)
+                // 方法1：从字段下拉框获取
+                if (cmbLandTypeField.Items.Count > 0)
                 {
-                    fields.Add(item.ToString());
+                    foreach (object item in cmbLandTypeField.Items)
+                    {
+                        string fieldName = item.ToString();
+                        if (!string.IsNullOrEmpty(fieldName) && !fields.Contains(fieldName))
+                        {
+                            fields.Add(fieldName);
+                        }
+                    }
                 }
-            }
 
-            return fields.Distinct().ToList();
+                // 方法2：如果下拉框为空，尝试从选中县数据直接获取
+                if (fields.Count == 0 && selectedCountyData != null && selectedCountyData.Count > 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("从选中县数据直接获取字段");
+                    foreach (var countyInfo in selectedCountyData)
+                    {
+                        if (countyInfo.SourceDataFile != null)
+                        {
+                            try
+                            {
+                                var countyFields = GetFieldsFromFileWithCache(countyInfo.SourceDataFile);
+                                foreach (var field in countyFields)
+                                {
+                                    if (!string.IsNullOrEmpty(field) && !fields.Contains(field))
+                                    {
+                                        fields.Add(field);
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"获取县 {countyInfo.CountyName} 字段时出错: {ex.Message}");
+                            }
+                        }
+                    }
+                }
+
+                // 去重并排序
+                fields = fields.Distinct().OrderBy(f => f).ToList();
+                System.Diagnostics.Debug.WriteLine($"GetAvailableSourceFields 返回 {fields.Count} 个字段");
+
+                return fields;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"获取可用源字段时出错: {ex.Message}");
+                return new List<string>();
+            }
         }
 
         /// <summary>
