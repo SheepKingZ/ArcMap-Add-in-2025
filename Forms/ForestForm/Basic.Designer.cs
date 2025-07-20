@@ -11,6 +11,8 @@ namespace ForestResourcePlugin
         {
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabDataSource = new System.Windows.Forms.TabPage();
+            this.buttonA6 = new System.Windows.Forms.Button();
+            this.buttonA4 = new System.Windows.Forms.Button();
             this.buttonForestExcel = new System.Windows.Forms.Button();
             this.groupBoxFiles = new System.Windows.Forms.GroupBox();
             this.buttonLDHSJGPath = new System.Windows.Forms.Button();
@@ -89,6 +91,8 @@ namespace ForestResourcePlugin
             // 
             // tabDataSource
             // 
+            this.tabDataSource.Controls.Add(this.buttonA6);
+            this.tabDataSource.Controls.Add(this.buttonA4);
             this.tabDataSource.Controls.Add(this.buttonForestExcel);
             this.tabDataSource.Controls.Add(this.groupBoxFiles);
             this.tabDataSource.Controls.Add(this.groupBoxOptions);
@@ -101,6 +105,28 @@ namespace ForestResourcePlugin
             this.tabDataSource.Text = "数据源配置";
             this.tabDataSource.UseVisualStyleBackColor = true;
             // 
+            // buttonA6
+            // 
+            this.buttonA6.Location = new System.Drawing.Point(940, 364);
+            this.buttonA6.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonA6.Name = "buttonA6";
+            this.buttonA6.Size = new System.Drawing.Size(233, 41);
+            this.buttonA6.TabIndex = 7;
+            this.buttonA6.Text = "导出A6数据表格";
+            this.buttonA6.UseVisualStyleBackColor = true;
+            this.buttonA6.Click += new System.EventHandler(this.buttonA6_Click);
+            // 
+            // buttonA4
+            // 
+            this.buttonA4.Location = new System.Drawing.Point(940, 314);
+            this.buttonA4.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonA4.Name = "buttonA4";
+            this.buttonA4.Size = new System.Drawing.Size(233, 41);
+            this.buttonA4.TabIndex = 6;
+            this.buttonA4.Text = "导出A4数据表格";
+            this.buttonA4.UseVisualStyleBackColor = true;
+            this.buttonA4.Click += new System.EventHandler(this.buttonA4_Click);
+            // 
             // buttonForestExcel
             // 
             this.buttonForestExcel.Location = new System.Drawing.Point(940, 258);
@@ -108,7 +134,7 @@ namespace ForestResourcePlugin
             this.buttonForestExcel.Name = "buttonForestExcel";
             this.buttonForestExcel.Size = new System.Drawing.Size(233, 41);
             this.buttonForestExcel.TabIndex = 5;
-            this.buttonForestExcel.Text = "导出数据表格";
+            this.buttonForestExcel.Text = "导出A2数据表格";
             this.buttonForestExcel.UseVisualStyleBackColor = true;
             this.buttonForestExcel.Click += new System.EventHandler(this.buttonForestExcel_Click);
             // 
@@ -743,5 +769,7 @@ namespace ForestResourcePlugin
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button buttonForestExcel;
+        private System.Windows.Forms.Button buttonA6;
+        private System.Windows.Forms.Button buttonA4;
     }
 }

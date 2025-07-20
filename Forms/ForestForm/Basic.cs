@@ -3308,6 +3308,651 @@ namespace ForestResourcePlugin
             public int MGQZS { get; set; } = -1;       // 每公顷株数
             public int GTDCDLMC { get; set; } = -1;        // 国土调查地类名称
         }
+
+        /// <summary>
+        /// A4按钮点击事件 - 生成全民所有森林资源资产清查价值量汇总表
+        /// </summary>
+        private void buttonA4_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 验证是否选择了县
+                var selectedCounties = GetSelectedCounties();
+                if (selectedCounties.Count == 0)
+                {
+                    MessageBox.Show("请至少选择一个县", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // 验证输出路径
+                if (string.IsNullOrEmpty(txtOutputPath.Text))
+                {
+                    MessageBox.Show("请设置输出路径", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // 显示进度
+                buttonA4.Enabled = false;
+                UpdateStatus("正在生成森林资源价值量汇总表(A4)...");
+
+                int successCount = 0;
+
+                // 为每个县处理数据并写入A4表格
+                foreach (var countyName in selectedCounties)
+                {
+                    try
+                    {
+                        UpdateStatus($"正在处理县：{countyName} - 生成A4表格");
+
+                        // 查找县的SLZYZC数据
+                        var slzyzcPath = FindSLZYZCPath(countyName);
+                        if (string.IsNullOrEmpty(slzyzcPath))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"未找到县 {countyName} 的SLZYZC数据");
+                            continue;
+                        }
+
+                        // 计算森林资源统计数据
+                        var forestStatistics = CalculateForestStatistics(slzyzcPath);
+
+                        // 计算价值量数据
+                        var forestValueStatistics = CalculateForestValueStatistics(slzyzcPath, forestStatistics);
+
+                        // 查找A4表格文件并写入数据
+                        var a4FilePath = FindA4TablePath(countyName);
+                        if (!string.IsNullOrEmpty(a4FilePath) && File.Exists(a4FilePath))
+                        {
+                            WriteDataToA4Table(a4FilePath, countyName, forestValueStatistics);
+                            successCount++;
+                            System.Diagnostics.Debug.WriteLine($"已为县 {countyName} 写入A4表格数据：{a4FilePath}");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"未找到县 {countyName} 的A4表格文件");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"处理县 {countyName} 时出错: {ex.Message}");
+                        MessageBox.Show($"处理县 {countyName} 时出错: {ex.Message}", "错误",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+
+                UpdateStatus("森林资源价值量汇总表(A4)数据写入完成");
+                MessageBox.Show($"已成功为 {successCount} 个县写入森林资源价值量汇总表(A4)数据", "生成完成",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"生成森林资源价值量汇总表(A4)时发生错误：{ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Debug.WriteLine($"buttonA4_Click错误: {ex}");
+            }
+            finally
+            {
+                buttonA4.Enabled = true;
+            }
+        }
+
+        /// <summary>
+        /// A6按钮点击事件 - 生成全民所有森林资源资产清查林地汇总表
+        /// </summary>
+        private void buttonA6_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 验证是否选择了县
+                var selectedCounties = GetSelectedCounties();
+                if (selectedCounties.Count == 0)
+                {
+                    MessageBox.Show("请至少选择一个县", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // 验证输出路径
+                if (string.IsNullOrEmpty(txtOutputPath.Text))
+                {
+                    MessageBox.Show("请设置输出路径", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // 显示进度
+                buttonA6.Enabled = false;
+                UpdateStatus("正在生成森林资源林地汇总表(A6)...");
+
+                int successCount = 0;
+
+                // 为每个县处理数据并写入A6表格
+                foreach (var countyName in selectedCounties)
+                {
+                    try
+                    {
+                        UpdateStatus($"正在处理县：{countyName} - 生成A6表格");
+
+                        // 查找县的SLZYZC数据
+                        var slzyzcPath = FindSLZYZCPath(countyName);
+                        if (string.IsNullOrEmpty(slzyzcPath))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"未找到县 {countyName} 的SLZYZC数据");
+                            continue;
+                        }
+
+                        // 计算林地汇总统计数据
+                        var forestLandStatistics = CalculateForestLandStatistics(slzyzcPath);
+
+                        // 查找A6表格文件并写入数据
+                        var a6FilePath = FindA6TablePath(countyName);
+                        if (!string.IsNullOrEmpty(a6FilePath) && File.Exists(a6FilePath))
+                        {
+                            WriteDataToA6Table(a6FilePath, countyName, forestLandStatistics);
+                            successCount++;
+                            System.Diagnostics.Debug.WriteLine($"已为县 {countyName} 写入A6表格数据：{a6FilePath}");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"未找到县 {countyName} 的A6表格文件");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"处理县 {countyName} 时出错: {ex.Message}");
+                        MessageBox.Show($"处理县 {countyName} 时出错: {ex.Message}", "错误",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+
+                UpdateStatus("森林资源林地汇总表(A6)数据写入完成");
+                MessageBox.Show($"已成功为 {successCount} 个县写入森林资源林地汇总表(A6)数据", "生成完成",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"生成森林资源林地汇总表(A6)时发生错误：{ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Debug.WriteLine($"buttonA6_Click错误: {ex}");
+            }
+            finally
+            {
+                buttonA6.Enabled = true;
+            }
+        }
+
+        /// <summary>
+        /// 查找指定县的A4表格文件路径
+        /// </summary>
+        /// <param name="countyName">县名</param>
+        /// <returns>A4表格文件路径</returns>
+        private string FindA4TablePath(string countyName)
+        {
+            try
+            {
+                // 获取县代码
+                string countyCode = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyCode(countyName);
+
+                // 构建A4表格文件路径
+                string countyFolderName = $"{countyName}({countyCode})全民所有自然资源资产清查数据成果";
+                string tableA4Name = $"({countyCode})全民所有森林资源资产清查价值量汇总表.xls";
+                string tableA4Path = System.IO.Path.Combine(txtOutputPath.Text, countyFolderName, "汇总表格", "森林", tableA4Name);
+
+                return tableA4Path;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"查找县 {countyName} A4表格路径时出错: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 查找指定县的A6表格文件路径
+        /// </summary>
+        /// <param name="countyName">县名</param>
+        /// <returns>A6表格文件路径</returns>
+        private string FindA6TablePath(string countyName)
+        {
+            try
+            {
+                // 获取县代码
+                string countyCode = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyCode(countyName);
+
+                // 构建A6表格文件路径
+                string countyFolderName = $"{countyName}({countyCode})全民所有自然资源资产清查数据成果";
+                string tableA6Name = $"({countyCode})全民所有森林资源资产清查林地汇总表.xls";
+                string tableA6Path = System.IO.Path.Combine(txtOutputPath.Text, countyFolderName, "汇总表格", "森林", tableA6Name);
+
+                return tableA6Path;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"查找县 {countyName} A6表格路径时出错: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 计算森林资源价值量统计数据
+        /// </summary>
+        /// <param name="slzyzcPath">SLZYZC数据路径</param>
+        /// <param name="baseStatistics">基础统计数据</param>
+        /// <returns>价值量统计数据</returns>
+        private ForestValueStatistics CalculateForestValueStatistics(string slzyzcPath, ForestStatistics baseStatistics)
+        {
+            var valueStatistics = new ForestValueStatistics();
+            IFeatureClass featureClass = null;
+
+            try
+            {
+                // 加载要素类
+                if (slzyzcPath.EndsWith(".gdb"))
+                {
+                    featureClass = ForestResourcePlugin.GdbFeatureClassFinder.OpenFeatureClassFromGdb(slzyzcPath, "SLZYZC");
+                }
+                else
+                {
+                    string directory = System.IO.Path.GetDirectoryName(slzyzcPath);
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(slzyzcPath);
+                    IWorkspaceFactory workspaceFactory = new ShapefileWorkspaceFactory();
+                    IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(directory, 0);
+                    featureClass = featureWorkspace.OpenFeatureClass(fileName);
+                }
+
+                if (featureClass == null)
+                {
+                    throw new Exception($"无法加载要素类：{slzyzcPath}");
+                }
+
+                // 获取字段索引
+                var fieldIndices = GetSlzyzcFieldIndices(featureClass);
+                // 添加价值相关字段索引
+                int priceFieldIndex = featureClass.FindField("基准价格");
+                int valueFieldIndex = featureClass.FindField("经济价值");
+                int boundaryAreaIndex = featureClass.FindField("城镇开发边界面积");
+
+                // 遍历所有要素进行价值量统计
+                IFeatureCursor cursor = null;
+                IFeature feature = null;
+
+                try
+                {
+                    cursor = featureClass.Search(null, false);
+                    while ((feature = cursor.NextFeature()) != null)
+                    {
+                        try
+                        {
+                            ProcessFeatureForValueStatistics(feature, fieldIndices, priceFieldIndex, valueFieldIndex, boundaryAreaIndex, valueStatistics);
+                        }
+                        finally
+                        {
+                            if (feature != null)
+                            {
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                                feature = null;
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    if (cursor != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                }
+            }
+            finally
+            {
+                if (featureClass != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);
+            }
+
+            return valueStatistics;
+        }
+
+        /// <summary>
+        /// 计算森林资源林地汇总统计数据
+        /// </summary>
+        /// <param name="slzyzcPath">SLZYZC数据路径</param>
+        /// <returns>林地汇总统计数据</returns>
+        private ForestLandStatistics CalculateForestLandStatistics(string slzyzcPath)
+        {
+            var landStatistics = new ForestLandStatistics();
+            IFeatureClass featureClass = null;
+
+            try
+            {
+                // 加载要素类
+                if (slzyzcPath.EndsWith(".gdb"))
+                {
+                    featureClass = ForestResourcePlugin.GdbFeatureClassFinder.OpenFeatureClassFromGdb(slzyzcPath, "SLZYZC");
+                }
+                else
+                {
+                    string directory = System.IO.Path.GetDirectoryName(slzyzcPath);
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(slzyzcPath);
+                    IWorkspaceFactory workspaceFactory = new ShapefileWorkspaceFactory();
+                    IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(directory, 0);
+                    featureClass = featureWorkspace.OpenFeatureClass(fileName);
+                }
+
+                if (featureClass == null)
+                {
+                    throw new Exception($"无法加载要素类：{slzyzcPath}");
+                }
+
+                // 获取字段索引
+                var fieldIndices = GetSlzyzcFieldIndices(featureClass);
+                int landGradeIndex = featureClass.FindField("林地等级");
+                int valueFieldIndex = featureClass.FindField("经济价值");
+                int boundaryAreaIndex = featureClass.FindField("城镇开发边界面积");
+
+                // 遍历所有要素进行林地统计
+                IFeatureCursor cursor = null;
+                IFeature feature = null;
+
+                try
+                {
+                    cursor = featureClass.Search(null, false);
+                    while ((feature = cursor.NextFeature()) != null)
+                    {
+                        try
+                        {
+                            ProcessFeatureForLandStatistics(feature, fieldIndices, landGradeIndex, valueFieldIndex, boundaryAreaIndex, landStatistics);
+                        }
+                        finally
+                        {
+                            if (feature != null)
+                            {
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                                feature = null;
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    if (cursor != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                }
+            }
+            finally
+            {
+                if (featureClass != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);
+            }
+
+            return landStatistics;
+        }
+
+        /// <summary>
+        /// 处理单个要素进行价值量统计
+        /// </summary>
+        private void ProcessFeatureForValueStatistics(IFeature feature, SlzyzcFieldIndices fieldIndices,
+            int priceFieldIndex, int valueFieldIndex, int boundaryAreaIndex, ForestValueStatistics statistics)
+        {
+            try
+            {
+                // 获取基础字段值
+                string landOwnership = GetFieldStringValue(feature, fieldIndices.GTDCTDQS);
+                string forestOwnership = GetFieldStringValue(feature, fieldIndices.LM_SUOYQ);
+                string landType = GetFieldStringValue(feature, fieldIndices.GTDCDLMC);
+
+                double area = GetFieldDoubleValue(feature, fieldIndices.ZTBMJ);
+                double boundaryArea = GetFieldDoubleValue(feature, boundaryAreaIndex);
+                double economicValue = GetFieldDoubleValue(feature, valueFieldIndex);
+
+                // 创建统计键值
+                string statisticsKey = $"{landOwnership}|{forestOwnership}|{landType}";
+
+                // 确保统计项存在
+                if (!statistics.ValueItems.ContainsKey(statisticsKey))
+                {
+                    statistics.ValueItems[statisticsKey] = new ForestValueStatisticsItem
+                    {
+                        LandOwnership = landOwnership ?? "",
+                        ForestOwnership = forestOwnership ?? "",
+                        LandType = landType ?? ""
+                    };
+                }
+
+                var item = statistics.ValueItems[statisticsKey];
+
+                // 累加统计数据
+                item.TotalArea += area;
+                item.BoundaryArea += boundaryArea;
+                item.EconomicValue += economicValue;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"处理要素价值量统计时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 处理单个要素进行林地统计
+        /// </summary>
+        private void ProcessFeatureForLandStatistics(IFeature feature, SlzyzcFieldIndices fieldIndices,
+            int landGradeIndex, int valueFieldIndex, int boundaryAreaIndex, ForestLandStatistics statistics)
+        {
+            try
+            {
+                // 获取基础字段值
+                string landType = GetFieldStringValue(feature, fieldIndices.GTDCDLMC);
+                string landGrade = GetFieldStringValue(feature, landGradeIndex);
+
+                double area = GetFieldDoubleValue(feature, fieldIndices.ZTBMJ);
+                double boundaryArea = GetFieldDoubleValue(feature, boundaryAreaIndex);
+                double economicValue = GetFieldDoubleValue(feature, valueFieldIndex);
+
+                // 创建统计键值
+                string statisticsKey = $"{landType}|{landGrade}";
+
+                // 确保统计项存在
+                if (!statistics.LandItems.ContainsKey(statisticsKey))
+                {
+                    statistics.LandItems[statisticsKey] = new ForestLandStatisticsItem
+                    {
+                        LandType = landType ?? "",
+                        LandGrade = landGrade ?? ""
+                    };
+                }
+
+                var item = statistics.LandItems[statisticsKey];
+
+                // 累加统计数据
+                item.TotalArea += area;
+                item.BoundaryArea += boundaryArea;
+                item.EconomicValue += economicValue;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"处理要素林地统计时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 将价值量统计数据写入A4表格
+        /// </summary>
+        /// <param name="filePath">Excel文件路径</param>
+        /// <param name="countyName">县名</param>
+        /// <param name="statistics">价值量统计数据</param>
+        private void WriteDataToA4Table(string filePath, string countyName, ForestValueStatistics statistics)
+        {
+            try
+            {
+                // 读取现有Excel文件
+                NPOI.HSSF.UserModel.HSSFWorkbook workbook = null;
+                using (FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    workbook = new NPOI.HSSF.UserModel.HSSFWorkbook(file);
+                }
+
+                NPOI.SS.UserModel.ISheet sheet = workbook.GetSheet("A4");
+                if (sheet == null)
+                {
+                    throw new Exception("未找到A4工作表");
+                }
+
+                // 获取县代码
+                string countyCode = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyCode(countyName);
+
+                // 从第3行开始写入数据（前2行是表头）
+                int currentRow = 2;
+
+                foreach (var item in statistics.ValueItems.Values)
+                {
+                    NPOI.SS.UserModel.IRow dataRow = sheet.CreateRow(currentRow);
+
+                    // 列0: 行政区名称
+                    dataRow.CreateCell(0).SetCellValue(countyName);
+
+                    // 列1: 行政区代码
+                    dataRow.CreateCell(1).SetCellValue(countyCode);
+
+                    // 列2: 国土变更调查权属
+                    dataRow.CreateCell(2).SetCellValue(item.LandOwnership);
+
+                    // 列3: 林木所有权
+                    dataRow.CreateCell(3).SetCellValue(item.ForestOwnership);
+
+                    // 列4: 地类
+                    dataRow.CreateCell(4).SetCellValue(item.LandType);
+
+                    // 列5: 面积
+                    dataRow.CreateCell(5).SetCellValue(item.TotalArea);
+
+                    // 列6: 划入城镇开发边界面积
+                    dataRow.CreateCell(6).SetCellValue(item.BoundaryArea);
+
+                    // 列7: 经济价值
+                    dataRow.CreateCell(7).SetCellValue(item.EconomicValue);
+
+                    currentRow++;
+                }
+
+                // 保存文件
+                using (FileStream file = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                {
+                    workbook.Write(file);
+                }
+
+                System.Diagnostics.Debug.WriteLine($"成功写入县 {countyName} 的A4表格数据，共 {statistics.ValueItems.Count} 行");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"写入A4表格数据时出错: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 将林地统计数据写入A6表格
+        /// </summary>
+        /// <param name="filePath">Excel文件路径</param>
+        /// <param name="countyName">县名</param>
+        /// <param name="statistics">林地统计数据</param>
+        private void WriteDataToA6Table(string filePath, string countyName, ForestLandStatistics statistics)
+        {
+            try
+            {
+                // 读取现有Excel文件
+                NPOI.HSSF.UserModel.HSSFWorkbook workbook = null;
+                using (FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    workbook = new NPOI.HSSF.UserModel.HSSFWorkbook(file);
+                }
+
+                NPOI.SS.UserModel.ISheet sheet = workbook.GetSheet("A6");
+                if (sheet == null)
+                {
+                    throw new Exception("未找到A6工作表");
+                }
+
+                // 获取县代码
+                string countyCode = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyCode(countyName);
+
+                // 从第3行开始写入数据（前2行是表头）
+                int currentRow = 2;
+
+                foreach (var item in statistics.LandItems.Values)
+                {
+                    NPOI.SS.UserModel.IRow dataRow = sheet.CreateRow(currentRow);
+
+                    // 列0: 行政区名称
+                    dataRow.CreateCell(0).SetCellValue(countyName);
+
+                    // 列1: 行政区代码
+                    dataRow.CreateCell(1).SetCellValue(countyCode);
+
+                    // 列2: 地类
+                    dataRow.CreateCell(2).SetCellValue(item.LandType);
+
+                    // 列3: 林地等级
+                    dataRow.CreateCell(3).SetCellValue(item.LandGrade);
+
+                    // 列4: 面积合计
+                    dataRow.CreateCell(4).SetCellValue(item.TotalArea);
+
+                    // 列5: 划入城镇开发边界面积
+                    dataRow.CreateCell(5).SetCellValue(item.BoundaryArea);
+
+                    // 列6: 经济价值
+                    dataRow.CreateCell(6).SetCellValue(item.EconomicValue);
+
+                    currentRow++;
+                }
+
+                // 保存文件
+                using (FileStream file = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                {
+                    workbook.Write(file);
+                }
+
+                System.Diagnostics.Debug.WriteLine($"成功写入县 {countyName} 的A6表格数据，共 {statistics.LandItems.Count} 行");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"写入A6表格数据时出错: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 森林价值量统计数据类
+        /// </summary>
+        private class ForestValueStatistics
+        {
+            public Dictionary<string, ForestValueStatisticsItem> ValueItems { get; set; } = new Dictionary<string, ForestValueStatisticsItem>();
+        }
+
+        /// <summary>
+        /// 森林价值量统计项目类
+        /// </summary>
+        private class ForestValueStatisticsItem
+        {
+            public string LandOwnership { get; set; }        // 土地权属
+            public string ForestOwnership { get; set; }      // 林木所有权
+            public string LandType { get; set; }             // 地类
+            public double TotalArea { get; set; }            // 总面积
+            public double BoundaryArea { get; set; }         // 城镇开发边界面积
+            public double EconomicValue { get; set; }        // 经济价值
+        }
+
+        /// <summary>
+        /// 森林林地统计数据类
+        /// </summary>
+        private class ForestLandStatistics
+        {
+            public Dictionary<string, ForestLandStatisticsItem> LandItems { get; set; } = new Dictionary<string, ForestLandStatisticsItem>();
+        }
+
+        /// <summary>
+        /// 森林林地统计项目类
+        /// </summary>
+        private class ForestLandStatisticsItem
+        {
+            public string LandType { get; set; }             // 地类
+            public string LandGrade { get; set; }            // 林地等级
+            public double TotalArea { get; set; }            // 总面积
+            public double BoundaryArea { get; set; }         // 城镇开发边界面积
+            public double EconomicValue { get; set; }        // 经济价值
+        }
     }
 
     /// <summary>

@@ -246,45 +246,45 @@ namespace ForestResourcePlugin
                     catch (Exception ex)
                     {
                         string errorMsg = $"写入要素到Shapefile失败 - 县名: {countyName}, 要素数量: {processedFeatures.Count}";
-                        System.Diagnostics.Debug.WriteLine(errorMsg);
-                        System.Diagnostics.Debug.WriteLine($"WriteFeaturesToShapefile异常: {ex.Message}");
-                        System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
+                        //System.Diagnostics.Debug.WriteLine(errorMsg);
+                        //System.Diagnostics.Debug.WriteLine($"WriteFeaturesToShapefile异常: {ex.Message}");
+                        //System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
                         throw new Exception(errorMsg, ex);
                     }
 
                     progressCallback?.Invoke(80, $"成功将 {processedFeatures.Count} 个要素写入到{countyName}的SLZYZC Shapefile");
 
-                    System.Diagnostics.Debug.WriteLine($"县{countyName}的数据已成功写入SLZYZC Shapefile");
+                    //System.Diagnostics.Debug.WriteLine($"县{countyName}的数据已成功写入SLZYZC Shapefile");
 
                     // 执行SLZYZC_DLTB操作
                     try
                     {
-                        System.Diagnostics.Debug.WriteLine($"开始执行自动转换 - 县名: {countyName}");
+                        //System.Diagnostics.Debug.WriteLine($"开始执行自动转换 - 县名: {countyName}");
                         PerformAutoConversion(countyName, outputPath, progressCallback);
-                        System.Diagnostics.Debug.WriteLine($"自动转换完成 - 县名: {countyName}");
+                        //System.Diagnostics.Debug.WriteLine($"自动转换完成 - 县名: {countyName}");
                     }
                     catch (Exception ex)
                     {
                         string errorMsg = $"执行自动转换失败 - 县名: {countyName}";
-                        System.Diagnostics.Debug.WriteLine(errorMsg);
-                        System.Diagnostics.Debug.WriteLine($"PerformAutoConversion异常: {ex.Message}");
-                        System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
+                        //System.Diagnostics.Debug.WriteLine(errorMsg);
+                        //System.Diagnostics.Debug.WriteLine($"PerformAutoConversion异常: {ex.Message}");
+                        //System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
                         // 注意：这里可以选择是否抛出异常，或者仅记录警告
                         throw new Exception(errorMsg, ex);
                     }
 
-                    progressCallback?.Invoke(100, $"{countyName}的数据导入和转换已全部完成");
-                    System.Diagnostics.Debug.WriteLine($"ExportToShapefile完成 - 县名: {countyName}");
+                    //progressCallback?.Invoke(100, $"{countyName}的数据导入和转换已全部完成");
+                    //System.Diagnostics.Debug.WriteLine($"ExportToShapefile完成 - 县名: {countyName}");
                 }
                 catch (Exception ex)
                 {
-                    string errorMsg = $"ExportToShapefile主要处理过程中出错 - 县名: {countyName}";
-                    System.Diagnostics.Debug.WriteLine(errorMsg);
-                    System.Diagnostics.Debug.WriteLine($"主要处理异常: {ex.Message}");
-                    System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
+                    //string errorMsg = $"ExportToShapefile主要处理过程中出错 - 县名: {countyName}";
+                    //System.Diagnostics.Debug.WriteLine(errorMsg);
+                    //System.Diagnostics.Debug.WriteLine($"主要处理异常: {ex.Message}");
+                    //System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
 
                     // 重新抛出异常，保留原始堆栈跟踪
-                    throw new Exception(errorMsg, ex);
+                    //throw new Exception(errorMsg, ex);
                 }
                 finally
                 {
@@ -293,40 +293,40 @@ namespace ForestResourcePlugin
                     {
                         if (slzyzcFeatureClass != null)
                         {
-                            System.Diagnostics.Debug.WriteLine($"释放slzyzcFeatureClass COM对象 - 县名: {countyName}");
-                            System.Runtime.InteropServices.Marshal.ReleaseComObject(slzyzcFeatureClass);
+                            //System.Diagnostics.Debug.WriteLine($"释放slzyzcFeatureClass COM对象 - 县名: {countyName}");
+                            //System.Runtime.InteropServices.Marshal.ReleaseComObject(slzyzcFeatureClass);
                         }
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"释放slzyzcFeatureClass COM对象时出错: {ex.Message}");
+                        //System.Diagnostics.Debug.WriteLine($"释放slzyzcFeatureClass COM对象时出错: {ex.Message}");
                     }
 
                     try
                     {
                         if (shapefileWorkspace != null)
                         {
-                            System.Diagnostics.Debug.WriteLine($"释放shapefileWorkspace COM对象 - 县名: {countyName}");
-                            System.Runtime.InteropServices.Marshal.ReleaseComObject(shapefileWorkspace);
+                            //System.Diagnostics.Debug.WriteLine($"释放shapefileWorkspace COM对象 - 县名: {countyName}");
+                            //System.Runtime.InteropServices.Marshal.ReleaseComObject(shapefileWorkspace);
                         }
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"释放shapefileWorkspace COM对象时出错: {ex.Message}");
+                        //System.Diagnostics.Debug.WriteLine($"释放shapefileWorkspace COM对象时出错: {ex.Message}");
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"ExportToShapefile finally块完成 - 县名: {countyName}");
+                    //System.Diagnostics.Debug.WriteLine($"ExportToShapefile finally块完成 - 县名: {countyName}");
                 }
             }
             catch (Exception ex)
             {
-                string errorMsg = $"ExportToShapefile顶级异常 - 县名: {countyName ?? "未知"}";
-                System.Diagnostics.Debug.WriteLine(errorMsg);
-                System.Diagnostics.Debug.WriteLine($"顶级异常: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"完整异常信息: {ex}");
+                //string errorMsg = $"ExportToShapefile顶级异常 - 县名: {countyName ?? "未知"}";
+                //System.Diagnostics.Debug.WriteLine(errorMsg);
+                //System.Diagnostics.Debug.WriteLine($"顶级异常: {ex.Message}");
+                //System.Diagnostics.Debug.WriteLine($"完整异常信息: {ex}");
 
                 // 抛出包含详细信息的异常
-                throw new Exception($"{errorMsg}: {ex.Message}", ex);
+                //throw new Exception($"{errorMsg}: {ex.Message}", ex);
             }
         }
 
@@ -850,7 +850,7 @@ namespace ForestResourcePlugin
                 {
                     ldhsjgFeatureClass = ldhsjgData.featureClass;
                     int ldhsjgFeatureCount = ldhsjgFeatureClass.FeatureCount(null);
-                    System.Diagnostics.Debug.WriteLine($"找到{countyName}的LDHSJG数据，包含{ldhsjgFeatureCount}个要素");
+                    //System.Diagnostics.Debug.WriteLine($"找到{countyName}的LDHSJG数据，包含{ldhsjgFeatureCount}个要素");
                 }
                 else
                 {
@@ -859,7 +859,7 @@ namespace ForestResourcePlugin
 
                 // 🔥 新增：预先获取该县的XZQDM值（从LDHSJG数据中获取）
                 string countyXZQDM = GetCountyXZQDMFromLDHSJG(ldhsjgFeatureClass, countyName);
-                System.Diagnostics.Debug.WriteLine($"从LDHSJG获取到{countyName}的XZQDM: {countyXZQDM}");
+                //System.Diagnostics.Debug.WriteLine($"从LDHSJG获取到{countyName}的XZQDM: {countyXZQDM}");
 
                 // 创建游标
                 sourceCursor = sourceFeatureClass.Search(null, false);
@@ -2175,24 +2175,6 @@ namespace ForestResourcePlugin
             {
                 System.Diagnostics.Debug.WriteLine($"打开shapefile时出错: {ex.Message}");
                 return (null, null);
-            }
-        }
-
-        private string GetFieldByIndex(IFeatureClass featureClass, int index)
-        {
-            try
-            {
-                IFields fields = featureClass.Fields;
-                if (index >= 1 && index <= fields.FieldCount)
-                {
-                    return fields.get_Field(index - 1).Name;
-                }
-                return null;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"根据索引获取字段名时出错: {ex.Message}");
-                return null;
             }
         }
         private object ConvertFieldValueForSLZYZC(object sourceValue, string targetFieldName, string sourceFieldName, string countyName)
