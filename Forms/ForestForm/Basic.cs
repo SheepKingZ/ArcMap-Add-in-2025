@@ -572,148 +572,6 @@ namespace ForestResourcePlugin
             return -1; // No match found
         }
 
-
-        /// <summary>
-        /// 处理单个县的预览数据
-        /// </summary>
-        private PreviewQueryResult ProcessSingleCountyPreview(CountyDataInfo countyInfo, string landTypeField, string landOwnerField, CancellationToken token)
-        {
-            var result = new PreviewQueryResult
-            {
-                PreviewData = new DataTable()
-            };
-
-            // 初始化数据表结构（不包含县名列）
-            result.PreviewData.Columns.Add("图斑编号");
-            result.PreviewData.Columns.Add("地类");
-            result.PreviewData.Columns.Add("土地权属");
-            result.PreviewData.Columns.Add("面积(公顷)");
-
-            try
-            {
-                // 加载要素类
-                IFeatureClass sourceFeatureClass = LoadFeatureClass(countyInfo.SourceDataFile);
-                IFeatureClass czkfbjFeatureClass = null;
-
-                if (countyInfo.CZKFBJFile != null && chkCollectiveInBoundary.Checked)
-                {
-                    czkfbjFeatureClass = LoadFeatureClass(countyInfo.CZKFBJFile);
-                }
-
-                if (sourceFeatureClass == null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"无法加载县 {countyInfo.CountyName} 的源数据");
-                    return result;
-                }
-
-                // 使用现有的查询逻辑处理单个要素类
-                string optimizedWhereClause = BuildOptimizedWhereClause(landTypeField, landOwnerField);
-                result = ExecuteOptimizedQueryForFeatureClass(
-                    sourceFeatureClass,
-                    czkfbjFeatureClass,
-                    optimizedWhereClause,
-                    landTypeField,
-                    landOwnerField,
-                    200, // 每个县最多200条记录用于预览
-                    token);
-
-                // 清理COM对象
-                if (sourceFeatureClass != null)
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(sourceFeatureClass);
-                if (czkfbjFeatureClass != null)
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(czkfbjFeatureClass);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"处理县 {countyInfo.CountyName} 预览时出错: {ex.Message}");
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// 为单个要素类执行优化查询
-        /// </summary>
-        private PreviewQueryResult ExecuteOptimizedQueryForFeatureClass(
-            IFeatureClass sourceFeatureClass,
-            IFeatureClass czkfbjFeatureClass,
-            string whereClause,
-            string landTypeField,
-            string landOwnerField,
-            int maxCount,
-            CancellationToken token)
-        {
-            var result = new PreviewQueryResult
-            {
-                PreviewData = new DataTable()
-            };
-
-            // 初始化数据表结构
-            result.PreviewData.Columns.Add("图斑编号");
-            result.PreviewData.Columns.Add("地类");
-            result.PreviewData.Columns.Add("土地权属");
-            result.PreviewData.Columns.Add("面积(公顷)");
-
-            try
-            {
-                // 创建查询过滤器
-                IQueryFilter queryFilter = new QueryFilterClass();
-                if (!string.IsNullOrEmpty(whereClause))
-                {
-                    queryFilter.WhereClause = whereClause;
-                }
-
-                // 获取字段索引
-                var fieldIndices = GetFieldIndicesForFeatureClass(sourceFeatureClass, landTypeField, landOwnerField);
-
-                // 空间过滤器
-                ISpatialFilter cachedSpatialFilter = null;
-                if (chkCollectiveInBoundary.Checked && czkfbjFeatureClass != null)
-                {
-                    cachedSpatialFilter = new SpatialFilterClass();
-                    cachedSpatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
-                }
-
-                IFeatureCursor cursor = null;
-                IFeature feature = null;
-
-                try
-                {
-                    cursor = sourceFeatureClass.Search(queryFilter, false);
-
-                    while ((feature = cursor.NextFeature()) != null && result.ProcessedCount < maxCount)
-                    {
-                        token.ThrowIfCancellationRequested();
-                        result.TotalCount++;
-
-                        if (ShouldIncludeFeatureForCounty(feature, fieldIndices, cachedSpatialFilter, czkfbjFeatureClass))
-                        {
-                            var row = CreateDataRowForFeatureClass(feature, fieldIndices, result.PreviewData);
-                            result.PreviewData.Rows.Add(row);
-                            result.ProcessedCount++;
-                        }
-
-                        // 释放当前要素
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
-                        feature = null;
-                    }
-                }
-                finally
-                {
-                    if (feature != null)
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
-                    if (cursor != null)
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"执行查询时出错: {ex.Message}");
-            }
-
-            return result;
-        }
-
         /// <summary>
         /// 为特定要素类获取字段索引
         /// </summary>
@@ -793,48 +651,6 @@ namespace ForestResourcePlugin
             }
         }
 
-        /// <summary>
-        /// 为特定要素类创建数据行
-        /// </summary>
-        private DataRow CreateDataRowForFeatureClass(IFeature feature, FieldIndices fieldIndices, DataTable dataTable)
-        {
-            DataRow row = dataTable.NewRow();
-
-            // 图斑编号
-            row["图斑编号"] = fieldIndices.TbdhIndex != -1 ?
-                feature.get_Value(fieldIndices.TbdhIndex)?.ToString() ?? feature.OID.ToString() :
-                feature.OID.ToString();
-
-            // 地类
-            row["地类"] = fieldIndices.DlmcIndex != -1 ?
-                feature.get_Value(fieldIndices.DlmcIndex)?.ToString() ?? "" : "";
-
-            // 土地权属
-            string ownerValue = GetFieldValue(feature, fieldIndices.QsxzIndex, fieldIndices.TdqsIndex);
-            row["土地权属"] = TranslateOwnershipCode(ownerValue);
-
-            // 面积
-            if (fieldIndices.TbmjIndex != -1)
-            {
-                object mjValue = feature.get_Value(fieldIndices.TbmjIndex);
-                if (mjValue != null && double.TryParse(mjValue.ToString(), out double mjDouble))
-                {
-                    row["面积(公顷)"] = mjDouble.ToString("F2");
-                }
-                else
-                {
-                    row["面积(公顷)"] = mjValue?.ToString() ?? "";
-                }
-            }
-            else
-            {
-                row["面积(公顷)"] = "";
-            }
-
-            return row;
-        }
-
-
         private bool ValidateInputs()
         {
             var selectedCounties = GetSelectedCounties();
@@ -863,20 +679,6 @@ namespace ForestResourcePlugin
                 previewData.Clear();
                 dgvPreview.DataSource = null;
                 lblPreviewCount.Text = "预览结果：0 个图斑";
-            }
-        }
-
-        private void DisplayPreviewResults(PreviewQueryResult result)
-        {
-            dgvPreview.DataSource = result.PreviewData;
-
-            if (result.TotalCount > result.ProcessedCount)
-            {
-                lblPreviewCount.Text = $"预览结果：{result.ProcessedCount}/{result.TotalCount} 个图斑 (多县数据，仅显示前1000个)";
-            }
-            else
-            {
-                lblPreviewCount.Text = $"预览结果：{result.ProcessedCount} 个图斑";
             }
         }
 
@@ -1095,13 +897,6 @@ namespace ForestResourcePlugin
                     result.OutputPath = "无符合条件的图斑";
                     return result;
                 }
-
-                // 创建县级输出文件
-                //string countyOutputPath = System.IO.Path.Combine(txtOutputPath.Text, countyInfo.CountyName);
-                //if (!Directory.Exists(countyOutputPath))
-                //{
-                //    Directory.CreateDirectory(countyOutputPath);
-                //}
 
                 // 构建县级数据库路径
                 string countyDatabasePath = txtOutputPath.Text;
@@ -3310,7 +3105,7 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// A4按钮点击事件 - 生成全民所有森林资源资产清查价值量汇总表
+        /// A4按钮点击事件 - 生成全民所有森林资源资产清查价值量汇总表（修改版：使用SLZYZC_DLTB数据）
         /// </summary>
         private void buttonA4_Click(object sender, EventArgs e)
         {
@@ -3344,19 +3139,19 @@ namespace ForestResourcePlugin
                     {
                         UpdateStatus($"正在处理县：{countyName} - 生成A4表格");
 
-                        // 查找县的SLZYZC数据
-                        var slzyzcPath = FindSLZYZCPath(countyName);
-                        if (string.IsNullOrEmpty(slzyzcPath))
+                        // 🔥 修改：查找县的SLZYZC_DLTB数据而不是SLZYZC数据
+                        var slzyzcDltbPath = FindSLZYZCDLTBPath(countyName);
+                        if (string.IsNullOrEmpty(slzyzcDltbPath))
                         {
-                            System.Diagnostics.Debug.WriteLine($"未找到县 {countyName} 的SLZYZC数据");
+                            System.Diagnostics.Debug.WriteLine($"未找到县 {countyName} 的SLZYZC_DLTB数据");
                             continue;
                         }
 
-                        // 计算森林资源统计数据
-                        var forestStatistics = CalculateForestStatistics(slzyzcPath);
+                        // 🔥 修改：计算森林资源统计数据（基于SLZYZC_DLTB）
+                        var forestStatistics = CalculateForestStatisticsFromDLTB(slzyzcDltbPath);
 
-                        // 计算价值量数据
-                        var forestValueStatistics = CalculateForestValueStatistics(slzyzcPath, forestStatistics);
+                        // 🔥 修改：计算价值量数据（基于SLZYZC_DLTB）
+                        var forestValueStatistics = CalculateForestValueStatisticsFromDLTB(slzyzcDltbPath, forestStatistics);
 
                         // 查找A4表格文件并写入数据
                         var a4FilePath = FindA4TablePath(countyName);
@@ -3396,7 +3191,7 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// A6按钮点击事件 - 生成全民所有森林资源资产清查林地汇总表
+        /// A6按钮点击事件 - 生成全民所有森林资源资产清查林地汇总表（修改版：使用SLZYZC_DLTB数据）
         /// </summary>
         private void buttonA6_Click(object sender, EventArgs e)
         {
@@ -3430,16 +3225,16 @@ namespace ForestResourcePlugin
                     {
                         UpdateStatus($"正在处理县：{countyName} - 生成A6表格");
 
-                        // 查找县的SLZYZC数据
-                        var slzyzcPath = FindSLZYZCPath(countyName);
-                        if (string.IsNullOrEmpty(slzyzcPath))
+                        // 🔥 修改：查找县的SLZYZC_DLTB数据而不是SLZYZC数据
+                        var slzyzcDltbPath = FindSLZYZCDLTBPath(countyName);
+                        if (string.IsNullOrEmpty(slzyzcDltbPath))
                         {
-                            System.Diagnostics.Debug.WriteLine($"未找到县 {countyName} 的SLZYZC数据");
+                            System.Diagnostics.Debug.WriteLine($"未找到县 {countyName} 的SLZYZC_DLTB数据");
                             continue;
                         }
 
-                        // 计算林地汇总统计数据
-                        var forestLandStatistics = CalculateForestLandStatistics(slzyzcPath);
+                        // 🔥 修改：计算林地汇总统计数据（基于SLZYZC_DLTB）
+                        var forestLandStatistics = CalculateForestLandStatisticsFromDLTB(slzyzcDltbPath);
 
                         // 查找A6表格文件并写入数据
                         var a6FilePath = FindA6TablePath(countyName);
@@ -3477,6 +3272,411 @@ namespace ForestResourcePlugin
                 buttonA6.Enabled = true;
             }
         }
+        /// <summary>
+        /// 计算森林资源统计数据（基于SLZYZC_DLTB数据）
+        /// </summary>
+        /// <param name="slzyzcDltbPath">SLZYZC_DLTB数据路径</param>
+        /// <returns>森林统计数据</returns>
+        private ForestStatistics CalculateForestStatisticsFromDLTB(string slzyzcDltbPath)
+        {
+            var statistics = new ForestStatistics();
+            IFeatureClass featureClass = null;
+
+            try
+            {
+                // 🔥 修改：加载SLZYZC_DLTB要素类（通常是Shapefile）
+                string directory = System.IO.Path.GetDirectoryName(slzyzcDltbPath);
+                string fileName = System.IO.Path.GetFileNameWithoutExtension(slzyzcDltbPath);
+                IWorkspaceFactory workspaceFactory = new ShapefileWorkspaceFactory();
+                IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(directory, 0);
+                featureClass = featureWorkspace.OpenFeatureClass(fileName);
+
+                if (featureClass == null)
+                {
+                    throw new Exception($"无法加载SLZYZC_DLTB要素类：{slzyzcDltbPath}");
+                }
+
+                // 🔥 修改：获取SLZYZC_DLTB字段索引
+                var fieldIndices = GetSlzyzcDltbFieldIndices(featureClass);
+
+                // 遍历所有要素进行统计
+                IFeatureCursor cursor = null;
+                IFeature feature = null;
+
+                try
+                {
+                    cursor = featureClass.Search(null, false);
+                    while ((feature = cursor.NextFeature()) != null)
+                    {
+                        try
+                        {
+                            ProcessFeatureForDLTBStatistics(feature, fieldIndices, statistics);
+                        }
+                        finally
+                        {
+                            if (feature != null)
+                            {
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                                feature = null;
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    if (cursor != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                }
+            }
+            finally
+            {
+                if (featureClass != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);
+            }
+
+            return statistics;
+        }
+
+        /// <summary>
+        /// 计算森林资源价值量统计数据（基于SLZYZC_DLTB数据）
+        /// </summary>
+        /// <param name="slzyzcDltbPath">SLZYZC_DLTB数据路径</param>
+        /// <param name="baseStatistics">基础统计数据</param>
+        /// <returns>价值量统计数据</returns>
+        private ForestValueStatistics CalculateForestValueStatisticsFromDLTB(string slzyzcDltbPath, ForestStatistics baseStatistics)
+        {
+            var valueStatistics = new ForestValueStatistics();
+            IFeatureClass featureClass = null;
+
+            try
+            {
+                // 🔥 修改：加载SLZYZC_DLTB要素类
+                string directory = System.IO.Path.GetDirectoryName(slzyzcDltbPath);
+                string fileName = System.IO.Path.GetFileNameWithoutExtension(slzyzcDltbPath);
+                IWorkspaceFactory workspaceFactory = new ShapefileWorkspaceFactory();
+                IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(directory, 0);
+                featureClass = featureWorkspace.OpenFeatureClass(fileName);
+
+                if (featureClass == null)
+                {
+                    throw new Exception($"无法加载SLZYZC_DLTB要素类：{slzyzcDltbPath}");
+                }
+
+                // 🔥 修改：获取SLZYZC_DLTB字段索引
+                var fieldIndices = GetSlzyzcDltbFieldIndices(featureClass);
+                // 🔥 修改：获取价值相关字段索引（SLZYZC_DLTB特有字段）
+                int hsjgFieldIndex = featureClass.FindField("HSJG");           // 换算价格
+                int jjjzFieldIndex = featureClass.FindField("JJJZ");           // 经济价值
+                int czkfbjmjFieldIndex = featureClass.FindField("CZKFBJMJ");   // 城镇开发边界面积
+
+                // 遍历所有要素进行价值量统计
+                IFeatureCursor cursor = null;
+                IFeature feature = null;
+
+                try
+                {
+                    cursor = featureClass.Search(null, false);
+                    while ((feature = cursor.NextFeature()) != null)
+                    {
+                        try
+                        {
+                            ProcessFeatureForDLTBValueStatistics(feature, fieldIndices,
+                                hsjgFieldIndex, jjjzFieldIndex, czkfbjmjFieldIndex, valueStatistics);
+                        }
+                        finally
+                        {
+                            if (feature != null)
+                            {
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                                feature = null;
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    if (cursor != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                }
+            }
+            finally
+            {
+                if (featureClass != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);
+            }
+
+            return valueStatistics;
+        }
+
+        /// <summary>
+        /// 计算森林资源林地汇总统计数据（基于SLZYZC_DLTB数据）
+        /// </summary>
+        /// <param name="slzyzcDltbPath">SLZYZC_DLTB数据路径</param>
+        /// <returns>林地汇总统计数据</returns>
+        private ForestLandStatistics CalculateForestLandStatisticsFromDLTB(string slzyzcDltbPath)
+        {
+            var landStatistics = new ForestLandStatistics();
+            IFeatureClass featureClass = null;
+
+            try
+            {
+                // 🔥 修改：加载SLZYZC_DLTB要素类
+                string directory = System.IO.Path.GetDirectoryName(slzyzcDltbPath);
+                string fileName = System.IO.Path.GetFileNameWithoutExtension(slzyzcDltbPath);
+                IWorkspaceFactory workspaceFactory = new ShapefileWorkspaceFactory();
+                IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(directory, 0);
+                featureClass = featureWorkspace.OpenFeatureClass(fileName);
+
+                if (featureClass == null)
+                {
+                    throw new Exception($"无法加载SLZYZC_DLTB要素类：{slzyzcDltbPath}");
+                }
+
+                // 🔥 修改：获取SLZYZC_DLTB字段索引
+                var fieldIndices = GetSlzyzcDltbFieldIndices(featureClass);
+                int jjjzFieldIndex = featureClass.FindField("JJJZ");           // 经济价值
+                int czkfbjmjFieldIndex = featureClass.FindField("CZKFBJMJ");   // 城镇开发边界面积
+                int landGradeIndex = featureClass.FindField("林地等级");         // 林地等级（如果有的话）
+
+                // 遍历所有要素进行林地统计
+                IFeatureCursor cursor = null;
+                IFeature feature = null;
+
+                try
+                {
+                    cursor = featureClass.Search(null, false);
+                    while ((feature = cursor.NextFeature()) != null)
+                    {
+                        try
+                        {
+                            ProcessFeatureForDLTBLandStatistics(feature, fieldIndices,
+                                landGradeIndex, jjjzFieldIndex, czkfbjmjFieldIndex, landStatistics);
+                        }
+                        finally
+                        {
+                            if (feature != null)
+                            {
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                                feature = null;
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    if (cursor != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                }
+            }
+            finally
+            {
+                if (featureClass != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);
+            }
+
+            return landStatistics;
+        }
+
+        /// <summary>
+        /// 获取SLZYZC_DLTB字段索引
+        /// </summary>
+        /// <param name="featureClass">要素类</param>
+        /// <returns>字段索引结构</returns>
+        private SlzyzcDltbFieldIndices GetSlzyzcDltbFieldIndices(IFeatureClass featureClass)
+        {
+            return new SlzyzcDltbFieldIndices
+            {
+                GTDCDLBM = featureClass.FindField("GTDCDLBM"),      // 国土调查地类编码
+                GTDCDLMC = featureClass.FindField("GTDCDLMC"),      // 国土调查地类名称
+                GTDCTDQS = featureClass.FindField("GTDCTDQS"),      // 国土调查土地权属
+                GTDCTBMJ = featureClass.FindField("GTDCTBMJ"),      // 国土调查图斑面积
+                CZKFBJMJ = featureClass.FindField("CZKFBJMJ"),      // 城镇开发边界面积
+                HSJG = featureClass.FindField("HSJG"),              // 换算价格
+                JJJZ = featureClass.FindField("JJJZ"),              // 经济价值
+                XZQMC = featureClass.FindField("XZQMC"),            // 行政区名称
+                XZQDM = featureClass.FindField("XZQDM")             // 行政区代码
+            };
+        }
+
+        /// <summary>
+        /// 处理单个要素进行DLTB统计
+        /// </summary>
+        /// <param name="feature">要素</param>
+        /// <param name="fieldIndices">字段索引</param>
+        /// <param name="statistics">统计数据</param>
+        private void ProcessFeatureForDLTBStatistics(IFeature feature, SlzyzcDltbFieldIndices fieldIndices, ForestStatistics statistics)
+        {
+            try
+            {
+                // 获取基础字段值
+                string landTypeCode = GetFieldStringValue(feature, fieldIndices.GTDCDLBM);
+                string landTypeName = GetFieldStringValue(feature, fieldIndices.GTDCDLMC);
+                string landOwnership = GetFieldStringValue(feature, fieldIndices.GTDCTDQS);
+
+                double area = GetFieldDoubleValue(feature, fieldIndices.GTDCTBMJ);
+
+                // 为DLTB数据创建统计键值（简化版，因为DLTB主要关注地类和权属）
+                string statisticsKey = CreateDLTBStatisticsKey(landOwnership, landTypeName);
+
+                // 确保统计项存在
+                if (!statistics.StatisticsItems.ContainsKey(statisticsKey))
+                {
+                    statistics.StatisticsItems[statisticsKey] = new ForestStatisticsItem
+                    {
+                        LandOwnership = landOwnership ?? "",
+                        ForestOwnership = "",  // DLTB中可能不包含林木所有权信息
+                        ForestType = "",       // DLTB中可能不包含林种信息
+                        Origin = ""            // DLTB中可能不包含起源信息
+                    };
+                }
+
+                var item = statistics.StatisticsItems[statisticsKey];
+
+                // 根据地类名称进行分类统计
+                switch (landTypeName)
+                {
+                    case "乔木林地":
+                        item.TreeLandArea += area;
+                        break;
+                    case "竹林地":
+                        item.BambooLandArea += area;
+                        break;
+                    case "灌木林地":
+                        item.ShrubLandArea += area;
+                        break;
+                    case "其他林地":
+                        item.OtherForestLandArea += area;
+                        break;
+                }
+
+                // 计算总面积
+                item.TotalArea += area;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"处理DLTB要素统计时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 处理单个要素进行DLTB价值量统计
+        /// </summary>
+        private void ProcessFeatureForDLTBValueStatistics(IFeature feature, SlzyzcDltbFieldIndices fieldIndices,
+            int hsjgFieldIndex, int jjjzFieldIndex, int czkfbjmjFieldIndex, ForestValueStatistics statistics)
+        {
+            try
+            {
+                // 获取基础字段值
+                string landOwnership = GetFieldStringValue(feature, fieldIndices.GTDCTDQS);
+                string landType = GetFieldStringValue(feature, fieldIndices.GTDCDLMC);
+
+                double area = GetFieldDoubleValue(feature, fieldIndices.GTDCTBMJ);
+                double boundaryArea = GetFieldDoubleValue(feature, czkfbjmjFieldIndex);
+                double economicValue = GetFieldDoubleValue(feature, jjjzFieldIndex);
+
+                // 创建统计键值
+                string statisticsKey = $"{landOwnership}|{landType}";
+
+                // 确保统计项存在
+                if (!statistics.ValueItems.ContainsKey(statisticsKey))
+                {
+                    statistics.ValueItems[statisticsKey] = new ForestValueStatisticsItem
+                    {
+                        LandOwnership = landOwnership ?? "",
+                        ForestOwnership = "", // DLTB中可能不包含林木所有权
+                        LandType = landType ?? ""
+                    };
+                }
+
+                var item = statistics.ValueItems[statisticsKey];
+
+                // 累加统计数据
+                item.TotalArea += area;
+                item.BoundaryArea += boundaryArea;
+                item.EconomicValue += economicValue;
+
+                System.Diagnostics.Debug.WriteLine($"A4表DLTB价值统计: 地类={landType}, 面积={area:F2}, 边界面积={boundaryArea:F2}, 经济价值={economicValue:F2}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"处理DLTB要素价值量统计时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 处理单个要素进行DLTB林地统计
+        /// </summary>
+        private void ProcessFeatureForDLTBLandStatistics(IFeature feature, SlzyzcDltbFieldIndices fieldIndices,
+            int landGradeIndex, int jjjzFieldIndex, int czkfbjmjFieldIndex, ForestLandStatistics statistics)
+        {
+            try
+            {
+                // 获取基础字段值
+                string landType = GetFieldStringValue(feature, fieldIndices.GTDCDLMC);
+                string landGrade = GetFieldStringValue(feature, landGradeIndex);
+
+                double area = GetFieldDoubleValue(feature, fieldIndices.GTDCTBMJ);
+                double boundaryArea = GetFieldDoubleValue(feature, czkfbjmjFieldIndex);
+                double economicValue = GetFieldDoubleValue(feature, jjjzFieldIndex);
+
+                // 创建统计键值
+                string statisticsKey = $"{landType}|{landGrade}";
+
+                // 确保统计项存在
+                if (!statistics.LandItems.ContainsKey(statisticsKey))
+                {
+                    statistics.LandItems[statisticsKey] = new ForestLandStatisticsItem
+                    {
+                        LandType = landType ?? "",
+                        LandGrade = landGrade ?? ""
+                    };
+                }
+
+                var item = statistics.LandItems[statisticsKey];
+
+                // 累加统计数据
+                item.TotalArea += area;
+                item.BoundaryArea += boundaryArea;
+                item.EconomicValue += economicValue;
+
+                System.Diagnostics.Debug.WriteLine($"A6表DLTB林地统计: 地类={landType}, 等级={landGrade}, 面积={area:F2}, 边界面积={boundaryArea:F2}, 经济价值={economicValue:F2}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"处理DLTB要素林地统计时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 创建DLTB统计键值
+        /// </summary>
+        /// <param name="landOwnership">土地权属</param>
+        /// <param name="landType">地类</param>
+        /// <returns>统计键值</returns>
+        private string CreateDLTBStatisticsKey(string landOwnership, string landType)
+        {
+            string normalizedLandOwnership = landOwnership ?? "";
+            string normalizedLandType = landType ?? "";
+
+            return $"[{normalizedLandOwnership.Length}:{normalizedLandOwnership}]|[{normalizedLandType.Length}:{normalizedLandType}]";
+        }
+
+        /// <summary>
+        /// SLZYZC_DLTB字段索引类
+        /// </summary>
+        private class SlzyzcDltbFieldIndices
+        {
+            public int GTDCDLBM { get; set; } = -1;    // 国土调查地类编码
+            public int GTDCDLMC { get; set; } = -1;    // 国土调查地类名称
+            public int GTDCTDQS { get; set; } = -1;    // 国土调查土地权属
+            public int GTDCTBMJ { get; set; } = -1;    // 国土调查图斑面积
+            public int CZKFBJMJ { get; set; } = -1;    // 城镇开发边界面积
+            public int HSJG { get; set; } = -1;        // 换算价格
+            public int JJJZ { get; set; } = -1;        // 经济价值
+            public int XZQMC { get; set; } = -1;       // 行政区名称
+            public int XZQDM { get; set; } = -1;       // 行政区代码
+        }
+
 
         /// <summary>
         /// 查找指定县的A4表格文件路径
@@ -3839,6 +4039,64 @@ namespace ForestResourcePlugin
             catch (Exception ex)
             {
                 throw new Exception($"写入A4表格数据时出错: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 查找指定县的SLZYZC_DLTB数据路径（新增方法）
+        /// </summary>
+        /// <param name="countyName">县名</param>
+        /// <returns>SLZYZC_DLTB数据路径</returns>
+        private string FindSLZYZCDLTBPath(string countyName)
+        {
+            try
+            {
+                // 获取县代码
+                string countyCode = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyCode(countyName);
+
+                // 构建可能的路径
+                string countyFolderName = $"{countyName}({countyCode})全民所有自然资源资产清查数据成果";
+                string baseCountyPath = System.IO.Path.Combine(txtOutputPath.Text, countyFolderName);
+                string spatialDataPath = System.IO.Path.Combine(baseCountyPath, "清查数据集", "森林", "空间数据");
+
+                // 方法1：查找标准的SLZYZC_DLTB Shapefile
+                string standardShapefilePath = System.IO.Path.Combine(spatialDataPath, "SLZYZC_DLTB.shp");
+                if (File.Exists(standardShapefilePath))
+                {
+                    System.Diagnostics.Debug.WriteLine($"找到标准SLZYZC_DLTB文件: {standardShapefilePath}");
+                    return standardShapefilePath;
+                }
+
+                // 方法2：查找带县代码的SLZYZC_DLTB Shapefile
+                string codeShapefilePath = System.IO.Path.Combine(spatialDataPath, $"({countyCode})SLZYZC_DLTB.shp");
+                if (File.Exists(codeShapefilePath))
+                {
+                    System.Diagnostics.Debug.WriteLine($"找到带县代码的SLZYZC_DLTB文件: {codeShapefilePath}");
+                    return codeShapefilePath;
+                }
+
+                // 方法3：在目录中搜索包含SLZYZC_DLTB的文件
+                if (Directory.Exists(spatialDataPath))
+                {
+                    var shapefiles = Directory.GetFiles(spatialDataPath, "*.shp");
+                    foreach (var shapefile in shapefiles)
+                    {
+                        string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefile);
+                        if (fileName.Contains("SLZYZC_DLTB"))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"找到包含SLZYZC_DLTB的文件: {shapefile}");
+                            return shapefile;
+                        }
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"未找到县 {countyName} 的SLZYZC_DLTB数据路径");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"查找县 {countyName} SLZYZC_DLTB路径时出错: {ex.Message}");
+                return null;
             }
         }
 

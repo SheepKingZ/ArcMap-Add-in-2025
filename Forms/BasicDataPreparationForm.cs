@@ -30,8 +30,6 @@ namespace TestArcMapAddin2.Forms
         // 存储按县代码匹配的数据
         private Dictionary<string, CountyDataInfo> countyDataMappings = new Dictionary<string, CountyDataInfo>();
 
-        public ForestResourcePlugin.Basic ParentBasicForm { get; set;}
-
         /// <summary>
         /// 县级数据信息类 - 用于存储按县代码匹配的数据
         /// </summary>
@@ -116,34 +114,6 @@ namespace TestArcMapAddin2.Forms
 
             btnOK.Enabled = allDataSourcesSelected;
         }
-
-        private void BtnSelectWorkspace_Click(object sender, EventArgs e)
-        {
-            using (FolderBrowserDialog dialog = new FolderBrowserDialog())
-            {
-                dialog.Description = "选择目标数据库路径（File Geodatabase .gdb）";
-                if (!string.IsNullOrEmpty(SharedWorkflowState.WorkspacePath))
-                {
-                    dialog.SelectedPath = SharedWorkflowState.WorkspacePath;
-                }
-
-                if (dialog.ShowDialog() == DialogResult.OK)
-                {
-                    if (dialog.SelectedPath.EndsWith(".gdb", StringComparison.OrdinalIgnoreCase) || System.IO.Directory.Exists(dialog.SelectedPath))
-                    {
-                        SharedWorkflowState.WorkspacePath = dialog.SelectedPath;
-                        InitializeFormState(); // 重新初始化以反映状态变化
-                    }
-                    else
-                    {
-                        MessageBox.Show("请选择有效的File Geodatabase (.gdb) 路径！", "错误",
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
-                }
-            }
-            UpdateButtonStates();
-        }
-
         // 第一个按钮专门用于读取林草湿荒普查数据
         private void BtnBrowseData_Click(object sender, EventArgs e)
         {
@@ -300,15 +270,10 @@ namespace TestArcMapAddin2.Forms
             this.Close();
         }
 
-        // 更新公共属性，供外部访问选择的路径
-        public string LcxzgxDataPath => lcxzgxDataPath;
-        public string CzkfbjSlzyDataPath => czkfbjSlzyDataPath;
-        public string OutputGDBPath => outputGDBPath;
+        //private void BasicDataPreparationForm_Load(object sender, EventArgs e)
+        //{
 
-        private void BasicDataPreparationForm_Load(object sender, EventArgs e)
-        {
-
-        }
+        //}
 
         /// <summary>
         /// 从路径中提取六位数县代码的方法 - 一旦找到县代码立即停止搜索

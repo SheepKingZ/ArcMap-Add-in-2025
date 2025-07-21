@@ -282,7 +282,7 @@ namespace TestArcMapAddin2.Forms
             this.Name = "BasicDataPreparationForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "基础数据准备";
-            this.Load += new System.EventHandler(this.BasicDataPreparationForm_Load);
+            //this.Load += new System.EventHandler(this.BasicDataPreparationForm_Load);
             this.topPanel.ResumeLayout(false);
             this.topPanel.PerformLayout();
             this.bottomPanel.ResumeLayout(false);

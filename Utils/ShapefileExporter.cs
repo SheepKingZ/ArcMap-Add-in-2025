@@ -782,14 +782,8 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 复制和处理要素数据
+        /// 复制和处理要素数据（修改版：JJJZ使用HSJG×GTDCTBMJ计算）
         /// </summary>
-        /// <param name="sourceFeatureClass">源要素类(SLZY_DLTB)</param>
-        /// <param name="czkfbjFeatureClass">CZKFBJ要素类</param>
-        /// <param name="targetFeatureClass">目标要素类(SLZYZC_DLTB)</param>
-        /// <param name="countyName">县名</param>
-        /// <param name="progressCallback">进度回调</param>
-        /// <returns>处理的要素数量</returns>
         private int CopyAndProcessFeatures(
             IFeatureClass sourceFeatureClass,
             IFeatureClass czkfbjFeatureClass,
@@ -834,14 +828,12 @@ namespace ForestResourcePlugin
                 int czkfbjmjIndex = targetFeatureClass.FindField("CZKFBJMJ");
                 int gtdctbmjIndex = targetFeatureClass.FindField("GTDCTBMJ");
 
-                // 获取LDHSJG相关字段索引
+                // 获取其他字段索引
                 int zcqcbsmIndex = targetFeatureClass.FindField("ZCQCBSM");
                 int ysdmIndex = targetFeatureClass.FindField("YSDM");
                 int xzqmcIndex = targetFeatureClass.FindField("XZQMC");
                 int xzqdmIndex = targetFeatureClass.FindField("XZQDM");
                 int hsjgIndex = targetFeatureClass.FindField("HSJG");
-
-                // 🔥 新增：获取JJJZ（经济价值）字段索引
                 int jjjzIndex = targetFeatureClass.FindField("JJJZ");
 
                 // 获取对应县的LDHSJG数据
@@ -849,24 +841,21 @@ namespace ForestResourcePlugin
                 if (ldhsjgData.featureClass != null)
                 {
                     ldhsjgFeatureClass = ldhsjgData.featureClass;
-                    int ldhsjgFeatureCount = ldhsjgFeatureClass.FeatureCount(null);
-                    //System.Diagnostics.Debug.WriteLine($"找到{countyName}的LDHSJG数据，包含{ldhsjgFeatureCount}个要素");
                 }
                 else
                 {
                     System.Diagnostics.Debug.WriteLine($"警告：未找到{countyName}的LDHSJG数据");
                 }
 
-                // 🔥 新增：预先获取该县的XZQDM值（从LDHSJG数据中获取）
+                // 预先获取该县的XZQDM值
                 string countyXZQDM = GetCountyXZQDMFromLDHSJG(ldhsjgFeatureClass, countyName);
-                //System.Diagnostics.Debug.WriteLine($"从LDHSJG获取到{countyName}的XZQDM: {countyXZQDM}");
 
                 // 创建游标
                 sourceCursor = sourceFeatureClass.Search(null, false);
                 targetBuffer = targetFeatureClass.CreateFeatureBuffer();
                 insertCursor = targetFeatureClass.Insert(true);
 
-                // 🔥 新增：初始化序号计数器
+                // 初始化序号计数器
                 int sequenceNumber = 1;
 
                 // 处理每个要素
@@ -895,57 +884,46 @@ namespace ForestResourcePlugin
                             }
                         }
 
-                        // 🔥 新增：设置YSDM字段为固定值
+                        // 设置YSDM字段为固定值
                         if (ysdmIndex != -1)
                         {
                             targetBuffer.set_Value(ysdmIndex, "2150201010");
-                            //System.Diagnostics.Debug.WriteLine($"设置YSDM字段: 2150201010");
                         }
 
-                        // 计算CZKFBJMJ字段（增加与GTDCTBMJ的比较逻辑）
+                        // 使用新的比例计算逻辑计算CZKFBJMJ字段
                         if (czkfbjmjIndex != -1)
                         {
-                            double intersectionArea = 0;
-                            if (czkfbjFeatureClass != null && sourceFeature.Shape != null)
-                            {
-                                intersectionArea = CalculateIntersectionAreaWithCZKFBJ(
-                                    sourceFeature.Shape, czkfbjFeatureClass);
-                            }
+                            double czkfbjmjValue = 0;
 
-                            // 检查CZKFBJMJ是否超过GTDCTBMJ
+                            // 获取GTDCTBMJ值
+                            double gtdctbmjArea = 0;
                             if (gtdctbmjIndex != -1)
                             {
-                                // 获取GTDCTBMJ字段的值
-                                object gtdctbmjValue = targetBuffer.get_Value(gtdctbmjIndex);
-                                double gtdctbmjArea = 0;
-
-                                if (gtdctbmjValue != null && double.TryParse(gtdctbmjValue.ToString(), out gtdctbmjArea))
+                                object gtdctbmjObject = targetBuffer.get_Value(gtdctbmjIndex);
+                                if (gtdctbmjObject != null && double.TryParse(gtdctbmjObject.ToString(), out gtdctbmjArea))
                                 {
-                                    // 如果计算出的CZKFBJMJ大于GTDCTBMJ，则使用GTDCTBMJ的值
-                                    if (intersectionArea > gtdctbmjArea)
+                                    // 使用新的比例计算方法
+                                    if (czkfbjFeatureClass != null && sourceFeature.Shape != null)
                                     {
-                                        //System.Diagnostics.Debug.WriteLine($"CZKFBJMJ({intersectionArea:F2})超过GTDCTBMJ({gtdctbmjArea:F2})，使用GTDCTBMJ值");
-                                        intersectionArea = gtdctbmjArea;
+                                        czkfbjmjValue = CalculateIntersectionAreaWithCZKFBJ(
+                                            sourceFeature.Shape, czkfbjFeatureClass, gtdctbmjArea);
+
+                                        System.Diagnostics.Debug.WriteLine($"要素OID={sourceFeature.OID}: GTDCTBMJ={gtdctbmjArea:F2}, 按比例计算CZKFBJMJ={czkfbjmjValue:F2}");
                                     }
                                 }
                                 else
                                 {
-                                    System.Diagnostics.Debug.WriteLine($"警告: 无法获取有效的GTDCTBMJ值，CZKFBJMJ将使用计算值: {intersectionArea:F2}");
+                                    System.Diagnostics.Debug.WriteLine($"警告: 无法获取有效的GTDCTBMJ值，CZKFBJMJ将设为0");
                                 }
                             }
-                            else
-                            {
-                                System.Diagnostics.Debug.WriteLine($"警告: 未找到GTDCTBMJ字段，CZKFBJMJ将使用计算值: {intersectionArea:F2}");
-                            }
 
-                            targetBuffer.set_Value(czkfbjmjIndex, intersectionArea);
-                            //System.Diagnostics.Debug.WriteLine($"最终CZKFBJMJ值: {intersectionArea:F2}");
+                            targetBuffer.set_Value(czkfbjmjIndex, czkfbjmjValue);
                         }
 
                         // 声明HSJG值变量（用于后续JJJZ计算）
                         object hsjgValue = null;
 
-                        // 处理LDHSJG相关字段
+                        // 改进：处理LDHSJG相关字段，使用修复后的方法
                         if (ldhsjgFeatureClass != null)
                         {
                             var ldhsjgValues = GetLDHSJGValuesForFeature(sourceFeature, ldhsjgFeatureClass, countyName);
@@ -964,27 +942,34 @@ namespace ForestResourcePlugin
                             {
                                 targetBuffer.set_Value(hsjgIndex, ldhsjgValues.HSJG);
                                 hsjgValue = ldhsjgValues.HSJG; // 保存HSJG值用于JJJZ计算
+
+                                // 调试：输出HSJG字段设置信息
+                                System.Diagnostics.Debug.WriteLine($"为要素OID={sourceFeature.OID}设置HSJG值: {hsjgValue}");
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine($"警告：要素OID={sourceFeature.OID}无法获取HSJG值");
                             }
                         }
 
-                        // 🔥 新增：计算JJJZ字段（经济价值 = GTDCTBMJ * HSJG）
+                        // 计算JJJZ字段
                         if (jjjzIndex != -1)
                         {
                             double jjjzValue = 0.0;
 
-                            // 获取GTDCTBMJ值
-                            object gtdctbmjValue = targetBuffer.get_Value(gtdctbmjIndex);
+                            // 🔥 关键修改：使用GTDCTBMJ值计算经济价值
+                            object gtdctbmjObject = targetBuffer.get_Value(gtdctbmjIndex);
                             double gtdctbmjArea = 0.0;
 
-                            if (gtdctbmjValue != null && double.TryParse(gtdctbmjValue.ToString(), out gtdctbmjArea))
+                            if (gtdctbmjObject != null && double.TryParse(gtdctbmjObject.ToString(), out gtdctbmjArea))
                             {
                                 // 获取HSJG值
                                 double hsjgNumber = 0.0;
                                 if (hsjgValue != null && double.TryParse(hsjgValue.ToString(), out hsjgNumber))
                                 {
-                                    // 计算经济价值：GTDCTBMJ * HSJG
+                                    // 🔥 修改：计算经济价值：GTDCTBMJ * HSJG
                                     jjjzValue = gtdctbmjArea * hsjgNumber;
-                                    //System.Diagnostics.Debug.WriteLine($"JJJZ计算: GTDCTBMJ({gtdctbmjArea:F2}) * HSJG({hsjgNumber:F2}) = {jjjzValue:F2}");
+                                    System.Diagnostics.Debug.WriteLine($"JJJZ计算: GTDCTBMJ({gtdctbmjArea:F2}) * HSJG({hsjgNumber:F2}) = {jjjzValue:F2}");
                                 }
                                 else
                                 {
@@ -998,27 +983,22 @@ namespace ForestResourcePlugin
 
                             // 设置JJJZ字段值
                             targetBuffer.set_Value(jjjzIndex, jjjzValue);
-                            //System.Diagnostics.Debug.WriteLine($"最终JJJZ值: {jjjzValue:F2}");
                         }
 
-                        // 🔥 修改：生成ZCQCBSM字段值，使用从LDHSJG获取的XZQDM
+                        // 生成ZCQCBSM字段值
                         if (zcqcbsmIndex != -1)
                         {
                             string zcqcbsmValue = GenerateZCQCBSMForSLZYZCDLTBWithCountyXZQDM(countyXZQDM, sequenceNumber);
                             if (!string.IsNullOrEmpty(zcqcbsmValue))
                             {
                                 targetBuffer.set_Value(zcqcbsmIndex, zcqcbsmValue);
-                                //System.Diagnostics.Debug.WriteLine($"生成ZCQCBSM字段: {zcqcbsmValue}");
                             }
                         }
 
                         // 插入要素
                         insertCursor.InsertFeature(targetBuffer);
                         successCount++;
-
-                        // 🔥 新增：递增序号计数器
                         sequenceNumber++;
-
                         processedCount++;
 
                         // 更新进度
@@ -1299,7 +1279,8 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 为当前要素获取对应的LDHSJG字段值
+        /// 为当前要素获取对应的LDHSJG字段值（修复版）
+        /// 增强空间查询精度和字段映射一致性
         /// </summary>
         /// <param name="sourceFeature">源要素</param>
         /// <param name="ldhsjgFeatureClass">LDHSJG要素类</param>
@@ -1313,17 +1294,38 @@ namespace ForestResourcePlugin
             {
                 if (sourceFeature?.Shape == null || ldhsjgFeatureClass == null)
                 {
+                    System.Diagnostics.Debug.WriteLine($"警告：{countyName} - 源要素或LDHSJG要素类为空");
                     return result;
                 }
 
-                // 获取LDHSJG字段索引
+                // 🔥 修复：统一获取HSJG字段索引，确保HSJG和XJLDPJJ指向同一个字段
                 int zcqcbsmFieldIndex = ldhsjgFeatureClass.FindField("ZCQCBSM");
                 int ysdmFieldIndex = ldhsjgFeatureClass.FindField("YSDM");
                 int xjxzmcFieldIndex = ldhsjgFeatureClass.FindField("XJXZMC");
                 int xjxzdmFieldIndex = ldhsjgFeatureClass.FindField("XJXZDM");
-                int xjldpjjFieldIndex = ldhsjgFeatureClass.FindField("XJLDPJJ");
 
-                // 使用空间查询找到相交的LDHSJG要素
+                // 🔥 关键修复：统一HSJG字段获取逻辑，优先查找XJLDPJJ，然后查找其他可能的字段名
+                int hsjgFieldIndex = -1;
+                string[] possibleHsjgFields = { "XJLDPJJ", "HSJG", "林地定级平均价", "平均价格", "PJJ" };
+
+                foreach (string fieldName in possibleHsjgFields)
+                {
+                    hsjgFieldIndex = ldhsjgFeatureClass.FindField(fieldName);
+                    if (hsjgFieldIndex != -1)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到HSJG字段: {fieldName} (索引: {hsjgFieldIndex})");
+                        break;
+                    }
+                }
+
+                if (hsjgFieldIndex == -1)
+                {
+                    System.Diagnostics.Debug.WriteLine($"警告：{countyName} - 未找到HSJG相关字段");
+                    // 列出所有可用字段进行调试
+                    ListAllFieldsInFeatureClass(ldhsjgFeatureClass, "LDHSJG");
+                }
+
+                // 🔥 改进空间查询：使用更精确的空间关系和容差
                 ISpatialFilter spatialFilter = null;
                 IFeatureCursor ldhsjgCursor = null;
 
@@ -1332,47 +1334,103 @@ namespace ForestResourcePlugin
                     spatialFilter = new SpatialFilterClass();
                     spatialFilter.Geometry = sourceFeature.Shape;
                     spatialFilter.GeometryField = ldhsjgFeatureClass.ShapeFieldName;
+
+                    // 🔥 修复：使用更精确的空间关系 - 先尝试Intersects，如果没有结果再尝试Contains
                     spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
 
                     ldhsjgCursor = ldhsjgFeatureClass.Search(spatialFilter, false);
-                    IFeature ldhsjgFeature = ldhsjgCursor.NextFeature();
+                    IFeature bestMatchFeature = null;
+                    double maxOverlapArea = 0;
 
-                    if (ldhsjgFeature != null)
+                    // 🔥 改进：寻找重叠面积最大的LDHSJG要素，而不是第一个相交的要素
+                    IFeature ldhsjgFeature;
+                    int candidateCount = 0;
+
+                    while ((ldhsjgFeature = ldhsjgCursor.NextFeature()) != null)
+                    {
+                        candidateCount++;
+                        try
+                        {
+                            if (ldhsjgFeature.Shape != null && !ldhsjgFeature.Shape.IsEmpty)
+                            {
+                                // 计算重叠面积
+                                double overlapArea = CalculateOverlapArea(sourceFeature.Shape, ldhsjgFeature.Shape);
+
+                                System.Diagnostics.Debug.WriteLine($"候选LDHSJG要素 {candidateCount}: 重叠面积 = {overlapArea:F2}");
+
+                                if (overlapArea > maxOverlapArea)
+                                {
+                                    maxOverlapArea = overlapArea;
+
+                                    // 释放之前的最佳匹配要素
+                                    if (bestMatchFeature != null)
+                                    {
+                                        System.Runtime.InteropServices.Marshal.ReleaseComObject(bestMatchFeature);
+                                    }
+
+                                    bestMatchFeature = ldhsjgFeature;
+                                    ldhsjgFeature = null; // 防止在finally中释放
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            if (ldhsjgFeature != null)
+                            {
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(ldhsjgFeature);
+                            }
+                        }
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"空间查询完成：找到 {candidateCount} 个候选要素，最大重叠面积: {maxOverlapArea:F2}");
+
+                    // 使用最佳匹配的要素获取字段值
+                    if (bestMatchFeature != null)
                     {
                         // 获取字段值
                         if (zcqcbsmFieldIndex != -1)
                         {
-                            result.ZCQCBSM = ldhsjgFeature.get_Value(zcqcbsmFieldIndex)?.ToString() ?? "";
+                            result.ZCQCBSM = bestMatchFeature.get_Value(zcqcbsmFieldIndex)?.ToString() ?? "";
                         }
 
                         if (ysdmFieldIndex != -1)
                         {
-                            result.YSDM = ldhsjgFeature.get_Value(ysdmFieldIndex)?.ToString() ?? "";
+                            result.YSDM = bestMatchFeature.get_Value(ysdmFieldIndex)?.ToString() ?? "";
                         }
 
                         if (xjxzmcFieldIndex != -1)
                         {
-                            result.XZQMC = ldhsjgFeature.get_Value(xjxzmcFieldIndex)?.ToString() ?? "";
+                            result.XZQMC = bestMatchFeature.get_Value(xjxzmcFieldIndex)?.ToString() ?? "";
                         }
 
                         if (xjxzdmFieldIndex != -1)
                         {
-                            result.XZQDM = ldhsjgFeature.get_Value(xjxzdmFieldIndex)?.ToString() ?? "";
+                            result.XZQDM = bestMatchFeature.get_Value(xjxzdmFieldIndex)?.ToString() ?? "";
                         }
 
-                        if (xjldpjjFieldIndex != -1)
+                        // 🔥 关键修复：统一HSJG字段值获取
+                        if (hsjgFieldIndex != -1)
                         {
-                            result.HSJG = ldhsjgFeature.get_Value(xjldpjjFieldIndex);
+                            result.HSJG = bestMatchFeature.get_Value(hsjgFieldIndex);
+
+                            // 调试输出：显示获取到的HSJG值和字段名
+                            string fieldName = bestMatchFeature.Fields.get_Field(hsjgFieldIndex).Name;
+                            //System.Diagnostics.Debug.WriteLine($"成功获取{countyName}的HSJG字段值: {result.HSJG} (字段名: {fieldName})");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"警告：{countyName} - HSJG字段索引为-1，无法获取价格信息");
                         }
 
-                        //System.Diagnostics.Debug.WriteLine($"成功获取{countyName}的LDHSJG字段值: ZCQCBSM={result.ZCQCBSM}, YSDM={result.YSDM}");
-
-                        // 释放要素
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(ldhsjgFeature);
+                        // 释放最佳匹配要素
+                        //System.Runtime.InteropServices.Marshal.ReleaseComObject(bestMatchFeature);
                     }
                     else
                     {
                         System.Diagnostics.Debug.WriteLine($"警告：未找到与当前要素相交的{countyName}的LDHSJG要素");
+
+                        // 🔥 备用方案：如果空间查询失败，尝试使用最近邻查询
+                        result = TryNearestNeighborLDHSJGQuery(sourceFeature, ldhsjgFeatureClass, countyName);
                     }
                 }
                 finally
@@ -1386,9 +1444,198 @@ namespace ForestResourcePlugin
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"获取{countyName}的LDHSJG字段值时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"错误堆栈: {ex.StackTrace}");
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 🔥 新增：计算两个几何体的重叠面积
+        /// </summary>
+        /// <param name="geometry1">几何体1</param>
+        /// <param name="geometry2">几何体2</param>
+        /// <returns>重叠面积</returns>
+        private double CalculateOverlapArea(IGeometry geometry1, IGeometry geometry2)
+        {
+            try
+            {
+                if (geometry1 == null || geometry2 == null || geometry1.IsEmpty || geometry2.IsEmpty)
+                {
+                    return 0;
+                }
+
+                ITopologicalOperator topoOperator = (ITopologicalOperator)geometry1;
+                IGeometry intersectionGeometry = topoOperator.Intersect(geometry2, esriGeometryDimension.esriGeometry2Dimension);
+
+                if (intersectionGeometry != null && !intersectionGeometry.IsEmpty)
+                {
+                    IArea area = (IArea)intersectionGeometry;
+                    double overlapArea = Math.Abs(area.Area);
+
+                    // 释放交集几何对象
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(intersectionGeometry);
+
+                    return overlapArea;
+                }
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"计算重叠面积时出错: {ex.Message}");
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// 🔥 新增：备用方案 - 使用最近邻查询获取LDHSJG数据
+        /// </summary>
+        /// <param name="sourceFeature">源要素</param>
+        /// <param name="ldhsjgFeatureClass">LDHSJG要素类</param>
+        /// <param name="countyName">县名</param>
+        /// <returns>LDHSJG字段值</returns>
+        private LDHSJGValues TryNearestNeighborLDHSJGQuery(IFeature sourceFeature, IFeatureClass ldhsjgFeatureClass, string countyName)
+        {
+            var result = new LDHSJGValues();
+
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"尝试{countyName}的最近邻LDHSJG查询...");
+
+                // 获取源要素的中心点
+                IArea area = (IArea)sourceFeature.Shape;
+                IPoint centerPoint = area.Centroid;
+
+                // 查找距离中心点最近的LDHSJG要素
+                IFeatureCursor cursor = null;
+                try
+                {
+                    cursor = ldhsjgFeatureClass.Search(null, false);
+                    IFeature nearestFeature = null;
+                    double minDistance = double.MaxValue;
+
+                    IFeature ldhsjgFeature;
+                    while ((ldhsjgFeature = cursor.NextFeature()) != null)
+                    {
+                        try
+                        {
+                            if (ldhsjgFeature.Shape != null)
+                            {
+                                IArea ldhsjgArea = (IArea)ldhsjgFeature.Shape;
+                                IPoint ldhsjgCenter = ldhsjgArea.Centroid;
+
+                                // 计算距离
+                                double distance = CalculateDistance(centerPoint, ldhsjgCenter);
+
+                                if (distance < minDistance)
+                                {
+                                    minDistance = distance;
+
+                                    if (nearestFeature != null)
+                                    {
+                                        System.Runtime.InteropServices.Marshal.ReleaseComObject(nearestFeature);
+                                    }
+
+                                    nearestFeature = ldhsjgFeature;
+                                    ldhsjgFeature = null; // 防止释放
+                                }
+
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(ldhsjgCenter);
+                            }
+                        }
+                        finally
+                        {
+                            if (ldhsjgFeature != null)
+                            {
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(ldhsjgFeature);
+                            }
+                        }
+                    }
+
+                    if (nearestFeature != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到最近的LDHSJG要素，距离: {minDistance:F2}");
+
+                        // 获取字段值（使用与主方法相同的逻辑）
+                        int hsjgFieldIndex = -1;
+                        string[] possibleHsjgFields = { "XJLDPJJ", "HSJG", "林地定级平均价", "平均价格", "PJJ" };
+
+                        foreach (string fieldName in possibleHsjgFields)
+                        {
+                            hsjgFieldIndex = ldhsjgFeatureClass.FindField(fieldName);
+                            if (hsjgFieldIndex != -1) break;
+                        }
+
+                        if (hsjgFieldIndex != -1)
+                        {
+                            result.HSJG = nearestFeature.get_Value(hsjgFieldIndex);
+                            System.Diagnostics.Debug.WriteLine($"最近邻查询获取到HSJG值: {result.HSJG}");
+                        }
+
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(nearestFeature);
+                    }
+
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(centerPoint);
+                }
+                finally
+                {
+                    if (cursor != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"最近邻LDHSJG查询出错: {ex.Message}");
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 🔥 新增：计算两点之间的距离
+        /// </summary>
+        /// <param name="point1">点1</param>
+        /// <param name="point2">点2</param>
+        /// <returns>距离</returns>
+        private double CalculateDistance(IPoint point1, IPoint point2)
+        {
+            try
+            {
+                double dx = point1.X - point2.X;
+                double dy = point1.Y - point2.Y;
+                return Math.Sqrt(dx * dx + dy * dy);
+            }
+            catch
+            {
+                return double.MaxValue;
+            }
+        }
+
+        /// <summary>
+        /// 🔥 新增：列出要素类中的所有字段（调试用）
+        /// </summary>
+        /// <param name="featureClass">要素类</param>
+        /// <param name="description">描述</param>
+        private void ListAllFieldsInFeatureClass(IFeatureClass featureClass, string description)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"=== {description} 要素类字段列表 ===");
+                IFields fields = featureClass.Fields;
+
+                for (int i = 0; i < fields.FieldCount; i++)
+                {
+                    IField field = fields.get_Field(i);
+                    System.Diagnostics.Debug.WriteLine($"  字段 {i}: {field.Name} ({field.Type})");
+                }
+
+                System.Diagnostics.Debug.WriteLine($"=== 共 {fields.FieldCount} 个字段 ===");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"列出字段时出错: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -1415,19 +1662,20 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 计算几何对象与CZKFBJ的相交面积
+        /// 计算几何对象与CZKFBJ的相交面积（改进版：基于比例计算）
+        /// 新逻辑：CZKFBJMJ = GTDCTBMJ × (图斑在CZKFBJ内的面积比例)
         /// </summary>
         /// <param name="geometry">要计算的几何对象</param>
         /// <param name="czkfbjFeatureClass">CZKFBJ要素类</param>
-        /// <returns>相交面积</returns>
-        private double CalculateIntersectionAreaWithCZKFBJ(IGeometry geometry, IFeatureClass czkfbjFeatureClass)
+        /// <param name="gtdctbmjValue">图斑的GTDCTBMJ值</param>
+        /// <returns>按比例计算的CZKFBJMJ值</returns>
+        private double CalculateIntersectionAreaWithCZKFBJ(IGeometry geometry, IFeatureClass czkfbjFeatureClass, double gtdctbmjValue = 0)
         {
             if (geometry == null || czkfbjFeatureClass == null)
             {
                 return 0;
             }
 
-            double totalIntersectionArea = 0;
             IFeatureCursor czkfbjCursor = null;
             ISpatialFilter spatialFilter = null;
 
@@ -1435,6 +1683,16 @@ namespace ForestResourcePlugin
             {
                 if (geometry.IsEmpty)
                 {
+                    return 0;
+                }
+
+                // 计算原图斑的总面积
+                IArea originalArea = (IArea)geometry;
+                double totalOriginalArea = Math.Abs(originalArea.Area);
+
+                if (totalOriginalArea <= 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("警告：原图斑面积为0或负数");
                     return 0;
                 }
 
@@ -1448,13 +1706,15 @@ namespace ForestResourcePlugin
                 czkfbjCursor = czkfbjFeatureClass.Search(spatialFilter, false);
                 IFeature czkfbjFeature;
 
+                double totalIntersectionArea = 0;
+
                 while ((czkfbjFeature = czkfbjCursor.NextFeature()) != null)
                 {
                     try
                     {
                         if (czkfbjFeature.Shape != null && !czkfbjFeature.Shape.IsEmpty)
                         {
-                            // 计算交集
+                            // 计算交集几何
                             ITopologicalOperator topoOperator = (ITopologicalOperator)geometry;
                             IGeometry intersectionGeometry = topoOperator.Intersect(
                                 czkfbjFeature.Shape,
@@ -1462,8 +1722,9 @@ namespace ForestResourcePlugin
 
                             if (intersectionGeometry != null && !intersectionGeometry.IsEmpty)
                             {
-                                IArea area = (IArea)intersectionGeometry;
-                                totalIntersectionArea += Math.Abs(area.Area);
+                                IArea intersectionArea = (IArea)intersectionGeometry;
+                                double currentIntersectionArea = Math.Abs(intersectionArea.Area);
+                                totalIntersectionArea += currentIntersectionArea;
 
                                 System.Runtime.InteropServices.Marshal.ReleaseComObject(intersectionGeometry);
                             }
@@ -1478,11 +1739,36 @@ namespace ForestResourcePlugin
                     }
                 }
 
-                return totalIntersectionArea;
+                // 🔥 新逻辑：计算比例并应用到GTDCTBMJ值
+                double intersectionRatio = totalIntersectionArea / totalOriginalArea;
+
+                // 确保比例在合理范围内（0-1之间）
+                if (intersectionRatio > 1.0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"警告：交集比例({intersectionRatio:F4})大于1，将其调整为1.0");
+                    intersectionRatio = 1.0;
+                }
+                else if (intersectionRatio < 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"警告：交集比例({intersectionRatio:F4})小于0，将其调整为0");
+                    intersectionRatio = 0;
+                }
+
+                // 根据比例计算CZKFBJMJ值
+                double czkfbjmjValue = gtdctbmjValue * intersectionRatio;
+
+                System.Diagnostics.Debug.WriteLine($"CZKFBJMJ计算详情：");
+                System.Diagnostics.Debug.WriteLine($"  原图斑面积: {totalOriginalArea:F2}");
+                System.Diagnostics.Debug.WriteLine($"  交集面积: {totalIntersectionArea:F2}");
+                System.Diagnostics.Debug.WriteLine($"  交集比例: {intersectionRatio:F4} ({intersectionRatio * 100:F2}%)");
+                System.Diagnostics.Debug.WriteLine($"  GTDCTBMJ值: {gtdctbmjValue:F2}");
+                System.Diagnostics.Debug.WriteLine($"  计算的CZKFBJMJ: {czkfbjmjValue:F2} = {gtdctbmjValue:F2} × {intersectionRatio:F4}");
+
+                return czkfbjmjValue;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"计算与CZKFBJ交集面积时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"计算与CZKFBJ交集比例时出错: {ex.Message}");
                 return 0;
             }
             finally
@@ -1492,6 +1778,23 @@ namespace ForestResourcePlugin
                 if (spatialFilter != null)
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(spatialFilter);
             }
+        }
+
+        /// <summary>
+        /// 🔥 新增：为单一图斑计算CZKFBJMJ值的专用方法
+        /// </summary>
+        /// <param name="sourceFeature">源要素</param>
+        /// <param name="czkfbjFeatureClass">CZKFBJ要素类</param>
+        /// <param name="gtdctbmjValue">GTDCTBMJ值</param>
+        /// <returns>按比例计算的CZKFBJMJ值</returns>
+        private double CalculateCZKFBJMJForFeature(IFeature sourceFeature, IFeatureClass czkfbjFeatureClass, double gtdctbmjValue)
+        {
+            if (sourceFeature?.Shape == null || czkfbjFeatureClass == null)
+            {
+                return 0;
+            }
+
+            return CalculateIntersectionAreaWithCZKFBJ(sourceFeature.Shape, czkfbjFeatureClass, gtdctbmjValue);
         }
 
         /// <summary>
@@ -1841,8 +2144,8 @@ namespace ForestResourcePlugin
                 int xianIndex = sourceFeatureClass.FindField("XIAN");
                 int linBanIndex = sourceFeatureClass.FindField("LIN_BAN");
                 int xiaoBanIndex = sourceFeatureClass.FindField("XIAO_BAN");
-                int xbmjIndex = sourceFeatureClass.FindField("ZTBMJ");
-                int field65Index = sourceFeatureClass.FindField("MEI_GQ_XJ");
+                int xbmjIndex = sourceFeatureClass.FindField("XBMJ");
+                int mgqxjIndex = sourceFeatureClass.FindField("MEI_GQ_XJ");
                 int xzqdmSourceIndex = xianIndex != -1 ? xianIndex : sourceFeatureClass.FindField("XZQDM");
 
                 System.Diagnostics.Debug.WriteLine($"预缓存字段索引完成: YSDM={ysdmIndex}, PCTBBM={pctbbmIndex}, ZTBXJ={ztbxjIndex}, XZQMC={xzqmcIndex}");
@@ -1920,22 +2223,21 @@ namespace ForestResourcePlugin
                             }
                         }
 
-                        // 处理特殊字段：ZTBXJ (xbmj * 第65个字段)
+                        // 处理特殊字段：ZTBXJ (XBMJ * MEI_GQ_XJ)
                         if (ztbxjIndex != -1)
                         {
                             try
                             {
-                                if (xbmjIndex != -1 && field65Index != -1)
+                                if (xbmjIndex != -1 && mgqxjIndex != -1)
                                 {
                                     object xbmjValue = sourceFeature.get_Value(xbmjIndex);
-                                    object field65Value = sourceFeature.get_Value(field65Index);
+                                    object mgqxjValue = sourceFeature.get_Value(mgqxjIndex);
 
                                     if (double.TryParse(xbmjValue?.ToString(), out double xbmjNum) &&
-                                        double.TryParse(field65Value?.ToString(), out double field65Num))
+                                        double.TryParse(mgqxjValue?.ToString(), out double mgqxjNum))
                                     {
-                                        double ztbxjValue = xbmjNum * field65Num;
+                                        double ztbxjValue = xbmjNum * mgqxjNum;
                                         featureBuffer.set_Value(ztbxjIndex, ztbxjValue);
-                                        System.Diagnostics.Debug.WriteLine($"ZTBXJ字段计算完成: {xbmjNum} * {field65Num} = {ztbxjValue}");
                                     }
                                 }
                             }
