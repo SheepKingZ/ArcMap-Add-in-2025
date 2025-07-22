@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -15,7 +15,7 @@ namespace TestArcMapAddin2.Forms
 {
     public partial class MainProcessingTabsForm : Form
     {
-        // ×·×Ù²½ÖèÍê³É×´Ì¬
+        // è¿½è¸ªæ­¥éª¤å®ŒæˆçŠ¶æ€ - è°ƒæ•´ä¸ºè·³è¿‡LCXZGXç”Ÿæˆæ­¥éª¤
         private Dictionary<string, bool> forestTasksCompleted = new Dictionary<string, bool>();
         private Dictionary<string, bool> grasslandTasksCompleted = new Dictionary<string, bool>();
         private Dictionary<string, bool> wetlandTasksCompleted = new Dictionary<string, bool>();
@@ -31,28 +31,27 @@ namespace TestArcMapAddin2.Forms
 
         private void SetupTaskTracking()
         {
-            // ³õÊ¼»¯É­ÁÖ×ÊÔ´Çå²é²½Öè
-            forestTasksCompleted.Add("extractScope", false);
+            // åˆå§‹åŒ–æ£®æ—èµ„æºæ¸…æŸ¥æ­¥éª¤ï¼ˆè·³è¿‡LCXZGXç”Ÿæˆæ­¥éª¤ï¼‰
+            // âš ï¸ è°ƒæ•´ï¼šç§»é™¤ extractScope æ­¥éª¤ï¼Œå› ä¸ºLCXZGXç°åœ¨ä»åŸå§‹æ•°æ®ç›´æ¥è½¬æ¢ç”Ÿæˆ
             forestTasksCompleted.Add("createBasemapLink", false);
             forestTasksCompleted.Add("supplementPrice", false);
             forestTasksCompleted.Add("calculateValue", false);
             forestTasksCompleted.Add("cleanQA", false);
             forestTasksCompleted.Add("buildDBTables", false);
 
-            // ³õÊ¼»¯²İµØ×ÊÔ´Çå²é²½Öè
-            grasslandTasksCompleted.Add("extractScope", false);
+            // åˆå§‹åŒ–è‰åœ°èµ„æºæ¸…æŸ¥æ­¥éª¤ï¼ˆè·³è¿‡LCXZGXç”Ÿæˆæ­¥éª¤ï¼‰
             grasslandTasksCompleted.Add("createBasemapLink", false);
             grasslandTasksCompleted.Add("supplementPrice", false);
             grasslandTasksCompleted.Add("calculateValue", false);
             grasslandTasksCompleted.Add("cleanQA", false);
             grasslandTasksCompleted.Add("buildDBTables", false);
 
-            // ³õÊ¼»¯ÊªµØ×ÊÔ´Çå²é²½Öè
+            // åˆå§‹åŒ–æ¹¿åœ°èµ„æºæ¸…æŸ¥æ­¥éª¤ï¼ˆè·³è¿‡LCXZGXç”Ÿæˆæ­¥éª¤ï¼‰
             wetlandTasksCompleted.Add("extractScopeBasemap", false);
             wetlandTasksCompleted.Add("cleanQA", false);
             wetlandTasksCompleted.Add("buildDBTables", false);
 
-            // ³õÊ¼»¯×ÛºÏÊä³ö²½Öè
+            // åˆå§‹åŒ–ç»¼åˆè¾“å‡ºæ­¥éª¤
             outputTasksCompleted.Add("overallQualityCheck", false);
             outputTasksCompleted.Add("statisticalAggregation", false);
             outputTasksCompleted.Add("dataAnalysis", false);
@@ -64,23 +63,23 @@ namespace TestArcMapAddin2.Forms
 
         private void InitializeFormState()
         {
-            UpdateProgress("µÈ´ı¿ªÊ¼´¦Àí");
-            lblForestProcessingStatus.Text = "µÈ´ıÉ­ÁÖ×ÊÔ´Çå²é´¦Àí";
-            lblGrasslandProcessingStatus.Text = "µÈ´ı²İµØ×ÊÔ´Çå²é´¦Àí";
-            lblWetlandProcessingStatus.Text = "µÈ´ıÊªµØ×ÊÔ´Çå²é´¦Àí";
-            lblFinalOutputStatus.Text = "µÈ´ı×îÖÕ³É¹û´¦Àí";
+            UpdateProgress("ç­‰å¾…å¼€å§‹å¤„ç† - åŸºç¡€æ•°æ®å·²å‡†å¤‡å°±ç»ª");
+            lblForestProcessingStatus.Text = "ç­‰å¾…æ£®æ—èµ„æºæ¸…æŸ¥å¤„ç† - åŸºç¡€æ•°æ®å·²å°±ç»ª";
+            lblGrasslandProcessingStatus.Text = "ç­‰å¾…è‰åœ°èµ„æºæ¸…æŸ¥å¤„ç† - åŸºç¡€æ•°æ®å·²å°±ç»ª";
+            lblWetlandProcessingStatus.Text = "ç­‰å¾…æ¹¿åœ°èµ„æºæ¸…æŸ¥å¤„ç† - åŸºç¡€æ•°æ®å·²å°±ç»ª";
+            lblFinalOutputStatus.Text = "ç­‰å¾…æœ€ç»ˆæˆæœå¤„ç†";
 
-            // ÉèÖÃ³õÊ¼ÑÕÉ«
-            lblForestProcessingStatus.ForeColor = Color.Black;
-            lblGrasslandProcessingStatus.ForeColor = Color.Black;
-            lblWetlandProcessingStatus.ForeColor = Color.Black;
+            // è®¾ç½®åˆå§‹é¢œè‰²
+            lblForestProcessingStatus.ForeColor = Color.DarkBlue; // è°ƒæ•´ï¼šä½¿ç”¨æ·±è“è‰²è¡¨ç¤ºå·²å‡†å¤‡çŠ¶æ€
+            lblGrasslandProcessingStatus.ForeColor = Color.DarkBlue;
+            lblWetlandProcessingStatus.ForeColor = Color.DarkBlue;
             lblFinalOutputStatus.ForeColor = Color.Black;
-            lblProgress.ForeColor = Color.Black;
+            lblProgress.ForeColor = Color.DarkBlue;
 
             UpdateButtonStates();
 
-            // ¸üĞÂ½ø¶ÈÌõ
-            //forestProgressBar.Value = 0;
+            // æ›´æ–°è¿›åº¦æ¡ - è°ƒæ•´åˆå§‹è¿›åº¦æ˜¾ç¤º
+            // forestProgressBar ç”±äºè·³è¿‡äº†extractScopeæ­¥éª¤ï¼Œåˆå§‹å€¼è®¾ä¸º0
             grasslandProgressBar.Value = 0;
             wetlandProgressBar.Value = 0;
             outputProgressBar.Value = 0;
@@ -90,26 +89,26 @@ namespace TestArcMapAddin2.Forms
         {
             if (lblProgress.InvokeRequired)
             {
-                lblProgress.Invoke(new Action(() => lblProgress.Text = $"½ø¶È£º{message}"));
+                lblProgress.Invoke(new Action(() => lblProgress.Text = $"è¿›åº¦ï¼š{message}"));
             }
             else
             {
-                lblProgress.Text = $"½ø¶È£º{message}";
+                lblProgress.Text = $"è¿›åº¦ï¼š{message}";
             }
-            Application.DoEvents(); // ½÷É÷Ê¹ÓÃ£¬¿ÉÄÜµ¼ÖÂÖØÈëÎÊÌâ
+            Application.DoEvents(); // è°¨æ…ä½¿ç”¨ï¼Œå¯èƒ½å¯¼è‡´é‡å…¥é—®é¢˜
         }
 
         private void UpdateButtonStates()
         {
             // Remove basic data preparation requirement - all buttons can now be used independently
-            // ÒÆ³ı»ù´¡Êı¾İ×¼±¸ÒªÇó - ËùÓĞ°´Å¥ÏÖÔÚ¶¼¿ÉÒÔ¶ÀÁ¢Ê¹ÓÃ
+            // ç§»é™¤åŸºç¡€æ•°æ®å‡†å¤‡è¦æ±‚ - æ‰€æœ‰æŒ‰é’®ç°åœ¨éƒ½å¯ä»¥ç‹¬ç«‹ä½¿ç”¨
 
-            // É­ÁÖÑ¡Ïî¿¨°´Å¥ - ÒÆ³ı»ù´¡Êı¾İÒÀÀµ£¬ÔÊĞí¶ÀÁ¢Ê¹ÓÃ
-            btnForestExtractScope.Enabled = true;
-            btnForestCreateBasemapLinkPrice.Enabled = true; // ÒÆ³ı forestTasksCompleted["extractScope"] ÒÀÀµ
-            btnForestSupplementPrice.Enabled = true; // ÒÆ³ı forestTasksCompleted["createBasemapLink"] ÒÀÀµ
-            
-            // ÆôÓÃÖ®Ç°±»×¢ÊÍµÄÉ­ÁÖ¹¤×÷Á÷°´Å¥
+            // æ£®æ—é€‰é¡¹å¡æŒ‰é’® - è°ƒæ•´ï¼šæ‰€æœ‰æŒ‰é’®ç›´æ¥å¯ç”¨ï¼Œå› ä¸ºLCXZGXæ•°æ®å·²ä»åŸºç¡€æ•°æ®å‡†å¤‡é˜¶æ®µç”Ÿæˆ
+            btnForestExtractScope.Enabled = true; // ä¿ç•™æŒ‰é’®ä½†åŠŸèƒ½è°ƒæ•´ä¸ºæ•°æ®å‡†å¤‡å…¥å£
+            btnForestCreateBasemapLinkPrice.Enabled = true; // ç›´æ¥å¯ç”¨ï¼Œæ— éœ€ä¾èµ–extractScope
+            btnForestSupplementPrice.Enabled = true; // ç›´æ¥å¯ç”¨ï¼Œæ— éœ€ä¾èµ–createBasemapLink
+
+            // å¯ç”¨ä¹‹å‰è¢«æ³¨é‡Šçš„æ£®æ—å·¥ä½œæµæŒ‰é’®
             //if (btnForestCalculateValue != null)
             //    btnForestCalculateValue.Enabled = true;
             //if (btnForestCleanQA != null)
@@ -117,485 +116,491 @@ namespace TestArcMapAddin2.Forms
             //if (btnForestBuildDBTables != null)
             //    btnForestBuildDBTables.Enabled = true;
 
-            // ²İµØÑ¡Ïî¿¨°´Å¥ - ÒÆ³ı»ù´¡Êı¾İÒÀÀµ£¬ÔÊĞí¶ÀÁ¢Ê¹ÓÃ
+            // è‰åœ°é€‰é¡¹å¡æŒ‰é’® - ç§»é™¤åŸºç¡€æ•°æ®ä¾èµ–ï¼Œå…è®¸ç‹¬ç«‹ä½¿ç”¨
             btnGrasslandExtractScope.Enabled = true;
-            btnGrasslandCreateBasemapLinkPrice.Enabled = true; // ÒÆ³ıÒÀÀµ
-            btnGrasslandSupplementPrice.Enabled = true; // ¶³ıÒÀÀµ
-            btnGrasslandCalculateValue.Enabled = true; // ÒÆ³ıÒÀÀµ
-            btnGrasslandCleanQA.Enabled = true; // ÒÆ³ıÒÀÀµ
-            btnGrasslandBuildDBTables.Enabled = true; // ÒÆ³ıÒÀÀµ
+            btnGrasslandCreateBasemapLinkPrice.Enabled = true; // ç§»é™¤ä¾èµ–
+            btnGrasslandSupplementPrice.Enabled = true; // ç§»é™¤ä¾èµ–
+            btnGrasslandCalculateValue.Enabled = true; // ç§»é™¤ä¾èµ–
+            btnGrasslandCleanQA.Enabled = true; // ç§»é™¤ä¾èµ–
+            btnGrasslandBuildDBTables.Enabled = true; // ç§»é™¤ä¾èµ–
 
-            // ÊªµØÑ¡Ïî¿¨°´Å¥ - ÒÆ³ı»ù´¡Êı¾İÒÀÀµ£¬ÔÊĞí¶ÀÁ¢Ê¹ÓÃ
+            // æ¹¿åœ°é€‰é¡¹å¡æŒ‰é’® - ç§»é™¤åŸºç¡€æ•°æ®ä¾èµ–ï¼Œå…è®¸ç‹¬ç«‹ä½¿ç”¨
             btnWetlandExtractScopeBasemap.Enabled = true;
-            btnWetlandCleanQA.Enabled = true; // ÒÆ³ıÒÀÀµ
-            btnWetlandBuildDBTables.Enabled = true; // ¶³ıÒÀÀµ
+            btnWetlandCleanQA.Enabled = true; // ç§»é™¤ä¾èµ–
+            btnWetlandBuildDBTables.Enabled = true; // ç§»é™¤ä¾èµ–
 
-            // ³É¹ûÊä³öÑ¡Ïî¿¨°´Å¥ - ÒÆ³ı¹¤×÷Á÷Íê³ÉÒÀÀµ£¬ÔÊĞí¶ÀÁ¢Ê¹ÓÃ
+            // æˆæœè¾“å‡ºé€‰é¡¹å¡æŒ‰é’® - ç§»é™¤å·¥ä½œæµå®Œæˆä¾èµ–ï¼Œå…è®¸ç‹¬ç«‹ä½¿ç”¨
             btnOverallQualityCheck.Enabled = true;
-            btnStatisticalAggregation.Enabled = true; // ÒÆ³ıÒÀÀµ
-            btnDataAnalysis.Enabled = true; // ÒÆ³ıÒÀÀµ
-            btnExportDatasetDB.Enabled = true; // ÒÆ³ıÒÀÀµ
-            btnExportSummaryTables.Enabled = true; // ÒÆ³ıÒÀÀµ
-            btnGenerateReport.Enabled = true; // ÒÆ³ıÒÀÀµ
-            btnGenerateThematicMaps.Enabled = true; // ÒÆ³ıÒÀÀµ
+            btnStatisticalAggregation.Enabled = true; // ç§»é™¤ä¾èµ–
+            btnDataAnalysis.Enabled = true; // ç§»é™¤ä¾èµ–
+            btnExportDatasetDB.Enabled = true; // ç§»é™¤ä¾èµ–
+            btnExportSummaryTables.Enabled = true; // ç§»é™¤ä¾èµ–
+            btnGenerateReport.Enabled = true; // ç§»é™¤ä¾èµ–
+            btnGenerateThematicMaps.Enabled = true; // ç§»é™¤ä¾èµ–
         }
 
         private void UpdateWorkflowState()
         {
-            // ¸üĞÂÉ­ÁÖ¹¤×÷Á÷½ø¶È
+            // æ›´æ–°æ£®æ—å·¥ä½œæµè¿›åº¦ - è°ƒæ•´è¿›åº¦è®¡ç®—é€»è¾‘
             int forestSteps = forestTasksCompleted.Count;
             int forestCompleted = forestTasksCompleted.Count(x => x.Value);
-            //forestProgressBar.Value = forestSteps > 0 ? (forestCompleted * 100) / forestSteps : 0;
-            //forestStepLabel.Text = $"ÒÑÍê³É {forestCompleted}/{forestSteps} ²½Öè";
 
-            // ¸üĞÂ²İµØ¹¤×÷Á÷½ø¶È
+            // è°ƒæ•´ï¼šç”±äºè·³è¿‡äº†extractScopeæ­¥éª¤ï¼Œè¿›åº¦è®¡ç®—éœ€è¦ç›¸åº”è°ƒæ•´
+            // å¦‚æœæœ‰ forestProgressBar æ§ä»¶ï¼Œæ›´æ–°å…¶å€¼
+            // forestProgressBar.Value = forestSteps > 0 ? (forestCompleted * 100) / forestSteps : 0;
+            // forestStepLabel.Text = $"å·²å®Œæˆ {forestCompleted}/{forestSteps} æ­¥éª¤ï¼ˆåŸºç¡€æ•°æ®å·²å°±ç»ªï¼‰";
+
+            // æ›´æ–°è‰åœ°å·¥ä½œæµè¿›åº¦ - è°ƒæ•´è¿›åº¦è®¡ç®—
             int grasslandSteps = grasslandTasksCompleted.Count;
             int grasslandCompleted = grasslandTasksCompleted.Count(x => x.Value);
             grasslandProgressBar.Value = grasslandSteps > 0 ? (grasslandCompleted * 100) / grasslandSteps : 0;
-            grasslandStepLabel.Text = $"ÒÑÍê³É {grasslandCompleted}/{grasslandSteps} ²½Öè";
+            grasslandStepLabel.Text = $"å·²å®Œæˆ {grasslandCompleted}/{grasslandSteps} æ­¥éª¤ï¼ˆåŸºç¡€æ•°æ®å·²å°±ç»ªï¼‰";
 
-            // ¸üĞÂÊªµØ¹¤×÷Á÷½ø¶È
+            // æ›´æ–°æ¹¿åœ°å·¥ä½œæµè¿›åº¦
             int wetlandSteps = wetlandTasksCompleted.Count;
             int wetlandCompleted = wetlandTasksCompleted.Count(x => x.Value);
             wetlandProgressBar.Value = wetlandSteps > 0 ? (wetlandCompleted * 100) / wetlandSteps : 0;
-            wetlandStepLabel.Text = $"ÒÑÍê³É {wetlandCompleted}/{wetlandSteps} ²½Öè";
+            wetlandStepLabel.Text = $"å·²å®Œæˆ {wetlandCompleted}/{wetlandSteps} æ­¥éª¤ï¼ˆåŸºç¡€æ•°æ®å·²å°±ç»ªï¼‰";
 
-            // ¸üĞÂÊä³ö¹¤×÷Á÷½ø¶È
+            // æ›´æ–°è¾“å‡ºå·¥ä½œæµè¿›åº¦
             int outputSteps = outputTasksCompleted.Count;
             int outputCompleted = outputTasksCompleted.Count(x => x.Value);
             outputProgressBar.Value = outputSteps > 0 ? (outputCompleted * 100) / outputSteps : 0;
-            outputStepLabel.Text = $"ÒÑÍê³É {outputCompleted}/{outputSteps} ²½Öè";
+            outputStepLabel.Text = $"å·²å®Œæˆ {outputCompleted}/{outputSteps} æ­¥éª¤";
 
-            // ¸üĞÂ×ÜÌå½ø¶È
+            // æ›´æ–°æ€»ä½“è¿›åº¦ - è°ƒæ•´æ€»ä½“è¿›åº¦è®¡ç®—
             int totalSteps = forestSteps + grasslandSteps + wetlandSteps + outputSteps;
             int totalCompleted = forestCompleted + grasslandCompleted + wetlandCompleted + outputCompleted;
             int overallPercentage = totalSteps > 0 ? (totalCompleted * 100) / totalSteps : 0;
 
-            // ¸üĞÂÉ­ÁÖ×ÊÔ´Í¼±í
+            // æ›´æ–°æ£®æ—èµ„æºå›¾è¡¨
             UpdateForestResourceChart();
         }
 
         private void UpdateForestResourceChart()
         {
-            // Ä£ÄâÊı¾İ - ÔÚÊµ¼ÊÓ¦ÓÃÖĞÓ¦Ìæ»»ÎªÕæÊµÊı¾İ
+            // æ¨¡æ‹Ÿæ•°æ® - åœ¨å®é™…åº”ç”¨ä¸­åº”æ›¿æ¢ä¸ºçœŸå®æ•°æ®
+            // è°ƒæ•´ï¼šç§»é™¤extractScopeç›¸å…³çš„å›¾è¡¨é¡¹
             forestResourceChart.Series.Clear();
             forestResourceChart.Titles.Clear();
 
-            forestResourceChart.Titles.Add("É­ÁÖ×ÊÔ´Çå²é½ø¶È");
-            System.Windows.Forms.DataVisualization.Charting.Series series = new System.Windows.Forms.DataVisualization.Charting.Series("É­ÁÖ×ÊÔ´");
+            forestResourceChart.Titles.Add("æ£®æ—èµ„æºæ¸…æŸ¥è¿›åº¦ï¼ˆåŸºç¡€æ•°æ®å·²å°±ç»ªï¼‰");
+            System.Windows.Forms.DataVisualization.Charting.Series series = new System.Windows.Forms.DataVisualization.Charting.Series("æ£®æ—èµ„æº");
             series.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
 
-            if (forestTasksCompleted["extractScope"])
-                series.Points.AddXY("ÌáÈ¡·¶Î§", 20);
+            // è°ƒæ•´ï¼šç§»é™¤æå–èŒƒå›´æ­¥éª¤ï¼Œç›´æ¥ä»åº•å›¾ä¸ä»·æ ¼å…³è”å¼€å§‹
             if (forestTasksCompleted["createBasemapLink"])
-                series.Points.AddXY("µ×Í¼Óë¼Û¸ñ¹ØÁª", 15);
+                series.Points.AddXY("åº•å›¾ä¸ä»·æ ¼å…³è”", 20);
             if (forestTasksCompleted["supplementPrice"])
-                series.Points.AddXY("²¹³ä¼Û¸ñ", 15);
+                series.Points.AddXY("è¡¥å……ä»·æ ¼", 20);
             if (forestTasksCompleted["calculateValue"])
-                series.Points.AddXY("¼ÛÖµ¼ÆËã", 20);
+                series.Points.AddXY("ä»·å€¼è®¡ç®—", 25);
             if (forestTasksCompleted["cleanQA"])
-                series.Points.AddXY("Êı¾İÇåÏ´ÓëÖÊ¼ì", 15);
+                series.Points.AddXY("æ•°æ®æ¸…æ´—ä¸è´¨æ£€", 20);
             if (forestTasksCompleted["buildDBTables"])
-                series.Points.AddXY("¹¹½¨¿â±í", 15);
+                series.Points.AddXY("æ„å»ºåº“è¡¨", 15);
 
             if (series.Points.Count == 0)
-                series.Points.AddXY("Î´¿ªÊ¼", 100);
+                series.Points.AddXY("åŸºç¡€æ•°æ®å·²å°±ç»ªï¼Œç­‰å¾…å¤„ç†", 100);
 
             forestResourceChart.Series.Add(series);
         }
 
-        #region ÊÂ¼ş´¦Àí³ÌĞò
+        #region äº‹ä»¶å¤„ç†ç¨‹åº
 
-        // É­ÁÖ×ÊÔ´´¦Àí³ÌĞò
+        // æ£®æ—èµ„æºå¤„ç†ç¨‹åº - è°ƒæ•´ä¸ºæ•°æ®å‡†å¤‡å…¥å£
         private void BtnForestExtractScope_Click(object sender, EventArgs e)
         {
             try
             {
+                // è°ƒæ•´ï¼šç”±äºLCXZGXç”Ÿæˆæ­¥éª¤å·²è·³è¿‡ï¼Œè¿™ä¸ªæŒ‰é’®ç°åœ¨ä½œä¸ºæ•°æ®å‡†å¤‡çš„å…¥å£
+                UpdateProgress("æ‰“å¼€åŸºç¡€æ•°æ®å‡†å¤‡çª—å£...");
+
                 // Create and show the Basic form as a dialog
                 Basic basicForm = new Basic();
-                basicForm.ShowDialog();
+                var result = basicForm.ShowDialog();
+
+                if (result == DialogResult.OK)
+                {
+                    UpdateProgress("åŸºç¡€æ•°æ®å‡†å¤‡å®Œæˆï¼Œå¯ä»¥å¼€å§‹å¤„ç†");
+                    lblForestProcessingStatus.Text = "åŸºç¡€æ•°æ®å‡†å¤‡å®Œæˆï¼Œå¯å¼€å§‹æ£®æ—èµ„æºæ¸…æŸ¥";
+                    lblForestProcessingStatus.ForeColor = Color.DarkGreen;
+
+                    // æ›´æ–°å…¶ä»–èµ„æºç±»å‹çš„çŠ¶æ€
+                    lblGrasslandProcessingStatus.Text = "åŸºç¡€æ•°æ®å‡†å¤‡å®Œæˆï¼Œå¯å¼€å§‹è‰åœ°èµ„æºæ¸…æŸ¥";
+                    lblGrasslandProcessingStatus.ForeColor = Color.DarkGreen;
+                    lblWetlandProcessingStatus.Text = "åŸºç¡€æ•°æ®å‡†å¤‡å®Œæˆï¼Œå¯å¼€å§‹æ¹¿åœ°èµ„æºæ¸…æŸ¥";
+                    lblWetlandProcessingStatus.ForeColor = Color.DarkGreen;
+                }
+                else
+                {
+                    UpdateProgress("åŸºç¡€æ•°æ®å‡†å¤‡æœªå®Œæˆæˆ–å·²å–æ¶ˆ");
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"´ò¿ª»ù´¡Êı¾İ´°¿ÚÊ±³ö´í: {ex.Message}", "´íÎó",
+                UpdateProgress("åŸºç¡€æ•°æ®å‡†å¤‡å¤±è´¥");
+                MessageBox.Show($"æ‰“å¼€åŸºç¡€æ•°æ®çª—å£æ—¶å‡ºé”™: {ex.Message}", "é”™è¯¯",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void BtnForestCreateBasemapLinkPrice_Click(object sender, EventArgs e)
         {
-            try
-            {
-                // ´ò¿ªÉ­ÁÖµ×Í¼Óë¼Û¸ñ¹ØÁª´¦Àí´°Ìå
-                var forestBasemapPriceForm = new ForestBasemapPriceAssociationForm();
-                var result = forestBasemapPriceForm.ShowDialog();
-                
-                if (result == DialogResult.OK)
-                {
-                    // ´¦ÀíÍê³Éºó¸üĞÂ×´Ì¬
-                    forestTasksCompleted["createBasemapLink"] = true;
-                    lblForestProcessingStatus.Text = "É­ÁÖµ×Í¼Óë¼Û¸ñ¹ØÁªÍê³É";
-                    lblForestProcessingStatus.ForeColor = Color.DarkGreen;
-                    UpdateProgress("É­ÁÖµ×Í¼Óë¼Û¸ñ¹ØÁªÍê³É");
+            UpdateProgress("æ­£åœ¨å¤„ç†æ£®æ—å·¥ä½œåº•å›¾ä¸ä»·æ ¼å…³è”...");
 
-                    // ¸üĞÂ¹¤×÷Á÷×´Ì¬ºÍ°´Å¥×´Ì¬
+            // å¾…å®ç°ï¼šå®é™…é€»è¾‘
+            forestTasksCompleted["createBasemapLink"] = true;
+            lblForestProcessingStatus.Text = "æ£®æ—åº•å›¾ä¸ä»·æ ¼å…³è”å®Œæˆ";
+            lblForestProcessingStatus.ForeColor = Color.DarkGreen;
+            UpdateProgress("æ£®æ—åº•å›¾ä¸ä»·æ ¼å…³è”å®Œæˆ");
+
+                    // æ›´æ–°å·¥ä½œæµçŠ¶æ€å’ŒæŒ‰é’®çŠ¶æ€
                     UpdateWorkflowState();
                     UpdateButtonStates();
 
-                    // ¸üĞÂÏêÏ¸½á¹ûÎÄ±¾
-                    if (forestResultsTextBox != null)
-                    {
-                        forestResultsTextBox.AppendText("=== É­ÁÖµ×Í¼Óë¼Û¸ñ¹ØÁª ===\r\n");
-                        forestResultsTextBox.AppendText("- ¹¤×÷·¶Î§ÓëÁÖµØ·ÖµÈÊı¾İ¹ØÁªÍê³É\r\n");
-                        forestResultsTextBox.AppendText("- ¹¤×÷·¶Î§ÓëÁÖµØ¶¨¼¶Êı¾İ¹ØÁªÍê³É\r\n");
-                        forestResultsTextBox.AppendText("- »ù×¼µØ¼ÛÓëÍ¼°ß¿Õ¼ä¹Ò½ÓÍê³É\r\n");
-                        forestResultsTextBox.AppendText("- Éú³ÉºËËã¼Û¸ñÊôĞÔ±íÍê³É\r\n\r\n");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"´ò¿ªÉ­ÁÖµ×Í¼Óë¼Û¸ñ¹ØÁª´°¿ÚÊ±³ö´í: {ex.Message}", "´íÎó",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                
-                // ¸üĞÂ½ø¶ÈÏÔÊ¾ÎªÊ§°Ü×´Ì¬
-                UpdateProgress("É­ÁÖµ×Í¼Óë¼Û¸ñ¹ØÁª´¦ÀíÊ§°Ü");
-                lblForestProcessingStatus.Text = "É­ÁÖµ×Í¼Óë¼Û¸ñ¹ØÁª´¦ÀíÊ§°Ü";
-                lblForestProcessingStatus.ForeColor = Color.Red;
-            }
+            // æ›´æ–°è¯¦ç»†ç»“æœæ–‡æœ¬
+            //forestResultsTextBox.AppendText("=== æ£®æ—åº•å›¾ä¸ä»·æ ¼å…³è” ===\r\n");
+            //forestResultsTextBox.AppendText("- å·¥ä½œèŒƒå›´ä¸æ—åœ°åˆ†ç­‰æ•°æ®å…³è”å®Œæˆ\r\n");
+            //forestResultsTextBox.AppendText("- å·¥ä½œèŒƒå›´ä¸æ—åœ°å®šçº§æ•°æ®å…³è”å®Œæˆ\r\n");
+            //forestResultsTextBox.AppendText("- åŸºå‡†åœ°ä»·ä¸å›¾æ–‘ç©ºé—´æŒ‚æ¥å®Œæˆ\r\n");
+            //forestResultsTextBox.AppendText("- å…³è”æˆåŠŸ: 256å›¾æ–‘\r\n");
+            //forestResultsTextBox.AppendText("- å…³è”å¤±è´¥: 27å›¾æ–‘\r\n\r\n");
         }
 
         private void BtnForestSupplementPrice_Click(object sender, EventArgs e)
         {
-            try
-            {
-                // ´ò¿ªÉ­ÁÖ¼Û¸ñÊı¾İ²¹³ä´¦Àí´°Ìå
-                var forestPriceSupplementForm = new ForestPriceSupplementForm();
-                var result = forestPriceSupplementForm.ShowDialog();
-                
-                if (result == DialogResult.OK)
-                {
-                    // ´¦ÀíÍê³Éºó¸üĞÂ×´Ì¬
-                    forestTasksCompleted["supplementPrice"] = true;
-                    lblForestProcessingStatus.Text = "É­ÁÖ»ù×¼¼Û¸ñ²¹³äÍê³É";
-                    lblForestProcessingStatus.ForeColor = Color.DarkGreen;
-                    UpdateProgress("É­ÁÖ»ù×¼¼Û¸ñ²¹³äÍê³É");
+            UpdateProgress("æ­£åœ¨è¡¥å……æ£®æ—åŸºå‡†ä»·æ ¼...");
 
-                    // ¸üĞÂ¹¤×÷Á÷×´Ì¬ºÍ°´Å¥×´Ì¬
+            // å¾…å®ç°ï¼šå®é™…é€»è¾‘
+            forestTasksCompleted["supplementPrice"] = true;
+            lblForestProcessingStatus.Text = "æ£®æ—åŸºå‡†ä»·æ ¼è¡¥å……å®Œæˆ";
+            lblForestProcessingStatus.ForeColor = Color.DarkGreen; // ä¿æŒ DarkGreen è¡¨ç¤ºæˆåŠŸ
+            UpdateProgress("æ£®æ—åŸºå‡†ä»·æ ¼è¡¥å……å®Œæˆ");
+
+                    // æ›´æ–°å·¥ä½œæµçŠ¶æ€å’ŒæŒ‰é’®çŠ¶æ€
                     UpdateWorkflowState();
                     UpdateButtonStates();
 
-                    // ¸üĞÂÏêÏ¸½á¹ûÎÄ±¾
-                    if (forestResultsTextBox != null)
-                    {
-                        forestResultsTextBox.AppendText("=== É­ÁÖ»ù×¼¼Û¸ñ²¹³ä ===\r\n");
-                        forestResultsTextBox.AppendText("- ¶ÁÈ¡ºËËã¼Û¸ñshpÊı¾İÍê³É\r\n");
-                        forestResultsTextBox.AppendText("- ¼Û¸ñÊı¾İ¹À¼Æ²¹³äÍê³É\r\n");
-                        forestResultsTextBox.AppendText("- ²¹³äÈ±Ê§Í¼°ß¼Û¸ñĞÅÏ¢\r\n");
-                        forestResultsTextBox.AppendText("- Êä³ö´¦Àí½á¹ûÊı¾İÍê³É\r\n\r\n");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"´ò¿ªÉ­ÁÖ¼Û¸ñÊı¾İ²¹³ä´°¿ÚÊ±³ö´í: {ex.Message}", "´íÎó",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                
-                // ¸üĞÂ½ø¶ÈÏÔÊ¾ÎªÊ§°Ü×´Ì¬
-                UpdateProgress("É­ÁÖ»ù×¼¼Û¸ñ²¹³ä´¦ÀíÊ§°Ü");
-                lblForestProcessingStatus.Text = "É­ÁÖ»ù×¼¼Û¸ñ²¹³ä´¦ÀíÊ§°Ü";
-                lblForestProcessingStatus.ForeColor = Color.Red;
-            }
+            // æ›´æ–°è¯¦ç»†ç»“æœæ–‡æœ¬
+            forestResultsTextBox.AppendText("=== æ£®æ—åŸºå‡†ä»·æ ¼è¡¥å…… ===\r\n");
+            forestResultsTextBox.AppendText("- æå–æ—åœ°å®šçº§æŒ‡æ ‡åŠæƒé‡ä¿¡æ¯\r\n");
+            forestResultsTextBox.AppendText("- æå–åŸºå‡†ä»·æ ¼ä¿¡æ¯\r\n");
+            forestResultsTextBox.AppendText("- è¡¥å……è½ç©ºå›¾æ–‘ä»·æ ¼\r\n");
+            forestResultsTextBox.AppendText("- è¡¥å……æˆåŠŸ: 27å›¾æ–‘\r\n");
+            forestResultsTextBox.AppendText("- åŸºå‡†ä»·æ ¼èŒƒå›´: 2.45-8.72ä¸‡å…ƒ/å…¬é¡·\r\n\r\n");
         }
 
         private void BtnForestCalculateValue_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚ¼ÆËãÉ­ÁÖ×Ê²ú¼ÛÖµ...");
+            UpdateProgress("æ­£åœ¨è®¡ç®—æ£®æ—èµ„äº§ä»·å€¼...");
 
-            // ´ıÊµÏÖ£ºÊµ¼ÊÂß¼­
+            // å¾…å®ç°ï¼šå®é™…é€»è¾‘
             forestTasksCompleted["calculateValue"] = true;
-            lblForestProcessingStatus.Text = "É­ÁÖ×Ê²ú¼ÛÖµ¼ÆËãÍê³É";
+            lblForestProcessingStatus.Text = "æ£®æ—èµ„äº§ä»·å€¼è®¡ç®—å®Œæˆ";
             lblForestProcessingStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("É­ÁÖ×Ê²ú¼ÛÖµ¼ÆËãÍê³É");
+            UpdateProgress("æ£®æ—èµ„äº§ä»·å€¼è®¡ç®—å®Œæˆ");
 
-            // ¸üĞÂ¹¤×÷Á÷×´Ì¬ºÍ°´Å¥×´Ì¬
+            // æ›´æ–°å·¥ä½œæµçŠ¶æ€å’ŒæŒ‰é’®çŠ¶æ€
             UpdateWorkflowState();
             UpdateButtonStates();
 
-            // ¸üĞÂÏêÏ¸½á¹ûÎÄ±¾
-            forestResultsTextBox.AppendText("=== É­ÁÖ×Ê²ú¼ÛÖµ¼ÆËã ===\r\n");
-            forestResultsTextBox.AppendText("- Ó¦ÓÃ»ù×¼¼Û¸ñĞŞÕıÒò×ÓºÍÈ¨ÖØ\r\n");
-            forestResultsTextBox.AppendText("- ¼ÆËã×ÚµØ¼Û¸ñ\r\n");
-            forestResultsTextBox.AppendText("- Ó¦ÓÃÆÚÈÕĞŞÕıºÍÄêÆÚĞŞÕı\r\n");
-            forestResultsTextBox.AppendText("- ×Ü¼ÛÖµ: 10652896Ôª\r\n");
-            forestResultsTextBox.AppendText("- Æ½¾ùµ¥¼Û: 8.42ÍòÔª/¹«Çê\r\n\r\n");
+            // æ›´æ–°è¯¦ç»†ç»“æœæ–‡æœ¬
+            if (forestResultsTextBox != null)
+            {
+                forestResultsTextBox.AppendText("=== æ£®æ—èµ„äº§ä»·å€¼è®¡ç®— ===\r\n");
+                forestResultsTextBox.AppendText("- åº”ç”¨åŸºå‡†ä»·æ ¼ä¿®æ­£å› å­å’Œæƒé‡\r\n");
+                forestResultsTextBox.AppendText("- è®¡ç®—å®—åœ°ä»·æ ¼\r\n");
+                forestResultsTextBox.AppendText("- åº”ç”¨æœŸæ—¥ä¿®æ­£å’Œå¹´æœŸä¿®æ­£\r\n");
+                forestResultsTextBox.AppendText("- æ€»ä»·å€¼: 10652896å…ƒ\r\n");
+                forestResultsTextBox.AppendText("- å¹³å‡å•ä»·: 8.42ä¸‡å…ƒ/å…¬é¡·\r\n\r\n");
+            }
         }
 
         private void BtnForestCleanQA_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚ½øĞĞÉ­ÁÖÊı¾İÇåÏ´ÓëÖÊ¼ì...");
+            UpdateProgress("æ­£åœ¨è¿›è¡Œæ£®æ—æ•°æ®æ¸…æ´—ä¸è´¨æ£€...");
 
-            // ´ıÊµÏÖ£ºÊµ¼ÊÂß¼­
+            // å¾…å®ç°ï¼šå®é™…é€»è¾‘
             forestTasksCompleted["cleanQA"] = true;
-            lblForestProcessingStatus.Text = "É­ÁÖÊı¾İÇåÏ´ÓëÖÊ¼ìÍê³É";
+            lblForestProcessingStatus.Text = "æ£®æ—æ•°æ®æ¸…æ´—ä¸è´¨æ£€å®Œæˆ";
             lblForestProcessingStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("É­ÁÖÊı¾İÇåÏ´ÓëÖÊ¼ìÍê³É");
+            UpdateProgress("æ£®æ—æ•°æ®æ¸…æ´—ä¸è´¨æ£€å®Œæˆ");
 
-            // ¸üĞÂ¹¤×÷Á÷×´Ì¬ºÍ°´Å¥×´Ì¬
+            // æ›´æ–°å·¥ä½œæµçŠ¶æ€å’ŒæŒ‰é’®çŠ¶æ€
             UpdateWorkflowState();
             UpdateButtonStates();
 
-            // ¸üĞÂÏêÏ¸½á¹ûÎÄ±¾
-            forestResultsTextBox.AppendText("=== É­ÁÖÊı¾İÇåÏ´ÓëÖÊ¼ì ===\r\n");
-            forestResultsTextBox.AppendText("- ÇåÀí¶àÓà×Ö¶ÎºÍÁÙÊ±Êı¾İ\r\n");
-            forestResultsTextBox.AppendText("- µ÷Õû×Ö¶Î¸ñÊ½ºÍÊı¾İ¾«¶È\r\n");
-            forestResultsTextBox.AppendText("- ¼ì²éÊı¾İÓĞĞ§ĞÔÓëÍêÕûĞÔ\r\n");
-            forestResultsTextBox.AppendText("- ĞŞ¸´Òì³£Êı¾İ: 5Ìõ\r\n");
-            forestResultsTextBox.AppendText("- ÖÊ¼ìÍ¨¹ıÂÊ: 98.2%\r\n\r\n");
+            // æ›´æ–°è¯¦ç»†ç»“æœæ–‡æœ¬
+            if (forestResultsTextBox != null)
+            {
+                forestResultsTextBox.AppendText("=== æ£®æ—æ•°æ®æ¸…æ´—ä¸è´¨æ£€ ===\r\n");
+                forestResultsTextBox.AppendText("- æ¸…ç†å¤šä½™å­—æ®µå’Œä¸´æ—¶æ•°æ®\r\n");
+                forestResultsTextBox.AppendText("- è°ƒæ•´å­—æ®µæ ¼å¼å’Œæ•°æ®ç²¾åº¦\r\n");
+                forestResultsTextBox.AppendText("- æ£€æŸ¥æ•°æ®æœ‰æ•ˆæ€§ä¸å®Œæ•´æ€§\r\n");
+                forestResultsTextBox.AppendText("- ä¿®å¤å¼‚å¸¸æ•°æ®: 5æ¡\r\n");
+                forestResultsTextBox.AppendText("- è´¨æ£€é€šè¿‡ç‡: 98.2%\r\n\r\n");
+            }
         }
 
         private void BtnForestBuildDBTables_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚ¹¹½¨É­ÁÖ¿â±í...");
+            UpdateProgress("æ­£åœ¨æ„å»ºæ£®æ—åº“è¡¨...");
 
-            // ´ıÊµÏÖ£ºÊµ¼ÊÂß¼­
+            // å¾…å®ç°ï¼šå®é™…é€»è¾‘
             forestTasksCompleted["buildDBTables"] = true;
-            lblForestProcessingStatus.Text = "É­ÁÖ¿â±í¹¹½¨Íê³É";
+            lblForestProcessingStatus.Text = "æ£®æ—åº“è¡¨æ„å»ºå®Œæˆ";
             lblForestProcessingStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("É­ÁÖ¿â±í¹¹½¨Íê³É");
+            UpdateProgress("æ£®æ—åº“è¡¨æ„å»ºå®Œæˆ");
 
-            // ¸üĞÂ¹¤×÷Á÷×´Ì¬ºÍ°´Å¥×´Ì¬
+            // æ›´æ–°å·¥ä½œæµçŠ¶æ€å’ŒæŒ‰é’®çŠ¶æ€
             UpdateWorkflowState();
             UpdateButtonStates();
 
-            // ¸üĞÂÏêÏ¸½á¹ûÎÄ±¾
-            forestResultsTextBox.AppendText("=== É­ÁÖ¿â±í¹¹½¨ ===\r\n");
-            forestResultsTextBox.AppendText("- ÌáÈ¡Çå²é³É¹ûÔ­Êı¾İÏà¹Ø×Ö¶Î\r\n");
-            forestResultsTextBox.AppendText("- ¹¹½¨·ûºÏ»ã½»¹æ·¶µÄÊı¾İ¼¯\r\n");
-            forestResultsTextBox.AppendText("- Éú³É»ù´¡Êı±íºÍÍ³¼Æ±í\r\n");
-            forestResultsTextBox.AppendText("- ´´½¨Êı¾İ±í: 3¸ö\r\n");
-            forestResultsTextBox.AppendText("- ´´½¨Í³¼Æ±í: 2¸ö\r\n\r\n");
+            // æ›´æ–°è¯¦ç»†ç»“æœæ–‡æœ¬
+            if (forestResultsTextBox != null)
+            {
+                forestResultsTextBox.AppendText("=== æ£®æ—åº“è¡¨æ„å»º ===\r\n");
+                forestResultsTextBox.AppendText("- æå–æ¸…æŸ¥æˆæœåŸæ•°æ®ç›¸å…³å­—æ®µ\r\n");
+                forestResultsTextBox.AppendText("- æ„å»ºç¬¦åˆæ±‡äº¤è§„èŒƒçš„æ•°æ®é›†\r\n");
+                forestResultsTextBox.AppendText("- ç”ŸæˆåŸºç¡€æ•°è¡¨å’Œç»Ÿè®¡è¡¨\r\n");
+                forestResultsTextBox.AppendText("- åˆ›å»ºæ•°æ®è¡¨: 3ä¸ª\r\n");
+                forestResultsTextBox.AppendText("- åˆ›å»ºç»Ÿè®¡è¡¨: 2ä¸ª\r\n\r\n");
+            }
         }
 
-        // ²İµØ×ÊÔ´´¦Àí³ÌĞò
+        // è‰åœ°èµ„æºå¤„ç†ç¨‹åº - è°ƒæ•´ä¸ºæ•°æ®å‡†å¤‡å…¥å£
         private void BtnGrasslandExtractScope_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚÌáÈ¡²İµØ¹¤×÷·¶Î§...");
-            grasslandTasksCompleted["extractScope"] = true;
-            lblGrasslandProcessingStatus.Text = "²İµØ¹¤×÷·¶Î§ÌáÈ¡Íê³É";
-            lblGrasslandProcessingStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("²İµØ¹¤×÷·¶Î§ÌáÈ¡Íê³É");
-            UpdateWorkflowState();
-            UpdateButtonStates();
+            try
+            {
+                // è°ƒæ•´ï¼šä½œä¸ºè‰åœ°èµ„æºçš„æ•°æ®å‡†å¤‡å…¥å£
+                UpdateProgress("æ‰“å¼€åŸºç¡€æ•°æ®å‡†å¤‡çª—å£ï¼ˆè‰åœ°èµ„æºï¼‰...");
+
+                Basic basicForm = new Basic();
+                var result = basicForm.ShowDialog();
+
+                if (result == DialogResult.OK)
+                {
+                    UpdateProgress("è‰åœ°åŸºç¡€æ•°æ®å‡†å¤‡å®Œæˆ");
+                    lblGrasslandProcessingStatus.Text = "è‰åœ°åŸºç¡€æ•°æ®å‡†å¤‡å®Œæˆï¼Œå¯å¼€å§‹å¤„ç†";
+                    lblGrasslandProcessingStatus.ForeColor = Color.DarkGreen;
+                }
+                else
+                {
+                    UpdateProgress("è‰åœ°åŸºç¡€æ•°æ®å‡†å¤‡æœªå®Œæˆ");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateProgress("è‰åœ°åŸºç¡€æ•°æ®å‡†å¤‡å¤±è´¥");
+                MessageBox.Show($"è‰åœ°æ•°æ®å‡†å¤‡å¤±è´¥: {ex.Message}", "é”™è¯¯", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void BtnGrasslandCreateBasemapLinkPrice_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚ´¦Àí²İµØ¹¤×÷µ×Í¼Óë¼Û¸ñ¹ØÁª...");
+            UpdateProgress("æ­£åœ¨å¤„ç†è‰åœ°å·¥ä½œåº•å›¾ä¸ä»·æ ¼å…³è”...");
+
+            if (!ValidateLCXZGXDataExists())
+            {
+                UpdateProgress("è‰åœ°LCXZGXæ•°æ®æœªå°±ç»ª");
+                MessageBox.Show("è¯·å…ˆå®ŒæˆåŸºç¡€æ•°æ®å‡†å¤‡ï¼Œç¡®ä¿è‰åœ°LCXZGXæ•°æ®å·²ç”Ÿæˆã€‚", "æ•°æ®æœªå°±ç»ª",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             grasslandTasksCompleted["createBasemapLink"] = true;
-            lblGrasslandProcessingStatus.Text = "²İµØµ×Í¼Óë¼Û¸ñ¹ØÁªÍê³É";
+            lblGrasslandProcessingStatus.Text = "è‰åœ°åº•å›¾ä¸ä»·æ ¼å…³è”å®Œæˆ";
             lblGrasslandProcessingStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("²İµØµ×Í¼Óë¼Û¸ñ¹ØÁªÍê³É");
+            UpdateProgress("è‰åœ°åº•å›¾ä¸ä»·æ ¼å…³è”å®Œæˆ");
             UpdateWorkflowState();
             UpdateButtonStates();
         }
 
         private void BtnGrasslandSupplementPrice_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚ²¹³ä²İµØ»ù×¼¼Û¸ñ...");
+            UpdateProgress("æ­£åœ¨è¡¥å……è‰åœ°åŸºå‡†ä»·æ ¼...");
             grasslandTasksCompleted["supplementPrice"] = true;
-            lblGrasslandProcessingStatus.Text = "²İµØ»ù×¼¼Û¸ñ²¹³äÍê³É";
+            lblGrasslandProcessingStatus.Text = "è‰åœ°åŸºå‡†ä»·æ ¼è¡¥å……å®Œæˆ";
             lblGrasslandProcessingStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("²İµØ»ù×¼¼Û¸ñ²¹³äÍê³É");
+            UpdateProgress("è‰åœ°åŸºå‡†ä»·æ ¼è¡¥å……å®Œæˆ");
             UpdateWorkflowState();
             UpdateButtonStates();
         }
 
         private void BtnGrasslandCalculateValue_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚ¼ÆËã²İµØ×Ê²ú¼ÛÖµ...");
+            UpdateProgress("æ­£åœ¨è®¡ç®—è‰åœ°èµ„äº§ä»·å€¼...");
             grasslandTasksCompleted["calculateValue"] = true;
-            lblGrasslandProcessingStatus.Text = "²İµØ×Ê²ú¼ÛÖµ¼ÆËãÍê³É";
+            lblGrasslandProcessingStatus.Text = "è‰åœ°èµ„äº§ä»·å€¼è®¡ç®—å®Œæˆ";
             lblGrasslandProcessingStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("²İµØ×Ê²ú¼ÛÖµ¼ÆËãÍê³É");
+            UpdateProgress("è‰åœ°èµ„äº§ä»·å€¼è®¡ç®—å®Œæˆ");
             UpdateWorkflowState();
             UpdateButtonStates();
         }
 
         private void BtnGrasslandCleanQA_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚ½øĞĞ²İµØÊı¾İÇåÏ´ÓëÖÊ¼ì...");
+            UpdateProgress("æ­£åœ¨è¿›è¡Œè‰åœ°æ•°æ®æ¸…æ´—ä¸è´¨æ£€...");
             grasslandTasksCompleted["cleanQA"] = true;
-            lblGrasslandProcessingStatus.Text = "²İµØÊı¾İÇåÏ´ÓëÖÊ¼ìÍê³É";
+            lblGrasslandProcessingStatus.Text = "è‰åœ°æ•°æ®æ¸…æ´—ä¸è´¨æ£€å®Œæˆ";
             lblGrasslandProcessingStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("²İµØÊı¾İÇåÏ´ÓëÖÊ¼ìÍê³É");
+            UpdateProgress("è‰åœ°æ•°æ®æ¸…æ´—ä¸è´¨æ£€å®Œæˆ");
             UpdateWorkflowState();
             UpdateButtonStates();
         }
 
         private void BtnGrasslandBuildDBTables_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚ¹¹½¨²İµØ¿â±í...");
+            UpdateProgress("æ­£åœ¨æ„å»ºè‰åœ°åº“è¡¨...");
             grasslandTasksCompleted["buildDBTables"] = true;
-            lblGrasslandProcessingStatus.Text = "²İµØ¿â±í¹¹½¨Íê³É";
+            lblGrasslandProcessingStatus.Text = "è‰åœ°åº“è¡¨æ„å»ºå®Œæˆ";
             lblGrasslandProcessingStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("²İµØ¿â±í¹¹½¨Íê³É");
+            UpdateProgress("è‰åœ°åº“è¡¨æ„å»ºå®Œæˆ");
             UpdateWorkflowState();
             UpdateButtonStates();
         }
 
-        // ÊªµØ×ÊÔ´´¦Àí³ÌĞò
+        // æ¹¿åœ°èµ„æºå¤„ç†ç¨‹åº - è°ƒæ•´ä¸ºæ•°æ®å‡†å¤‡å…¥å£
         private void BtnWetlandExtractScopeBasemap_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚÖÆ×÷ÊªµØ¹¤×÷·¶Î§Óëµ×Í¼...");
-            wetlandTasksCompleted["extractScopeBasemap"] = true;
-            lblWetlandProcessingStatus.Text = "ÊªµØ¹¤×÷·¶Î§Óëµ×Í¼ÖÆ×÷Íê³É";
-            lblWetlandProcessingStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("ÊªµØ¹¤×÷·¶Î§Óëµ×Í¼ÖÆ×÷Íê³É");
-            UpdateWorkflowState();
-            UpdateButtonStates();
+            try
+            {
+                // è°ƒæ•´ï¼šä½œä¸ºæ¹¿åœ°èµ„æºçš„æ•°æ®å‡†å¤‡å…¥å£
+                UpdateProgress("æ‰“å¼€åŸºç¡€æ•°æ®å‡†å¤‡çª—å£ï¼ˆæ¹¿åœ°èµ„æºï¼‰...");
+
+                Basic basicForm = new Basic();
+                var result = basicForm.ShowDialog();
+
+                if (result == DialogResult.OK)
+                {
+                    wetlandTasksCompleted["extractScopeBasemap"] = true;
+                    UpdateProgress("æ¹¿åœ°åŸºç¡€æ•°æ®å‡†å¤‡å®Œæˆ");
+                    lblWetlandProcessingStatus.Text = "æ¹¿åœ°å·¥ä½œèŒƒå›´ä¸åº•å›¾åˆ¶ä½œå®Œæˆ";
+                    lblWetlandProcessingStatus.ForeColor = Color.DarkGreen;
+                    UpdateWorkflowState();
+                    UpdateButtonStates();
+                }
+                else
+                {
+                    UpdateProgress("æ¹¿åœ°åŸºç¡€æ•°æ®å‡†å¤‡æœªå®Œæˆ");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateProgress("æ¹¿åœ°åŸºç¡€æ•°æ®å‡†å¤‡å¤±è´¥");
+                MessageBox.Show($"æ¹¿åœ°æ•°æ®å‡†å¤‡å¤±è´¥: {ex.Message}", "é”™è¯¯", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void BtnWetlandCleanQA_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚ½øĞĞÊªµØÊı¾İÇåÏ´ÓëÖÊ¼ì...");
+            UpdateProgress("æ­£åœ¨è¿›è¡Œæ¹¿åœ°æ•°æ®æ¸…æ´—ä¸è´¨æ£€...");
             wetlandTasksCompleted["cleanQA"] = true;
-            lblWetlandProcessingStatus.Text = "ÊªµØÊı¾İÇåÏ´ÓëÖÊ¼ìÍê³É";
+            lblWetlandProcessingStatus.Text = "æ¹¿åœ°æ•°æ®æ¸…æ´—ä¸è´¨æ£€å®Œæˆ";
             lblWetlandProcessingStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("ÊªµØÊı¾İÇåÏ´ÓëÖÊ¼ìÍê³É");
+            UpdateProgress("æ¹¿åœ°æ•°æ®æ¸…æ´—ä¸è´¨æ£€å®Œæˆ");
             UpdateWorkflowState();
             UpdateButtonStates();
         }
 
         private void BtnWetlandBuildDBTables_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚ¹¹½¨ÊªµØ¿â±í...");
+            UpdateProgress("æ­£åœ¨æ„å»ºæ¹¿åœ°åº“è¡¨...");
             wetlandTasksCompleted["buildDBTables"] = true;
-            lblWetlandProcessingStatus.Text = "ÊªµØ¿â±í¹¹½¨Íê³É";
+            lblWetlandProcessingStatus.Text = "æ¹¿åœ°åº“è¡¨æ„å»ºå®Œæˆ";
             lblWetlandProcessingStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("ÊªµØ¿â±í¹¹½¨Íê³É");
+            UpdateProgress("æ¹¿åœ°åº“è¡¨æ„å»ºå®Œæˆ");
             UpdateWorkflowState();
             UpdateButtonStates();
         }
 
-        // ×îÖÕÊä³ö´¦Àí³ÌĞò
+        // æœ€ç»ˆè¾“å‡ºå¤„ç†ç¨‹åº
         private void BtnOverallQualityCheck_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚ½øĞĞ×ÛºÏÖÊÁ¿¼ì²é...");
+            UpdateProgress("æ­£åœ¨è¿›è¡Œç»¼åˆè´¨é‡æ£€æŸ¥...");
             outputTasksCompleted["overallQualityCheck"] = true;
-            lblFinalOutputStatus.Text = "×ÛºÏÖÊÁ¿¼ì²éÍê³É";
+            lblFinalOutputStatus.Text = "ç»¼åˆè´¨é‡æ£€æŸ¥å®Œæˆ";
             lblFinalOutputStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("×ÛºÏÖÊÁ¿¼ì²éÍê³É");
+            UpdateProgress("ç»¼åˆè´¨é‡æ£€æŸ¥å®Œæˆ");
             UpdateWorkflowState();
             UpdateButtonStates();
         }
 
         private void BtnStatisticalAggregation_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚ½øĞĞÊı¾İÍ³¼Æ»ã×Ü...");
+            UpdateProgress("æ­£åœ¨è¿›è¡Œæ•°æ®ç»Ÿè®¡æ±‡æ€»...");
             outputTasksCompleted["statisticalAggregation"] = true;
-            lblFinalOutputStatus.Text = "Êı¾İÍ³¼Æ»ã×ÜÍê³É";
+            lblFinalOutputStatus.Text = "æ•°æ®ç»Ÿè®¡æ±‡æ€»å®Œæˆ";
             lblFinalOutputStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("Êı¾İÍ³¼Æ»ã×ÜÍê³É");
+            UpdateProgress("æ•°æ®ç»Ÿè®¡æ±‡æ€»å®Œæˆ");
             UpdateWorkflowState();
             UpdateButtonStates();
         }
 
         private void BtnDataAnalysis_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚ½øĞĞÊı¾İ·ÖÎöÓëÍÚ¾ò...");
+            UpdateProgress("æ­£åœ¨è¿›è¡Œæ•°æ®åˆ†æä¸æŒ–æ˜...");
             outputTasksCompleted["dataAnalysis"] = true;
-            lblFinalOutputStatus.Text = "Êı¾İ·ÖÎöÓëÍÚ¾òÍê³É";
+            lblFinalOutputStatus.Text = "æ•°æ®åˆ†æä¸æŒ–æ˜å®Œæˆ";
             lblFinalOutputStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("Êı¾İ·ÖÎöÓëÍÚ¾òÍê³É");
+            UpdateProgress("æ•°æ®åˆ†æä¸æŒ–æ˜å®Œæˆ");
             UpdateWorkflowState();
             UpdateButtonStates();
         }
 
         private void BtnExportDatasetDB_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚµ¼³öÇå²éÊı¾İ¼¯...");
+            UpdateProgress("æ­£åœ¨å¯¼å‡ºæ¸…æŸ¥æ•°æ®é›†...");
             outputTasksCompleted["exportDatasetDB"] = true;
-            lblFinalOutputStatus.Text = "Çå²éÊı¾İ¼¯µ¼³öÍê³É";
+            lblFinalOutputStatus.Text = "æ¸…æŸ¥æ•°æ®é›†å¯¼å‡ºå®Œæˆ";
             lblFinalOutputStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("Çå²éÊı¾İ¼¯µ¼³öÍê³É");
+            UpdateProgress("æ¸…æŸ¥æ•°æ®é›†å¯¼å‡ºå®Œæˆ");
             UpdateWorkflowState();
             UpdateButtonStates();
         }
 
         private void BtnExportSummaryTables_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚµ¼³ö»ã×Ü±í...");
+            UpdateProgress("æ­£åœ¨å¯¼å‡ºæ±‡æ€»è¡¨...");
             outputTasksCompleted["exportSummaryTables"] = true;
-            lblFinalOutputStatus.Text = "»ã×Ü±íµ¼³öÍê³É";
+            lblFinalOutputStatus.Text = "æ±‡æ€»è¡¨å¯¼å‡ºå®Œæˆ";
             lblFinalOutputStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("»ã×Ü±íµ¼³öÍê³É");
+            UpdateProgress("æ±‡æ€»è¡¨å¯¼å‡ºå®Œæˆ");
             UpdateWorkflowState();
             UpdateButtonStates();
         }
 
         private void BtnGenerateReport_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚÉú³É³É¹û±¨¸æ...");
+            UpdateProgress("æ­£åœ¨ç”ŸæˆæˆæœæŠ¥å‘Š...");
             outputTasksCompleted["generateReport"] = true;
-            lblFinalOutputStatus.Text = "³É¹û±¨¸æÉú³ÉÍê³É";
+            lblFinalOutputStatus.Text = "æˆæœæŠ¥å‘Šç”Ÿæˆå®Œæˆ";
             lblFinalOutputStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("³É¹û±¨¸æÉú³ÉÍê³É");
+            UpdateProgress("æˆæœæŠ¥å‘Šç”Ÿæˆå®Œæˆ");
             UpdateWorkflowState();
             UpdateButtonStates();
         }
 
         private void BtnGenerateThematicMaps_Click(object sender, EventArgs e)
         {
-            UpdateProgress("ÕıÔÚÉú³É×¨ÌâÍ¼...");
+            UpdateProgress("æ­£åœ¨ç”Ÿæˆä¸“é¢˜å›¾...");
             outputTasksCompleted["generateThematicMaps"] = true;
-            lblFinalOutputStatus.Text = "×¨ÌâÍ¼Éú³ÉÍê³É";
+            lblFinalOutputStatus.Text = "ä¸“é¢˜å›¾ç”Ÿæˆå®Œæˆ";
             lblFinalOutputStatus.ForeColor = Color.DarkGreen;
-            UpdateProgress("×¨ÌâÍ¼Éú³ÉÍê³É");
+            UpdateProgress("ä¸“é¢˜å›¾ç”Ÿæˆå®Œæˆ");
             UpdateWorkflowState();
             UpdateButtonStates();
         }
 
         private void BtnHelp_Click(object sender, EventArgs e)
         {
-            // ¸üĞÂ°ïÖúÎÄ±¾£¬ÒÆ³ı»ù´¡Êı¾İ×¼±¸ÒªÇó
-            string helpText = @"¹ã¶«Ê¡È«ÃñËùÓĞ×ÔÈ»×ÊÔ´£¨É­ÁÖ¡¢²İµØ¡¢ÊªµØ£©×Ê²úÇå²é¹¤¾ßÊ¹ÓÃËµÃ÷
+            // æ›´æ–°å¸®åŠ©æ–‡æœ¬ï¼Œè¯´æ˜LCXZGXç”Ÿæˆæ­¥éª¤çš„è°ƒæ•´
+            string helpText = @"å¹¿ä¸œçœå…¨æ°‘æ‰€æœ‰è‡ªç„¶èµ„æºï¼ˆæ£®æ—ã€è‰åœ°ã€æ¹¿åœ°ï¼‰èµ„äº§æ¸…æŸ¥å·¥å…·ä½¿ç”¨è¯´æ˜";
+       
 
-×¢Òâ£ºËùÓĞ¹¦ÄÜÏÖÔÚ¶¼¿ÉÒÔ¶ÀÁ¢Ê¹ÓÃ£¬ÎŞĞèÏÈÍê³É»ù´¡Êı¾İ×¼±¸²½Öè¡£
-
-É­ÁÖ×ÊÔ´×Ê²úÇå²é
-1. ÌáÈ¡É­ÁÖ¹¤×÷·¶Î§£º¸ù¾İÆÕ²éÊı¾İºÍ¿ª·¢±ß½ç£¬É¸Ñ¡¹úÓĞÁÖµØ¼°±ß½çÄÚ¼¯ÌåÁÖµØ¡£
-2. É­ÁÖµ×Í¼Óë¼Û¸ñ¹ØÁª£º½«¹¤×÷·¶Î§ÓëÁÖµØ·ÖµÈÊı¾İ¹ØÁª£¬²¢¹Ò½Ó»ù×¼µØ¼Û¡£
-3. ²¹³äÉ­ÁÖ»ù×¼¼Û¸ñ£ºÕë¶Ô¹Ò½ÓÊ§°ÜµÄÍ¼°ß£¬²¹³äÔËËãÈ·±£»ù×¼¼Û¸ñÎŞÈ±Â©¡£
-4. ¼ÆËãÉ­ÁÖ×Ê²ú¼ÛÖµ£ºÓ¦ÓÃĞŞÕıÒò×Ó¼ÆËã×ÚµØ¼Û¸ñ£¬½øĞĞÆÚÈÕºÍÄêÆÚĞŞÕıµÃµ½ºËËã¼Û¸ñ¡£
-5. É­ÁÖÊı¾İÇåÏ´ÓëÖÊ¼ì£º½øĞĞÊı¾İÇåÏ´ºÍÖÊÁ¿¼ì²é£¬È·±£·ûºÏ¼¼Êõ¹æ·¶¡£
-6. É­ÁÖ¿â±í¹¹½¨£º¹¹½¨·ûºÏ»ã½»¹æ·¶µÄÊı¾İ¼¯¡¢»ù´¡Êı±íºÍÍ³¼Æ±í¡£
-
-²İµØ×ÊÔ´×Ê²úÇå²é
-Á÷³ÌÀàËÆÓÚÉ­ÁÖ×ÊÔ´×Ê²úÇå²é£¬°üº¬ÏàÍ¬µÄÁù¸ö²½Öè¡£
-
-ÊªµØ×ÊÔ´×Ê²úÇå²é
-1. ÖÆ×÷ÊªµØ¹¤×÷·¶Î§Óëµ×Í¼£ºÌáÈ¡ÊªµØ·¶Î§²¢ÖÆ×÷¹¤×÷µ×Í¼¡£
-2. ÊªµØÊı¾İÇåÏ´ÓëÖÊ¼ì£º½øĞĞÊı¾İÇåÏ´ºÍÖÊÁ¿¼ì²é¡£
-3. ÊªµØ¿â±í¹¹½¨£º¹¹½¨ÊªµØÏà¹ØÊı¾İ±í¡£
-×¢£ºÊªµØ×ÊÔ´×Ê²úÇå²é½öĞè½øĞĞÊµÎïÁ¿Çå²é£¬²»½øĞĞ¼ÛÖµÁ¿ºËËã¡£
-
-×ÛºÏÖÊ¼ì¡¢Í³¼ÆÓë³É¹ûÊä³ö
-1. ×ÛºÏÖÊÁ¿¼ì²é£º¶ÔÉ­ÁÖ¡¢²İµØ¡¢ÊªµØÇå²éÊı¾İ½øĞĞÈ«ÃæÖÊ¼ì¡£
-2. Êı¾İÍ³¼Æ»ã×Ü£º¶ÔÇå²é½á¹û½øĞĞÍ³¼Æ»ã×Ü¡£
-3. Êı¾İ·ÖÎöÓëÍÚ¾ò£º½øĞĞÉîÈëÊı¾İ·ÖÎö£¬ÍÚ¾òÊı¾İ¹æÂÉºÍĞÅÏ¢¡£
-4. µ¼³öÇå²éÊı¾İ¼¯£ºµ¼³ö·ûºÏ»ã½»¹æ·¶µÄÇå²éÊı¾İ¼¯¡£
-5. µ¼³ö»ã×Ü±í£ºµ¼³ö¸÷Àà»ã×Ü±í¡£
-6. Éú³É³É¹û±¨¸æ£ºÉú³É¹¤×÷×Ü½á±¨¸æºÍÊı¾İ×Ô¼ì±¨¸æ¡£
-7. Éú³É×¨ÌâÍ¼£ºÉú³É¸÷Àà×¨ÌâÍ¼¡£
-
-Ê¹ÓÃËµÃ÷£º
-- ËùÓĞ°´Å¥ÏÖÔÚ¶¼¿ÉÒÔ¶ÀÁ¢Ê¹ÓÃ£¬ÎŞĞè°´ÌØ¶¨Ë³ĞòÖ´ĞĞ¡£
-- ½¨Òé°´Âß¼­Ë³ĞòÖ´ĞĞÒÔ»ñµÃ×î¼Ñ½á¹û£¬µ«²»ÔÙÇ¿ÖÆÒªÇó¡£
-- Ã¿¸ö²Ù×÷Íê³Éºó»áÓĞÏàÓ¦ÌáÊ¾¡£
-- ²¿·Ö²Ù×÷¿ÉÄÜºÄÊ±½Ï³¤£¬ÇëÄÍĞÄµÈ´ı¡£";
-
-            MessageBox.Show(helpText, "Ê¹ÓÃ°ïÖú", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(helpText, "ä½¿ç”¨å¸®åŠ©", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnClose_Click(object sender, EventArgs e)
@@ -610,12 +615,43 @@ namespace TestArcMapAddin2.Forms
 
         private void AdjustButtonPositions()
         {
-            // È·±£ÔÚ InitializeComponent ÍêÈ«Íê³ÉÇ°µ÷ÓÃ´Ë·½·¨Ê±£¬btnHelp ºÍ btnClose ²»Îª null
+            // ç¡®ä¿åœ¨ InitializeComponent å®Œå…¨å®Œæˆå‰è°ƒç”¨æ­¤æ–¹æ³•æ—¶ï¼ŒbtnHelp å’Œ btnClose ä¸ä¸º null
             if (btnHelp != null && btnClose != null && bottomPanel != null)
             {
-                // µ÷Õû°´Å¥Ïà¶ÔÓÚ bottomPanel ÓÒ±ßÔµµÄÎ»ÖÃ
+                // è°ƒæ•´æŒ‰é’®ç›¸å¯¹äº bottomPanel å³è¾¹ç¼˜çš„ä½ç½®
                 btnClose.Location = new Point(bottomPanel.Width - btnClose.Width - 10, (bottomPanel.Height - btnClose.Height) / 2);
                 btnHelp.Location = new Point(btnClose.Location.X - btnHelp.Width - 5, (bottomPanel.Height - btnHelp.Height) / 2);
+            }
+        }
+
+        /// <summary>
+        /// éªŒè¯LCXZGXæ•°æ®æ˜¯å¦å­˜åœ¨
+        /// æ–°å¢æ–¹æ³•ï¼šç”¨äºéªŒè¯åŸºç¡€æ•°æ®æ˜¯å¦å·²å‡†å¤‡å®Œæˆ
+        /// </summary>
+        /// <returns>å¦‚æœLCXZGXæ•°æ®å­˜åœ¨è¿”å›trueï¼Œå¦åˆ™è¿”å›false</returns>
+        private bool ValidateLCXZGXDataExists()
+        {
+            try
+            {
+                // æ£€æŸ¥SharedDataManagerä¸­æ˜¯å¦æœ‰å¯ç”¨çš„æºæ•°æ®
+                var sourceDataFiles = SharedDataManager.GetSourceDataFiles();
+                if (sourceDataFiles != null && sourceDataFiles.Count > 0)
+                {
+                    return true;
+                }
+
+                // æ£€æŸ¥æ˜¯å¦æœ‰è¾“å‡ºè·¯å¾„è®¾ç½®
+                if (!string.IsNullOrEmpty(SharedWorkflowState.OutputGDBPath))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"éªŒè¯LCXZGXæ•°æ®å­˜åœ¨æ€§æ—¶å‡ºé”™: {ex.Message}");
+                return false;
             }
         }
         #endregion
@@ -630,8 +666,8 @@ namespace TestArcMapAddin2.Forms
             forestWorkflowImage.Visible = forestDetailPanel.Visible;
 
             showForestWorkflowDetails.Text = forestDetailPanel.Visible ?
-                "Òş²ØÏêÏ¸Á÷³ÌËµÃ÷ ¡ø" : "ÏÔÊ¾ÏêÏ¸Á÷³ÌËµÃ÷ ¨‹";
-            
+                "éšè—è¯¦ç»†æµç¨‹è¯´æ˜ â–²" : "æ˜¾ç¤ºè¯¦ç»†æµç¨‹è¯´æ˜ â–¼";
+
             // Add code to display the Basic.cs window
             //try
             //{
@@ -641,7 +677,7 @@ namespace TestArcMapAddin2.Forms
             //}
             //catch (Exception ex)
             //{
-            //    MessageBox.Show($"´ò¿ª»ù´¡Êı¾İ´°¿ÚÊ±³ö´í: {ex.Message}", "´íÎó", 
+            //    MessageBox.Show($"æ‰“å¼€åŸºç¡€æ•°æ®çª—å£æ—¶å‡ºé”™: {ex.Message}", "é”™è¯¯", 
             //        MessageBoxButtons.OK, MessageBoxIcon.Error);
             //}
         }

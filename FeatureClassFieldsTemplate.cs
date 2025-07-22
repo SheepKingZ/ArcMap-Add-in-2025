@@ -9,7 +9,7 @@ namespace TestArcMapAddin2
 {
     class FeatureClassFieldsTemplate
     {
-         public static void GenerateLcxzgxFields(IFieldsEdit fields) {
+        public static void GenerateLcxzgxFields(IFieldsEdit fields) {
             if (fields==null)
             {
                 System.Windows.Forms.MessageBox.Show("字段集合对象不存在");
@@ -1647,18 +1647,6 @@ namespace TestArcMapAddin2
             fieldEdit134.Editable_2 = true;
             fieldEdit134.Length_2 = 8;
             fields.AddField(field134);
-
-            //自定义的备注字段
-            IField field135 = new FieldClass();
-            IFieldEdit fieldEdit135 = (IFieldEdit)field135;
-            fieldEdit135.Name_2 = "memo";
-            fieldEdit135.Type_2 = esriFieldType.esriFieldTypeString;
-            fieldEdit135.IsNullable_2 = true;
-            fieldEdit135.AliasName_2 = "备注";
-            fieldEdit135.DefaultValue_2 = "";
-            fieldEdit135.Editable_2 = true;
-            fieldEdit135.Length_2 = 50;
-            fields.AddField(field135);
         }
         public static void GenerateSlzyzcFields(IFieldsEdit fields) {
             if (fields == null)
@@ -2011,7 +1999,7 @@ namespace TestArcMapAddin2
             IField field29 = new FieldClass();
             IFieldEdit fieldEdit29 = (IFieldEdit)field29;
             fieldEdit29.Name_2 = "MGQZS";
-            fieldEdit29.Type_2 = esriFieldType.esriFieldTypeInteger;
+            fieldEdit29.Type_2 = esriFieldType.esriFieldTypeSmallInteger;
             fieldEdit29.IsNullable_2 = true;
             fieldEdit29.AliasName_2 = "每公顷株树";
             fieldEdit29.DefaultValue_2 = 0;
@@ -2157,6 +2145,7 @@ namespace TestArcMapAddin2
             fieldEdit40.Length_2 = 254;
             fields.AddField(field40);
         }
+
         public static void GenerateSlzyzc_dltbFields(IFieldsEdit fields) {
             if (fields == null)
             {
@@ -2420,7 +2409,7 @@ namespace TestArcMapAddin2
             fields.AddField(field21);
         }
         
-        public static void GenerateCyzyzcFields(IFieldsEdit fields)
+        public static void GenerateCyzyzc_dltbFields(IFieldsEdit fields)
         {
             if (fields == null)
             {
@@ -2428,17 +2417,970 @@ namespace TestArcMapAddin2
                 return;
             }
 
-            //资产清查标识码字段
+            // 资产清查标识码
             IField field01 = new FieldClass();
             IFieldEdit fieldEdit01 = (IFieldEdit)field01;
             fieldEdit01.Name_2 = "ZCQCBSM";
             fieldEdit01.Type_2 = esriFieldType.esriFieldTypeString;
-            fieldEdit01.IsNullable_2 = true;
+            fieldEdit01.IsNullable_2 = false;  // M约束
             fieldEdit01.AliasName_2 = "资产清查标识码";
-            fieldEdit01.DefaultValue_2 = "";
-            fieldEdit01.Editable_2 = true;
             fieldEdit01.Length_2 = 22;
             fields.AddField(field01);
+
+            // 要素代码
+            IField field02 = new FieldClass();
+            IFieldEdit fieldEdit02 = (IFieldEdit)field02;
+            fieldEdit02.Name_2 = "YSDM";
+            fieldEdit02.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit02.IsNullable_2 = false;  // M约束
+            fieldEdit02.AliasName_2 = "要素代码";
+            fieldEdit02.Length_2 = 10;
+            fields.AddField(field02);
+
+            // 行政区代码
+            IField field03 = new FieldClass();
+            IFieldEdit fieldEdit03 = (IFieldEdit)field03;
+            fieldEdit03.Name_2 = "XZQDM";
+            fieldEdit03.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit03.IsNullable_2 = false;  // M约束
+            fieldEdit03.AliasName_2 = "行政区代码";
+            fieldEdit03.Length_2 = 6;
+            fields.AddField(field03);
+
+            // 行政区名称
+            IField field04 = new FieldClass();
+            IFieldEdit fieldEdit04 = (IFieldEdit)field04;
+            fieldEdit04.Name_2 = "XZQMC";
+            fieldEdit04.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit04.IsNullable_2 = false;  // M约束
+            fieldEdit04.AliasName_2 = "行政区名称";
+            fieldEdit04.Length_2 = 60;
+            fields.AddField(field04);
+
+            // 国土调查图斑标识码
+            IField field05 = new FieldClass();
+            IFieldEdit fieldEdit05 = (IFieldEdit)field05;
+            fieldEdit05.Name_2 = "GTDCTBBSM";
+            fieldEdit05.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit05.IsNullable_2 = false;  // M约束
+            fieldEdit05.AliasName_2 = "国土调查图斑标识码";
+            fieldEdit05.Length_2 = 18;
+            fields.AddField(field05);
+
+            // 国土调查图斑编号
+            IField field06 = new FieldClass();
+            IFieldEdit fieldEdit06 = (IFieldEdit)field06;
+            fieldEdit06.Name_2 = "GTDCTBBH";
+            fieldEdit06.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit06.IsNullable_2 = false;  // M约束
+            fieldEdit06.AliasName_2 = "国土调查图斑编号";
+            fieldEdit06.Length_2 = 8;
+            fields.AddField(field06);
+
+            // 国土调查地类编码
+            IField field07 = new FieldClass();
+            IFieldEdit fieldEdit07 = (IFieldEdit)field07;
+            fieldEdit07.Name_2 = "GTDCDLBM";
+            fieldEdit07.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit07.IsNullable_2 = false;  // M约束
+            fieldEdit07.AliasName_2 = "国土调查地类编码";
+            fieldEdit07.Length_2 = 5;
+            fields.AddField(field07);
+
+            // 国土调查地类名称
+            IField field08 = new FieldClass();
+            IFieldEdit fieldEdit08 = (IFieldEdit)field08;
+            fieldEdit08.Name_2 = "GTDCDLMC";
+            fieldEdit08.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit08.IsNullable_2 = false;  // M约束
+            fieldEdit08.AliasName_2 = "国土调查地类名称";
+            fieldEdit08.Length_2 = 60;
+            fields.AddField(field08);
+
+            // 国土调查权属性质
+            IField field09 = new FieldClass();
+            IFieldEdit fieldEdit09 = (IFieldEdit)field09;
+            fieldEdit09.Name_2 = "GTDCCQSXZ";
+            fieldEdit09.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit09.IsNullable_2 = false;  // M约束
+            fieldEdit09.AliasName_2 = "国土调查权属性质";
+            fieldEdit09.Length_2 = 2;
+            fields.AddField(field09);
+
+            // 权属单位代码
+            IField field10 = new FieldClass();
+            IFieldEdit fieldEdit10 = (IFieldEdit)field10;
+            fieldEdit10.Name_2 = "QSDWDM";
+            fieldEdit10.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit10.IsNullable_2 = false;  // M约束
+            fieldEdit10.AliasName_2 = "权属单位代码";
+            fieldEdit10.Length_2 = 19;
+            fields.AddField(field10);
+
+            // 权属单位名称
+            IField field11 = new FieldClass();
+            IFieldEdit fieldEdit11 = (IFieldEdit)field11;
+            fieldEdit11.Name_2 = "QSDWMC";
+            fieldEdit11.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit11.IsNullable_2 = false;  // M约束
+            fieldEdit11.AliasName_2 = "权属单位名称";
+            fieldEdit11.Length_2 = 60;
+            fields.AddField(field11);
+
+            // 坐落单位代码
+            IField field12 = new FieldClass();
+            IFieldEdit fieldEdit12 = (IFieldEdit)field12;
+            fieldEdit12.Name_2 = "ZLDWDM";
+            fieldEdit12.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit12.IsNullable_2 = false;  // M约束
+            fieldEdit12.AliasName_2 = "坐落单位代码";
+            fieldEdit12.Length_2 = 19;
+            fields.AddField(field12);
+
+            // 坐落单位名称
+            IField field13 = new FieldClass();
+            IFieldEdit fieldEdit13 = (IFieldEdit)field13;
+            fieldEdit13.Name_2 = "ZLDWMC";
+            fieldEdit13.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit13.IsNullable_2 = false;  // M约束
+            fieldEdit13.AliasName_2 = "坐落单位名称";
+            fieldEdit13.Length_2 = 60;
+            fields.AddField(field13);
+
+            // 国土调查图斑面积
+            IField field14 = new FieldClass();
+            IFieldEdit fieldEdit14 = (IFieldEdit)field14;
+            fieldEdit14.Name_2 = "GTDCTBMJ";
+            fieldEdit14.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit14.IsNullable_2 = false;  // M约束
+            fieldEdit14.AliasName_2 = "国土调查图斑面积";
+            fieldEdit14.Precision_2 = 15;
+            fieldEdit14.Scale_2 = 2;  // 小数位数
+            fields.AddField(field14);
+
+            // 划入城镇开发边界面积
+            IField field15 = new FieldClass();
+            IFieldEdit fieldEdit15 = (IFieldEdit)field15;
+            fieldEdit15.Name_2 = "CZKFBJMJ";
+            fieldEdit15.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit15.IsNullable_2 = true;  // O约束
+            fieldEdit15.AliasName_2 = "划入城镇开发边界面积";
+            fieldEdit15.Precision_2 = 15;
+            fieldEdit15.Scale_2 = 2;  // 小数位数
+            fields.AddField(field15);
+
+            // 草地等
+            IField field16 = new FieldClass();
+            IFieldEdit fieldEdit16 = (IFieldEdit)field16;
+            fieldEdit16.Name_2 = "CD_DENG";
+            fieldEdit16.Type_2 = esriFieldType.esriFieldTypeInteger;
+            fieldEdit16.IsNullable_2 = true;  // O约束
+            fieldEdit16.AliasName_2 = "草地等";
+            fieldEdit16.Length_2 = 2;
+            fields.AddField(field16);
+
+            // 核算价格
+            IField field17 = new FieldClass();
+            IFieldEdit fieldEdit17 = (IFieldEdit)field17;
+            fieldEdit17.Name_2 = "HSJG";
+            fieldEdit17.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit17.IsNullable_2 = false;  // M约束
+            fieldEdit17.AliasName_2 = "核算价格";
+            fieldEdit17.Precision_2 = 15;
+            fieldEdit17.Scale_2 = 5;  // 小数位数
+            fields.AddField(field17);
+
+            // 经济价值（草地价值）
+            IField field18 = new FieldClass();
+            IFieldEdit fieldEdit18 = (IFieldEdit)field18;
+            fieldEdit18.Name_2 = "JJJZ";
+            fieldEdit18.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit18.IsNullable_2 = false;  // M约束
+            fieldEdit18.AliasName_2 = "经济价值（草地价值）";
+            fieldEdit18.Precision_2 = 15;
+            fieldEdit18.Scale_2 = 0;  // 小数位数
+            fields.AddField(field18);
+
+            // 飞入地标识
+            IField field19 = new FieldClass();
+            IFieldEdit fieldEdit19 = (IFieldEdit)field19;
+            fieldEdit19.Name_2 = "FRDBS";
+            fieldEdit19.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit19.IsNullable_2 = true;  // C约束
+            fieldEdit19.AliasName_2 = "飞入地标识";
+            fieldEdit19.Length_2 = 1;
+            fields.AddField(field19);
+
+            // 区域扩展代码
+            IField field20 = new FieldClass();
+            IFieldEdit fieldEdit20 = (IFieldEdit)field20;
+            fieldEdit20.Name_2 = "QYKZDM";
+            fieldEdit20.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit20.IsNullable_2 = true;  // O约束
+            fieldEdit20.AliasName_2 = "区域扩展代码";
+            fieldEdit20.Length_2 = 19;
+            fields.AddField(field20);
+
+            // 备注
+            IField field21 = new FieldClass();
+            IFieldEdit fieldEdit21 = (IFieldEdit)field21;
+            fieldEdit21.Name_2 = "BZ";
+            fieldEdit21.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit21.IsNullable_2 = true;  // O约束
+            fieldEdit21.AliasName_2 = "备注";
+            fieldEdit21.Length_2 = 254;
+            fields.AddField(field21);
+        }
+
+        public static void GenerateCyzyzcFields(IFieldsEdit fields)
+        {
+            // 资产清查标识码
+            IField field01 = new FieldClass();
+            IFieldEdit fieldEdit01 = (IFieldEdit)field01;
+            fieldEdit01.Name_2 = "ZCQCBSM";
+            fieldEdit01.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit01.IsNullable_2 = false;  // M约束
+            fieldEdit01.AliasName_2 = "资产清查标识码";
+            fieldEdit01.Length_2 = 22;
+            fields.AddField(field01);
+
+            // 要素代码
+            IField field02 = new FieldClass();
+            IFieldEdit fieldEdit02 = (IFieldEdit)field02;
+            fieldEdit02.Name_2 = "YSDM";
+            fieldEdit02.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit02.IsNullable_2 = false;  // M约束
+            fieldEdit02.AliasName_2 = "要素代码";
+            fieldEdit02.Length_2 = 10;
+            fields.AddField(field02);
+
+            // 行政区代码
+            IField field03 = new FieldClass();
+            IFieldEdit fieldEdit03 = (IFieldEdit)field03;
+            fieldEdit03.Name_2 = "XZQDM";
+            fieldEdit03.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit03.IsNullable_2 = false;  // M约束
+            fieldEdit03.AliasName_2 = "行政区代码";
+            fieldEdit03.Length_2 = 6;
+            fields.AddField(field03);
+
+            // 行政区名称
+            IField field04 = new FieldClass();
+            IFieldEdit fieldEdit04 = (IFieldEdit)field04;
+            fieldEdit04.Name_2 = "XZQMC";
+            fieldEdit04.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit04.IsNullable_2 = false;  // M约束
+            fieldEdit04.AliasName_2 = "行政区名称";
+            fieldEdit04.Length_2 = 60;
+            fields.AddField(field04);
+
+            // 国土调查图斑标识码
+            IField field05 = new FieldClass();
+            IFieldEdit fieldEdit05 = (IFieldEdit)field05;
+            fieldEdit05.Name_2 = "GTDCTBBSM";
+            fieldEdit05.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit05.IsNullable_2 = false;  // M约束
+            fieldEdit05.AliasName_2 = "国土调查图斑标识码";
+            fieldEdit05.Length_2 = 18;
+            fields.AddField(field05);
+
+            // 国土调查图斑编号
+            IField field06 = new FieldClass();
+            IFieldEdit fieldEdit06 = (IFieldEdit)field06;
+            fieldEdit06.Name_2 = "GTDCTBBH";
+            fieldEdit06.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit06.IsNullable_2 = false;  // M约束
+            fieldEdit06.AliasName_2 = "国土调查图斑编号";
+            fieldEdit06.Length_2 = 8;
+            fields.AddField(field06);
+
+            // 国土调查地类编码
+            IField field07 = new FieldClass();
+            IFieldEdit fieldEdit07 = (IFieldEdit)field07;
+            fieldEdit07.Name_2 = "GTDCDLBM";
+            fieldEdit07.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit07.IsNullable_2 = false;  // M约束
+            fieldEdit07.AliasName_2 = "国土调查地类编码";
+            fieldEdit07.Length_2 = 5;
+            fields.AddField(field07);
+
+            // 国土调查地类名称
+            IField field08 = new FieldClass();
+            IFieldEdit fieldEdit08 = (IFieldEdit)field08;
+            fieldEdit08.Name_2 = "GTDCDLMC";
+            fieldEdit08.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit08.IsNullable_2 = false;  // M约束
+            fieldEdit08.AliasName_2 = "国土调查地类名称";
+            fieldEdit08.Length_2 = 60;
+            fields.AddField(field08);
+
+            // 国土调查权属性质
+            IField field09 = new FieldClass();
+            IFieldEdit fieldEdit09 = (IFieldEdit)field09;
+            fieldEdit09.Name_2 = "GTDCTDQSXZ";
+            fieldEdit09.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit09.IsNullable_2 = false;  // M约束
+            fieldEdit09.AliasName_2 = "国土调查权属性质";
+            fieldEdit09.Length_2 = 2;
+            fields.AddField(field09);
+
+            // 权属单位代码
+            IField field10 = new FieldClass();
+            IFieldEdit fieldEdit10 = (IFieldEdit)field10;
+            fieldEdit10.Name_2 = "QSDWDM";
+            fieldEdit10.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit10.IsNullable_2 = false;  // M约束
+            fieldEdit10.AliasName_2 = "权属单位代码";
+            fieldEdit10.Length_2 = 19;
+            fields.AddField(field10);
+
+            // 权属单位名称
+            IField field11 = new FieldClass();
+            IFieldEdit fieldEdit11 = (IFieldEdit)field11;
+            fieldEdit11.Name_2 = "QSDWMC";
+            fieldEdit11.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit11.IsNullable_2 = false;  // M约束
+            fieldEdit11.AliasName_2 = "权属单位名称";
+            fieldEdit11.Length_2 = 60;
+            fields.AddField(field11);
+
+            // 坐落单位代码
+            IField field12 = new FieldClass();
+            IFieldEdit fieldEdit12 = (IFieldEdit)field12;
+            fieldEdit12.Name_2 = "ZLDWDM";
+            fieldEdit12.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit12.IsNullable_2 = false;  // M约束
+            fieldEdit12.AliasName_2 = "坐落单位代码";
+            fieldEdit12.Length_2 = 19;
+            fields.AddField(field12);
+
+            // 坐落单位名称
+            IField field13 = new FieldClass();
+            IFieldEdit fieldEdit13 = (IFieldEdit)field13;
+            fieldEdit13.Name_2 = "ZLDWMC";
+            fieldEdit13.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit13.IsNullable_2 = false;  // M约束
+            fieldEdit13.AliasName_2 = "坐落单位名称";
+            fieldEdit13.Length_2 = 60;
+            fields.AddField(field13);
+
+            // 国土调查图斑面积
+            IField field14 = new FieldClass();
+            IFieldEdit fieldEdit14 = (IFieldEdit)field14;
+            fieldEdit14.Name_2 = "GTDCTBMJ";
+            fieldEdit14.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit14.IsNullable_2 = false;  // M约束
+            fieldEdit14.AliasName_2 = "国土调查图斑面积";
+            fieldEdit14.Precision_2 = 15;
+            fieldEdit14.Scale_2 = 2;
+            fields.AddField(field14);
+
+            // 普查图斑编码 (新增)
+            IField field15 = new FieldClass();
+            IFieldEdit fieldEdit15 = (IFieldEdit)field15;
+            fieldEdit15.Name_2 = "PCTBBM";
+            fieldEdit15.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit15.IsNullable_2 = false;  // M约束
+            fieldEdit15.AliasName_2 = "普查图斑编码";
+            fieldEdit15.Length_2 = 15;
+            fields.AddField(field15);
+
+            // 普查地类 (新增)
+            IField field16 = new FieldClass();
+            IFieldEdit fieldEdit16 = (IFieldEdit)field16;
+            fieldEdit16.Name_2 = "PCDL";
+            fieldEdit16.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit16.IsNullable_2 = true;  // O约束
+            fieldEdit16.AliasName_2 = "普查地类";
+            fieldEdit16.Length_2 = 60;
+            fields.AddField(field16);
+
+            // 草原类 (新增)
+            IField field17 = new FieldClass();
+            IFieldEdit fieldEdit17 = (IFieldEdit)field17;
+            fieldEdit17.Name_2 = "CYL";
+            fieldEdit17.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit17.IsNullable_2 = false;  // M约束
+            fieldEdit17.AliasName_2 = "草原类";
+            fieldEdit17.Length_2 = 60;
+            fields.AddField(field17);
+
+            // 子图斑面积 (新增)
+            IField field18 = new FieldClass();
+            IFieldEdit fieldEdit18 = (IFieldEdit)field18;
+            fieldEdit18.Name_2 = "ZTBMJ";
+            fieldEdit18.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit18.IsNullable_2 = false;  // M约束
+            fieldEdit18.AliasName_2 = "子图斑面积";
+            fieldEdit18.Precision_2 = 15;
+            fieldEdit18.Scale_2 = 2;
+            fields.AddField(field18);
+
+            // 划入城镇开发边界面积
+            IField field19 = new FieldClass();
+            IFieldEdit fieldEdit19 = (IFieldEdit)field19;
+            fieldEdit19.Name_2 = "CZKFBJMJ";
+            fieldEdit19.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit19.IsNullable_2 = true;  // O约束
+            fieldEdit19.AliasName_2 = "划入城镇开发边界面积";
+            fieldEdit19.Precision_2 = 15;
+            fieldEdit19.Scale_2 = 2;
+            fields.AddField(field19);
+
+            // 优势草种 (新增)
+            IField field20 = new FieldClass();
+            IFieldEdit fieldEdit20 = (IFieldEdit)field20;
+            fieldEdit20.Name_2 = "YSCZ";
+            fieldEdit20.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit20.IsNullable_2 = true;  // O约束
+            fieldEdit20.AliasName_2 = "优势草种";
+            fieldEdit20.Length_2 = 50;
+            fields.AddField(field20);
+
+            // 植被盖度 (新增)
+            IField field21 = new FieldClass();
+            IFieldEdit fieldEdit21 = (IFieldEdit)field21;
+            fieldEdit21.Name_2 = "ZBGD";
+            fieldEdit21.Type_2 = esriFieldType.esriFieldTypeInteger;
+            fieldEdit21.IsNullable_2 = true;  // O约束
+            fieldEdit21.AliasName_2 = "植被盖度";
+            fieldEdit21.Length_2 = 9;
+            fields.AddField(field21);
+
+            // 小班干草产量 (新增)
+            IField field22 = new FieldClass();
+            IFieldEdit fieldEdit22 = (IFieldEdit)field22;
+            fieldEdit22.Name_2 = "XBGCCL";
+            fieldEdit22.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit22.IsNullable_2 = true;  // O约束
+            fieldEdit22.AliasName_2 = "小班干草产量";
+            fieldEdit22.Precision_2 = 10;
+            fieldEdit22.Scale_2 = 2;
+            fields.AddField(field22);
+
+            // 草地等
+            IField field23 = new FieldClass();
+            IFieldEdit fieldEdit23 = (IFieldEdit)field23;
+            fieldEdit23.Name_2 = "CD_DENG";
+            fieldEdit23.Type_2 = esriFieldType.esriFieldTypeInteger;
+            fieldEdit23.IsNullable_2 = true;  // O约束
+            fieldEdit23.AliasName_2 = "草地等";
+            fieldEdit23.Length_2 = 2;
+            fields.AddField(field23);
+
+            // 核算价格
+            IField field24 = new FieldClass();
+            IFieldEdit fieldEdit24 = (IFieldEdit)field24;
+            fieldEdit24.Name_2 = "HSJG";
+            fieldEdit24.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit24.IsNullable_2 = true;  // O约束
+            fieldEdit24.AliasName_2 = "核算价格";
+            fieldEdit24.Precision_2 = 15;
+            fieldEdit24.Scale_2 = 5;
+            fields.AddField(field24);
+
+            // 经济价值（草地价值）
+            IField field25 = new FieldClass();
+            IFieldEdit fieldEdit25 = (IFieldEdit)field25;
+            fieldEdit25.Name_2 = "JJJZ";
+            fieldEdit25.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit25.IsNullable_2 = true;  // O约束
+            fieldEdit25.AliasName_2 = "经济价值（草地价值）";
+            fieldEdit24.Precision_2 = 15;
+            fieldEdit25.Scale_2 = 0;
+            fields.AddField(field25);
+
+            // 飞入地标识
+            IField field26 = new FieldClass();
+            IFieldEdit fieldEdit26 = (IFieldEdit)field26;
+            fieldEdit26.Name_2 = "FRDBS";
+            fieldEdit26.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit26.IsNullable_2 = true;  // C约束
+            fieldEdit26.AliasName_2 = "飞入地标识";
+            fieldEdit26.Length_2 = 1;
+            fields.AddField(field26);
+
+            // 区域扩展代码
+            IField field27 = new FieldClass();
+            IFieldEdit fieldEdit27 = (IFieldEdit)field27;
+            fieldEdit27.Name_2 = "QYKZDM";
+            fieldEdit27.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit27.IsNullable_2 = true;  // O约束
+            fieldEdit27.AliasName_2 = "区域扩展代码";
+            fieldEdit27.Length_2 = 19;
+            fields.AddField(field27);
+
+            // 备注
+            IField field28 = new FieldClass();
+            IFieldEdit fieldEdit28 = (IFieldEdit)field28;
+            fieldEdit28.Name_2 = "BZ";
+            fieldEdit28.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit28.IsNullable_2 = true;  // O约束
+            fieldEdit28.AliasName_2 = "备注";
+            fieldEdit28.Length_2 = 254;
+            fields.AddField(field28);
+        }
+        public static void GenerateSdzyzcFields(IFieldsEdit fields)
+        {
+            // 资产清查标识码
+            IField field01 = new FieldClass();
+            IFieldEdit fieldEdit01 = (IFieldEdit)field01;
+            fieldEdit01.Name_2 = "ZCQCBSM";
+            fieldEdit01.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit01.IsNullable_2 = false;  // M约束
+            fieldEdit01.AliasName_2 = "资产清查标识码";
+            fieldEdit01.Length_2 = 22;
+            fields.AddField(field01);
+
+            // 要素代码
+            IField field02 = new FieldClass();
+            IFieldEdit fieldEdit02 = (IFieldEdit)field02;
+            fieldEdit02.Name_2 = "YSDM";
+            fieldEdit02.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit02.IsNullable_2 = false;  // M约束
+            fieldEdit02.AliasName_2 = "要素代码";
+            fieldEdit02.Length_2 = 10;
+            fields.AddField(field02);
+
+            // 行政区代码
+            IField field03 = new FieldClass();
+            IFieldEdit fieldEdit03 = (IFieldEdit)field03;
+            fieldEdit03.Name_2 = "XZQDM";
+            fieldEdit03.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit03.IsNullable_2 = false;  // M约束
+            fieldEdit03.AliasName_2 = "行政区代码";
+            fieldEdit03.Length_2 = 6;
+            fields.AddField(field03);
+
+            // 行政区名称
+            IField field04 = new FieldClass();
+            IFieldEdit fieldEdit04 = (IFieldEdit)field04;
+            fieldEdit04.Name_2 = "XZQMC";
+            fieldEdit04.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit04.IsNullable_2 = false;  // M约束
+            fieldEdit04.AliasName_2 = "行政区名称";
+            fieldEdit04.Length_2 = 60;
+            fields.AddField(field04);
+
+            // 国土调查图斑标识码
+            IField field05 = new FieldClass();
+            IFieldEdit fieldEdit05 = (IFieldEdit)field05;
+            fieldEdit05.Name_2 = "GTDCTBBSM";
+            fieldEdit05.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit05.IsNullable_2 = false;  // M约束
+            fieldEdit05.AliasName_2 = "国土调查图斑标识码";
+            fieldEdit05.Length_2 = 18;
+            fields.AddField(field05);
+
+            // 国土调查图斑编号
+            IField field06 = new FieldClass();
+            IFieldEdit fieldEdit06 = (IFieldEdit)field06;
+            fieldEdit06.Name_2 = "GTDCTBBH";
+            fieldEdit06.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit06.IsNullable_2 = false;  // M约束
+            fieldEdit06.AliasName_2 = "国土调查图斑编号";
+            fieldEdit06.Length_2 = 8;
+            fields.AddField(field06);
+
+            // 国土调查地类编码
+            IField field07 = new FieldClass();
+            IFieldEdit fieldEdit07 = (IFieldEdit)field07;
+            fieldEdit07.Name_2 = "GTDCDLBM";
+            fieldEdit07.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit07.IsNullable_2 = false;  // M约束
+            fieldEdit07.AliasName_2 = "国土调查地类编码";
+            fieldEdit07.Length_2 = 5;
+            fields.AddField(field07);
+
+            // 国土调查地类名称
+            IField field08 = new FieldClass();
+            IFieldEdit fieldEdit08 = (IFieldEdit)field08;
+            fieldEdit08.Name_2 = "GTDCDLMC";
+            fieldEdit08.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit08.IsNullable_2 = false;  // M约束
+            fieldEdit08.AliasName_2 = "国土调查地类名称";
+            fieldEdit08.Length_2 = 60;
+            fields.AddField(field08);
+
+            // 国土调查权属性质
+            IField field09 = new FieldClass();
+            IFieldEdit fieldEdit09 = (IFieldEdit)field09;
+            fieldEdit09.Name_2 = "GTDCTDQSXZ";
+            fieldEdit09.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit09.IsNullable_2 = false;  // M约束
+            fieldEdit09.AliasName_2 = "国土调查权属性质";
+            fieldEdit09.Length_2 = 2;
+            fields.AddField(field09);
+
+            // 权属单位代码
+            IField field10 = new FieldClass();
+            IFieldEdit fieldEdit10 = (IFieldEdit)field10;
+            fieldEdit10.Name_2 = "QSDWDM";
+            fieldEdit10.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit10.IsNullable_2 = false;  // M约束
+            fieldEdit10.AliasName_2 = "权属单位代码";
+            fieldEdit10.Length_2 = 19;
+            fields.AddField(field10);
+
+            // 权属单位名称
+            IField field11 = new FieldClass();
+            IFieldEdit fieldEdit11 = (IFieldEdit)field11;
+            fieldEdit11.Name_2 = "QSDWMC";
+            fieldEdit11.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit11.IsNullable_2 = false;  // M约束
+            fieldEdit11.AliasName_2 = "权属单位名称";
+            fieldEdit11.Length_2 = 60;
+            fields.AddField(field11);
+
+            // 坐落单位代码
+            IField field12 = new FieldClass();
+            IFieldEdit fieldEdit12 = (IFieldEdit)field12;
+            fieldEdit12.Name_2 = "ZLDWDM";
+            fieldEdit12.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit12.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit12.AliasName_2 = "坐落单位代码";
+            fieldEdit12.Length_2 = 19;
+            fields.AddField(field12);
+
+            // 坐落单位名称
+            IField field13 = new FieldClass();
+            IFieldEdit fieldEdit13 = (IFieldEdit)field13;
+            fieldEdit13.Name_2 = "ZLDWMC";
+            fieldEdit13.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit13.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit13.AliasName_2 = "坐落单位名称";
+            fieldEdit13.Length_2 = 60;
+            fields.AddField(field13);
+
+            // 国土调查图斑面积
+            IField field14 = new FieldClass();
+            IFieldEdit fieldEdit14 = (IFieldEdit)field14;
+            fieldEdit14.Name_2 = "GTDCTBMJ";
+            fieldEdit14.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit14.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit14.AliasName_2 = "国土调查图斑面积";
+            fieldEdit14.Precision_2 = 15;
+            fieldEdit14.Scale_2 = 2;  // 小数位数
+            fields.AddField(field14);
+
+            // 子图斑面积
+            IField field15 = new FieldClass();
+            IFieldEdit fieldEdit15 = (IFieldEdit)field15;
+            fieldEdit15.Name_2 = "ZTBMJ";
+            fieldEdit15.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit15.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit15.Length_2 = 15;
+            fieldEdit15.AliasName_2 = "子图斑面积";
+            fieldEdit15.Precision_2 = 15;
+            fieldEdit15.Scale_2 = 2;  // 小数位数
+            fields.AddField(field15);
+
+            // 普查图斑编码
+            IField field16 = new FieldClass();
+            IFieldEdit fieldEdit16 = (IFieldEdit)field16;
+            fieldEdit16.Name_2 = "PCTBBM";
+            fieldEdit16.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit16.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit16.AliasName_2 = "普查图斑编码";
+            fieldEdit16.Length_2 = 15;
+            fields.AddField(field16);
+
+            // 普查地类
+            IField field17 = new FieldClass();
+            IFieldEdit fieldEdit17 = (IFieldEdit)field17;
+            fieldEdit17.Name_2 = "PCDL";
+            fieldEdit17.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit17.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit17.AliasName_2 = "普查地类";
+            fieldEdit17.Length_2 = 60;
+            fields.AddField(field17);
+
+            // 湿地管理分级
+            IField field18 = new FieldClass();
+            IFieldEdit fieldEdit18 = (IFieldEdit)field18;
+            fieldEdit18.Name_2 = "SDDJ";
+            fieldEdit18.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit18.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit18.AliasName_2 = "湿地管理分级";
+            fieldEdit18.Length_2 = 50;
+            fields.AddField(field18);
+
+            // 自然保护地属性
+            IField field19 = new FieldClass();
+            IFieldEdit fieldEdit19 = (IFieldEdit)field19;
+            fieldEdit19.Name_2 = "ZRBHDSX";
+            fieldEdit19.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit19.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit19.AliasName_2 = "自然保护地属性";
+            fieldEdit19.Length_2 = 50;
+            fields.AddField(field19);
+
+            // 湿地利用方式
+            IField field20 = new FieldClass();
+            IFieldEdit fieldEdit20 = (IFieldEdit)field20;
+            fieldEdit20.Name_2 = "SDLYFS";
+            fieldEdit20.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit20.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit20.AliasName_2 = "湿地利用方式";
+            fieldEdit20.Length_2 = 50;
+            fields.AddField(field20);
+
+            // 植被类型
+            IField field21 = new FieldClass();
+            IFieldEdit fieldEdit21 = (IFieldEdit)field21;
+            fieldEdit21.Name_2 = "ZBLX";
+            fieldEdit21.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit21.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit21.AliasName_2 = "植被类型";
+            fieldEdit21.Length_2 = 50;
+            fields.AddField(field21);
+
+            // 植被面积
+            IField field22 = new FieldClass();
+            IFieldEdit fieldEdit22 = (IFieldEdit)field22;
+            fieldEdit22.Name_2 = "ZBMJ";
+            fieldEdit22.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit22.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit22.AliasName_2 = "植被面积";
+            fieldEdit22.Precision_2 = 15;
+            fieldEdit22.Scale_2 = 2;  // 小数位数
+            fields.AddField(field22);
+
+            // 受威胁状况
+            IField field23 = new FieldClass();
+            IFieldEdit fieldEdit23 = (IFieldEdit)field23;
+            fieldEdit23.Name_2 = "SWXZK";
+            fieldEdit23.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit23.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit23.AliasName_2 = "受威胁状况";
+            fieldEdit23.Length_2 = 60;
+            fields.AddField(field23);
+
+            // 划入城镇开发边界面积
+            IField field24 = new FieldClass();
+            IFieldEdit fieldEdit24 = (IFieldEdit)field24;
+            fieldEdit24.Name_2 = "CZKFBJMJ";
+            fieldEdit24.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit24.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit24.AliasName_2 = "划入城镇开发边界面积";
+            fieldEdit24.Precision_2 = 15;
+            fieldEdit24.Scale_2 = 2;  // 小数位数
+            fields.AddField(field24);
+
+            // 飞入地标识
+            IField field25 = new FieldClass();
+            IFieldEdit fieldEdit25 = (IFieldEdit)field25;
+            fieldEdit25.Name_2 = "FRDBS";
+            fieldEdit25.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit25.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit25.AliasName_2 = "飞入地标识";
+            fieldEdit25.Length_2 = 1;
+            fields.AddField(field25);
+
+            // 区域扩展代码
+            IField field26 = new FieldClass();
+            IFieldEdit fieldEdit26 = (IFieldEdit)field26;
+            fieldEdit26.Name_2 = "QYKZDM";
+            fieldEdit26.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit26.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit26.AliasName_2 = "区域扩展代码";
+            fieldEdit26.Length_2 = 19;
+            fields.AddField(field26);
+
+            // 备注
+            IField field27 = new FieldClass();
+            IFieldEdit fieldEdit27 = (IFieldEdit)field27;
+            fieldEdit27.Name_2 = "BZ";
+            fieldEdit27.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit27.IsNullable_2 = true;  // 无约束信息，默认设为可选
+            fieldEdit27.AliasName_2 = "备注";
+            fieldEdit27.Length_2 = 254;
+            fields.AddField(field27);
+        }
+
+        public static void GenerateSdzyzc_dltbFields(IFieldsEdit fields)
+        {
+            // 资产清查标识码
+            IField field01 = new FieldClass();
+            IFieldEdit fieldEdit01 = (IFieldEdit)field01;
+            fieldEdit01.Name_2 = "ZCQCBSM";
+            fieldEdit01.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit01.IsNullable_2 = false;  // M约束
+            fieldEdit01.AliasName_2 = "资产清查标识码";
+            fieldEdit01.Length_2 = 22;
+            fields.AddField(field01);
+
+            // 要素代码
+            IField field02 = new FieldClass();
+            IFieldEdit fieldEdit02 = (IFieldEdit)field02;
+            fieldEdit02.Name_2 = "YSDM";
+            fieldEdit02.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit02.IsNullable_2 = false;  // M约束
+            fieldEdit02.AliasName_2 = "要素代码";
+            fieldEdit02.Length_2 = 10;
+            fields.AddField(field02);
+
+            // 行政区代码
+            IField field03 = new FieldClass();
+            IFieldEdit fieldEdit03 = (IFieldEdit)field03;
+            fieldEdit03.Name_2 = "XZQDM";
+            fieldEdit03.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit03.IsNullable_2 = false;  // M约束
+            fieldEdit03.AliasName_2 = "行政区代码";
+            fieldEdit03.Length_2 = 6;
+            fields.AddField(field03);
+
+            // 行政区名称
+            IField field04 = new FieldClass();
+            IFieldEdit fieldEdit04 = (IFieldEdit)field04;
+            fieldEdit04.Name_2 = "XZQMC";
+            fieldEdit04.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit04.IsNullable_2 = false;  // M约束
+            fieldEdit04.AliasName_2 = "行政区名称";
+            fieldEdit04.Length_2 = 60;
+            fields.AddField(field04);
+
+            // 国土调查图斑标识码
+            IField field05 = new FieldClass();
+            IFieldEdit fieldEdit05 = (IFieldEdit)field05;
+            fieldEdit05.Name_2 = "GTDCTBBSM";
+            fieldEdit05.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit05.IsNullable_2 = false;  // M约束
+            fieldEdit05.AliasName_2 = "国土调查图斑标识码";
+            fieldEdit05.Length_2 = 18;
+            fields.AddField(field05);
+
+            // 国土调查图斑编号
+            IField field06 = new FieldClass();
+            IFieldEdit fieldEdit06 = (IFieldEdit)field06;
+            fieldEdit06.Name_2 = "GTDCTBBH";
+            fieldEdit06.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit06.IsNullable_2 = false;  // M约束
+            fieldEdit06.AliasName_2 = "国土调查图斑编号";
+            fieldEdit06.Length_2 = 8;
+            fields.AddField(field06);
+
+            // 国土调查地类编码
+            IField field07 = new FieldClass();
+            IFieldEdit fieldEdit07 = (IFieldEdit)field07;
+            fieldEdit07.Name_2 = "GTDCDLBM";
+            fieldEdit07.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit07.IsNullable_2 = false;  // M约束
+            fieldEdit07.AliasName_2 = "国土调查地类编码";
+            fieldEdit07.Length_2 = 5;
+            fields.AddField(field07);
+
+            // 国土调查地类名称
+            IField field08 = new FieldClass();
+            IFieldEdit fieldEdit08 = (IFieldEdit)field08;
+            fieldEdit08.Name_2 = "GTDCDLMC";
+            fieldEdit08.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit08.IsNullable_2 = false;  // M约束
+            fieldEdit08.AliasName_2 = "国土调查地类名称";
+            fieldEdit08.Length_2 = 60;
+            fields.AddField(field08);
+
+            // 国土调查权属性质 (注意字段代码变化)
+            IField field09 = new FieldClass();
+            IFieldEdit fieldEdit09 = (IFieldEdit)field09;
+            fieldEdit09.Name_2 = "GTDCTDQSXZ";
+            fieldEdit09.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit09.IsNullable_2 = false;  // M约束
+            fieldEdit09.AliasName_2 = "国土调查权属性质";
+            fieldEdit09.Length_2 = 2;
+            fields.AddField(field09);
+
+            // 权属单位代码
+            IField field10 = new FieldClass();
+            IFieldEdit fieldEdit10 = (IFieldEdit)field10;
+            fieldEdit10.Name_2 = "QSDWDM";
+            fieldEdit10.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit10.IsNullable_2 = false;  // M约束
+            fieldEdit10.AliasName_2 = "权属单位代码";
+            fieldEdit10.Length_2 = 19;
+            fields.AddField(field10);
+
+            // 权属单位名称
+            IField field11 = new FieldClass();
+            IFieldEdit fieldEdit11 = (IFieldEdit)field11;
+            fieldEdit11.Name_2 = "QSDWMC";
+            fieldEdit11.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit11.IsNullable_2 = false;  // M约束
+            fieldEdit11.AliasName_2 = "权属单位名称";
+            fieldEdit11.Length_2 = 60;
+            fields.AddField(field11);
+
+            // 坐落单位代码
+            IField field12 = new FieldClass();
+            IFieldEdit fieldEdit12 = (IFieldEdit)field12;
+            fieldEdit12.Name_2 = "ZLDWDM";
+            fieldEdit12.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit12.IsNullable_2 = false;  // M约束
+            fieldEdit12.AliasName_2 = "坐落单位代码";
+            fieldEdit12.Length_2 = 19;
+            fields.AddField(field12);
+
+            // 坐落单位名称
+            IField field13 = new FieldClass();
+            IFieldEdit fieldEdit13 = (IFieldEdit)field13;
+            fieldEdit13.Name_2 = "ZLDWMC";
+            fieldEdit13.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit13.IsNullable_2 = false;  // M约束
+            fieldEdit13.AliasName_2 = "坐落单位名称";
+            fieldEdit13.Length_2 = 60;
+            fields.AddField(field13);
+
+            // 国土调查图斑面积
+            IField field14 = new FieldClass();
+            IFieldEdit fieldEdit14 = (IFieldEdit)field14;
+            fieldEdit14.Name_2 = "GTDCTBMJ";
+            fieldEdit14.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit14.IsNullable_2 = false;  // M约束
+            fieldEdit14.AliasName_2 = "国土调查图斑面积";
+            fieldEdit14.Precision_2 = 15;
+            fieldEdit14.Scale_2 = 2;  // 小数位数
+            fields.AddField(field14);
+
+            // 划入城镇开发边界面积
+            IField field15 = new FieldClass();
+            IFieldEdit fieldEdit15 = (IFieldEdit)field15;
+            fieldEdit15.Name_2 = "CZKFBJMJ";
+            fieldEdit15.Type_2 = esriFieldType.esriFieldTypeDouble;
+            fieldEdit15.IsNullable_2 = true;  // O约束
+            fieldEdit15.AliasName_2 = "划入城镇开发边界面积";
+            fieldEdit15.Precision_2 = 15;
+            fieldEdit15.Scale_2 = 2;  // 小数位数
+            fields.AddField(field15);
+
+            // 飞入地标识
+            IField field16 = new FieldClass();
+            IFieldEdit fieldEdit16 = (IFieldEdit)field16;
+            fieldEdit16.Name_2 = "FRDBS";
+            fieldEdit16.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit16.IsNullable_2 = true;  // C约束
+            fieldEdit16.AliasName_2 = "飞入地标识";
+            fieldEdit16.Length_2 = 1;
+            fields.AddField(field16);
+
+            // 区域扩展代码
+            IField field17 = new FieldClass();
+            IFieldEdit fieldEdit17 = (IFieldEdit)field17;
+            fieldEdit17.Name_2 = "QYKZDM";
+            fieldEdit17.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit17.IsNullable_2 = true;  // O约束
+            fieldEdit17.AliasName_2 = "区域扩展代码";
+            fieldEdit17.Length_2 = 19;
+            fields.AddField(field17);
+
+            // 备注
+            IField field18 = new FieldClass();
+            IFieldEdit fieldEdit18 = (IFieldEdit)field18;
+            fieldEdit18.Name_2 = "BZ";
+            fieldEdit18.Type_2 = esriFieldType.esriFieldTypeString;
+            fieldEdit18.IsNullable_2 = true;  // O约束
+            fieldEdit18.AliasName_2 = "备注";
+            fieldEdit18.Length_2 = 254;
+            fields.AddField(field18);
         }
     }
 }

@@ -156,7 +156,7 @@
             this.titleLabel.Name = "titleLabel";
             this.titleLabel.Size = new System.Drawing.Size(1275, 45);
             this.titleLabel.TabIndex = 0;
-            this.titleLabel.Text = "广东省全民所有自然资源（森林、草地、湿地）资产清查工具 - 主处理模块";
+            this.titleLabel.Text = "广东省全民所有自然资源（森林、草地、湿地）资产清查工具";
             this.titleLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // tabControlMain
@@ -725,7 +725,7 @@
             this.MinimizeBox = false;
             this.Name = "MainProcessingTabsForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "广东省全民所有自然资源资产清查工具 - 主处理";
+            this.Text = "广东省全民所有自然资源资产清查工具";
             this.mainPanel.ResumeLayout(false);
             this.tabControlMain.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);

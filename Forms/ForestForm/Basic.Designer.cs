@@ -4,14 +4,6 @@ namespace ForestResourcePlugin
     {
         private System.ComponentModel.IContainer components = null;
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
 
         #region Windows Form Designer generated code
 
@@ -19,17 +11,19 @@ namespace ForestResourcePlugin
         {
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabDataSource = new System.Windows.Forms.TabPage();
+            this.buttonA6 = new System.Windows.Forms.Button();
+            this.buttonA4 = new System.Windows.Forms.Button();
+            this.buttonForestExcel = new System.Windows.Forms.Button();
             this.groupBoxFiles = new System.Windows.Forms.GroupBox();
+            this.buttonLDHSJGPath = new System.Windows.Forms.Button();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.cbxSelectAllCounty = new System.Windows.Forms.CheckBox();
             this.btnRefreshLayers = new System.Windows.Forms.Button();
             this.btnBrowseOutput = new System.Windows.Forms.Button();
             this.txtOutputPath = new System.Windows.Forms.TextBox();
-            this.lblLCXZGX = new System.Windows.Forms.Label();
-            this.lblCZKFBJ = new System.Windows.Forms.Label();
             this.lblOutput = new System.Windows.Forms.Label();
             this.chkListCounties = new System.Windows.Forms.CheckedListBox();
-            this.cmbLCXZGXPath = new System.Windows.Forms.ComboBox();
-            this.cmbCZKFBJPath = new System.Windows.Forms.ComboBox();
             this.groupBoxOptions = new System.Windows.Forms.GroupBox();
             this.chkTopologyCheck = new System.Windows.Forms.CheckBox();
             this.chkGeometryValidation = new System.Windows.Forms.CheckBox();
@@ -97,6 +91,9 @@ namespace ForestResourcePlugin
             // 
             // tabDataSource
             // 
+            this.tabDataSource.Controls.Add(this.buttonA6);
+            this.tabDataSource.Controls.Add(this.buttonA4);
+            this.tabDataSource.Controls.Add(this.buttonForestExcel);
             this.tabDataSource.Controls.Add(this.groupBoxFiles);
             this.tabDataSource.Controls.Add(this.groupBoxOptions);
             this.tabDataSource.Location = new System.Drawing.Point(4, 28);
@@ -108,18 +105,50 @@ namespace ForestResourcePlugin
             this.tabDataSource.Text = "数据源配置";
             this.tabDataSource.UseVisualStyleBackColor = true;
             // 
+            // buttonA6
+            // 
+            this.buttonA6.Location = new System.Drawing.Point(940, 364);
+            this.buttonA6.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonA6.Name = "buttonA6";
+            this.buttonA6.Size = new System.Drawing.Size(233, 41);
+            this.buttonA6.TabIndex = 7;
+            this.buttonA6.Text = "导出A6数据表格";
+            this.buttonA6.UseVisualStyleBackColor = true;
+            this.buttonA6.Click += new System.EventHandler(this.buttonA6_Click);
+            // 
+            // buttonA4
+            // 
+            this.buttonA4.Location = new System.Drawing.Point(940, 314);
+            this.buttonA4.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonA4.Name = "buttonA4";
+            this.buttonA4.Size = new System.Drawing.Size(233, 41);
+            this.buttonA4.TabIndex = 6;
+            this.buttonA4.Text = "导出A4数据表格";
+            this.buttonA4.UseVisualStyleBackColor = true;
+            this.buttonA4.Click += new System.EventHandler(this.buttonA4_Click);
+            // 
+            // buttonForestExcel
+            // 
+            this.buttonForestExcel.Location = new System.Drawing.Point(940, 258);
+            this.buttonForestExcel.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonForestExcel.Name = "buttonForestExcel";
+            this.buttonForestExcel.Size = new System.Drawing.Size(233, 41);
+            this.buttonForestExcel.TabIndex = 5;
+            this.buttonForestExcel.Text = "导出A2数据表格";
+            this.buttonForestExcel.UseVisualStyleBackColor = true;
+            this.buttonForestExcel.Click += new System.EventHandler(this.buttonForestExcel_Click);
+            // 
             // groupBoxFiles
             // 
+            this.groupBoxFiles.Controls.Add(this.buttonLDHSJGPath);
+            this.groupBoxFiles.Controls.Add(this.textBox1);
+            this.groupBoxFiles.Controls.Add(this.label1);
             this.groupBoxFiles.Controls.Add(this.cbxSelectAllCounty);
             this.groupBoxFiles.Controls.Add(this.btnRefreshLayers);
             this.groupBoxFiles.Controls.Add(this.btnBrowseOutput);
             this.groupBoxFiles.Controls.Add(this.txtOutputPath);
-            this.groupBoxFiles.Controls.Add(this.lblLCXZGX);
-            this.groupBoxFiles.Controls.Add(this.lblCZKFBJ);
             this.groupBoxFiles.Controls.Add(this.lblOutput);
             this.groupBoxFiles.Controls.Add(this.chkListCounties);
-            this.groupBoxFiles.Controls.Add(this.cmbLCXZGXPath);
-            this.groupBoxFiles.Controls.Add(this.cmbCZKFBJPath);
             this.groupBoxFiles.Location = new System.Drawing.Point(9, 8);
             this.groupBoxFiles.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxFiles.Name = "groupBoxFiles";
@@ -128,6 +157,36 @@ namespace ForestResourcePlugin
             this.groupBoxFiles.TabIndex = 0;
             this.groupBoxFiles.TabStop = false;
             this.groupBoxFiles.Text = "文件选择";
+            // 
+            // buttonLDHSJGPath
+            // 
+            this.buttonLDHSJGPath.Location = new System.Drawing.Point(596, 34);
+            this.buttonLDHSJGPath.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonLDHSJGPath.Name = "buttonLDHSJGPath";
+            this.buttonLDHSJGPath.Size = new System.Drawing.Size(112, 32);
+            this.buttonLDHSJGPath.TabIndex = 14;
+            this.buttonLDHSJGPath.Text = "浏览...";
+            this.buttonLDHSJGPath.UseVisualStyleBackColor = true;
+            this.buttonLDHSJGPath.Click += new System.EventHandler(this.buttonLDHSJGPath_Click);
+            // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(210, 35);
+            this.textBox1.Margin = new System.Windows.Forms.Padding(4);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.ReadOnly = true;
+            this.textBox1.Size = new System.Drawing.Size(360, 28);
+            this.textBox1.TabIndex = 13;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(8, 38);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(197, 18);
+            this.label1.TabIndex = 12;
+            this.label1.Text = "林地核算价格(LDHSJG):";
             // 
             // cbxSelectAllCounty
             // 
@@ -154,7 +213,7 @@ namespace ForestResourcePlugin
             // 
             // btnBrowseOutput
             // 
-            this.btnBrowseOutput.Location = new System.Drawing.Point(596, 162);
+            this.btnBrowseOutput.Location = new System.Drawing.Point(596, 74);
             this.btnBrowseOutput.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseOutput.Name = "btnBrowseOutput";
             this.btnBrowseOutput.Size = new System.Drawing.Size(112, 32);
@@ -165,37 +224,17 @@ namespace ForestResourcePlugin
             // 
             // txtOutputPath
             // 
-            this.txtOutputPath.Location = new System.Drawing.Point(210, 162);
+            this.txtOutputPath.Location = new System.Drawing.Point(210, 77);
             this.txtOutputPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtOutputPath.Name = "txtOutputPath";
             this.txtOutputPath.ReadOnly = true;
             this.txtOutputPath.Size = new System.Drawing.Size(360, 28);
             this.txtOutputPath.TabIndex = 7;
             // 
-            // lblLCXZGX
-            // 
-            this.lblLCXZGX.AutoSize = true;
-            this.lblLCXZGX.Location = new System.Drawing.Point(8, 42);
-            this.lblLCXZGX.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblLCXZGX.Name = "lblLCXZGX";
-            this.lblLCXZGX.Size = new System.Drawing.Size(197, 18);
-            this.lblLCXZGX.TabIndex = 0;
-            this.lblLCXZGX.Text = "林草现状图层(LCXZGX):";
-            // 
-            // lblCZKFBJ
-            // 
-            this.lblCZKFBJ.AutoSize = true;
-            this.lblCZKFBJ.Location = new System.Drawing.Point(8, 82);
-            this.lblCZKFBJ.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblCZKFBJ.Name = "lblCZKFBJ";
-            this.lblCZKFBJ.Size = new System.Drawing.Size(197, 18);
-            this.lblCZKFBJ.TabIndex = 3;
-            this.lblCZKFBJ.Text = "城镇开发边界(CZKFBJ):";
-            // 
             // lblOutput
             // 
             this.lblOutput.AutoSize = true;
-            this.lblOutput.Location = new System.Drawing.Point(14, 166);
+            this.lblOutput.Location = new System.Drawing.Point(14, 80);
             this.lblOutput.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblOutput.Name = "lblOutput";
             this.lblOutput.Size = new System.Drawing.Size(89, 18);
@@ -208,30 +247,8 @@ namespace ForestResourcePlugin
             this.chkListCounties.Location = new System.Drawing.Point(750, 38);
             this.chkListCounties.Margin = new System.Windows.Forms.Padding(4);
             this.chkListCounties.Name = "chkListCounties";
-            this.chkListCounties.Size = new System.Drawing.Size(274, 179);
+            this.chkListCounties.Size = new System.Drawing.Size(274, 154);
             this.chkListCounties.TabIndex = 10;
-            // 
-            // cmbLCXZGXPath
-            // 
-            this.cmbLCXZGXPath.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbLCXZGXPath.FormattingEnabled = true;
-            this.cmbLCXZGXPath.Location = new System.Drawing.Point(210, 38);
-            this.cmbLCXZGXPath.Margin = new System.Windows.Forms.Padding(4);
-            this.cmbLCXZGXPath.Name = "cmbLCXZGXPath";
-            this.cmbLCXZGXPath.Size = new System.Drawing.Size(523, 26);
-            this.cmbLCXZGXPath.TabIndex = 1;
-            this.cmbLCXZGXPath.SelectedIndexChanged += new System.EventHandler(this.cmbLCXZGXPath_SelectedIndexChanged);
-            // 
-            // cmbCZKFBJPath
-            // 
-            this.cmbCZKFBJPath.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbCZKFBJPath.FormattingEnabled = true;
-            this.cmbCZKFBJPath.Location = new System.Drawing.Point(210, 80);
-            this.cmbCZKFBJPath.Margin = new System.Windows.Forms.Padding(4);
-            this.cmbCZKFBJPath.Name = "cmbCZKFBJPath";
-            this.cmbCZKFBJPath.Size = new System.Drawing.Size(523, 26);
-            this.cmbCZKFBJPath.TabIndex = 4;
-            this.cmbCZKFBJPath.SelectedIndexChanged += new System.EventHandler(this.cmbCZKFBJPath_SelectedIndexChanged);
             // 
             // groupBoxOptions
             // 
@@ -335,7 +352,7 @@ namespace ForestResourcePlugin
             // 
             this.cmbLandTypeField.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbLandTypeField.FormattingEnabled = true;
-            this.cmbLandTypeField.Location = new System.Drawing.Point(150, 34);
+            this.cmbLandTypeField.Location = new System.Drawing.Point(167, 34);
             this.cmbLandTypeField.Margin = new System.Windows.Forms.Padding(4);
             this.cmbLandTypeField.Name = "cmbLandTypeField";
             this.cmbLandTypeField.Size = new System.Drawing.Size(298, 26);
@@ -357,9 +374,9 @@ namespace ForestResourcePlugin
             this.lblLandTypeField.Location = new System.Drawing.Point(22, 39);
             this.lblLandTypeField.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblLandTypeField.Name = "lblLandTypeField";
-            this.lblLandTypeField.Size = new System.Drawing.Size(89, 18);
+            this.lblLandTypeField.Size = new System.Drawing.Size(125, 18);
             this.lblLandTypeField.TabIndex = 0;
-            this.lblLandTypeField.Text = "地类字段:";
+            this.lblLandTypeField.Text = "地类编码字段:";
             // 
             // lblLandOwnerField
             // 
@@ -414,14 +431,12 @@ namespace ForestResourcePlugin
             // chkCollectiveInBoundary
             // 
             this.chkCollectiveInBoundary.AutoSize = true;
-            this.chkCollectiveInBoundary.Checked = true;
-            this.chkCollectiveInBoundary.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkCollectiveInBoundary.Location = new System.Drawing.Point(375, 66);
             this.chkCollectiveInBoundary.Margin = new System.Windows.Forms.Padding(4);
             this.chkCollectiveInBoundary.Name = "chkCollectiveInBoundary";
-            this.chkCollectiveInBoundary.Size = new System.Drawing.Size(394, 22);
+            this.chkCollectiveInBoundary.Size = new System.Drawing.Size(358, 22);
             this.chkCollectiveInBoundary.TabIndex = 2;
-            this.chkCollectiveInBoundary.Text = "土地权属性质为\"集体\"且位于城镇开发边界内";
+            this.chkCollectiveInBoundary.Text = "土地权属性质为\"集体\"且位于开发边界内";
             this.chkCollectiveInBoundary.UseVisualStyleBackColor = true;
             // 
             // groupBoxPreview
@@ -584,10 +599,10 @@ namespace ForestResourcePlugin
             // 
             // totalProgressBar
             // 
-            this.totalProgressBar.Location = new System.Drawing.Point(266, 72);
+            this.totalProgressBar.Location = new System.Drawing.Point(388, 84);
             this.totalProgressBar.Margin = new System.Windows.Forms.Padding(4);
             this.totalProgressBar.Name = "totalProgressBar";
-            this.totalProgressBar.Size = new System.Drawing.Size(917, 34);
+            this.totalProgressBar.Size = new System.Drawing.Size(789, 22);
             this.totalProgressBar.TabIndex = 6;
             // 
             // lblTotalStatus
@@ -703,12 +718,8 @@ namespace ForestResourcePlugin
         private System.Windows.Forms.Button btnRefreshLayers; // 刷新图层按钮
         private System.Windows.Forms.Button btnBrowseOutput;
         private System.Windows.Forms.TextBox txtOutputPath;
-        private System.Windows.Forms.Label lblLCXZGX;
-        private System.Windows.Forms.Label lblCZKFBJ;
         private System.Windows.Forms.Label lblOutput;
         private System.Windows.Forms.CheckedListBox chkListCounties;
-        private System.Windows.Forms.ComboBox cmbLCXZGXPath;
-        private System.Windows.Forms.ComboBox cmbCZKFBJPath;
 
         private System.Windows.Forms.GroupBox groupBoxOptions;
         private System.Windows.Forms.CheckBox chkTopologyCheck;
@@ -754,5 +765,11 @@ namespace ForestResourcePlugin
         private System.Windows.Forms.CheckBox cbxSelectAllCounty;
         private System.Windows.Forms.Label lblTotalStatus;
         private System.Windows.Forms.ProgressBar totalProgressBar;
+        private System.Windows.Forms.Button buttonLDHSJGPath;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button buttonForestExcel;
+        private System.Windows.Forms.Button buttonA6;
+        private System.Windows.Forms.Button buttonA4;
     }
 }

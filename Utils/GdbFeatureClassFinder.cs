@@ -1,7 +1,8 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using ESRI.ArcGIS.Geodatabase;
 using ESRI.ArcGIS.DataSourcesGDB;
 using ESRI.ArcGIS.Geometry;
@@ -9,25 +10,93 @@ using ESRI.ArcGIS.Geometry;
 namespace ForestResourcePlugin
 {
     /// <summary>
-    /// ÓÃÓÚ²éÕÒºÍ²Ù×÷µØÀíÊı¾İ¿âÒªËØÀàµÄ¹¤¾ßÀà
+    /// ç”¨äºæŸ¥æ‰¾å’Œæ“ä½œåœ°ç†æ•°æ®åº“è¦ç´ ç±»çš„å·¥å…·ç±»
     /// </summary>
     public static class GdbFeatureClassFinder
     {
         /// <summary>
-        /// ´ÓGDBÂ·¾¶ÌáÈ¡ÏØÃû£¨µÚÒ»¼¶ÎÄ¼ş¼ĞÃû³Æ£©
+        /// ä»å­—ç¬¦ä¸²ä¸­æå–å…­ä½æ•°å­—çš„å¿çº§ä»£ç 
         /// </summary>
-        /// <param name="gdbPath">GDBÎÄ¼şÂ·¾¶</param>
-        /// <param name="rootDir">¸ùÄ¿Â¼Â·¾¶</param>
-        /// <returns>ÏØÃû</returns>
+        /// <param name="input">è¾“å…¥å­—ç¬¦ä¸²</param>
+        /// <returns>å…­ä½æ•°å­—çš„å¿çº§ä»£ç ï¼Œå¦‚æœæ²¡æœ‰æ‰¾åˆ°åˆ™è¿”å›åŸå­—ç¬¦ä¸²</returns>
+        private static string ExtractCountyCode(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            // æŸ¥æ‰¾è¿ç»­çš„6ä½æ•°å­—
+            var match = Regex.Match(input, @"\d{6}");
+            if (match.Success)
+            {
+                System.Diagnostics.Debug.WriteLine($"ä» '{input}' ä¸­æå–å‡ºå¿çº§ä»£ç : {match.Value}");
+                return match.Value;
+            }
+
+            // å¦‚æœæ²¡æœ‰æ‰¾åˆ°6ä½æ•°å­—ï¼Œè¿”å›åŸå­—ç¬¦ä¸²
+            System.Diagnostics.Debug.WriteLine($"åœ¨ '{input}' ä¸­æœªæ‰¾åˆ°å…­ä½æ•°å­—å¿çº§ä»£ç ï¼Œä¿ç•™åŸå­—ç¬¦ä¸²");
+            return input;
+        }
+
+        /// <summary>
+        /// ğŸ”¥ æ–°å¢ï¼šå…¬å…±æ–¹æ³• - ä»ä»»æ„è·¯å¾„ä¸­æå–å¿çº§ä»£ç 
+        /// è¿™ä¸ªæ–¹æ³•å¯ä»¥è¢«å…¶ä»–ç±»å’Œå‡½æ•°è°ƒç”¨ï¼Œç¡®ä¿æ•´ä¸ªåº”ç”¨ä¸­å¿çº§ä»£ç æå–çš„ä¸€è‡´æ€§
+        /// </summary>
+        /// <param name="path">ä»»æ„æ–‡ä»¶æˆ–æ–‡ä»¶å¤¹è·¯å¾„</param>
+        /// <returns>å…­ä½æ•°å­—çš„å¿çº§ä»£ç ï¼Œå¦‚æœæ²¡æœ‰æ‰¾åˆ°åˆ™è¿”å›åŸå­—ç¬¦ä¸²</returns>
+        public static string GetCountyCodeFromPath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return path;
+
+            try
+            {
+                // åˆ†æè·¯å¾„çš„å„ä¸ªéƒ¨åˆ†
+                string[] pathParts = path.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+                // ä»è·¯å¾„çš„å„ä¸ªéƒ¨åˆ†ä¸­æŸ¥æ‰¾å¿çº§ä»£ç 
+                foreach (string part in pathParts)
+                {
+                    var match = Regex.Match(part, @"\d{6}");
+                    if (match.Success)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"ä»è·¯å¾„ '{path}' ä¸­æå–å‡ºå¿çº§ä»£ç : {match.Value}");
+                        return match.Value;
+                    }
+                }
+
+                // å¦‚æœåœ¨è·¯å¾„å„éƒ¨åˆ†ä¸­éƒ½æ²¡æ‰¾åˆ°ï¼Œå°è¯•ä»æ•´ä¸ªè·¯å¾„å­—ç¬¦ä¸²ä¸­æå–
+                var directMatch = Regex.Match(path, @"\d{6}");
+                if (directMatch.Success)
+                {
+                    System.Diagnostics.Debug.WriteLine($"ä»è·¯å¾„ '{path}' ä¸­ç›´æ¥æå–å‡ºå¿çº§ä»£ç : {directMatch.Value}");
+                    return directMatch.Value;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"è­¦å‘Š: ä»è·¯å¾„ '{path}' ä¸­æœªæ‰¾åˆ°å…­ä½æ•°å¿ä»£ç ");
+                return path;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ä»è·¯å¾„ '{path}' æå–å¿çº§ä»£ç æ—¶å‡ºé”™: {ex.Message}");
+                return path;
+            }
+        }
+
+        /// <summary>
+        /// ä»GDBè·¯å¾„æå–å¿åï¼ˆç¬¬ä¸€çº§æ–‡ä»¶å¤¹åç§°ä¸­çš„å…­ä½æ•°å­—ä»£ç ï¼‰
+        /// </summary>
+        /// <param name="gdbPath">GDBæ–‡ä»¶è·¯å¾„</param>
+        /// <param name="rootDir">æ ¹ç›®å½•è·¯å¾„</param>
+        /// <returns>å¿çº§ä»£ç ï¼ˆå…­ä½æ•°å­—ï¼‰</returns>
         private static string ExtractCountyNameFromGdbPath(string gdbPath, string rootDir)
         {
             try
             {
-                // ¹æ·¶»¯Â·¾¶
+                // è§„èŒƒåŒ–è·¯å¾„
                 string normalizedRoot = System.IO.Path.GetFullPath(rootDir).TrimEnd('\\', '/');
                 string normalizedGdb = System.IO.Path.GetFullPath(gdbPath);
-                
-                // ¼ÆËãÏà¶ÔÂ·¾¶
+
+                // è®¡ç®—ç›¸å¯¹è·¯å¾„
                 string relativePath = "";
                 if (normalizedGdb.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase))
                 {
@@ -35,180 +104,204 @@ namespace ForestResourcePlugin
                 }
                 else
                 {
-                    // Èç¹ûÂ·¾¶²»Æ¥Åä£¬³¢ÊÔ´ÓGDB¸¸Ä¿Â¼ÌáÈ¡
-                    System.Diagnostics.Debug.WriteLine($"¾¯¸æ: GDBÂ·¾¶ {normalizedGdb} ²»ÔÚ¸ùÄ¿Â¼ {normalizedRoot} ÏÂ");
-                    return System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(gdbPath));
+                    // å¦‚æœè·¯å¾„ä¸åŒ¹é…ï¼Œå°è¯•ä»GDBçˆ¶ç›®å½•æå–
+                    System.Diagnostics.Debug.WriteLine($"è­¦å‘Š: GDBè·¯å¾„ {normalizedGdb} ä¸åœ¨æ ¹ç›®å½• {normalizedRoot} ä¸‹");
+                    string parentDirName = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(gdbPath));
+                    return GetCountyCodeFromPath(parentDirName); // ğŸ”¥ ä½¿ç”¨æ–°çš„å…¬å…±æ–¹æ³•
                 }
-                
-                // ·Ö¸îÂ·¾¶²¢»ñÈ¡µÚÒ»¼¶Ä¿Â¼Ãû³Æ£¨ÏØÃû£©
+
+                // åˆ†å‰²è·¯å¾„å¹¶è·å–ç¬¬ä¸€çº§ç›®å½•åç§°
                 string[] pathParts = relativePath.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
                 if (pathParts.Length >= 1)
                 {
-                    // ·µ»ØµÚÒ»¼¶Ä¿Â¼Ãû³Æ£¬ÕâÓ¦¸ÃÊÇÏØÃû
-                    string countyName = pathParts[0];
-                    System.Diagnostics.Debug.WriteLine($"´ÓGDBÂ·¾¶ {relativePath} ÌáÈ¡ÏØÃû: {countyName}");
-                    return countyName;
+                    // ä»ç¬¬ä¸€çº§ç›®å½•åç§°ä¸­æå–å¿çº§ä»£ç 
+                    string firstLevelDir = pathParts[0];
+                    string countyCode = GetCountyCodeFromPath(firstLevelDir); // ğŸ”¥ ä½¿ç”¨æ–°çš„å…¬å…±æ–¹æ³•
+                    System.Diagnostics.Debug.WriteLine($"ä»GDBè·¯å¾„ {relativePath} æå–å¿çº§ä»£ç : {countyCode} (åŸæ–‡ä»¶å¤¹å: {firstLevelDir})");
+                    return countyCode;
                 }
                 else
                 {
-                    // ¶µµ×·½°¸£ºÊ¹ÓÃGDBÎÄ¼ş¼ĞµÄ¸¸Ä¿Â¼Ãû
+                    // å…œåº•æ–¹æ¡ˆï¼šä½¿ç”¨GDBæ–‡ä»¶å¤¹çš„çˆ¶ç›®å½•å
                     string fallbackName = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(gdbPath));
-                    System.Diagnostics.Debug.WriteLine($"¾¯¸æ: ÎŞ·¨´ÓGDBÂ·¾¶ÌáÈ¡ÏØÃû£¬Ê¹ÓÃ¸¸Ä¿Â¼Ãû: {fallbackName}");
-                    return fallbackName;
+                    string countyCode = GetCountyCodeFromPath(fallbackName); // ğŸ”¥ ä½¿ç”¨æ–°çš„å…¬å…±æ–¹æ³•
+                    System.Diagnostics.Debug.WriteLine($"è­¦å‘Š: æ— æ³•ä»GDBè·¯å¾„æå–å¿åï¼Œä½¿ç”¨çˆ¶ç›®å½•åæå–å¿çº§ä»£ç : {countyCode}");
+                    return countyCode;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"´ÓGDBÂ·¾¶ÌáÈ¡ÏØÃûÊ±³ö´í: {ex.Message}");
-                return System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(gdbPath));
+                System.Diagnostics.Debug.WriteLine($"ä»GDBè·¯å¾„æå–å¿åæ—¶å‡ºé”™: {ex.Message}");
+                string fallbackName = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(gdbPath));
+                return GetCountyCodeFromPath(fallbackName); // ğŸ”¥ ä½¿ç”¨æ–°çš„å…¬å…±æ–¹æ³•
             }
         }
 
         /// <summary>
-        /// ²éÕÒÄ¿Â¼ÖĞµÄËùÓĞGDB²¢ÕÒ³ö°üº¬Ö¸¶¨Ä£Ê½Ãû³ÆµÄÒªËØÀà
+        /// æŸ¥æ‰¾ç›®å½•ä¸­çš„æ‰€æœ‰GDBå¹¶æ‰¾å‡ºåŒ…å«æŒ‡å®šæ¨¡å¼åç§°çš„è¦ç´ ç±»ä½œä¸ºæºæ•°æ®
+        /// ä¸“é—¨ç”¨äºSLZYZCç›´æ¥æ•°æ®æºæŸ¥æ‰¾ï¼Œæ›¿ä»£åŸæœ‰çš„LCXZGXä¸­é—´è¿‡ç¨‹
+        /// å¢å¼ºç‰ˆï¼šæ”¯æŒä»åŒ…å«é¢å¤–æ–‡å­—çš„æ–‡ä»¶å¤¹åç§°ä¸­æå–å¿çº§ä»£ç 
         /// </summary>
-        /// <param name="rootDir">¸ùÄ¿Â¼</param>
-        /// <param name="pattern">Ãû³ÆÆ¥ÅäÄ£Ê½</param>
-        /// <param name="geometryType">¼¸ºÎÀàĞÍ£¨¿ÉÑ¡£©</param>
-        /// <returns>ÒªËØÀàÎÄ¼şĞÅÏ¢ÁĞ±í</returns>
-        public static List<LCXZGXFileInfo> FindFeatureClassesWithPattern(string rootDir, string pattern, 
-            esriGeometryType geometryType = esriGeometryType.esriGeometryAny)
+        /// <param name="rootDir">æ ¹ç›®å½•</param>
+        /// <param name="pattern">åç§°åŒ¹é…æ¨¡å¼</param>
+        /// <param name="geometryType">å‡ ä½•ç±»å‹ï¼ˆå¯é€‰ï¼‰</param>
+        /// <param name="countyCode">å¿çº§ä»£ç ï¼ˆå¯é€‰ï¼Œç”¨äºç­›é€‰ç‰¹å®šå¿çš„æ•°æ®ï¼‰</param>
+        /// <returns>æºæ•°æ®æ–‡ä»¶ä¿¡æ¯åˆ—è¡¨</returns>
+        public static List<SourceDataFileInfo> FindFeatureClassesWithPatternAsSourceData(string rootDir, string pattern,
+            esriGeometryType geometryType = esriGeometryType.esriGeometryAny, string countyCode = null)
         {
-            var result = new List<LCXZGXFileInfo>();
-            
+            var result = new List<SourceDataFileInfo>();
+
             try
             {
                 if (!Directory.Exists(rootDir))
                 {
-                    System.Diagnostics.Debug.WriteLine($"´íÎó: Ä¿Â¼²»´æÔÚ: {rootDir}");
+                    System.Diagnostics.Debug.WriteLine($"é”™è¯¯: ç›®å½•ä¸å­˜åœ¨: {rootDir}");
                     return result;
                 }
-                
-                System.Diagnostics.Debug.WriteLine($"¿ªÊ¼ÔÚ {rootDir} ËÑË÷°üº¬ '{pattern}' µÄGDBÒªËØÀà");
-                
-                // ²éÕÒËùÓĞ.gdbÄ¿Â¼
+
+                System.Diagnostics.Debug.WriteLine($"å¼€å§‹åœ¨ {rootDir} æœç´¢åŒ…å« '{pattern}' çš„æºæ•°æ®GDBè¦ç´ ç±»" +
+                    (string.IsNullOrEmpty(countyCode) ? "" : $" (ç­›é€‰å¿çº§ä»£ç : {countyCode})"));
+
+                // æŸ¥æ‰¾æ‰€æœ‰.gdbç›®å½•
                 var gdbs = Directory.GetDirectories(rootDir, "*.gdb", SearchOption.AllDirectories);
-                System.Diagnostics.Debug.WriteLine($"ÔÚ {rootDir} Ä¿Â¼ÏÂÕÒµ½ {gdbs.Length} ¸öGDBÎÄ¼ş¼Ğ");
-                
+                System.Diagnostics.Debug.WriteLine($"åœ¨ {rootDir} ç›®å½•ä¸‹æ‰¾åˆ° {gdbs.Length} ä¸ªGDBæ–‡ä»¶å¤¹");
+
                 foreach (var gdbPath in gdbs)
                 {
-                    System.Diagnostics.Debug.WriteLine($"´¦ÀíGDB: {gdbPath}");
+                    // ğŸ”¥ æ–°å¢ï¼šå¦‚æœæŒ‡å®šäº†å¿çº§ä»£ç ï¼Œå…ˆæ£€æŸ¥æ˜¯å¦åŒ¹é…
+                    if (!string.IsNullOrEmpty(countyCode))
+                    {
+                        // æå–GDBè·¯å¾„å¯¹åº”çš„å¿çº§ä»£ç 
+                        string gdbCountyCode = ExtractCountyNameFromGdbPath(gdbPath, rootDir);
+
+                        // å¦‚æœæå–çš„å¿çº§ä»£ç ä¸åŒ¹é…ï¼Œè·³è¿‡æ­¤GDB
+                        if (!string.Equals(gdbCountyCode, countyCode, StringComparison.OrdinalIgnoreCase))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"è·³è¿‡GDB {gdbPath}: å¿çº§ä»£ç ä¸åŒ¹é… (æœŸæœ›: {countyCode}, å®é™…: {gdbCountyCode})");
+                            continue;
+                        }
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"å¤„ç†æºæ•°æ®GDB: {gdbPath}");
                     IWorkspace workspace = null;
-                    
+
                     try
                     {
-                        // ´´½¨FileGDB¹¤×÷¿Õ¼ä¹¤³§
+                        // åˆ›å»ºFileGDBå·¥ä½œç©ºé—´å·¥å‚
                         Type factoryType = Type.GetTypeFromProgID("esriDataSourcesGDB.FileGDBWorkspaceFactory");
                         if (factoryType == null)
                         {
-                            System.Diagnostics.Debug.WriteLine("´íÎó: ÎŞ·¨»ñÈ¡FileGDBWorkspaceFactoryµÄÀàĞÍ");
+                            System.Diagnostics.Debug.WriteLine("é”™è¯¯: æ— æ³•è·å–FileGDBWorkspaceFactoryçš„ç±»å‹");
                             continue;
                         }
-                        
+
                         IWorkspaceFactory workspaceFactory = Activator.CreateInstance(factoryType) as IWorkspaceFactory;
                         if (workspaceFactory == null)
                         {
-                            System.Diagnostics.Debug.WriteLine("´íÎó: ÎŞ·¨´´½¨FileGDBWorkspaceFactoryÊµÀı");
+                            System.Diagnostics.Debug.WriteLine("é”™è¯¯: æ— æ³•åˆ›å»ºFileGDBWorkspaceFactoryå®ä¾‹");
                             continue;
                         }
-                        
-                        // ÑéÖ¤Â·¾¶ÊÇ·ñÊÇÓĞĞ§µÄ¹¤×÷¿Õ¼ä
+
+                        // éªŒè¯è·¯å¾„æ˜¯å¦æ˜¯æœ‰æ•ˆçš„å·¥ä½œç©ºé—´
                         if (!workspaceFactory.IsWorkspace(gdbPath))
                         {
-                            System.Diagnostics.Debug.WriteLine($"¾¯¸æ: {gdbPath} ²»ÊÇÓĞĞ§µÄFileGDB¹¤×÷¿Õ¼ä");
+                            System.Diagnostics.Debug.WriteLine($"è­¦å‘Š: {gdbPath} ä¸æ˜¯æœ‰æ•ˆçš„FileGDBå·¥ä½œç©ºé—´");
                             continue;
                         }
-                        
-                        // ´ò¿ª¹¤×÷¿Õ¼ä
+
+                        // æ‰“å¼€å·¥ä½œç©ºé—´
                         workspace = workspaceFactory.OpenFromFile(gdbPath, 0);
                         if (workspace == null)
                         {
-                            System.Diagnostics.Debug.WriteLine($"´íÎó: ÎŞ·¨´ò¿ª¹¤×÷¿Õ¼ä: {gdbPath}");
+                            System.Diagnostics.Debug.WriteLine($"é”™è¯¯: æ— æ³•æ‰“å¼€å·¥ä½œç©ºé—´: {gdbPath}");
                             continue;
                         }
-                        
-                        System.Diagnostics.Debug.WriteLine($"³É¹¦´ò¿ªGDB¹¤×÷¿Õ¼ä: {gdbPath}");
-                        
-                        // »ñÈ¡ÒªËØÀà¹¤×÷¿Õ¼ä½Ó¿Ú
+
+                        System.Diagnostics.Debug.WriteLine($"æˆåŠŸæ‰“å¼€æºæ•°æ®GDBå·¥ä½œç©ºé—´: {gdbPath}");
+
+                        // è·å–è¦ç´ ç±»å·¥ä½œç©ºé—´æ¥å£
                         IFeatureWorkspace featureWorkspace = workspace as IFeatureWorkspace;
                         if (featureWorkspace == null)
                         {
-                            System.Diagnostics.Debug.WriteLine($"´íÎó: {gdbPath} ²»Ö§³ÖÒªËØÀà²Ù×÷");
+                            System.Diagnostics.Debug.WriteLine($"é”™è¯¯: {gdbPath} ä¸æ”¯æŒè¦ç´ ç±»æ“ä½œ");
                             continue;
                         }
-                            
-                        // »ñÈ¡ÒªËØÀàÁĞ±í
+
+                        // è·å–è¦ç´ ç±»åˆ—è¡¨
                         IEnumDataset enumDataset = workspace.get_Datasets(esriDatasetType.esriDTFeatureClass);
                         if (enumDataset == null)
                         {
-                            System.Diagnostics.Debug.WriteLine($"¾¯¸æ: ÎŞ·¨»ñÈ¡ÒªËØÀàÃ¶¾ÙÆ÷");
+                            System.Diagnostics.Debug.WriteLine($"è­¦å‘Š: æ— æ³•è·å–è¦ç´ ç±»æšä¸¾å™¨");
                             continue;
                         }
-                        
-                        // ±éÀúËùÓĞÒªËØÀà
+
+                        // éå†æ‰€æœ‰è¦ç´ ç±»
                         enumDataset.Reset();
                         IDataset dataset = null;
-                        
+
                         while ((dataset = enumDataset.Next()) != null)
                         {
                             try
                             {
-                                System.Diagnostics.Debug.WriteLine($"´¦ÀíÒªËØÀà: {dataset.Name}");
-                                
-                                // ¼ì²éÃû³ÆÊÇ·ñÆ¥Åä
+                                System.Diagnostics.Debug.WriteLine($"å¤„ç†æºæ•°æ®è¦ç´ ç±»: {dataset.Name}");
+
+                                // æ£€æŸ¥åç§°æ˜¯å¦åŒ¹é…
                                 bool nameMatches = dataset.Name.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0;
-                                System.Diagnostics.Debug.WriteLine($"ÒªËØÀàÃû³ÆÆ¥Åä½á¹û: {nameMatches} (Ãû³Æ: {dataset.Name}, Ä£Ê½: {pattern})");
-                                
+                                System.Diagnostics.Debug.WriteLine($"æºæ•°æ®è¦ç´ ç±»åç§°åŒ¹é…ç»“æœ: {nameMatches} (åç§°: {dataset.Name}, æ¨¡å¼: {pattern})");
+
                                 if (nameMatches)
                                 {
-                                    // ³¢ÊÔ´ò¿ªÒªËØÀàÒÔ»ñÈ¡¼¸ºÎÀàĞÍĞÅÏ¢
+                                    // å°è¯•æ‰“å¼€è¦ç´ ç±»ä»¥è·å–å‡ ä½•ç±»å‹ä¿¡æ¯
                                     IFeatureClass featureClass = featureWorkspace.OpenFeatureClass(dataset.Name);
                                     if (featureClass == null)
                                     {
-                                        System.Diagnostics.Debug.WriteLine($"´íÎó: ÎŞ·¨´ò¿ªÒªËØÀà {dataset.Name}");
+                                        System.Diagnostics.Debug.WriteLine($"é”™è¯¯: æ— æ³•æ‰“å¼€æºæ•°æ®è¦ç´ ç±» {dataset.Name}");
                                         continue;
                                     }
-                                    
-                                    // Èç¹ûÖ¸¶¨ÁË¼¸ºÎÀàĞÍ£¬ÑéÖ¤ÊÇ·ñÆ¥Åä
+
+                                    // å¦‚æœæŒ‡å®šäº†å‡ ä½•ç±»å‹ï¼ŒéªŒè¯æ˜¯å¦åŒ¹é…
                                     if (geometryType != esriGeometryType.esriGeometryAny)
                                     {
                                         bool geomMatches = featureClass.ShapeType == geometryType;
-                                        System.Diagnostics.Debug.WriteLine($"¼¸ºÎÀàĞÍÆ¥Åä½á¹û: {geomMatches} (µ±Ç°: {featureClass.ShapeType}, ÆÚÍû: {geometryType})");
-                                        
+                                        System.Diagnostics.Debug.WriteLine($"å‡ ä½•ç±»å‹åŒ¹é…ç»“æœ: {geomMatches} (å½“å‰: {featureClass.ShapeType}, æœŸæœ›: {geometryType})");
+
                                         if (!geomMatches)
                                         {
                                             System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);
                                             continue;
                                         }
                                     }
-                                    
-                                    // »ñÈ¡ÒªËØÊıÁ¿
+
+                                    // è·å–è¦ç´ æ•°é‡
                                     int featureCount = featureClass.FeatureCount(null);
-                                    System.Diagnostics.Debug.WriteLine($"ÒªËØÀà {dataset.Name} °üº¬ {featureCount} ¸öÒªËØ");
-                                    
-                                    // ÌáÈ¡ÏØÃû£¨µÚÒ»¼¶ÎÄ¼ş¼ĞÃû³Æ£©
-                                    string countyName = ExtractCountyNameFromGdbPath(gdbPath, rootDir);
-                                    
-                                    var fileInfo = new LCXZGXFileInfo
+                                    System.Diagnostics.Debug.WriteLine($"æºæ•°æ®è¦ç´ ç±» {dataset.Name} åŒ…å« {featureCount} ä¸ªè¦ç´ ");
+
+                                    // ğŸ”¥ ä¿®æ”¹ï¼šæå–å¿çº§ä»£ç ï¼ˆä»ç¬¬ä¸€çº§æ–‡ä»¶å¤¹åç§°ä¸­æå–å…­ä½æ•°å­—ï¼‰
+                                    string extractedCountyCode = ExtractCountyNameFromGdbPath(gdbPath, rootDir);
+
+                                    // ğŸ”¥ ä¿®æ”¹ï¼šåˆ›å»ºæºæ•°æ®æ–‡ä»¶ä¿¡æ¯ï¼Œä½¿ç”¨æå–çš„å¿çº§ä»£ç ä½œä¸ºæ˜¾ç¤ºåç§°
+                                    var sourceDataInfo = new SourceDataFileInfo
                                     {
                                         FullPath = gdbPath,
-                                        DisplayName = countyName, // Ê¹ÓÃÏØÃû×÷ÎªÏÔÊ¾Ãû³Æ
+                                        DisplayName = extractedCountyCode, // ğŸ”¥ ä¿®æ”¹ï¼šä½¿ç”¨æå–çš„å¿çº§ä»£ç 
                                         IsGdb = true,
                                         FeatureClassName = dataset.Name,
-                                        GeometryType = featureClass.ShapeType
+                                        GeometryType = featureClass.ShapeType,
+                                        CountyCode = extractedCountyCode // ğŸ”¥ æ–°å¢ï¼šè®¾ç½®å¿çº§ä»£ç 
                                     };
-                                    
-                                    result.Add(fileInfo);
-                                    System.Diagnostics.Debug.WriteLine($"ÕÒµ½Æ¥ÅäµÄGDBÒªËØÀà: ÏØÃû={countyName}, GDBÂ·¾¶={gdbPath}, ÒªËØÀàÃû={dataset.Name}, ¼¸ºÎÀàĞÍ={featureClass.ShapeType}");
-                                    
-                                    // ÊÍ·ÅÒªËØÀà×ÊÔ´
+
+                                    result.Add(sourceDataInfo);
+                                    System.Diagnostics.Debug.WriteLine($"æ‰¾åˆ°åŒ¹é…çš„æºæ•°æ®GDBè¦ç´ ç±»: å¿çº§ä»£ç ={extractedCountyCode}, GDBè·¯å¾„={gdbPath}, è¦ç´ ç±»å={dataset.Name}, å‡ ä½•ç±»å‹={featureClass.ShapeType}");
+
+                                    // é‡Šæ”¾è¦ç´ ç±»èµ„æº
                                     System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);
                                 }
                             }
                             catch (Exception ex)
                             {
-                                System.Diagnostics.Debug.WriteLine($"´¦ÀíÒªËØÀà {dataset.Name} Ê±³ö´í: {ex.Message}");
-                                System.Diagnostics.Debug.WriteLine($"Òì³£ÏêÇé: {ex}");
+                                System.Diagnostics.Debug.WriteLine($"å¤„ç†æºæ•°æ®è¦ç´ ç±» {dataset.Name} æ—¶å‡ºé”™: {ex.Message}");
+                                System.Diagnostics.Debug.WriteLine($"å¼‚å¸¸è¯¦æƒ…: {ex}");
                             }
                             finally
                             {
@@ -218,18 +311,18 @@ namespace ForestResourcePlugin
                                 }
                             }
                         }
-                        
-                        // ÊÍ·ÅÃ¶¾ÙÆ÷×ÊÔ´
+
+                        // é‡Šæ”¾æšä¸¾å™¨èµ„æº
                         System.Runtime.InteropServices.Marshal.ReleaseComObject(enumDataset);
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"´ò¿ªGDB¹¤×÷¿Õ¼ä {gdbPath} Ê±³ö´í: {ex.Message}");
-                        System.Diagnostics.Debug.WriteLine($"Òì³£ÏêÇé: {ex}");
+                        System.Diagnostics.Debug.WriteLine($"æ‰“å¼€æºæ•°æ®GDBå·¥ä½œç©ºé—´ {gdbPath} æ—¶å‡ºé”™: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"å¼‚å¸¸è¯¦æƒ…: {ex}");
                     }
                     finally
                     {
-                        // ÊÍ·Å¹¤×÷¿Õ¼ä×ÊÔ´
+                        // é‡Šæ”¾å·¥ä½œç©ºé—´èµ„æº
                         if (workspace != null)
                         {
                             System.Runtime.InteropServices.Marshal.ReleaseComObject(workspace);
@@ -237,99 +330,188 @@ namespace ForestResourcePlugin
                         }
                     }
                 }
-                
-                System.Diagnostics.Debug.WriteLine($"¹²ÕÒµ½ {result.Count} ¸öÆ¥ÅäµÄGDBÒªËØÀà");
+
+                System.Diagnostics.Debug.WriteLine($"å…±æ‰¾åˆ° {result.Count} ä¸ªåŒ¹é…çš„æºæ•°æ®GDBè¦ç´ ç±»");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"²éÕÒGDBÒªËØÀàÊ±³ö´í: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Òì³£ÏêÇé: {ex}");
+                System.Diagnostics.Debug.WriteLine($"æŸ¥æ‰¾æºæ•°æ®GDBè¦ç´ ç±»æ—¶å‡ºé”™: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"å¼‚å¸¸è¯¦æƒ…: {ex}");
             }
-            
+
             return result;
         }
-        
+
         /// <summary>
-        /// ´ÓGDBÂ·¾¶ºÍÒªËØÀàÃû³Æ¼ÓÔØÒªËØÀà
+        /// ğŸ”¥ æ–°å¢ï¼šæ ¹æ®å¿çº§ä»£ç æŸ¥æ‰¾å¯¹åº”çš„LCXZGX_Pæ•°æ®
+        /// æ”¯æŒä»åŒ…å«é¢å¤–æ–‡å­—çš„æ–‡ä»¶å¤¹åç§°ä¸­æå–å’ŒåŒ¹é…å¿çº§ä»£ç 
         /// </summary>
-        /// <param name="gdbPath">GDBÂ·¾¶</param>
-        /// <param name="featureClassName">ÒªËØÀàÃû³Æ</param>
-        /// <returns>ÒªËØÀà¶ÔÏó</returns>
+        /// <param name="rootDir">æ ¹ç›®å½•</param>
+        /// <param name="countyCode">å¿çº§ä»£ç </param>
+        /// <param name="geometryType">å‡ ä½•ç±»å‹ï¼ˆå¯é€‰ï¼‰</param>
+        /// <returns>åŒ¹é…çš„æºæ•°æ®æ–‡ä»¶ä¿¡æ¯åˆ—è¡¨</returns>
+        public static List<SourceDataFileInfo> FindLCXZGXDataByCountyCode(string rootDir, string countyCode,
+            esriGeometryType geometryType = esriGeometryType.esriGeometryPolygon)
+        {
+            if (string.IsNullOrEmpty(countyCode))
+            {
+                System.Diagnostics.Debug.WriteLine("é”™è¯¯: å¿çº§ä»£ç ä¸èƒ½ä¸ºç©º");
+                return new List<SourceDataFileInfo>();
+            }
+
+            System.Diagnostics.Debug.WriteLine($"å¼€å§‹æ ¹æ®å¿çº§ä»£ç  '{countyCode}' æŸ¥æ‰¾LCXZGX_Pæ•°æ®");
+
+            // ä½¿ç”¨å¢å¼ºç‰ˆçš„æŸ¥æ‰¾æ–¹æ³•ï¼Œä¼ å…¥å¿çº§ä»£ç è¿›è¡Œç²¾ç¡®åŒ¹é…
+            var results = FindFeatureClassesWithPatternAsSourceData(rootDir, "LCXZGX_P", geometryType, countyCode);
+
+            System.Diagnostics.Debug.WriteLine($"æ ¹æ®å¿çº§ä»£ç  '{countyCode}' æ‰¾åˆ° {results.Count} ä¸ªLCXZGX_Pæ•°æ®æº");
+
+            return results;
+        }
+
+        /// <summary>
+        /// ğŸ”¥ æ–°å¢ï¼šå¯¹æºæ•°æ®æ–‡ä»¶åˆ—è¡¨æŒ‰å¿çº§ä»£ç è¿›è¡Œåˆ†ç»„å’ŒéªŒè¯
+        /// ç¡®ä¿æ‰€æœ‰æ•°æ®éƒ½æœ‰æœ‰æ•ˆçš„å¿çº§ä»£ç 
+        /// </summary>
+        /// <param name="sourceDataFiles">æºæ•°æ®æ–‡ä»¶åˆ—è¡¨</param>
+        /// <returns>æŒ‰å¿çº§ä»£ç åˆ†ç»„çš„æ•°æ®ï¼ŒåªåŒ…å«æœ‰æ•ˆå¿çº§ä»£ç çš„æ•°æ®</returns>
+        public static Dictionary<string, List<SourceDataFileInfo>> GroupSourceDataByCountyCode(List<SourceDataFileInfo> sourceDataFiles)
+        {
+            var result = new Dictionary<string, List<SourceDataFileInfo>>();
+
+            if (sourceDataFiles == null || sourceDataFiles.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLine("æºæ•°æ®æ–‡ä»¶åˆ—è¡¨ä¸ºç©º");
+                return result;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"å¼€å§‹å¯¹ {sourceDataFiles.Count} ä¸ªæºæ•°æ®æ–‡ä»¶è¿›è¡Œå¿çº§ä»£ç åˆ†ç»„");
+
+            foreach (var file in sourceDataFiles)
+            {
+                try
+                {
+                    // ğŸ”¥ ç¡®ä¿ä½¿ç”¨ç»Ÿä¸€çš„å¿çº§ä»£ç æå–é€»è¾‘
+                    string countyCode = !string.IsNullOrEmpty(file.CountyCode)
+                        ? file.CountyCode
+                        : GetCountyCodeFromPath(file.FullPath);
+
+                    // éªŒè¯å¿çº§ä»£ç æ˜¯å¦ä¸º6ä½æ•°å­—
+                    if (Regex.IsMatch(countyCode, @"^\d{6}$"))
+                    {
+                        // æ›´æ–°æ–‡ä»¶ä¿¡æ¯ä¸­çš„å¿çº§ä»£ç 
+                        file.CountyCode = countyCode;
+                        file.DisplayName = countyCode;
+
+                        if (!result.ContainsKey(countyCode))
+                        {
+                            result[countyCode] = new List<SourceDataFileInfo>();
+                        }
+                        result[countyCode].Add(file);
+
+                        System.Diagnostics.Debug.WriteLine($"æ–‡ä»¶ {file.FullPath} å½’ç±»åˆ°å¿çº§ä»£ç : {countyCode}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"è­¦å‘Š: ä»è·¯å¾„ {file.FullPath} ä¸­æœªæ‰¾åˆ°å…­ä½æ•°å¿ä»£ç ï¼Œè·³è¿‡è¯¥æ–‡ä»¶");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"å¤„ç†æ–‡ä»¶ {file.FullPath} æ—¶å‡ºé”™: {ex.Message}");
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLine($"å¿çº§ä»£ç åˆ†ç»„å®Œæˆï¼Œå…±æ‰¾åˆ° {result.Count} ä¸ªå¿çš„æ•°æ®ï¼š");
+            foreach (var group in result)
+            {
+                System.Diagnostics.Debug.WriteLine($"  å¿çº§ä»£ç  {group.Key}: {group.Value.Count} ä¸ªæ–‡ä»¶");
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// ä»GDBè·¯å¾„å’Œè¦ç´ ç±»åç§°åŠ è½½è¦ç´ ç±»
+        /// </summary>
+        /// <param name="gdbPath">GDBè·¯å¾„</param>
+        /// <param name="featureClassName">è¦ç´ ç±»åç§°</param>
+        /// <returns>è¦ç´ ç±»å¯¹è±¡</returns>
         public static IFeatureClass OpenFeatureClassFromGdb(string gdbPath, string featureClassName)
         {
             IWorkspace workspace = null;
-            
+
             try
             {
-                System.Diagnostics.Debug.WriteLine($"³¢ÊÔ´ò¿ªGDBÒªËØÀà: {gdbPath}, ÒªËØÀà: {featureClassName}");
-                
+                System.Diagnostics.Debug.WriteLine($"å°è¯•æ‰“å¼€GDBè¦ç´ ç±»: {gdbPath}, è¦ç´ ç±»: {featureClassName}");
+
                 if (string.IsNullOrEmpty(gdbPath))
                 {
-                    throw new ArgumentException("GDBÂ·¾¶²»ÄÜÎª¿Õ");
+                    throw new ArgumentException("GDBè·¯å¾„ä¸èƒ½ä¸ºç©º");
                 }
-                
+
                 if (string.IsNullOrEmpty(featureClassName))
                 {
-                    throw new ArgumentException("ÒªËØÀàÃû³Æ²»ÄÜÎª¿Õ");
+                    throw new ArgumentException("è¦ç´ ç±»åç§°ä¸èƒ½ä¸ºç©º");
                 }
-                
+
                 if (!Directory.Exists(gdbPath))
                 {
-                    throw new DirectoryNotFoundException($"GDBÂ·¾¶²»´æÔÚ: {gdbPath}");
+                    throw new DirectoryNotFoundException($"GDBè·¯å¾„ä¸å­˜åœ¨: {gdbPath}");
                 }
-                
-                // ´´½¨FileGDB¹¤×÷¿Õ¼ä¹¤³§
+
+                // åˆ›å»ºFileGDBå·¥ä½œç©ºé—´å·¥å‚
                 Type factoryType = Type.GetTypeFromProgID("esriDataSourcesGDB.FileGDBWorkspaceFactory");
                 if (factoryType == null)
                 {
-                    throw new InvalidOperationException("ÎŞ·¨»ñÈ¡FileGDBWorkspaceFactoryµÄÀàĞÍ");
+                    throw new InvalidOperationException("æ— æ³•è·å–FileGDBWorkspaceFactoryçš„ç±»å‹");
                 }
-                
+
                 IWorkspaceFactory workspaceFactory = Activator.CreateInstance(factoryType) as IWorkspaceFactory;
                 if (workspaceFactory == null)
                 {
-                    throw new InvalidOperationException("ÎŞ·¨´´½¨FileGDBWorkspaceFactoryÊµÀı");
+                    throw new InvalidOperationException("æ— æ³•åˆ›å»ºFileGDBWorkspaceFactoryå®ä¾‹");
                 }
-                
+
                 if (!workspaceFactory.IsWorkspace(gdbPath))
                 {
-                    throw new ArgumentException($"{gdbPath} ²»ÊÇÓĞĞ§µÄFileGDB");
+                    throw new ArgumentException($"{gdbPath} ä¸æ˜¯æœ‰æ•ˆçš„FileGDB");
                 }
-                
-                // ´ò¿ª¹¤×÷¿Õ¼ä
+
+                // æ‰“å¼€å·¥ä½œç©ºé—´
                 workspace = workspaceFactory.OpenFromFile(gdbPath, 0);
                 if (workspace == null)
                 {
-                    throw new InvalidOperationException($"ÎŞ·¨´ò¿ª¹¤×÷¿Õ¼ä: {gdbPath}");
+                    throw new InvalidOperationException($"æ— æ³•æ‰“å¼€å·¥ä½œç©ºé—´: {gdbPath}");
                 }
-                
+
                 IFeatureWorkspace featureWorkspace = workspace as IFeatureWorkspace;
                 if (featureWorkspace == null)
                 {
-                    throw new InvalidOperationException("ÎŞ·¨»ñÈ¡ÒªËØ¹¤×÷¿Õ¼ä");
+                    throw new InvalidOperationException("æ— æ³•è·å–è¦ç´ å·¥ä½œç©ºé—´");
                 }
-                
-                // ´ò¿ªÒªËØÀà
+
+                // æ‰“å¼€è¦ç´ ç±»
                 IFeatureClass featureClass = featureWorkspace.OpenFeatureClass(featureClassName);
                 if (featureClass == null)
                 {
-                    throw new InvalidOperationException($"ÎŞ·¨´ò¿ªÒªËØÀà: {featureClassName}");
+                    throw new InvalidOperationException($"æ— æ³•æ‰“å¼€è¦ç´ ç±»: {featureClassName}");
                 }
-                
-                System.Diagnostics.Debug.WriteLine($"³É¹¦´ò¿ªGDBÒªËØÀà: {featureClassName}, ÒªËØÊı: {featureClass.FeatureCount(null)}");
-                
+
+                System.Diagnostics.Debug.WriteLine($"æˆåŠŸæ‰“å¼€GDBè¦ç´ ç±»: {featureClassName}, è¦ç´ æ•°: {featureClass.FeatureCount(null)}");
+
                 return featureClass;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"´ò¿ªGDBÒªËØÀàÊ±³ö´í: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Òì³£ÏêÇé: {ex}");
-                throw new Exception($"¼ÓÔØGDBÒªËØÀàÊ§°Ü: {ex.Message}", ex);
+                System.Diagnostics.Debug.WriteLine($"æ‰“å¼€GDBè¦ç´ ç±»æ—¶å‡ºé”™: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"å¼‚å¸¸è¯¦æƒ…: {ex}");
+                throw new Exception($"åŠ è½½GDBè¦ç´ ç±»å¤±è´¥: {ex.Message}", ex);
             }
             finally
             {
-                // ×¢Òâ£ºÕâÀï²»ÊÍ·Åworkspace£¬ÒòÎªÒªËØÀàÈÔĞèÒªÊ¹ÓÃËü
-                // ÒªËØÀàÊ¹ÓÃÍê±Ïºó£¬µ÷ÓÃ·½ĞèÒª¸ºÔğÊÍ·Å×ÊÔ´
+                // æ³¨æ„ï¼šè¿™é‡Œä¸é‡Šæ”¾workspaceï¼Œå› ä¸ºè¦ç´ ç±»ä»éœ€è¦ä½¿ç”¨å®ƒ
+                // è¦ç´ ç±»ä½¿ç”¨å®Œæ¯•åï¼Œè°ƒç”¨æ–¹éœ€è¦è´Ÿè´£é‡Šæ”¾èµ„æº
             }
         }
     }

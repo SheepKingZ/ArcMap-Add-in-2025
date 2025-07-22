@@ -3,15 +3,21 @@ namespace TestArcMapAddin2.Forms
     partial class BasicDataPreparationForm
     {
         private System.ComponentModel.IContainer components = null;
-        
-        // 修改控件声明 - 合并两个数据源为一个
+
+        // 修改控件声明 - 分离两个数据源
         private System.Windows.Forms.Label lblDataSource;
         private System.Windows.Forms.TextBox txtDataPath;
         private System.Windows.Forms.Button btnBrowseData;
+
+        // 新增：城镇开发边界和SLZY_DLTB数据源控件
+        private System.Windows.Forms.Label lblCzkfbjSlzyDataSource;
+        private System.Windows.Forms.TextBox txtCzkfbjSlzyPath;
+        private System.Windows.Forms.Button btnBrowseCzkfbjSlzyData;
+
         private System.Windows.Forms.Label lblOutputGDBPath;
         private System.Windows.Forms.TextBox txtOutputGDBPath;
         private System.Windows.Forms.Button btnBrowseOutputGDB;
-        
+
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Panel topPanel;
@@ -35,14 +41,18 @@ namespace TestArcMapAddin2.Forms
             this.lblDataSource = new System.Windows.Forms.Label();
             this.txtDataPath = new System.Windows.Forms.TextBox();
             this.btnBrowseData = new System.Windows.Forms.Button();
+            this.lblCzkfbjSlzyDataSource = new System.Windows.Forms.Label();
+            this.txtCzkfbjSlzyPath = new System.Windows.Forms.TextBox();
+            this.btnBrowseCzkfbjSlzyData = new System.Windows.Forms.Button();
             this.lblOutputGDBPath = new System.Windows.Forms.Label();
             this.txtOutputGDBPath = new System.Windows.Forms.TextBox();
             this.btnBrowseOutputGDB = new System.Windows.Forms.Button();
             this.bottomPanel = new System.Windows.Forms.Panel();
+            this.buttonResultStructure = new System.Windows.Forms.Button();
+            this.btnResultExcel = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.btnResultExcel = new System.Windows.Forms.Button();
             this.topPanel.SuspendLayout();
             this.bottomPanel.SuspendLayout();
             this.SuspendLayout();
@@ -53,6 +63,9 @@ namespace TestArcMapAddin2.Forms
             this.topPanel.Controls.Add(this.lblDataSource);
             this.topPanel.Controls.Add(this.txtDataPath);
             this.topPanel.Controls.Add(this.btnBrowseData);
+            this.topPanel.Controls.Add(this.lblCzkfbjSlzyDataSource);
+            this.topPanel.Controls.Add(this.txtCzkfbjSlzyPath);
+            this.topPanel.Controls.Add(this.btnBrowseCzkfbjSlzyData);
             this.topPanel.Controls.Add(this.lblOutputGDBPath);
             this.topPanel.Controls.Add(this.txtOutputGDBPath);
             this.topPanel.Controls.Add(this.btnBrowseOutputGDB);
@@ -63,6 +76,7 @@ namespace TestArcMapAddin2.Forms
             this.topPanel.Padding = new System.Windows.Forms.Padding(15);
             this.topPanel.Size = new System.Drawing.Size(1000, 543);
             this.topPanel.TabIndex = 22;
+            this.topPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.topPanel_Paint);
             // 
             // titleLabel
             // 
@@ -85,7 +99,7 @@ namespace TestArcMapAddin2.Forms
             this.lblDataSource.Name = "lblDataSource";
             this.lblDataSource.Size = new System.Drawing.Size(560, 30);
             this.lblDataSource.TabIndex = 5;
-            this.lblDataSource.Text = "基础数据源（包含林草湿荒普查数据与城镇开发边界数据）：";
+            this.lblDataSource.Text = "林草湿荒普查数据源（LCXZGX_P）：";
             this.lblDataSource.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // txtDataPath
@@ -97,7 +111,7 @@ namespace TestArcMapAddin2.Forms
             this.txtDataPath.ReadOnly = true;
             this.txtDataPath.Size = new System.Drawing.Size(808, 28);
             this.txtDataPath.TabIndex = 6;
-            this.txtDataPath.Text = "请选择包含林草湿荒普查与城镇开发边界数据的文件夹";
+            this.txtDataPath.Text = "请选择包含林草湿荒普查数据的文件夹";
             // 
             // btnBrowseData
             // 
@@ -111,11 +125,46 @@ namespace TestArcMapAddin2.Forms
             this.btnBrowseData.UseVisualStyleBackColor = true;
             this.btnBrowseData.Click += new System.EventHandler(this.BtnBrowseData_Click);
             // 
+            // lblCzkfbjSlzyDataSource
+            // 
+            this.lblCzkfbjSlzyDataSource.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lblCzkfbjSlzyDataSource.ForeColor = System.Drawing.Color.Black;
+            this.lblCzkfbjSlzyDataSource.Location = new System.Drawing.Point(19, 154);
+            this.lblCzkfbjSlzyDataSource.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblCzkfbjSlzyDataSource.Name = "lblCzkfbjSlzyDataSource";
+            this.lblCzkfbjSlzyDataSource.Size = new System.Drawing.Size(560, 30);
+            this.lblCzkfbjSlzyDataSource.TabIndex = 8;
+            this.lblCzkfbjSlzyDataSource.Text = "城镇开发边界与森林资源地类图斑数据源（CZKFBJ、SLZY_DLTB）：";
+            this.lblCzkfbjSlzyDataSource.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // txtCzkfbjSlzyPath
+            // 
+            this.txtCzkfbjSlzyPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.txtCzkfbjSlzyPath.Location = new System.Drawing.Point(19, 192);
+            this.txtCzkfbjSlzyPath.Margin = new System.Windows.Forms.Padding(4);
+            this.txtCzkfbjSlzyPath.Name = "txtCzkfbjSlzyPath";
+            this.txtCzkfbjSlzyPath.ReadOnly = true;
+            this.txtCzkfbjSlzyPath.Size = new System.Drawing.Size(808, 28);
+            this.txtCzkfbjSlzyPath.TabIndex = 9;
+            this.txtCzkfbjSlzyPath.Text = "请选择包含城镇开发边界和SLZY_DLTB数据的文件夹";
+            // 
+            // btnBrowseCzkfbjSlzyData
+            // 
+            this.btnBrowseCzkfbjSlzyData.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnBrowseCzkfbjSlzyData.Location = new System.Drawing.Point(852, 192);
+            this.btnBrowseCzkfbjSlzyData.Margin = new System.Windows.Forms.Padding(4);
+            this.btnBrowseCzkfbjSlzyData.Name = "btnBrowseCzkfbjSlzyData";
+            this.btnBrowseCzkfbjSlzyData.Size = new System.Drawing.Size(105, 34);
+            this.btnBrowseCzkfbjSlzyData.TabIndex = 10;
+            this.btnBrowseCzkfbjSlzyData.Text = "浏览...";
+            this.btnBrowseCzkfbjSlzyData.UseVisualStyleBackColor = true;
+            this.btnBrowseCzkfbjSlzyData.Click += new System.EventHandler(this.BtnBrowseCzkfbjSlzyData_Click);
+            // 
             // lblOutputGDBPath
             // 
             this.lblOutputGDBPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblOutputGDBPath.ForeColor = System.Drawing.Color.Black;
-            this.lblOutputGDBPath.Location = new System.Drawing.Point(19, 164);
+            this.lblOutputGDBPath.Location = new System.Drawing.Point(19, 234);
             this.lblOutputGDBPath.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblOutputGDBPath.Name = "lblOutputGDBPath";
             this.lblOutputGDBPath.Size = new System.Drawing.Size(225, 30);
@@ -127,7 +176,7 @@ namespace TestArcMapAddin2.Forms
             // txtOutputGDBPath
             // 
             this.txtOutputGDBPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.txtOutputGDBPath.Location = new System.Drawing.Point(19, 202);
+            this.txtOutputGDBPath.Location = new System.Drawing.Point(19, 272);
             this.txtOutputGDBPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtOutputGDBPath.Name = "txtOutputGDBPath";
             this.txtOutputGDBPath.ReadOnly = true;
@@ -138,7 +187,7 @@ namespace TestArcMapAddin2.Forms
             // btnBrowseOutputGDB
             // 
             this.btnBrowseOutputGDB.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnBrowseOutputGDB.Location = new System.Drawing.Point(852, 202);
+            this.btnBrowseOutputGDB.Location = new System.Drawing.Point(852, 272);
             this.btnBrowseOutputGDB.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseOutputGDB.Name = "btnBrowseOutputGDB";
             this.btnBrowseOutputGDB.Size = new System.Drawing.Size(105, 34);
@@ -150,6 +199,7 @@ namespace TestArcMapAddin2.Forms
             // bottomPanel
             // 
             this.bottomPanel.BackColor = System.Drawing.Color.LightGray;
+            this.bottomPanel.Controls.Add(this.buttonResultStructure);
             this.bottomPanel.Controls.Add(this.btnResultExcel);
             this.bottomPanel.Controls.Add(this.button1);
             this.bottomPanel.Controls.Add(this.btnOK);
@@ -160,6 +210,26 @@ namespace TestArcMapAddin2.Forms
             this.bottomPanel.Name = "bottomPanel";
             this.bottomPanel.Size = new System.Drawing.Size(1000, 75);
             this.bottomPanel.TabIndex = 21;
+            // 
+            // buttonResultStructure
+            // 
+            this.buttonResultStructure.Location = new System.Drawing.Point(88, 22);
+            this.buttonResultStructure.Name = "buttonResultStructure";
+            this.buttonResultStructure.Size = new System.Drawing.Size(156, 34);
+            this.buttonResultStructure.TabIndex = 4;
+            this.buttonResultStructure.Text = "创建目录结构";
+            this.buttonResultStructure.UseVisualStyleBackColor = true;
+            this.buttonResultStructure.Click += new System.EventHandler(this.buttonResultStructure_Click);
+            // 
+            // btnResultExcel
+            // 
+            this.btnResultExcel.Location = new System.Drawing.Point(255, 22);
+            this.btnResultExcel.Name = "btnResultExcel";
+            this.btnResultExcel.Size = new System.Drawing.Size(156, 34);
+            this.btnResultExcel.TabIndex = 3;
+            this.btnResultExcel.Text = "创建结果表格";
+            this.btnResultExcel.UseVisualStyleBackColor = true;
+            this.btnResultExcel.Click += new System.EventHandler(this.btnResultExcel_Click);
             // 
             // button1
             // 
@@ -197,16 +267,6 @@ namespace TestArcMapAddin2.Forms
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
             // 
-            // btnResultExcel
-            // 
-            this.btnResultExcel.Location = new System.Drawing.Point(255, 22);
-            this.btnResultExcel.Name = "btnResultExcel";
-            this.btnResultExcel.Size = new System.Drawing.Size(156, 34);
-            this.btnResultExcel.TabIndex = 3;
-            this.btnResultExcel.Text = "创建结果表格";
-            this.btnResultExcel.UseVisualStyleBackColor = true;
-            this.btnResultExcel.Click += new System.EventHandler(this.btnResultExcel_Click);
-            // 
             // BasicDataPreparationForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
@@ -222,7 +282,7 @@ namespace TestArcMapAddin2.Forms
             this.Name = "BasicDataPreparationForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "基础数据准备";
-            this.Load += new System.EventHandler(this.BasicDataPreparationForm_Load);
+            //this.Load += new System.EventHandler(this.BasicDataPreparationForm_Load);
             this.topPanel.ResumeLayout(false);
             this.topPanel.PerformLayout();
             this.bottomPanel.ResumeLayout(false);
@@ -232,5 +292,6 @@ namespace TestArcMapAddin2.Forms
 
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button btnResultExcel;
+        private System.Windows.Forms.Button buttonResultStructure;
     }
 }

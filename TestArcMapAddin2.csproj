@@ -228,15 +228,9 @@
     <Compile Include="obj\Debug\TemporaryGeneratedFile_E7A71F73-0F8D-4B9B-B56E-8E70B10BC5D3.cs" />
     <Compile Include="obj\Release\.NETFramework,Version=v4.6.1.AssemblyAttributes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ShapefileUtils\Convert2SLZYZCDLTB.cs" />
-    <Compile Include="SharedWorkflowState.cs" />
-    <Compile Include="Trash\Convert2ResultTable.cs" />
-    <Compile Include="ShapefileUtils\Convert2SLZYZC.cs" />
-    <Compile Include="Trash\Convert3ResultTable.cs" />
-    <Compile Include="Utils\DefaultFieldMappingManager.cs" />
+    <Compile Include="Utils\CountyCodeMapper.cs" />
     <Compile Include="Utils\ExcelExporter.cs" />
     <Compile Include="Utils\GdbFeatureClassFinder.cs" />
-    <Compile Include="Trash\GDBManager.cs" />
     <Compile Include="Utils\GeodatabaseUtilities.cs" />
     <Compile Include="Utils\MapLayerUtilities.cs" />
     <Compile Include="Utils\ShapefileExporter.cs" />
@@ -266,6 +260,7 @@
     <Folder Include="bin\Release\" />
     <Folder Include="obj\Debug\TempPE\" />
     <Folder Include="Resources\" />
+    <Folder Include="Trash\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -310,6 +305,11 @@
     <ZipFileExtension>esriAddIn</ZipFileExtension>
     <AddInTargetProduct>Desktop</AddInTargetProduct>
     <AddInTargetVersion>10.8</AddInTargetVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartAction>Program</StartAction>
+    <StartProgram>E:\ArcGIS 10.8\Desktop10.8\bin\ArcMap.exe</StartProgram>
+    <StartWorkingDirectory>E:\ArcGIS 10.8\Desktop10.8\bin</StartWorkingDirectory>
   </PropertyGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\ESRI\ESRI.ArcGIS.AddIns.targets" Condition="Exists('$(MSBuildExtensionsPath)\ESRI\ESRI.ArcGIS.AddIns.targets')" />
