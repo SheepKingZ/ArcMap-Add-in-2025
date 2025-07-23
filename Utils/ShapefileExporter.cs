@@ -1172,67 +1172,6 @@ namespace ForestResourcePlugin
             }
         }
 
-        /// <summary>
-        /// 🔥 新增：为SLZYZC_DLTB生成ZCQCBSM字段值
-        /// 格式：XZQDM(6位) + "4110" + 序号(12位，从1开始，前补0)
-        /// 总长度：22位
-        /// </summary>
-        /// <param name="sourceFeature">源要素</param>
-        /// <param name="xzqdmFieldIndex">XZQDM字段索引</param>
-        /// <param name="sequenceNumber">序号（从1开始）</param>
-        /// <returns>22位的ZCQCBSM值</returns>
-        private string GenerateZCQCBSMForSLZYZCDLTB(IFeature sourceFeature, int xzqdmFieldIndex, int sequenceNumber)
-        {
-            try
-            {
-                // 获取XZQDM值
-                string xzqdm = "";
-                if (xzqdmFieldIndex != -1)
-                {
-                    object xzqdmValue = sourceFeature.get_Value(xzqdmFieldIndex);
-                    xzqdm = xzqdmValue?.ToString() ?? "";
-                }
-
-                // 确保XZQDM是6位数字
-                if (string.IsNullOrEmpty(xzqdm))
-                {
-                    xzqdm = "000000"; // 默认值
-                    System.Diagnostics.Debug.WriteLine("警告: XZQDM字段为空，使用默认值000000");
-                }
-                else if (xzqdm.Length > 6)
-                {
-                    xzqdm = xzqdm.Substring(0, 6);
-                    System.Diagnostics.Debug.WriteLine($"XZQDM长度超过6位，截取前6位: {xzqdm}");
-                }
-                else if (xzqdm.Length < 6)
-                {
-                    xzqdm = xzqdm.PadLeft(6, '0');
-                    System.Diagnostics.Debug.WriteLine($"XZQDM长度不足6位，前补0: {xzqdm}");
-                }
-
-                // 固定中间4位为"4110"
-                string middlePart = "4110";
-
-                // 序号格式化为12位，前补0
-                string sequencePart = sequenceNumber.ToString("D12");
-
-                // 组合成22位的ZCQCBSM
-                string zcqcbsm = $"{xzqdm}{middlePart}{sequencePart}";
-
-                System.Diagnostics.Debug.WriteLine($"生成ZCQCBSM: XZQDM={xzqdm} + 4110 + {sequencePart} = {zcqcbsm} (长度: {zcqcbsm.Length})");
-
-                return zcqcbsm;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"生成ZCQCBSM时出错: {ex.Message}");
-
-                // 出错时返回默认值
-                string defaultZcqcbsm = $"000000411{sequenceNumber.ToString("D12")}";
-                System.Diagnostics.Debug.WriteLine($"使用默认ZCQCBSM: {defaultZcqcbsm}");
-                return defaultZcqcbsm;
-            }
-        }
 
         /// <summary>
         /// 获取指定县的LDHSJG数据
@@ -1757,12 +1696,12 @@ namespace ForestResourcePlugin
                 // 根据比例计算CZKFBJMJ值
                 double czkfbjmjValue = gtdctbmjValue * intersectionRatio;
 
-                System.Diagnostics.Debug.WriteLine($"CZKFBJMJ计算详情：");
-                System.Diagnostics.Debug.WriteLine($"  原图斑面积: {totalOriginalArea:F2}");
-                System.Diagnostics.Debug.WriteLine($"  交集面积: {totalIntersectionArea:F2}");
-                System.Diagnostics.Debug.WriteLine($"  交集比例: {intersectionRatio:F4} ({intersectionRatio * 100:F2}%)");
-                System.Diagnostics.Debug.WriteLine($"  GTDCTBMJ值: {gtdctbmjValue:F2}");
-                System.Diagnostics.Debug.WriteLine($"  计算的CZKFBJMJ: {czkfbjmjValue:F2} = {gtdctbmjValue:F2} × {intersectionRatio:F4}");
+                //System.Diagnostics.Debug.WriteLine($"CZKFBJMJ计算详情：");
+                //System.Diagnostics.Debug.WriteLine($"  原图斑面积: {totalOriginalArea:F2}");
+                //System.Diagnostics.Debug.WriteLine($"  交集面积: {totalIntersectionArea:F2}");
+                //System.Diagnostics.Debug.WriteLine($"  交集比例: {intersectionRatio:F4} ({intersectionRatio * 100:F2}%)");
+                //System.Diagnostics.Debug.WriteLine($"  GTDCTBMJ值: {gtdctbmjValue:F2}");
+                //System.Diagnostics.Debug.WriteLine($"  计算的CZKFBJMJ: {czkfbjmjValue:F2} = {gtdctbmjValue:F2} × {intersectionRatio:F4}");
 
                 return czkfbjmjValue;
             }
@@ -1778,23 +1717,6 @@ namespace ForestResourcePlugin
                 if (spatialFilter != null)
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(spatialFilter);
             }
-        }
-
-        /// <summary>
-        /// 🔥 新增：为单一图斑计算CZKFBJMJ值的专用方法
-        /// </summary>
-        /// <param name="sourceFeature">源要素</param>
-        /// <param name="czkfbjFeatureClass">CZKFBJ要素类</param>
-        /// <param name="gtdctbmjValue">GTDCTBMJ值</param>
-        /// <returns>按比例计算的CZKFBJMJ值</returns>
-        private double CalculateCZKFBJMJForFeature(IFeature sourceFeature, IFeatureClass czkfbjFeatureClass, double gtdctbmjValue)
-        {
-            if (sourceFeature?.Shape == null || czkfbjFeatureClass == null)
-            {
-                return 0;
-            }
-
-            return CalculateIntersectionAreaWithCZKFBJ(sourceFeature.Shape, czkfbjFeatureClass, gtdctbmjValue);
         }
 
         /// <summary>

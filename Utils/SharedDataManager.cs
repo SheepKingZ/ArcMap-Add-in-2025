@@ -8,8 +8,7 @@ namespace ForestResourcePlugin
 {
     /// <summary>
     /// 用于在不同窗体之间共享数据的管理器
-    /// 包含源数据文件、CZKFBJ文件、SLZY_DLTB文件
-    /// 移除了 LCXZGX 概念，直接使用源数据
+    /// 包含源数据文件、CZKFBJ文件、SLZY_DLTB文件、CYZY_DLTB文件
     /// </summary>
     public static class SharedDataManager
     {
@@ -21,6 +20,31 @@ namespace ForestResourcePlugin
 
         // 存储找到的SLZY_DLTB文件信息
         private static List<SourceDataFileInfo> slzyDltbFiles = new List<SourceDataFileInfo>();
+
+        // 新增：存储找到的CYZY_DLTB文件信息（草地资源地类图斑数据）
+        private static List<SourceDataFileInfo> cyzyDltbFiles = new List<SourceDataFileInfo>();
+
+        // 数据类型选择状态
+        private static bool isForestSelected = true;
+        private static bool isGrasslandSelected = false;
+
+        /// <summary>
+        /// 设置数据类型选择状态
+        /// </summary>
+        public static void SetDataTypeSelection(bool forest, bool grassland)
+        {
+            isForestSelected = forest;
+            isGrasslandSelected = grassland;
+            System.Diagnostics.Debug.WriteLine($"数据类型选择状态已更新 - 林地: {forest}, 草地: {grassland}");
+        }
+
+        /// <summary>
+        /// 获取数据类型选择状态
+        /// </summary>
+        public static (bool Forest, bool Grassland) GetDataTypeSelection()
+        {
+            return (isForestSelected, isGrasslandSelected);
+        }
 
         /// <summary>
         /// 设置源数据文件列表（直接用于生成 SLZYZC）
@@ -61,7 +85,7 @@ namespace ForestResourcePlugin
         private static List<SourceDataFileInfo> ldhsjgFiles = new List<SourceDataFileInfo>();
 
         /// <summary>
-        /// 设置LDHSJG文件列表
+        /// 设置LDHSJG文件列表（林地核算价格）
         /// </summary>
         /// <param name="files">LDHSJG文件列表</param>
         public static void SetLDHSJGFiles(List<SourceDataFileInfo> files)
@@ -71,7 +95,7 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 获取LDHSJG文件列表
+        /// 获取LDHSJG文件列表（林地核算价格）
         /// </summary>
         /// <returns>LDHSJG文件列表</returns>
         public static List<SourceDataFileInfo> GetLDHSJGFiles()
@@ -99,6 +123,50 @@ namespace ForestResourcePlugin
         {
             ldhsjgFiles.Clear();
             System.Diagnostics.Debug.WriteLine("SharedDataManager: 已清空LDHSJG文件列表");
+        }
+
+        // 新增：添加CDHSJG文件管理（草地核算价格）
+        private static List<SourceDataFileInfo> cdhsjgFiles = new List<SourceDataFileInfo>();
+
+        /// <summary>
+        /// 设置CDHSJG文件列表（草地核算价格）
+        /// </summary>
+        /// <param name="files">CDHSJG文件列表</param>
+        public static void SetCDHSJGFiles(List<SourceDataFileInfo> files)
+        {
+            cdhsjgFiles = files ?? new List<SourceDataFileInfo>();
+            System.Diagnostics.Debug.WriteLine($"SharedDataManager: 设置了 {cdhsjgFiles.Count} 个CDHSJG文件");
+        }
+
+        /// <summary>
+        /// 获取CDHSJG文件列表（草地核算价格）
+        /// </summary>
+        /// <returns>CDHSJG文件列表</returns>
+        public static List<SourceDataFileInfo> GetCDHSJGFiles()
+        {
+            return new List<SourceDataFileInfo>(cdhsjgFiles);
+        }
+
+        /// <summary>
+        /// 添加CDHSJG文件
+        /// </summary>
+        /// <param name="file">要添加的CDHSJG文件</param>
+        public static void AddCDHSJGFile(SourceDataFileInfo file)
+        {
+            if (file != null)
+            {
+                cdhsjgFiles.Add(file);
+                System.Diagnostics.Debug.WriteLine($"SharedDataManager: 添加了CDHSJG文件 {file.DisplayName}");
+            }
+        }
+
+        /// <summary>
+        /// 清空CDHSJG文件列表
+        /// </summary>
+        public static void ClearCDHSJGFiles()
+        {
+            cdhsjgFiles.Clear();
+            System.Diagnostics.Debug.WriteLine("SharedDataManager: 已清空CDHSJG文件列表");
         }
 
         /// <summary>
@@ -168,6 +236,39 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
+        /// 设置CYZY_DLTB文件列表（草地资源地类图斑数据）
+        /// </summary>
+        public static void SetCYZYDLTBFiles(List<SourceDataFileInfo> files)
+        {
+            if (files == null)
+            {
+                cyzyDltbFiles = new List<SourceDataFileInfo>();
+                System.Diagnostics.Debug.WriteLine("警告：传入了null的CYZY_DLTB文件列表，已初始化为空列表");
+                return;
+            }
+
+            // 直接保存，不需要转换
+            cyzyDltbFiles = new List<SourceDataFileInfo>(files);
+            
+            System.Diagnostics.Debug.WriteLine($"已保存 {cyzyDltbFiles.Count} 个CYZY_DLTB文件:");
+            foreach (var file in cyzyDltbFiles)
+            {
+                System.Diagnostics.Debug.WriteLine($" - {file.DisplayName}: {file.FullPath}" + 
+                    (file.IsGdb ? $" (GDB要素类: {file.FeatureClassName})" : " (Shapefile)"));
+            }
+        }
+
+        /// <summary>
+        /// 获取CYZY_DLTB文件列表（草地资源地类图斑数据）
+        /// </summary>
+        public static List<SourceDataFileInfo> GetCYZYDLTBFiles()
+        {
+            System.Diagnostics.Debug.WriteLine($"获取 {cyzyDltbFiles.Count} 个CYZY_DLTB文件");
+            // 返回副本以避免外部修改内部列表
+            return new List<SourceDataFileInfo>(cyzyDltbFiles);
+        }
+
+        /// <summary>
         /// 清空所有缓存的数据
         /// </summary>
         public static void ClearAllData()
@@ -175,6 +276,9 @@ namespace ForestResourcePlugin
             sourceDataFiles.Clear();
             czkfbjFiles.Clear();
             slzyDltbFiles.Clear();
+            cyzyDltbFiles.Clear();
+            ldhsjgFiles.Clear();
+            cdhsjgFiles.Clear();
             System.Diagnostics.Debug.WriteLine("已清空所有SharedDataManager缓存数据");
         }
     }

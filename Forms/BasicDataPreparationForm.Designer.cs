@@ -9,10 +9,15 @@ namespace TestArcMapAddin2.Forms
         private System.Windows.Forms.TextBox txtDataPath;
         private System.Windows.Forms.Button btnBrowseData;
 
-        // 新增：城镇开发边界和SLZY_DLTB数据源控件
-        private System.Windows.Forms.Label lblCzkfbjSlzyDataSource;
-        private System.Windows.Forms.TextBox txtCzkfbjSlzyPath;
-        private System.Windows.Forms.Button btnBrowseCzkfbjSlzyData;
+        // 新增：数据类型选择控件
+        private System.Windows.Forms.GroupBox grpDataType;
+        private System.Windows.Forms.CheckBox chkForest;
+        private System.Windows.Forms.CheckBox chkGrassland;
+
+        // 修改：城镇开发边界和地类图斑数据源控件（重命名以更准确反映功能）
+        private System.Windows.Forms.Label lblCzkfbjDltbDataSource;
+        private System.Windows.Forms.TextBox txtCzkfbjDltbPath;
+        private System.Windows.Forms.Button btnBrowseCzkfbjDltbData;
 
         private System.Windows.Forms.Label lblOutputGDBPath;
         private System.Windows.Forms.TextBox txtOutputGDBPath;
@@ -23,7 +28,6 @@ namespace TestArcMapAddin2.Forms
         private System.Windows.Forms.Panel topPanel;
         private System.Windows.Forms.Panel bottomPanel;
         private System.Windows.Forms.Label titleLabel;
-
 
         protected override void Dispose(bool disposing)
         {
@@ -41,9 +45,12 @@ namespace TestArcMapAddin2.Forms
             this.lblDataSource = new System.Windows.Forms.Label();
             this.txtDataPath = new System.Windows.Forms.TextBox();
             this.btnBrowseData = new System.Windows.Forms.Button();
-            this.lblCzkfbjSlzyDataSource = new System.Windows.Forms.Label();
-            this.txtCzkfbjSlzyPath = new System.Windows.Forms.TextBox();
-            this.btnBrowseCzkfbjSlzyData = new System.Windows.Forms.Button();
+            this.grpDataType = new System.Windows.Forms.GroupBox();
+            this.chkForest = new System.Windows.Forms.CheckBox();
+            this.chkGrassland = new System.Windows.Forms.CheckBox();
+            this.lblCzkfbjDltbDataSource = new System.Windows.Forms.Label();
+            this.txtCzkfbjDltbPath = new System.Windows.Forms.TextBox();
+            this.btnBrowseCzkfbjDltbData = new System.Windows.Forms.Button();
             this.lblOutputGDBPath = new System.Windows.Forms.Label();
             this.txtOutputGDBPath = new System.Windows.Forms.TextBox();
             this.btnBrowseOutputGDB = new System.Windows.Forms.Button();
@@ -54,6 +61,7 @@ namespace TestArcMapAddin2.Forms
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.topPanel.SuspendLayout();
+            this.grpDataType.SuspendLayout();
             this.bottomPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -63,9 +71,10 @@ namespace TestArcMapAddin2.Forms
             this.topPanel.Controls.Add(this.lblDataSource);
             this.topPanel.Controls.Add(this.txtDataPath);
             this.topPanel.Controls.Add(this.btnBrowseData);
-            this.topPanel.Controls.Add(this.lblCzkfbjSlzyDataSource);
-            this.topPanel.Controls.Add(this.txtCzkfbjSlzyPath);
-            this.topPanel.Controls.Add(this.btnBrowseCzkfbjSlzyData);
+            this.topPanel.Controls.Add(this.grpDataType);
+            this.topPanel.Controls.Add(this.lblCzkfbjDltbDataSource);
+            this.topPanel.Controls.Add(this.txtCzkfbjDltbPath);
+            this.topPanel.Controls.Add(this.btnBrowseCzkfbjDltbData);
             this.topPanel.Controls.Add(this.lblOutputGDBPath);
             this.topPanel.Controls.Add(this.txtOutputGDBPath);
             this.topPanel.Controls.Add(this.btnBrowseOutputGDB);
@@ -125,50 +134,92 @@ namespace TestArcMapAddin2.Forms
             this.btnBrowseData.UseVisualStyleBackColor = true;
             this.btnBrowseData.Click += new System.EventHandler(this.BtnBrowseData_Click);
             // 
-            // lblCzkfbjSlzyDataSource
+            // grpDataType
             // 
-            this.lblCzkfbjSlzyDataSource.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lblCzkfbjSlzyDataSource.ForeColor = System.Drawing.Color.Black;
-            this.lblCzkfbjSlzyDataSource.Location = new System.Drawing.Point(19, 154);
-            this.lblCzkfbjSlzyDataSource.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblCzkfbjSlzyDataSource.Name = "lblCzkfbjSlzyDataSource";
-            this.lblCzkfbjSlzyDataSource.Size = new System.Drawing.Size(560, 30);
-            this.lblCzkfbjSlzyDataSource.TabIndex = 8;
-            this.lblCzkfbjSlzyDataSource.Text = "城镇开发边界与森林资源地类图斑数据源（CZKFBJ、SLZY_DLTB）：";
-            this.lblCzkfbjSlzyDataSource.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.grpDataType.Controls.Add(this.chkForest);
+            this.grpDataType.Controls.Add(this.chkGrassland);
+            this.grpDataType.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.grpDataType.Location = new System.Drawing.Point(19, 154);
+            this.grpDataType.Margin = new System.Windows.Forms.Padding(4);
+            this.grpDataType.Name = "grpDataType";
+            this.grpDataType.Padding = new System.Windows.Forms.Padding(4);
+            this.grpDataType.Size = new System.Drawing.Size(400, 80);
+            this.grpDataType.TabIndex = 8;
+            this.grpDataType.TabStop = false;
+            this.grpDataType.Text = "选择处理的数据类型";
             // 
-            // txtCzkfbjSlzyPath
+            // chkForest
             // 
-            this.txtCzkfbjSlzyPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.txtCzkfbjSlzyPath.Location = new System.Drawing.Point(19, 192);
-            this.txtCzkfbjSlzyPath.Margin = new System.Windows.Forms.Padding(4);
-            this.txtCzkfbjSlzyPath.Name = "txtCzkfbjSlzyPath";
-            this.txtCzkfbjSlzyPath.ReadOnly = true;
-            this.txtCzkfbjSlzyPath.Size = new System.Drawing.Size(808, 28);
-            this.txtCzkfbjSlzyPath.TabIndex = 9;
-            this.txtCzkfbjSlzyPath.Text = "请选择包含城镇开发边界和SLZY_DLTB数据的文件夹";
+            this.chkForest.AutoSize = true;
+            this.chkForest.Checked = true;
+            this.chkForest.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkForest.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.chkForest.Location = new System.Drawing.Point(20, 34);
+            this.chkForest.Margin = new System.Windows.Forms.Padding(4);
+            this.chkForest.Name = "chkForest";
+            this.chkForest.Size = new System.Drawing.Size(70, 22);
+            this.chkForest.TabIndex = 0;
+            this.chkForest.Text = "林地";
+            this.chkForest.UseVisualStyleBackColor = true;
+            this.chkForest.CheckedChanged += new System.EventHandler(this.chkForest_CheckedChanged);
             // 
-            // btnBrowseCzkfbjSlzyData
+            // chkGrassland
             // 
-            this.btnBrowseCzkfbjSlzyData.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnBrowseCzkfbjSlzyData.Location = new System.Drawing.Point(852, 192);
-            this.btnBrowseCzkfbjSlzyData.Margin = new System.Windows.Forms.Padding(4);
-            this.btnBrowseCzkfbjSlzyData.Name = "btnBrowseCzkfbjSlzyData";
-            this.btnBrowseCzkfbjSlzyData.Size = new System.Drawing.Size(105, 34);
-            this.btnBrowseCzkfbjSlzyData.TabIndex = 10;
-            this.btnBrowseCzkfbjSlzyData.Text = "浏览...";
-            this.btnBrowseCzkfbjSlzyData.UseVisualStyleBackColor = true;
-            this.btnBrowseCzkfbjSlzyData.Click += new System.EventHandler(this.BtnBrowseCzkfbjSlzyData_Click);
+            this.chkGrassland.AutoSize = true;
+            this.chkGrassland.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.chkGrassland.Location = new System.Drawing.Point(150, 34);
+            this.chkGrassland.Margin = new System.Windows.Forms.Padding(4);
+            this.chkGrassland.Name = "chkGrassland";
+            this.chkGrassland.Size = new System.Drawing.Size(70, 22);
+            this.chkGrassland.TabIndex = 1;
+            this.chkGrassland.Text = "草地";
+            this.chkGrassland.UseVisualStyleBackColor = true;
+            this.chkGrassland.CheckedChanged += new System.EventHandler(this.chkGrassland_CheckedChanged);
+            // 
+            // lblCzkfbjDltbDataSource
+            // 
+            this.lblCzkfbjDltbDataSource.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lblCzkfbjDltbDataSource.ForeColor = System.Drawing.Color.Black;
+            this.lblCzkfbjDltbDataSource.Location = new System.Drawing.Point(19, 242);
+            this.lblCzkfbjDltbDataSource.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblCzkfbjDltbDataSource.Name = "lblCzkfbjDltbDataSource";
+            this.lblCzkfbjDltbDataSource.Size = new System.Drawing.Size(900, 30);
+            this.lblCzkfbjDltbDataSource.TabIndex = 9;
+            this.lblCzkfbjDltbDataSource.Text = "城镇开发边界与森林资源地类图斑数据源（CZKFBJ、SLZY_DLTB）：";
+            this.lblCzkfbjDltbDataSource.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // txtCzkfbjDltbPath
+            // 
+            this.txtCzkfbjDltbPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.txtCzkfbjDltbPath.Location = new System.Drawing.Point(19, 280);
+            this.txtCzkfbjDltbPath.Margin = new System.Windows.Forms.Padding(4);
+            this.txtCzkfbjDltbPath.Name = "txtCzkfbjDltbPath";
+            this.txtCzkfbjDltbPath.ReadOnly = true;
+            this.txtCzkfbjDltbPath.Size = new System.Drawing.Size(808, 28);
+            this.txtCzkfbjDltbPath.TabIndex = 10;
+            this.txtCzkfbjDltbPath.Text = "请选择包含城镇开发边界和地类图斑数据的文件夹";
+            // 
+            // btnBrowseCzkfbjDltbData
+            // 
+            this.btnBrowseCzkfbjDltbData.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnBrowseCzkfbjDltbData.Location = new System.Drawing.Point(852, 280);
+            this.btnBrowseCzkfbjDltbData.Margin = new System.Windows.Forms.Padding(4);
+            this.btnBrowseCzkfbjDltbData.Name = "btnBrowseCzkfbjDltbData";
+            this.btnBrowseCzkfbjDltbData.Size = new System.Drawing.Size(105, 34);
+            this.btnBrowseCzkfbjDltbData.TabIndex = 11;
+            this.btnBrowseCzkfbjDltbData.Text = "浏览...";
+            this.btnBrowseCzkfbjDltbData.UseVisualStyleBackColor = true;
+            this.btnBrowseCzkfbjDltbData.Click += new System.EventHandler(this.BtnBrowseCzkfbjDltbData_Click);
             // 
             // lblOutputGDBPath
             // 
             this.lblOutputGDBPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblOutputGDBPath.ForeColor = System.Drawing.Color.Black;
-            this.lblOutputGDBPath.Location = new System.Drawing.Point(19, 234);
+            this.lblOutputGDBPath.Location = new System.Drawing.Point(19, 322);
             this.lblOutputGDBPath.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblOutputGDBPath.Name = "lblOutputGDBPath";
             this.lblOutputGDBPath.Size = new System.Drawing.Size(225, 30);
-            this.lblOutputGDBPath.TabIndex = 11;
+            this.lblOutputGDBPath.TabIndex = 12;
             this.lblOutputGDBPath.Text = "输出结果路径：";
             this.lblOutputGDBPath.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.lblOutputGDBPath.Click += new System.EventHandler(this.lblOutputGDBPath_Click);
@@ -176,22 +227,22 @@ namespace TestArcMapAddin2.Forms
             // txtOutputGDBPath
             // 
             this.txtOutputGDBPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.txtOutputGDBPath.Location = new System.Drawing.Point(19, 272);
+            this.txtOutputGDBPath.Location = new System.Drawing.Point(19, 360);
             this.txtOutputGDBPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtOutputGDBPath.Name = "txtOutputGDBPath";
             this.txtOutputGDBPath.ReadOnly = true;
             this.txtOutputGDBPath.Size = new System.Drawing.Size(808, 28);
-            this.txtOutputGDBPath.TabIndex = 12;
+            this.txtOutputGDBPath.TabIndex = 13;
             this.txtOutputGDBPath.Text = "请选择输出结果路径";
             // 
             // btnBrowseOutputGDB
             // 
             this.btnBrowseOutputGDB.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnBrowseOutputGDB.Location = new System.Drawing.Point(852, 272);
+            this.btnBrowseOutputGDB.Location = new System.Drawing.Point(852, 360);
             this.btnBrowseOutputGDB.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseOutputGDB.Name = "btnBrowseOutputGDB";
             this.btnBrowseOutputGDB.Size = new System.Drawing.Size(105, 34);
-            this.btnBrowseOutputGDB.TabIndex = 13;
+            this.btnBrowseOutputGDB.TabIndex = 14;
             this.btnBrowseOutputGDB.Text = "浏览...";
             this.btnBrowseOutputGDB.UseVisualStyleBackColor = true;
             this.btnBrowseOutputGDB.Click += new System.EventHandler(this.BtnBrowseOutputGDB_Click);
@@ -282,12 +333,12 @@ namespace TestArcMapAddin2.Forms
             this.Name = "BasicDataPreparationForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "基础数据准备";
-            //this.Load += new System.EventHandler(this.BasicDataPreparationForm_Load);
             this.topPanel.ResumeLayout(false);
             this.topPanel.PerformLayout();
+            this.grpDataType.ResumeLayout(false);
+            this.grpDataType.PerformLayout();
             this.bottomPanel.ResumeLayout(false);
             this.ResumeLayout(false);
-
         }
 
         private System.Windows.Forms.Button button1;
