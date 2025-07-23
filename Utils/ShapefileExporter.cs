@@ -28,6 +28,7 @@ namespace ForestResourcePlugin
     string countyName,
     string outputPath,
     Dictionary<string, string> fieldMappings,
+    string outputShapefileName,
     ProgressCallback progressCallback = null)
         {
             System.Diagnostics.Debug.WriteLine($"开始执行ExportToShapefile - 县名: {countyName}, 输出路径: {outputPath}");
@@ -152,11 +153,12 @@ namespace ForestResourcePlugin
                 try
                 {
                     System.Diagnostics.Debug.WriteLine($"开始创建县级Shapefile工作空间 - 县名: {countyName}");
+                    
 
                     // 创建县级Shapefile工作空间
                     try
                     {
-                        shapefileWorkspace = CreateCountyShapefileWorkspace(outputPath, countyName);
+                        shapefileWorkspace = CreateCountyShapefileWorkspace(outputPath, countyName, outputShapefileName);
                     }
                     catch (Exception ex)
                     {
@@ -329,7 +331,85 @@ namespace ForestResourcePlugin
                 //throw new Exception($"{errorMsg}: {ex.Message}", ex);
             }
         }
+        /// <summary>
+        /// 在指定路径中查找符合模式的输出 Shapefile文件名（支持动态数据类型）
+        /// 支持以下命名模式：
+        /// 1. (县代码)SLZYZC.shp / (县代码)CYZYZC.shp / (县代码)SDZYZC.shp
+        /// 2. SLZYZC.shp / CYZYZC.shp / SDZYZC.shp
+        /// </summary>
+        /// <param name="workspacePath">工作空间路径</param>
+        /// <param name="outputShapefileName">输出Shapefile名称（SLZYZC、CYZYZC或SDZYZC）</param>
+        /// <returns>找到的Shapefile文件名（不含扩展名），如果未找到返回null</returns>
+        private string FindOutputShapefileName(string workspacePath, string outputShapefileName)
+        {
+            try
+            {
+                if (!Directory.Exists(workspacePath))
+                {
+                    System.Diagnostics.Debug.WriteLine($"工作空间路径不存在: {workspacePath}");
+                    return null;
+                }
 
+                // 获取所有.shp文件
+                string[] shapefiles = Directory.GetFiles(workspacePath, "*.shp");
+                System.Diagnostics.Debug.WriteLine($"工作空间中找到 {shapefiles.Length} 个Shapefile文件");
+
+                // 列出所有找到的文件
+                foreach (string file in shapefiles)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(file);
+                    System.Diagnostics.Debug.WriteLine($"  发现Shapefile: {fileName}");
+                }
+
+                // 优先查找带县代码的文件：(县代码)outputShapefileName.shp
+                foreach (string shapefilePath in shapefiles)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
+
+                    // 模式1: (数字)outputShapefileName 或 （数字）outputShapefileName
+                    string pattern1 = @"^[（(]\d+[）)]" + outputShapefileName + "$";
+                    if (System.Text.RegularExpressions.Regex.IsMatch(fileName, pattern1))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到带县代码的{outputShapefileName}文件: {fileName}");
+                        return fileName;
+                    }
+                }
+
+                // 如果没有找到带县代码的，查找标准的文件
+                foreach (string shapefilePath in shapefiles)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
+
+                    // 模式2: 精确匹配 outputShapefileName
+                    if (fileName.Equals(outputShapefileName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到标准{outputShapefileName}文件: {fileName}");
+                        return fileName;
+                    }
+                }
+
+                // 最后尝试模糊匹配包含outputShapefileName的文件
+                foreach (string shapefilePath in shapefiles)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
+
+                    // 模式3: 包含outputShapefileName的文件
+                    if (fileName.Contains(outputShapefileName))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到包含{outputShapefileName}的文件: {fileName}");
+                        return fileName;
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"未找到任何符合模式的{outputShapefileName} Shapefile文件");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"查找{outputShapefileName} Shapefile文件时出错: {ex.Message}");
+                return null;
+            }
+        }
 
         /// <summary>
         /// 从输出路径中提取县名
@@ -563,13 +643,13 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 在指定路径中查找SLZYZC_DLTB Shapefile文件
+        /// 在指定路径中查找SLZYZC_DLTB Shapefile文件（支持动态数据类型）
         /// 支持以下命名模式：
-        /// 1. (县代码)SLZYZC_DLTB.shp
-        /// 2. SLZYZC_DLTB.shp
+        /// 1. (县代码)SLZYZC_DLTB.shp / (县代码)CYZYZC_DLTB.shp / (县代码)SDZYZC_DLTB.shp
+        /// 2. SLZYZC_DLTB.shp / CYZYZC_DLTB.shp / SDZYZC_DLTB.shp
         /// </summary>
         /// <param name="spatialDataPath">空间数据路径</param>
-        /// <returns>找到的SLZYZC_DLTB文件完整路径，如果未找到返回null</returns>
+        /// <returns>找到的输出_DLTB文件完整路径，如果未找到返回null</returns>
         private string FindSLZYZCDLTBShapefilePath(string spatialDataPath)
         {
             try
@@ -579,6 +659,10 @@ namespace ForestResourcePlugin
                     System.Diagnostics.Debug.WriteLine($"空间数据路径不存在: {spatialDataPath}");
                     return null;
                 }
+
+                // 🔥 修改：根据当前数据类型确定要查找的文件模式
+                string outputBaseName = GetCurrentOutputShapefileName();
+                string dltbFileName = $"{outputBaseName}_DLTB";
 
                 // 获取所有.shp文件
                 string[] shapefiles = Directory.GetFiles(spatialDataPath, "*.shp");
@@ -591,51 +675,52 @@ namespace ForestResourcePlugin
                     System.Diagnostics.Debug.WriteLine($"  发现Shapefile: {fileName}");
                 }
 
-                // 优先查找带县代码的SLZYZC_DLTB文件：(县代码)SLZYZC_DLTB.shp
+                // 优先查找带县代码的文件：(县代码)outputBaseName_DLTB.shp
                 foreach (string shapefilePath in shapefiles)
                 {
                     string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
 
-                    // 模式1: (数字)SLZYZC_DLTB 或 （数字）SLZYZC_DLTB
-                    if (System.Text.RegularExpressions.Regex.IsMatch(fileName, @"^[（(]\d+[）)]SLZYZC_DLTB$"))
+                    // 模式1: (数字)outputBaseName_DLTB 或 （数字）outputBaseName_DLTB
+                    string pattern1 = @"^[（(]\d+[）)]" + dltbFileName + "$";
+                    if (System.Text.RegularExpressions.Regex.IsMatch(fileName, pattern1))
                     {
-                        System.Diagnostics.Debug.WriteLine($"找到带县代码的SLZYZC_DLTB文件: {fileName}");
+                        System.Diagnostics.Debug.WriteLine($"找到带县代码的{dltbFileName}文件: {fileName}");
                         return shapefilePath;
                     }
                 }
 
-                // 如果没有找到带县代码的，查找标准的SLZYZC_DLTB文件
+                // 如果没有找到带县代码的，查找标准的文件
                 foreach (string shapefilePath in shapefiles)
                 {
                     string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
 
-                    // 模式2: 精确匹配 SLZYZC_DLTB
-                    if (fileName.Equals("SLZYZC_DLTB", StringComparison.OrdinalIgnoreCase))
+                    // 模式2: 精确匹配 dltbFileName
+                    if (fileName.Equals(dltbFileName, StringComparison.OrdinalIgnoreCase))
                     {
-                        System.Diagnostics.Debug.WriteLine($"找到标准SLZYZC_DLTB文件: {fileName}");
+                        System.Diagnostics.Debug.WriteLine($"找到标准{dltbFileName}文件: {fileName}");
                         return shapefilePath;
                     }
                 }
 
-                // 最后尝试模糊匹配包含SLZYZC_DLTB的文件
+                // 最后尝试模糊匹配包含dltbFileName的文件
                 foreach (string shapefilePath in shapefiles)
                 {
                     string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
 
-                    // 模式3: 包含SLZYZC_DLTB的文件
-                    if (fileName.Contains("SLZYZC_DLTB"))
+                    // 模式3: 包含dltbFileName的文件
+                    if (fileName.Contains(dltbFileName))
                     {
-                        System.Diagnostics.Debug.WriteLine($"找到包含SLZYZC_DLTB的文件: {fileName}");
+                        System.Diagnostics.Debug.WriteLine($"找到包含{dltbFileName}的文件: {fileName}");
                         return shapefilePath;
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine("未找到任何符合模式的SLZYZC_DLTB Shapefile文件");
+                System.Diagnostics.Debug.WriteLine($"未找到任何符合模式的{dltbFileName} Shapefile文件");
                 return null;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"查找SLZYZC_DLTB Shapefile文件时出错: {ex.Message}");
+                //System.Diagnostics.Debug.WriteLine($"查找{outputBaseName}_DLTB Shapefile文件时出错: {ex.Message}");
                 return null;
             }
         }
@@ -1719,13 +1804,7 @@ namespace ForestResourcePlugin
             }
         }
 
-        /// <summary>
-        /// 创建县级Shapefile工作空间
-        /// </summary>
-        /// <param name="outputPath">输出路径</param>
-        /// <param name="countyName">县名</param>
-        /// <returns>Shapefile工作空间接口</returns>
-        private IWorkspace CreateCountyShapefileWorkspace(string outputPath, string countyName)
+        private IWorkspace CreateCountyShapefileWorkspace(string outputPath, string countyName, string outputShapefileName)
         {
             try
             {
@@ -1734,7 +1813,19 @@ namespace ForestResourcePlugin
                 string countyFolderName = $"{countyName}({countyCode})全民所有自然资源资产清查数据成果";
                 string countyFolderPath = System.IO.Path.Combine(outputPath, countyFolderName);
                 string dataSetPath = System.IO.Path.Combine(countyFolderPath, "清查数据集");
-                string forestPath = System.IO.Path.Combine(dataSetPath, "森林");
+
+                // 🔥 在这里添加根据输出文件名选择资源文件夹的逻辑
+                string resourceFolder = "森林"; // 默认
+                if (outputShapefileName.Contains("CYZYZC"))
+                {
+                    resourceFolder = "草原";
+                }
+                else if (outputShapefileName.Contains("SDZYZC"))
+                {
+                    resourceFolder = "湿地";
+                }
+
+                string forestPath = System.IO.Path.Combine(dataSetPath, resourceFolder); // 使用动态资源文件夹
                 string spatialDataPath = System.IO.Path.Combine(forestPath, "空间数据");
 
                 // 使用ProgID创建Shapefile工作空间工厂
@@ -1744,7 +1835,7 @@ namespace ForestResourcePlugin
                 // 打开工作空间
                 IWorkspace workspace = workspaceFactory.OpenFromFile(spatialDataPath, 0);
 
-                System.Diagnostics.Debug.WriteLine($"成功创建{countyName}({countyCode})的Shapefile工作空间: {spatialDataPath}");
+                System.Diagnostics.Debug.WriteLine($"成功创建{countyName}({countyCode})的Shapefile工作空间: {spatialDataPath} (资源类型: {resourceFolder})");
                 return workspace;
             }
             catch (Exception ex)
@@ -1753,21 +1844,21 @@ namespace ForestResourcePlugin
                 throw;
             }
         }
-
         /// <summary>
-        /// 创建SLZYZC Shapefile要素类
+        /// 创建输出 Shapefile要素类（支持动态数据类型）
         /// </summary>
         /// <param name="workspace">Shapefile工作空间</param>
         /// <param name="geometryType">几何类型</param>
         /// <param name="spatialReference">空间参考</param>
-        /// <returns>SLZYZC要素类接口</returns>
-        private IFeatureClass CreateSLZYZCShapefile(IWorkspace workspace, esriGeometryType geometryType, ISpatialReference spatialReference)
+        /// <param name="outputShapefileName">输出Shapefile名称</param>
+        /// <returns>输出要素类接口</returns>
+        private IFeatureClass CreateOutputShapefile(IWorkspace workspace, esriGeometryType geometryType, ISpatialReference spatialReference, string outputShapefileName)
         {
             IFeatureWorkspace featureWorkspace = null;
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"开始创建SLZYZC Shapefile，工作空间路径: {workspace.PathName}");
+                System.Diagnostics.Debug.WriteLine($"开始创建{outputShapefileName} Shapefile，工作空间路径: {workspace.PathName}");
 
                 featureWorkspace = (IFeatureWorkspace)workspace;
 
@@ -1780,12 +1871,12 @@ namespace ForestResourcePlugin
                     throw new DirectoryNotFoundException(errorMsg);
                 }
 
-                // 查找符合模式的SLZYZC Shapefile文件
-                string targetFeatureClassName = FindSLZYZCShapefileName(workspacePath);
+                // 查找符合模式的输出 Shapefile文件
+                string targetFeatureClassName = FindOutputShapefileName(workspacePath, outputShapefileName);
 
                 if (string.IsNullOrEmpty(targetFeatureClassName))
                 {
-                    string errorMsg = $"未找到符合模式的SLZYZC Shapefile文件: {workspacePath}";
+                    string errorMsg = $"未找到符合模式的{outputShapefileName} Shapefile文件: {workspacePath}";
                     System.Diagnostics.Debug.WriteLine(errorMsg);
                     throw new FileNotFoundException(errorMsg);
                 }
@@ -1793,7 +1884,7 @@ namespace ForestResourcePlugin
                 System.Diagnostics.Debug.WriteLine($"找到目标Shapefile: {targetFeatureClassName}");
 
                 // 检查相关的Shapefile组件文件是否完整
-                string[] requiredExtensions = { ".shx", ".dbf",".prj" };
+                string[] requiredExtensions = { ".shx", ".dbf", ".prj" };
                 foreach (string ext in requiredExtensions)
                 {
                     string componentFile = System.IO.Path.Combine(workspacePath, $"{targetFeatureClassName}{ext}");
@@ -1875,12 +1966,66 @@ namespace ForestResourcePlugin
             }
             catch (Exception ex)
             {
-                string errorMsg = $"创建SLZYZC Shapefile时发生错误: {ex.Message}";
+                string errorMsg = $"创建{outputShapefileName} Shapefile时发生错误: {ex.Message}";
                 System.Diagnostics.Debug.WriteLine(errorMsg);
                 System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
                 throw;
             }
         }
+        /// <summary>
+        /// 创建SLZYZC Shapefile要素类（重构为通用方法）
+        /// </summary>
+        /// <param name="workspace">Shapefile工作空间</param>
+        /// <param name="geometryType">几何类型</param>
+        /// <param name="spatialReference">空间参考</param>
+        /// <returns>SLZYZC要素类接口</returns>
+        private IFeatureClass CreateSLZYZCShapefile(IWorkspace workspace, esriGeometryType geometryType, ISpatialReference spatialReference)
+        {
+            // 🔥 修改：从Basic.cs获取当前的输出文件名类型
+            string outputShapefileName = GetCurrentOutputShapefileName();
+
+            System.Diagnostics.Debug.WriteLine($"创建Shapefile: 当前输出类型为 {outputShapefileName}");
+
+            return CreateOutputShapefile(workspace, geometryType, spatialReference, outputShapefileName);
+        }
+
+        /// <summary>
+        /// 获取当前的输出Shapefile名称（从Basic窗体或SharedDataManager）
+        /// </summary>
+        /// <returns>输出Shapefile名称（SLZYZC、CYZYZC或SDZYZC）</returns>
+        private string GetCurrentOutputShapefileName()
+        {
+            try
+            {
+                // 方法1: 从SharedDataManager获取数据类型选择状态
+                var dataTypeSelection = SharedDataManager.GetDataTypeSelection();
+
+                if (dataTypeSelection.Forest && !dataTypeSelection.Grassland)
+                {
+                    return "SLZYZC"; // 森林资源
+                }
+                else if (!dataTypeSelection.Forest && dataTypeSelection.Grassland)
+                {
+                    return "CYZYZC"; // 草地资源
+                }
+                else if (dataTypeSelection.Forest && dataTypeSelection.Grassland)
+                {
+                    return "ZYZC"; // 通用资源（如果同时选择）
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("警告：未检测到有效的数据类型选择，默认使用SLZYZC");
+                    return "SLZYZC"; // 默认为森林资源
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"获取输出Shapefile名称时出错: {ex.Message}，使用默认值SLZYZC");
+                return "SLZYZC"; // 出错时使用默认值
+            }
+        }
+
+
 
         /// <summary>
         /// 在指定路径中查找符合模式的SLZYZC Shapefile文件名

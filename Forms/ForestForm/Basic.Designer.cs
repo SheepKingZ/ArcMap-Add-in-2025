@@ -167,12 +167,13 @@ namespace ForestResourcePlugin
             // 
             this.grpDataType.Controls.Add(this.chkForest);
             this.grpDataType.Controls.Add(this.chkGrassland);
-            this.grpDataType.Location = new System.Drawing.Point(8, 114);
+            this.grpDataType.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.grpDataType.Location = new System.Drawing.Point(365, 114);
             this.grpDataType.Margin = new System.Windows.Forms.Padding(4);
             this.grpDataType.Name = "grpDataType";
             this.grpDataType.Padding = new System.Windows.Forms.Padding(4);
             this.grpDataType.Size = new System.Drawing.Size(350, 70);
-            this.grpDataType.TabIndex = 15;
+            this.grpDataType.TabIndex = 4;
             this.grpDataType.TabStop = false;
             this.grpDataType.Text = "数据类型选择";
             // 
@@ -181,6 +182,7 @@ namespace ForestResourcePlugin
             this.chkForest.AutoSize = true;
             this.chkForest.Checked = true;
             this.chkForest.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkForest.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.chkForest.Location = new System.Drawing.Point(20, 30);
             this.chkForest.Margin = new System.Windows.Forms.Padding(4);
             this.chkForest.Name = "chkForest";
@@ -193,6 +195,7 @@ namespace ForestResourcePlugin
             // chkGrassland
             // 
             this.chkGrassland.AutoSize = true;
+            this.chkGrassland.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.chkGrassland.Location = new System.Drawing.Point(150, 30);
             this.chkGrassland.Margin = new System.Windows.Forms.Padding(4);
             this.chkGrassland.Name = "chkGrassland";
@@ -208,7 +211,7 @@ namespace ForestResourcePlugin
             this.buttonHSJGPath.Margin = new System.Windows.Forms.Padding(4);
             this.buttonHSJGPath.Name = "buttonHSJGPath";
             this.buttonHSJGPath.Size = new System.Drawing.Size(112, 32);
-            this.buttonHSJGPath.TabIndex = 14;
+            this.buttonHSJGPath.TabIndex = 2;
             this.buttonHSJGPath.Text = "浏览...";
             this.buttonHSJGPath.UseVisualStyleBackColor = true;
             this.buttonHSJGPath.Click += new System.EventHandler(this.buttonHSJGPath_Click);
@@ -220,7 +223,7 @@ namespace ForestResourcePlugin
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
             this.textBox1.Size = new System.Drawing.Size(360, 28);
-            this.textBox1.TabIndex = 13;
+            this.textBox1.TabIndex = 1;
             // 
             // label1
             // 
@@ -229,7 +232,7 @@ namespace ForestResourcePlugin
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(179, 18);
-            this.label1.TabIndex = 12;
+            this.label1.TabIndex = 0;
             this.label1.Text = "核算价格(HSJG)路径:";
             // 
             // cbxSelectAllCounty
@@ -239,7 +242,7 @@ namespace ForestResourcePlugin
             this.cbxSelectAllCounty.Name = "cbxSelectAllCounty";
             this.cbxSelectAllCounty.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.cbxSelectAllCounty.Size = new System.Drawing.Size(70, 22);
-            this.cbxSelectAllCounty.TabIndex = 11;
+            this.cbxSelectAllCounty.TabIndex = 7;
             this.cbxSelectAllCounty.Text = "全选";
             this.cbxSelectAllCounty.UseVisualStyleBackColor = true;
             this.cbxSelectAllCounty.Click += new System.EventHandler(this.cbxSelectAllCounty_Click);
@@ -250,7 +253,7 @@ namespace ForestResourcePlugin
             this.btnRefreshLayers.Margin = new System.Windows.Forms.Padding(4);
             this.btnRefreshLayers.Name = "btnRefreshLayers";
             this.btnRefreshLayers.Size = new System.Drawing.Size(150, 32);
-            this.btnRefreshLayers.TabIndex = 9;
+            this.btnRefreshLayers.TabIndex = 5;
             this.btnRefreshLayers.Text = "刷新数据源";
             this.btnRefreshLayers.UseVisualStyleBackColor = true;
             this.btnRefreshLayers.Click += new System.EventHandler(this.btnRefreshLayers_Click);
@@ -261,7 +264,7 @@ namespace ForestResourcePlugin
             this.btnBrowseOutput.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseOutput.Name = "btnBrowseOutput";
             this.btnBrowseOutput.Size = new System.Drawing.Size(112, 32);
-            this.btnBrowseOutput.TabIndex = 8;
+            this.btnBrowseOutput.TabIndex = 3;
             this.btnBrowseOutput.Text = "浏览...";
             this.btnBrowseOutput.UseVisualStyleBackColor = true;
             this.btnBrowseOutput.Click += new System.EventHandler(this.btnBrowseOutput_Click);
@@ -273,7 +276,7 @@ namespace ForestResourcePlugin
             this.txtOutputPath.Name = "txtOutputPath";
             this.txtOutputPath.ReadOnly = true;
             this.txtOutputPath.Size = new System.Drawing.Size(360, 28);
-            this.txtOutputPath.TabIndex = 7;
+            this.txtOutputPath.TabIndex = 2;
             // 
             // lblOutput
             // 
@@ -282,7 +285,7 @@ namespace ForestResourcePlugin
             this.lblOutput.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblOutput.Name = "lblOutput";
             this.lblOutput.Size = new System.Drawing.Size(89, 18);
-            this.lblOutput.TabIndex = 6;
+            this.lblOutput.TabIndex = 1;
             this.lblOutput.Text = "输出路径:";
             // 
             // chkListCounties
@@ -292,7 +295,7 @@ namespace ForestResourcePlugin
             this.chkListCounties.Margin = new System.Windows.Forms.Padding(4);
             this.chkListCounties.Name = "chkListCounties";
             this.chkListCounties.Size = new System.Drawing.Size(274, 154);
-            this.chkListCounties.TabIndex = 10;
+            this.chkListCounties.TabIndex = 6;
             // 
             // groupBoxOptions
             // 
@@ -817,6 +820,8 @@ namespace ForestResourcePlugin
         private System.Windows.Forms.Button buttonForestExcel;
         private System.Windows.Forms.Button buttonA6;
         private System.Windows.Forms.Button buttonA4;
+        
+        // 数据类型选择控件组
         private System.Windows.Forms.GroupBox grpDataType;
         private System.Windows.Forms.CheckBox chkForest;
         private System.Windows.Forms.CheckBox chkGrassland;

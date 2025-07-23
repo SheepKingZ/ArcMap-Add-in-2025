@@ -65,8 +65,377 @@ namespace ForestResourcePlugin
             LoadCounties();
 
             InitializeDebounceTimer();
+
+            InitializeDataTypeSelection();
+        }
+        /// <summary>
+        /// 初始化数据类型选择
+        /// </summary>
+        private void InitializeDataTypeSelection()
+        {
+            // 从SharedDataManager获取当前的数据类型选择状态
+            var dataTypeSelection = SharedDataManager.GetDataTypeSelection();
+
+            // 设置复选框状态
+            chkForest.Checked = dataTypeSelection.Forest;
+            chkGrassland.Checked = dataTypeSelection.Grassland;
+
+            // 如果没有任何选择，默认选择林地
+            if (!chkForest.Checked && !chkGrassland.Checked)
+            {
+                chkForest.Checked = true;
+                SharedDataManager.SetDataTypeSelection(true, false);
+            }
+
+            // 更新界面显示
+            UpdateDataTypeRelatedUI();
         }
 
+        /// <summary>
+        /// 更新数据类型相关的界面显示
+        /// </summary>
+        private void UpdateDataTypeRelatedUI()
+        {
+            try
+            {
+                // 更新HSJG路径标签文本
+                UpdateHSJGLabel();
+
+                // 更新筛选条件相关文本
+                UpdateFilterConditionLabels();
+
+                // 更新按钮状态
+                UpdateDataTypeButtons();
+
+                // 清空并重新加载字段映射配置
+                if (selectedCountyData != null && selectedCountyData.Count > 0)
+                {
+                    // 重新加载字段信息以适应新的数据类型
+                    LoadFieldsFromSelectedCountiesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"更新数据类型相关界面时出错: {ex.Message}");
+            }
+        }
+
+
+
+        /// <summary>
+        /// 更新HSJG标签文本
+        /// </summary>
+        private void UpdateHSJGLabel()
+        {
+            string hsjgType = GetCurrentHSJGType();
+            label1.Text = $"核算价格({hsjgType})路径:";
+        }
+
+        /// <summary>
+        /// 更新筛选条件标签文本
+        /// </summary>
+        private void UpdateFilterConditionLabels()
+        {
+            if (chkForest.Checked && !chkGrassland.Checked)
+            {
+                chkForestLand.Text = "地类为林地";
+            }
+            else if (!chkForest.Checked && chkGrassland.Checked)
+            {
+                chkForestLand.Text = "地类为草地";
+            }
+            else if (chkForest.Checked && chkGrassland.Checked)
+            {
+                chkForestLand.Text = "地类为林地或草地";
+            }
+            else
+            {
+                chkForestLand.Text = "请先选择数据类型";
+            }
+        }
+        /// <summary>
+        /// 查找并匹配HSJG文件到对应的县
+        /// </summary>
+        /// <param name="rootPath">根文件夹路径</param>
+        /// <param name="hsjgType">HSJG类型（LDHSJG、CDHSJG等）</param>
+        /// <returns>匹配结果列表</returns>
+        private List<HSJGFileInfo> FindAndMatchHSJGFiles(string rootPath, string hsjgType)
+        {
+            var hsjgFiles = new List<HSJGFileInfo>();
+
+            try
+            {
+                UpdateStatus($"正在搜索{hsjgType}数据文件...");
+
+                // 获取已加载的县名列表
+                var availableCounties = GetCountyNamesFromDataSources();
+
+                // 遍历根目录下的所有文件夹
+                var firstLevelDirectories = Directory.GetDirectories(rootPath);
+
+                foreach (var firstLevelDir in firstLevelDirectories)
+                {
+                    string directoryName = System.IO.Path.GetFileName(firstLevelDir);
+
+                    // 尝试从目录名中提取县名
+                    string extractedCountyName = ExtractCountyNameFromDirectory(directoryName, availableCounties);
+
+                    if (!string.IsNullOrEmpty(extractedCountyName))
+                    {
+                        // 在该目录及其子目录中查找HSJG文件
+                        var foundFiles = FindHSJGFilesInDirectory(firstLevelDir, hsjgType);
+
+                        foreach (var filePath in foundFiles)
+                        {
+                            var hsjgInfo = new HSJGFileInfo
+                            {
+                                FilePath = filePath,
+                                CountyName = extractedCountyName,
+                                DirectoryName = directoryName,
+                                FileName = System.IO.Path.GetFileNameWithoutExtension(filePath),
+                                HSJGType = hsjgType,
+                                IsMatched = true
+                            };
+
+                            hsjgFiles.Add(hsjgInfo);
+                        }
+                    }
+                }
+
+                UpdateStatus($"{hsjgType}文件搜索完成，找到 {hsjgFiles.Count} 个文件");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"查找{hsjgType}文件时出错: {ex.Message}");
+                UpdateStatus($"搜索{hsjgType}文件时出错");
+                throw;
+            }
+
+            return hsjgFiles;
+        }
+
+        /// <summary>
+        /// 在指定目录中查找包含指定HSJG类型的shapefile文件
+        /// </summary>
+        private List<string> FindHSJGFilesInDirectory(string directory, string hsjgType)
+        {
+            var foundFiles = new List<string>();
+
+            try
+            {
+                var shapefiles = Directory.GetFiles(directory, "*.shp", SearchOption.AllDirectories);
+
+                foreach (var shpFile in shapefiles)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(shpFile);
+                    if (fileName.IndexOf(hsjgType, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        foundFiles.Add(shpFile);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"在目录 {directory} 中搜索{hsjgType}文件时出错: {ex.Message}");
+            }
+
+            return foundFiles;
+        }
+
+        /// <summary>
+        /// 显示HSJG文件匹配结果
+        /// </summary>
+        private void DisplayHSJGMatchResults(List<HSJGFileInfo> hsjgFiles, string hsjgType)
+        {
+            try
+            {
+                var matchedFiles = hsjgFiles.Where(f => f.IsMatched).ToList();
+                var unmatchedFiles = hsjgFiles.Where(f => !f.IsMatched).ToList();
+
+                // 将匹配的HSJG文件保存到SharedDataManager
+                var sourceDataFiles = new List<SourceDataFileInfo>();
+                foreach (var hsjgFile in matchedFiles)
+                {
+                    var sourceDataFile = new SourceDataFileInfo
+                    {
+                        FullPath = hsjgFile.FilePath,
+                        DisplayName = hsjgFile.CountyName,
+                        IsGdb = false,
+                        GeometryType = ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon
+                    };
+                    sourceDataFiles.Add(sourceDataFile);
+                }
+
+                // 根据HSJG类型保存到不同的SharedDataManager方法
+                if (hsjgType == "LDHSJG")
+                {
+                    SharedDataManager.SetLDHSJGFiles(sourceDataFiles);
+                }
+                else if (hsjgType == "CDHSJG")
+                {
+                    SharedDataManager.SetCDHSJGFiles(sourceDataFiles);
+                }
+
+                string message = $"{hsjgType}文件搜索完成！\n\n";
+                message += $"搜索结果统计：\n";
+                message += $"总文件数：{hsjgFiles.Count}\n";
+                message += $"成功匹配：{matchedFiles.Count} 个文件\n";
+                message += $"未匹配：{unmatchedFiles.Count} 个文件\n";
+
+                MessageBox.Show(message, $"{hsjgType}文件搜索结果",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                UpdateStatus($"{hsjgType}数据加载完成：{matchedFiles.Count} 个文件已匹配");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"显示{hsjgType}匹配结果时出错: {ex.Message}");
+                MessageBox.Show($"显示搜索结果时出错：{ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        /// <summary>
+        /// 根据当前选择的数据类型获取输出Shapefile名称
+        /// </summary>
+        public string GetOutputShapefileName()
+        {
+            if (chkForest.Checked && !chkGrassland.Checked)
+            {
+                return "SLZYZC"; // 森林资源
+            }
+            else if (!chkForest.Checked && chkGrassland.Checked)
+            {
+                return "CYZYZC"; // 草地资源
+            }
+            else if (chkForest.Checked && chkGrassland.Checked)
+            {
+                return "ZYZC"; // 通用资源
+            }
+            else
+            {
+                return "ZYZC"; // 默认
+            }
+        }
+        /// <summary>
+        /// HSJG文件信息类
+        /// </summary>
+        private class HSJGFileInfo
+        {
+            public string FilePath { get; set; }
+            public string CountyName { get; set; }
+            public string DirectoryName { get; set; }
+            public string FileName { get; set; }
+            public string HSJGType { get; set; }
+            public bool IsMatched { get; set; }
+
+            public override string ToString()
+            {
+                return $"{FileName} ({HSJGType}) -> {CountyName} ({(IsMatched ? "已匹配" : "未匹配")})";
+            }
+        }
+        /// <summary>
+        /// 更新数据类型相关按钮状态
+        /// </summary>
+        private void UpdateDataTypeButtons()
+        {
+            bool hasDataTypeSelected = chkForest.Checked || chkGrassland.Checked;
+
+            // HSJG路径按钮需要先选择数据类型
+            buttonHSJGPath.Enabled = hasDataTypeSelected;
+
+            // 导出按钮需要根据数据类型调整文本
+            UpdateExportButtonTexts();
+        }
+
+        /// <summary>
+        /// 更新导出按钮文本
+        /// </summary>
+        private void UpdateExportButtonTexts()
+        {
+            if (chkForest.Checked && !chkGrassland.Checked)
+            {
+                buttonForestExcel.Text = "导出森林A2数据表格";
+                buttonA4.Text = "导出森林A4数据表格";
+                buttonA6.Text = "导出森林A6数据表格";
+            }
+            else if (!chkForest.Checked && chkGrassland.Checked)
+            {
+                buttonForestExcel.Text = "导出草地A2数据表格";
+                buttonA4.Text = "导出草地A4数据表格";
+                buttonA6.Text = "导出草地A6数据表格";
+            }
+            else if (chkForest.Checked && chkGrassland.Checked)
+            {
+                buttonForestExcel.Text = "导出A2数据表格";
+                buttonA4.Text = "导出A4数据表格";
+                buttonA6.Text = "导出A6数据表格";
+            }
+            else
+            {
+                buttonForestExcel.Text = "导出A2数据表格(请选择数据类型)";
+                buttonA4.Text = "导出A4数据表格(请选择数据类型)";
+                buttonA6.Text = "导出A6数据表格(请选择数据类型)";
+            }
+        }
+
+        /// <summary>
+        /// 获取当前应使用的HSJG类型
+        /// </summary>
+        private string GetCurrentHSJGType()
+        {
+            if (chkForest.Checked && !chkGrassland.Checked)
+            {
+                return "LDHSJG";
+            }
+            else if (!chkForest.Checked && chkGrassland.Checked)
+            {
+                return "CDHSJG";
+            }
+            else if (chkForest.Checked && chkGrassland.Checked)
+            {
+                return "HSJG";  // 通用核算价格
+            }
+            else
+            {
+                return "HSJG";  // 默认
+            }
+        }
+
+        /// <summary>
+        /// 清空森林相关数据
+        /// </summary>
+        private void ClearForestRelatedData()
+        {
+            try
+            {
+                // 清空SharedDataManager中的森林地类图斑数据
+                SharedDataManager.SetSLZYDLTBFiles(new List<SourceDataFileInfo>());
+
+                System.Diagnostics.Debug.WriteLine("已清空森林相关数据");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"清空森林相关数据时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 清空草地相关数据
+        /// </summary>
+        private void ClearGrasslandRelatedData()
+        {
+            try
+            {
+                // 清空SharedDataManager中的草地地类图斑数据
+                SharedDataManager.SetCYZYDLTBFiles(new List<SourceDataFileInfo>());
+
+                System.Diagnostics.Debug.WriteLine("已清空草地相关数据");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"清空草地相关数据时出错: {ex.Message}");
+            }
+        }
         /// <summary>
         /// 初始化防抖动定时器
         /// </summary>
@@ -152,7 +521,103 @@ namespace ForestResourcePlugin
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        /// <summary>
+        /// 林地复选框状态改变事件处理
+        /// </summary>
+        private void chkForest_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                // 更新SharedDataManager中的数据类型选择状态
+                SharedDataManager.SetDataTypeSelection(chkForest.Checked, chkGrassland.Checked);
 
+                // 更新界面显示
+                UpdateDataTypeRelatedUI();
+
+                // 如果取消选择且已有数据，清空相关数据
+                if (!chkForest.Checked)
+                {
+                    ClearForestRelatedData();
+                }
+
+                System.Diagnostics.Debug.WriteLine($"林地选择状态改变: {chkForest.Checked}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"处理林地选择变化时出错: {ex.Message}");
+                MessageBox.Show($"处理林地选择变化时出错: {ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// 草地复选框状态改变事件处理
+        /// </summary>
+        private void chkGrassland_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                // 更新SharedDataManager中的数据类型选择状态
+                SharedDataManager.SetDataTypeSelection(chkForest.Checked, chkGrassland.Checked);
+
+                // 更新界面显示
+                UpdateDataTypeRelatedUI();
+
+                // 如果取消选择且已有数据，清空相关数据
+                if (!chkGrassland.Checked)
+                {
+                    ClearGrasslandRelatedData();
+                }
+
+                System.Diagnostics.Debug.WriteLine($"草地选择状态改变: {chkGrassland.Checked}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"处理草地选择变化时出错: {ex.Message}");
+                MessageBox.Show($"处理草地选择变化时出错: {ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// HSJG路径选择按钮点击事件处理
+        /// </summary>
+        private void buttonHSJGPath_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 根据当前选择的数据类型确定搜索的HSJG文件类型
+                string hsjgType = GetCurrentHSJGType();
+                string dialogDescription = $"请选择包含{hsjgType}数据的根文件夹";
+
+                using (var dialog = new FolderBrowserDialog())
+                {
+                    dialog.Description = dialogDescription;
+                    dialog.ShowNewFolderButton = false;
+
+                    if (dialog.ShowDialog() == DialogResult.OK)
+                    {
+                        string selectedPath = dialog.SelectedPath;
+
+                        // 显示选择的路径到textbox
+                        textBox1.Text = selectedPath;
+
+                        // 查找并匹配HSJG文件
+                        var hsjgFiles = FindAndMatchHSJGFiles(selectedPath, hsjgType);
+
+                        // 显示匹配结果
+                        DisplayHSJGMatchResults(hsjgFiles, hsjgType);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"选择{GetCurrentHSJGType()}数据路径时出错：{ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                UpdateStatus($"选择{GetCurrentHSJGType()}数据路径失败");
+                System.Diagnostics.Debug.WriteLine($"buttonHSJGPath_Click出错: {ex}");
+            }
+        }
         /// <summary>
         /// 根据选中的县加载字段信息 - 兼容性包装方法
         /// </summary>
@@ -906,12 +1371,14 @@ namespace ForestResourcePlugin
 
                 // 使用ShapefileExporter将筛选后的要素直接写入到SLZYZC图层
                 var exporter = new ShapefileExporter();
+                string outputShapefileName = GetOutputShapefileName();
                 exporter.ExportToShapefile(
                     filteredFeatures,              // 已筛选的符合条件的要素列表
                     sourceFeatureClass,            // 源要素类，用于获取字段定义和要素数据
                     countyInfo.CountyName,         // 县名，用于确定目标数据库路径
                     countyDatabasePath,            // 数据库基础路径
                     fieldMappings,                 // 字段映射配置
+                    outputShapefileName,
                     (percentage, message) =>
                     {     // 进度回调函数
                         try
@@ -1084,6 +1551,9 @@ namespace ForestResourcePlugin
             public string ErrorMessage { get; set; }
         }
 
+        /// <summary>
+        /// 构建优化的查询条件（支持动态数据类型）
+        /// </summary>
         private string BuildOptimizedWhereClause(string landTypeField, string landOwnerField)
         {
             var conditions = new List<string>();
@@ -1109,10 +1579,30 @@ namespace ForestResourcePlugin
                         subconditions[0] :
                         $"({string.Join(" OR ", subconditions)})";
 
-                    // 定义林地的精确地类编码列表
-                    string landTypeCodes = "'0301', '0302', '0305', '0307', '0301K', '0302K', '0307K'";
-                    string landTypeCondition = $"{landTypeField} IN ({landTypeCodes})";
+                    // 🔥 修改：根据数据类型选择不同的地类编码
+                    string landTypeCodes;
+                    if (chkForest.Checked && !chkGrassland.Checked)
+                    {
+                        // 仅林地
+                        landTypeCodes = "'0301', '0302', '0305', '0307', '0301K', '0302K', '0307K'";
+                    }
+                    else if (!chkForest.Checked && chkGrassland.Checked)
+                    {
+                        // 仅草地 - 使用草地地类编码
+                        landTypeCodes = "'0401', '0403', '0403K', '0404'";
+                    }
+                    else if (chkForest.Checked && chkGrassland.Checked)
+                    {
+                        // 林地和草地
+                        landTypeCodes = "'0301', '0302', '0305', '0307', '0301K', '0302K', '0307K', '0401', '0403', '0403K', '0404'";
+                    }
+                    else
+                    {
+                        // 默认使用林地编码
+                        landTypeCodes = "'0301', '0302', '0305', '0307', '0301K', '0302K', '0307K'";
+                    }
 
+                    string landTypeCondition = $"{landTypeField} IN ({landTypeCodes})";
                     conditions.Add($"{landTypeCondition} AND {ownerCondition}");
                 }
             }
@@ -1175,84 +1665,15 @@ namespace ForestResourcePlugin
                     }
                 }
 
-                // 如果映射表格为空或没有有效映射，使用默认映射
-                if (fieldMappings.Count == 0)
-                {
-                    fieldMappings = GetDefaultFieldMappings();
-                }
-
                 System.Diagnostics.Debug.WriteLine($"获取字段映射配置完成，共 {fieldMappings.Count} 个映射");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"获取字段映射时出错: {ex.Message}");
-                // 返回默认映射
-                fieldMappings = GetDefaultFieldMappings();
+                System.Diagnostics.Debug.WriteLine($"获取字段映射时出错: {ex.Message}"); 
             }
 
             return fieldMappings;
         }
-
-        /// <summary>
-        /// 获取默认字段映射配置
-        /// </summary>
-        private Dictionary<string, string> GetDefaultFieldMappings()
-        {
-            var defaultMappings = new Dictionary<string, string>();
-
-            try
-            {
-                // 获取当前选择的字段
-                string landTypeField = cmbLandTypeField.SelectedItem?.ToString();
-                string landOwnerField = cmbLandOwnerField.SelectedItem?.ToString();
-
-                // 基本字段映射
-                if (!string.IsNullOrEmpty(landTypeField))
-                {
-                    defaultMappings["DLMC"] = landTypeField;
-                }
-
-                if (!string.IsNullOrEmpty(landOwnerField))
-                {
-                    defaultMappings["TDQS"] = landOwnerField;
-                    defaultMappings["QSXZ"] = landOwnerField;
-                }
-
-                // 其他常用字段映射
-                var fieldNames = GetAvailableSourceFields();
-
-                // 图斑编号
-                string tbdhField = fieldNames.FirstOrDefault(f =>
-                    f.Equals("TBDH", StringComparison.OrdinalIgnoreCase) ||
-                    f.Equals("BSM", StringComparison.OrdinalIgnoreCase) ||
-                    f.Equals("图斑编号", StringComparison.OrdinalIgnoreCase));
-                if (!string.IsNullOrEmpty(tbdhField))
-                {
-                    defaultMappings["TBDH"] = tbdhField;
-                }
-
-                // 面积字段
-                string mjField = fieldNames.FirstOrDefault(f =>
-                    f.Equals("TBMJ", StringComparison.OrdinalIgnoreCase) ||
-                    f.Equals("MJ", StringComparison.OrdinalIgnoreCase) ||
-                    f.Equals("AREA", StringComparison.OrdinalIgnoreCase) ||
-                    f.Equals("面积", StringComparison.OrdinalIgnoreCase));
-                if (!string.IsNullOrEmpty(mjField))
-                {
-                    defaultMappings["MJ"] = mjField;
-                    defaultMappings["TBMJ"] = mjField;
-                }
-
-                System.Diagnostics.Debug.WriteLine($"生成默认字段映射，共 {defaultMappings.Count} 个映射");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"生成默认字段映射时出错: {ex.Message}");
-            }
-
-            return defaultMappings;
-        }
-
         /// <summary>
         /// 验证字段映射配置
         /// </summary>
@@ -1367,8 +1788,26 @@ namespace ForestResourcePlugin
 
                 System.Diagnostics.Debug.WriteLine($"可用源字段: {string.Join(", ", availableSourceFields)}");
 
-                // 5. 获取SLZYZC字段映射规则
-                var defaultMappings = GetDefaultSLZYZCMappingRules();
+                // 5. 在获取映射规则时根据数据类型选择不同的规则
+                Dictionary<string, string> defaultMappings;
+                if (chkForest.Checked && !chkGrassland.Checked)
+                {
+                    defaultMappings = GetDefaultSLZYZCMappingRules();
+                }
+                else if (!chkForest.Checked && chkGrassland.Checked)
+                {
+                    defaultMappings = GetDefaultCyzyzcMappingRules();
+                }
+                else if (chkForest.Checked && chkGrassland.Checked)
+                {
+                    // 当同时选择林地和草地时，使用通用的映射规则或合并规则
+                    defaultMappings = GetDefaultSLZYZCMappingRules(); // 可以根据需要调整
+                }
+                else
+                {
+                    // 如果没有选择任何数据类型，默认使用林地规则
+                    defaultMappings = GetDefaultSLZYZCMappingRules();
+                }
 
                 // 6. 清空并重新填充映射表格
                 mappingData.Clear();
@@ -1467,7 +1906,35 @@ namespace ForestResourcePlugin
                 System.Diagnostics.Debug.WriteLine($"设置字段选择时出错: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// 获取CYZYZC字段映射规则
+        /// </summary>
+        private Dictionary<string, string> GetDefaultCyzyzcMappingRules()
+        {
+            return new Dictionary<string, string>
+            {
+                { "XZQDM", "xian" },           // 行政区代码
+                { "GTDCTBBSM", "bsm" },        // 国土调查图斑编码
+                { "GTDCTBBH", "tbbh" },        // 国土调查图斑编号
+                { "GTDCDLBM", "dlbm" },        // 国土调查地类编码
+                { "GTDCDLMC", "dlmc" },        // 国土调查地类名称
+                { "QSDWDM", "qsdwdm" },        // 权属单位代码
+                { "QSDWMC", "qsdwmc" },        // 权属单位名称
+                { "ZLDWDM", "zldwdm" },        // 坐落单位代码
+                { "ZLDWMC", "zldwmc" },        // 坐落单位名称
+                { "GTDCTBMJ", "tbmj" },        // 国土调查图斑面积
+                { "GTDCTDQS", "qsxz" },        // 国土调查土地权属
+                { "CY_SUOYQ", "cyqs" },        // 草原所有权（对应林木所有权的草地版本）
+                { "CYLX", "cao_lei" },         // 草地类型（对应林种的草地版本）
+                { "ZTBMJ", "xbmj" },           // 子图斑面积
+                { "FGDM", "fu_gai_du" },       // 覆盖度
+                { "PJCG", "pingjun_cg" },      // 平均草高
+                { "CPLL", "chan_ping_ll" },    // 产品量（产草量）
+                { "CYZZ", "cao_zhong" },       // 草种（优势种）
+                { "CYTJ", "cao_tiao_jian" },   // 草地条件
+                { "LYFS", "li_yong_fs" }       // 利用方式
+            };
+        }
         /// <summary>
         /// 获取SLZYZC字段映射规则
         /// </summary>
