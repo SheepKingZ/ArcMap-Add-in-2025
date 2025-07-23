@@ -1923,16 +1923,14 @@ namespace ForestResourcePlugin
                 { "ZLDWDM", "zldwdm" },        // 坐落单位代码
                 { "ZLDWMC", "zldwmc" },        // 坐落单位名称
                 { "GTDCTBMJ", "tbmj" },        // 国土调查图斑面积
-                { "GTDCTDQS", "qsxz" },        // 国土调查土地权属
-                { "CY_SUOYQ", "cyqs" },        // 草原所有权（对应林木所有权的草地版本）
-                { "CYLX", "cao_lei" },         // 草地类型（对应林种的草地版本）
-                { "ZTBMJ", "xbmj" },           // 子图斑面积
-                { "FGDM", "fu_gai_du" },       // 覆盖度
-                { "PJCG", "pingjun_cg" },      // 平均草高
-                { "CPLL", "chan_ping_ll" },    // 产品量（产草量）
-                { "CYZZ", "cao_zhong" },       // 草种（优势种）
-                { "CYTJ", "cao_tiao_jian" },   // 草地条件
-                { "LYFS", "li_yong_fs" }       // 利用方式
+                { "GTDCQSXZ", "qsxz" },        // 国土调查权属性质
+                { "PCDL", "di_lei" },          // 普查地类
+                { "ZTBMJ", "xbmj" },           // 图斑面积
+                { "CYL", "cd_l" },        // 草原类
+                { "YSCZ", "ys_caoz" },      // 优势草种
+                { "ZBGD", "zbgd" },           // 植被盖度
+                { "XBGCCL", "xb_gccl" },         // 小班干草产量
+                { "FRDBS", "frdbs" }           // 飞入地标识
             };
         }
         /// <summary>

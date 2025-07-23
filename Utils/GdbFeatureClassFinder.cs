@@ -38,7 +38,7 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 🔥 新增：公共方法 - 从任意路径中提取县级代码
+        /// 公共方法 - 从任意路径中提取县级代码
         /// 这个方法可以被其他类和函数调用，确保整个应用中县级代码提取的一致性
         /// </summary>
         /// <param name="path">任意文件或文件夹路径</param>
@@ -244,11 +244,11 @@ namespace ForestResourcePlugin
                         {
                             try
                             {
-                                System.Diagnostics.Debug.WriteLine($"处理源数据要素类: {dataset.Name}");
+                                //System.Diagnostics.Debug.WriteLine($"处理源数据要素类: {dataset.Name}");
 
                                 // 检查名称是否匹配
                                 bool nameMatches = dataset.Name.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0;
-                                System.Diagnostics.Debug.WriteLine($"源数据要素类名称匹配结果: {nameMatches} (名称: {dataset.Name}, 模式: {pattern})");
+                                //System.Diagnostics.Debug.WriteLine($"源数据要素类名称匹配结果: {nameMatches} (名称: {dataset.Name}, 模式: {pattern})");
 
                                 if (nameMatches)
                                 {
@@ -264,7 +264,7 @@ namespace ForestResourcePlugin
                                     if (geometryType != esriGeometryType.esriGeometryAny)
                                     {
                                         bool geomMatches = featureClass.ShapeType == geometryType;
-                                        System.Diagnostics.Debug.WriteLine($"几何类型匹配结果: {geomMatches} (当前: {featureClass.ShapeType}, 期望: {geometryType})");
+                                        //System.Diagnostics.Debug.WriteLine($"几何类型匹配结果: {geomMatches} (当前: {featureClass.ShapeType}, 期望: {geometryType})");
 
                                         if (!geomMatches)
                                         {
@@ -275,24 +275,24 @@ namespace ForestResourcePlugin
 
                                     // 获取要素数量
                                     int featureCount = featureClass.FeatureCount(null);
-                                    System.Diagnostics.Debug.WriteLine($"源数据要素类 {dataset.Name} 包含 {featureCount} 个要素");
+                                    //System.Diagnostics.Debug.WriteLine($"源数据要素类 {dataset.Name} 包含 {featureCount} 个要素");
 
-                                    // 🔥 修改：提取县级代码（从第一级文件夹名称中提取六位数字）
+                                    // 提取县级代码（从第一级文件夹名称中提取六位数字）
                                     string extractedCountyCode = ExtractCountyNameFromGdbPath(gdbPath, rootDir);
 
-                                    // 🔥 修改：创建源数据文件信息，使用提取的县级代码作为显示名称
+                                    // 创建源数据文件信息，使用提取的县级代码作为显示名称
                                     var sourceDataInfo = new SourceDataFileInfo
                                     {
                                         FullPath = gdbPath,
-                                        DisplayName = extractedCountyCode, // 🔥 修改：使用提取的县级代码
+                                        DisplayName = extractedCountyCode, // 使用提取的县级代码
                                         IsGdb = true,
                                         FeatureClassName = dataset.Name,
                                         GeometryType = featureClass.ShapeType,
-                                        CountyCode = extractedCountyCode // 🔥 新增：设置县级代码
+                                        CountyCode = extractedCountyCode // 设置县级代码
                                     };
 
                                     result.Add(sourceDataInfo);
-                                    System.Diagnostics.Debug.WriteLine($"找到匹配的源数据GDB要素类: 县级代码={extractedCountyCode}, GDB路径={gdbPath}, 要素类名={dataset.Name}, 几何类型={featureClass.ShapeType}");
+                                    //System.Diagnostics.Debug.WriteLine($"找到匹配的源数据GDB要素类: 县级代码={extractedCountyCode}, GDB路径={gdbPath}, 要素类名={dataset.Name}, 几何类型={featureClass.ShapeType}");
 
                                     // 释放要素类资源
                                     System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);
@@ -317,7 +317,7 @@ namespace ForestResourcePlugin
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"打开源数据GDB工作空间 {gdbPath} 时出错: {ex.Message}");
+                        //System.Diagnostics.Debug.WriteLine($"打开源数据GDB工作空间 {gdbPath} 时出错: {ex.Message}");
                         System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
                     }
                     finally
@@ -331,7 +331,7 @@ namespace ForestResourcePlugin
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"共找到 {result.Count} 个匹配的源数据GDB要素类");
+                //System.Diagnostics.Debug.WriteLine($"共找到 {result.Count} 个匹配的源数据GDB要素类");
             }
             catch (Exception ex)
             {
@@ -343,7 +343,7 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 🔥 新增：根据县级代码查找对应的LCXZGX_P数据
+        /// 根据县级代码查找对应的LCXZGX_P数据
         /// 支持从包含额外文字的文件夹名称中提取和匹配县级代码
         /// </summary>
         /// <param name="rootDir">根目录</param>
@@ -370,7 +370,7 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 🔥 新增：对源数据文件列表按县级代码进行分组和验证
+        /// 对源数据文件列表按县级代码进行分组和验证
         /// 确保所有数据都有有效的县级代码
         /// </summary>
         /// <param name="sourceDataFiles">源数据文件列表</param>
@@ -391,7 +391,7 @@ namespace ForestResourcePlugin
             {
                 try
                 {
-                    // 🔥 确保使用统一的县级代码提取逻辑
+                    // 确保使用统一的县级代码提取逻辑
                     string countyCode = !string.IsNullOrEmpty(file.CountyCode)
                         ? file.CountyCode
                         : GetCountyCodeFromPath(file.FullPath);

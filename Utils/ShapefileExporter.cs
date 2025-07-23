@@ -972,7 +972,9 @@ namespace ForestResourcePlugin
                         // 设置YSDM字段为固定值
                         if (ysdmIndex != -1)
                         {
-                            targetBuffer.set_Value(ysdmIndex, "2150201010");
+                            string currentOutputType = GetCurrentOutputShapefileName();
+                            string ysdmValue = currentOutputType == "CYZYZC" ? "2160301000" : "2150201010";
+                            targetBuffer.set_Value(ysdmIndex, ysdmValue);
                         }
 
                         // 使用新的比例计算逻辑计算CZKFBJMJ字段
@@ -1219,22 +1221,20 @@ namespace ForestResourcePlugin
 
                 if (string.IsNullOrEmpty(xzqdm))
                 {
-                    xzqdm = "000000"; // 默认值
-                    System.Diagnostics.Debug.WriteLine("警告: 县级XZQDM为空，使用默认值000000");
+                    xzqdm = "000000";
                 }
                 else if (xzqdm.Length > 6)
                 {
                     xzqdm = xzqdm.Substring(0, 6);
-                    System.Diagnostics.Debug.WriteLine($"县级XZQDM长度超过6位，截取前6位: {xzqdm}");
                 }
                 else if (xzqdm.Length < 6)
                 {
                     xzqdm = xzqdm.PadLeft(6, '0');
-                    System.Diagnostics.Debug.WriteLine($"县级XZQDM长度不足6位，前补0: {xzqdm}");
                 }
 
-                // 固定中间4位为"4110"
-                string middlePart = "4110";
+                // 🔥 修改：根据数据类型设置不同的中间代码
+                string currentOutputType = GetCurrentOutputShapefileName();
+                string middlePart = currentOutputType == "CYZYZC" ? "5110" : "4110";
 
                 // 序号格式化为12位，前补0
                 string sequencePart = sequenceNumber.ToString("D12");
@@ -1242,17 +1242,15 @@ namespace ForestResourcePlugin
                 // 组合成22位的ZCQCBSM
                 string zcqcbsm = $"{xzqdm}{middlePart}{sequencePart}";
 
-                //System.Diagnostics.Debug.WriteLine($"生成ZCQCBSM: 县级XZQDM={xzqdm} + 4110 + {sequencePart} = {zcqcbsm} (长度: {zcqcbsm.Length})");
-
                 return zcqcbsm;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"生成ZCQCBSM时出错: {ex.Message}");
-
-                // 出错时返回默认值
-                string defaultZcqcbsm = $"000000411{sequenceNumber.ToString("D12")}";
-                System.Diagnostics.Debug.WriteLine($"使用默认ZCQCBSM: {defaultZcqcbsm}");
+                // 🔥 修改：出错时的默认值也要考虑数据类型
+                string currentOutputType = GetCurrentOutputShapefileName();
+                string defaultMiddle = currentOutputType == "CYZYZC" ? "5110" : "4110";
+                string defaultZcqcbsm = $"000000{defaultMiddle}{sequenceNumber.ToString("D12")}";
                 return defaultZcqcbsm;
             }
         }
@@ -2263,11 +2261,13 @@ namespace ForestResourcePlugin
                             }
                         }
 
-                        // 🔥 新增：设置YSDM字段为固定值 2150201020
+                        // 🔥 修改：根据数据类型设置不同的YSDM值
                         if (ysdmIndex != -1)
                         {
-                            featureBuffer.set_Value(ysdmIndex, "2150201020");
-                            //System.Diagnostics.Debug.WriteLine($"设置YSDM字段: 2150201020");
+                            // 原代码：featureBuffer.set_Value(ysdmIndex, "2150201020");
+                            string currentOutputType = GetCurrentOutputShapefileName();
+                            string ysdmValue = currentOutputType == "CYZYZC" ? "2160301000" : "2150201020";
+                            featureBuffer.set_Value(ysdmIndex, ysdmValue);
                         }
 
                         // 处理特殊字段：PCTBBM (xian + lin_ban + xiao_ban)
@@ -2282,7 +2282,7 @@ namespace ForestResourcePlugin
                                 string pctbbmValue = $"{xianValue}{linBanValue}{xiaoBanValue}";
                                 featureBuffer.set_Value(pctbbmIndex, pctbbmValue);
 
-                                System.Diagnostics.Debug.WriteLine($"PCTBBM字段合并完成: {pctbbmValue}");
+                                //System.Diagnostics.Debug.WriteLine($"PCTBBM字段合并完成: {pctbbmValue}");
                             }
                             catch (Exception ex)
                             {
@@ -2475,7 +2475,7 @@ namespace ForestResourcePlugin
         {
             try
             {
-                // 格式: XZQDM(6) + "4120" + 图斑序号(12)
+                // 格式: XZQDM(6) + 中间代码 + 图斑序号(12)
                 int xzqdmIndex = sourceFeatureClass.FindField("xian");
                 if (xzqdmIndex != -1)
                 {
@@ -2484,8 +2484,13 @@ namespace ForestResourcePlugin
                     {
                         xzqdm = xzqdm.Substring(0, 6);
                     }
-                    string sequenceStr = featureSequence.ToString("D12"); // 格式化为12位，前补0
-                    return $"{xzqdm}4120{sequenceStr}";
+
+                    // 🔥 修改：根据数据类型设置不同的中间代码
+                    string currentOutputType = GetCurrentOutputShapefileName();
+                    string middleCode = currentOutputType == "CYZYZC" ? "5110" : "4120";
+
+                    string sequenceStr = featureSequence.ToString("D12");
+                    return $"{xzqdm}{middleCode}{sequenceStr}";
                 }
                 return null;
             }

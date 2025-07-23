@@ -523,7 +523,7 @@ namespace TestArcMapAddin2.Forms
                     if (match.Success)
                     {
                         string countyCode = match.Groups[1].Value;
-                        System.Diagnostics.Debug.WriteLine($"从路径 {relativePath} 中提取到县代码: {countyCode}");
+                        //System.Diagnostics.Debug.WriteLine($"从路径 {relativePath} 中提取到县代码: {countyCode}");
                         return countyCode;
                     }
                 }
@@ -534,11 +534,11 @@ namespace TestArcMapAddin2.Forms
                 if (fileMatch.Success)
                 {
                     string countyCode = fileMatch.Groups[1].Value;
-                    System.Diagnostics.Debug.WriteLine($"从文件名 {fileName} 中提取到县代码: {countyCode}");
+                    //System.Diagnostics.Debug.WriteLine($"从文件名 {fileName} 中提取到县代码: {countyCode}");
                     return countyCode;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"警告: 从路径 {relativePath} 中未找到六位数县代码");
+                //System.Diagnostics.Debug.WriteLine($"警告: 从路径 {relativePath} 中未找到六位数县代码");
                 return null;
             }
             catch (Exception ex)
@@ -579,10 +579,10 @@ namespace TestArcMapAddin2.Forms
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"开始在 {rootDir} 目录下查找包含 {pattern} 的文件（按县代码分类）");
+                //System.Diagnostics.Debug.WriteLine($"开始在 {rootDir} 目录下查找包含 {pattern} 的文件（按县代码分类）");
 
                 // 1. 首先查找GDB要素类
-                System.Diagnostics.Debug.WriteLine("第1步：查找GDB要素类...");
+                //System.Diagnostics.Debug.WriteLine("第1步：查找GDB要素类...");
                 var gdbFeatureClasses = ForestResourcePlugin.GdbFeatureClassFinder.FindFeatureClassesWithPatternAsSourceData(
                     rootDir, pattern, ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon);
 
@@ -595,60 +595,60 @@ namespace TestArcMapAddin2.Forms
                         gdbItem.CountyCode = countyCode;
                         gdbItem.DisplayName = GetCountyNameFromCode(countyCode);
                         result.Add(gdbItem);
-                        System.Diagnostics.Debug.WriteLine($"GDB要素类匹配: {gdbItem.FullPath}, 县代码: {countyCode}, 县名: {gdbItem.DisplayName}");
+                        //System.Diagnostics.Debug.WriteLine($"GDB要素类匹配: {gdbItem.FullPath}, 县代码: {countyCode}, 县名: {gdbItem.DisplayName}");
                     }
                 }
 
-                // 2. 再查找Shapefile文件
-                System.Diagnostics.Debug.WriteLine("第2步：查找Shapefile文件...");
+               // // 2. 再查找Shapefile文件
+               // //System.Diagnostics.Debug.WriteLine("第2步：查找Shapefile文件...");
 
-                if (Directory.Exists(rootDir))
-                {
-                    string[] files = System.IO.Directory.GetFiles(rootDir, "*.shp", System.IO.SearchOption.AllDirectories);
-                    System.Diagnostics.Debug.WriteLine($"在 {rootDir} 目录下找到 {files.Length} 个Shapefile文件");
+               // if (Directory.Exists(rootDir))
+               // {
+               //     string[] files = System.IO.Directory.GetFiles(rootDir, "*.shp", System.IO.SearchOption.AllDirectories);
+               //     System.Diagnostics.Debug.WriteLine($"在 {rootDir} 目录下找到 {files.Length} 个Shapefile文件");
 
-                    // 筛选包含指定模式的Shapefile
-                    int matchCount = 0;
-                    foreach (string filePath in files)
-                    {
-                        if (filePath.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0)
-                        {
-                            // 提取县代码
-                            string countyCode = ExtractCountyCodeFromPath(filePath, rootDir);
-                            if (!string.IsNullOrEmpty(countyCode))
-                            {
-                                string countyName = GetCountyNameFromCode(countyCode);
+               //     // 筛选包含指定模式的Shapefile
+               //     int matchCount = 0;
+               //     foreach (string filePath in files)
+               //     {
+               //         if (filePath.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0)
+               //         {
+               //             // 提取县代码
+               //             string countyCode = ExtractCountyCodeFromPath(filePath, rootDir);
+               //             if (!string.IsNullOrEmpty(countyCode))
+               //             {
+               //                 string countyName = GetCountyNameFromCode(countyCode);
 
-                                result.Add(new ForestResourcePlugin.SourceDataFileInfo
-                                {
-                                    FullPath = filePath,
-                                    DisplayName = countyName,
-                                    CountyCode = countyCode,
-                                    IsGdb = false,
-                                    GeometryType = ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon
-                                });
+               //                 result.Add(new ForestResourcePlugin.SourceDataFileInfo
+               //                 {
+               //                     FullPath = filePath,
+               //                     DisplayName = countyName,
+               //                     CountyCode = countyCode,
+               //                     IsGdb = false,
+               //                     GeometryType = ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon
+               //                 });
 
-                                matchCount++;
-                                System.Diagnostics.Debug.WriteLine($"Shapefile匹配[{matchCount}]: {filePath}, 县代码: {countyCode}, 县名: {countyName}");
-                            }
-                            else
-                            {
-                                System.Diagnostics.Debug.WriteLine($"警告: 文件 {filePath} 中未找到县代码，跳过");
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"警告: 目录 {rootDir} 不存在");
-                }
+               //                 matchCount++;
+               //                 //System.Diagnostics.Debug.WriteLine($"Shapefile匹配[{matchCount}]: {filePath}, 县代码: {countyCode}, 县名: {countyName}");
+               //             }
+               //             else
+               //             {
+               //                 //System.Diagnostics.Debug.WriteLine($"警告: 文件 {filePath} 中未找到县代码，跳过");
+               //             }
+               //         }
+               //     }
+               // }
+               // else
+               // {
+               //     //System.Diagnostics.Debug.WriteLine($"警告: 目录 {rootDir} 不存在");
+               // }
 
-                System.Diagnostics.Debug.WriteLine($"共找到 {result.Count} 个匹配文件，所有文件都包含有效的县代码");
+               //// System.Diagnostics.Debug.WriteLine($"共找到 {result.Count} 个匹配文件，所有文件都包含有效的县代码");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"查找文件时出错: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
+                //System.Diagnostics.Debug.WriteLine($"查找文件时出错: {ex.Message}");
+                //System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
                 MessageBox.Show($"查找文件时出错: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 

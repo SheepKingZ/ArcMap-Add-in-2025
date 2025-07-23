@@ -199,12 +199,12 @@ namespace ForestResourcePlugin.Utils
 
             // 标准化县名
             string normalizedName = NormalizeCountyName(countyName);
-            System.Diagnostics.Debug.WriteLine($"GetCountyCode: 原始县名='{countyName}', 标准化县名='{normalizedName}'");
+            //System.Diagnostics.Debug.WriteLine($"GetCountyCode: 原始县名='{countyName}', 标准化县名='{normalizedName}'");
 
             // 直接查找
             if (CountyCodeMap.TryGetValue(normalizedName, out string code))
             {
-                System.Diagnostics.Debug.WriteLine($"GetCountyCode: 找到匹配 '{normalizedName}' -> '{code}'");
+                //System.Diagnostics.Debug.WriteLine($"GetCountyCode: 找到匹配 '{normalizedName}' -> '{code}'");
                 return code;
             }
 
@@ -214,7 +214,7 @@ namespace ForestResourcePlugin.Utils
             
             if (!fuzzyMatch.Equals(default(KeyValuePair<string, string>)))
             {
-                System.Diagnostics.Debug.WriteLine($"GetCountyCode: 模糊匹配 '{normalizedName}' -> '{fuzzyMatch.Key}' -> '{fuzzyMatch.Value}'");
+                //System.Diagnostics.Debug.WriteLine($"GetCountyCode: 模糊匹配 '{normalizedName}' -> '{fuzzyMatch.Key}' -> '{fuzzyMatch.Value}'");
                 return fuzzyMatch.Value;
             }
 
@@ -238,14 +238,14 @@ namespace ForestResourcePlugin.Utils
 
             // 标准化代码 - 取前6位
             string normalizedCode = countyCode.Length > 6 ? countyCode.Substring(0, 6) : countyCode;
-            System.Diagnostics.Debug.WriteLine($"GetCountyNameFromCode: 原始代码='{countyCode}', 标准化代码='{normalizedCode}'");
+            //System.Diagnostics.Debug.WriteLine($"GetCountyNameFromCode: 原始代码='{countyCode}', 标准化代码='{normalizedCode}'");
 
             // 直接查找
             var match = CountyCodeMap.FirstOrDefault(kvp => kvp.Value.Equals(normalizedCode, StringComparison.OrdinalIgnoreCase));
             
             if (!match.Equals(default(KeyValuePair<string, string>)))
             {
-                System.Diagnostics.Debug.WriteLine($"GetCountyNameFromCode: 找到匹配 '{normalizedCode}' -> '{match.Key}'");
+                //System.Diagnostics.Debug.WriteLine($"GetCountyNameFromCode: 找到匹配 '{normalizedCode}' -> '{match.Key}'");
                 return match.Key;
             }
 
