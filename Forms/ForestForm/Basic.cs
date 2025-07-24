@@ -1982,7 +1982,7 @@ namespace ForestResourcePlugin
                 { "PCDL", "di_lei" },          // 普查地类
                 { "ZTBMJ", "xbmj" },           // 图斑面积
                 { "SDDJ", "sd_dj" },        // 湿地管理分级
-                { "ZRBHDSX", "bhddm" },      // 自然保护地属性
+                { "ZRBHDSX", "bhdsx" },      // 自然保护地属性
                 { "SDLYFS", "sdlyfs" },           // 湿地利用方式
                 { "ZBLX", "zbfglx" },         // 植被类型
                 { "ZBMJ", "xbmj" },             //植被面积
