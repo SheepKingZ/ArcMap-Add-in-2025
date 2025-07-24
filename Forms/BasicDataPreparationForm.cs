@@ -392,7 +392,7 @@ namespace TestArcMapAddin2.Forms
                     {
                         slzyDltbFiles = FindFilesWithPatternAndCountyCode(czkfbjDltbDataPath, "SLZY_DLTB");
                     }
-                    
+
                     if (chkGrassland.Checked)
                     {
                         cyzyDltbFiles = FindFilesWithPatternAndCountyCode(czkfbjDltbDataPath, "CYZY_DLTB");
@@ -404,7 +404,7 @@ namespace TestArcMapAddin2.Forms
                     }
 
                     // 显示文件搜索结果
-                    int totalFiles = czkfbjFiles.Count + slzyDltbFiles.Count + cyzyDltbFiles.Count;
+                    int totalFiles = czkfbjFiles.Count + slzyDltbFiles.Count + cyzyDltbFiles.Count + sdzyDltbFiles.Count;
                     if (totalFiles > 0)
                     {
                         string resultMessage = "找到：\n";
@@ -417,11 +417,15 @@ namespace TestArcMapAddin2.Forms
                         {
                             resultMessage += $"- {cyzyDltbFiles.Count} 个草地资源地类图斑数据文件\n";
                         }
+                        if (sdzyDltbFiles.Count > 0)
+                        {
+                            resultMessage += $"- {sdzyDltbFiles.Count} 个湿地资源地类图斑数据文件\n";
+                        }
 
                         MessageBox.Show(resultMessage, "文件搜索结果", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                        // 更新县级数据映射
-                        UpdateCountyDataMappingsForCzkfbjDltb(czkfbjFiles, slzyDltbFiles, cyzyDltbFiles);
+                        // 🔥 修复：传递湿地数据参数
+                        UpdateCountyDataMappingsForCzkfbjDltb(czkfbjFiles, slzyDltbFiles, cyzyDltbFiles, sdzyDltbFiles);
 
                         // 执行县代码匹配并更新SharedDataManager
                         PerformCountyCodeMatching();
@@ -750,9 +754,11 @@ namespace TestArcMapAddin2.Forms
         /// <param name="czkfbjFiles">城镇开发边界数据文件列表</param>
         /// <param name="slzyDltbFiles">SLZY_DLTB数据文件列表</param>
         /// <param name="cyzyDltbFiles">CYZY_DLTB数据文件列表</param>
-        private void UpdateCountyDataMappingsForCzkfbjDltb(List<ForestResourcePlugin.SourceDataFileInfo> czkfbjFiles, 
-            List<ForestResourcePlugin.SourceDataFileInfo> slzyDltbFiles, 
-            List<ForestResourcePlugin.SourceDataFileInfo> cyzyDltbFiles)
+        /// <param name="sdzyDltbFiles">SDZY_DLTB数据文件列表</param>
+        private void UpdateCountyDataMappingsForCzkfbjDltb(List<ForestResourcePlugin.SourceDataFileInfo> czkfbjFiles,
+            List<ForestResourcePlugin.SourceDataFileInfo> slzyDltbFiles,
+            List<ForestResourcePlugin.SourceDataFileInfo> cyzyDltbFiles,
+            List<ForestResourcePlugin.SourceDataFileInfo> sdzyDltbFiles)
         {
             // 处理城镇开发边界数据
             foreach (var file in czkfbjFiles)
@@ -808,7 +814,25 @@ namespace TestArcMapAddin2.Forms
                 }
             }
 
-            System.Diagnostics.Debug.WriteLine($"已更新县级数据映射，包含CZKFBJ、SLZY_DLTB和CYZY_DLTB数据");
+            // 🔥 新增：处理SDZY_DLTB数据
+            foreach (var file in sdzyDltbFiles)
+            {
+                if (!string.IsNullOrEmpty(file.CountyCode))
+                {
+                    if (!countyDataMappings.ContainsKey(file.CountyCode))
+                    {
+                        countyDataMappings[file.CountyCode] = new CountyDataInfo
+                        {
+                            CountyCode = file.CountyCode,
+                            CountyName = file.DisplayName
+                        };
+                    }
+
+                    countyDataMappings[file.CountyCode].SdzyDltbFiles.Add(file);
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLine($"已更新县级数据映射，包含CZKFBJ、SLZY_DLTB、CYZY_DLTB和SDZY_DLTB数据");
         }
 
         /// <summary>
@@ -823,6 +847,7 @@ namespace TestArcMapAddin2.Forms
                 var allCzkfbjFiles = new List<ForestResourcePlugin.SourceDataFileInfo>();
                 var allSlzyDltbFiles = new List<ForestResourcePlugin.SourceDataFileInfo>();
                 var allCyzyDltbFiles = new List<ForestResourcePlugin.SourceDataFileInfo>();
+                var allSdzyDltbFiles = new List<ForestResourcePlugin.SourceDataFileInfo>();
 
                 int matchedCounties = 0;
                 int totalCounties = countyDataMappings.Count;
@@ -833,6 +858,7 @@ namespace TestArcMapAddin2.Forms
                     bool hasCzkfbj = countyMapping.CzkfbjFiles.Count > 0;
                     bool hasSlzy = countyMapping.SlzyDltbFiles.Count > 0;
                     bool hasCyzy = countyMapping.CyzyDltbFiles.Count > 0;
+                    bool hasSdzy = countyMapping.SdzyDltbFiles.Count > 0;
 
                     // 根据数据类型选择验证是否有匹配的数据
                     bool hasRequiredData = hasLcxzgx && hasCzkfbj;
@@ -843,6 +869,10 @@ namespace TestArcMapAddin2.Forms
                     if (chkGrassland.Checked)
                     {
                         hasRequiredData = hasRequiredData && hasCyzy;
+                    }
+                    if (chkWetland.Checked)
+                    {
+                        hasRequiredData = hasRequiredData && hasSdzy;
                     }
 
                     if (hasRequiredData)
@@ -858,17 +888,23 @@ namespace TestArcMapAddin2.Forms
                         {
                             allCyzyDltbFiles.AddRange(countyMapping.CyzyDltbFiles);
                         }
+                        if (chkWetland.Checked)
+                        {
+                            allSdzyDltbFiles.AddRange(countyMapping.SdzyDltbFiles);
+                        }
                         matchedCounties++;
 
                         System.Diagnostics.Debug.WriteLine($"县代码 {countyMapping.CountyCode}({countyMapping.CountyName}) 数据匹配成功: " +
                             $"LCXZGX={countyMapping.LcxzgxFiles.Count}, CZKFBJ={countyMapping.CzkfbjFiles.Count}, " +
-                            $"SLZY_DLTB={countyMapping.SlzyDltbFiles.Count}, CYZY_DLTB={countyMapping.CyzyDltbFiles.Count}");
+                            $"SLZY_DLTB={countyMapping.SlzyDltbFiles.Count}, CYZY_DLTB={countyMapping.CyzyDltbFiles.Count}, " +
+                            $"SDZY_DLTB={countyMapping.SdzyDltbFiles.Count}");
                     }
                     else
                     {
                         System.Diagnostics.Debug.WriteLine($"警告: 县代码 {countyMapping.CountyCode}({countyMapping.CountyName}) 数据不完整: " +
                             $"LCXZGX={countyMapping.LcxzgxFiles.Count}, CZKFBJ={countyMapping.CzkfbjFiles.Count}, " +
-                            $"SLZY_DLTB={countyMapping.SlzyDltbFiles.Count}, CYZY_DLTB={countyMapping.CyzyDltbFiles.Count}");
+                            $"SLZY_DLTB={countyMapping.SlzyDltbFiles.Count}, CYZY_DLTB={countyMapping.CyzyDltbFiles.Count}, " +
+                            $"SDZY_DLTB={countyMapping.SdzyDltbFiles.Count}");
                     }
                 }
 
@@ -877,12 +913,13 @@ namespace TestArcMapAddin2.Forms
                 ForestResourcePlugin.SharedDataManager.SetCZKFBJFiles(allCzkfbjFiles);
                 ForestResourcePlugin.SharedDataManager.SetSLZYDLTBFiles(allSlzyDltbFiles);
                 ForestResourcePlugin.SharedDataManager.SetCYZYDLTBFiles(allCyzyDltbFiles);
+                ForestResourcePlugin.SharedDataManager.SetSDZYDLTBFiles(allSdzyDltbFiles);
 
                 // 显示匹配结果
                 string resultMessage = $"县代码匹配完成！\n\n成功匹配 {matchedCounties}/{totalCounties} 个县的数据\n" +
                     $"- 林草湿荒普查数据: {allLcxzgxFiles.Count} 个文件\n" +
                     $"- 城镇开发边界数据: {allCzkfbjFiles.Count} 个文件\n";
-                
+
                 if (chkForest.Checked)
                 {
                     resultMessage += $"- 森林资源地类图斑数据: {allSlzyDltbFiles.Count} 个文件\n";
@@ -890,6 +927,10 @@ namespace TestArcMapAddin2.Forms
                 if (chkGrassland.Checked)
                 {
                     resultMessage += $"- 草地资源地类图斑数据: {allCyzyDltbFiles.Count} 个文件\n";
+                }
+                if (chkWetland.Checked)
+                {
+                    resultMessage += $"- 湿地资源地类图斑数据: {allSdzyDltbFiles.Count} 个文件\n";
                 }
 
                 MessageBox.Show(resultMessage, "匹配结果", MessageBoxButtons.OK, MessageBoxIcon.Information);

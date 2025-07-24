@@ -670,15 +670,15 @@ namespace ForestResourcePlugin
                 {
                     case "SLZYZC":
                         sourceFiles = SharedDataManager.GetSLZYDLTBFiles();
-                        System.Diagnostics.Debug.WriteLine($"获取森林资源源数据: SLZY_DLTB");
+                        System.Diagnostics.Debug.WriteLine($"获取森林资源源数据: SLZY_DLTB，共{sourceFiles?.Count ?? 0}个文件");
                         break;
                     case "CYZYZC":
                         sourceFiles = SharedDataManager.GetCYZYDLTBFiles();
-                        System.Diagnostics.Debug.WriteLine($"获取草地资源源数据: CYZY_DLTB");
+                        System.Diagnostics.Debug.WriteLine($"获取草地资源源数据: CYZY_DLTB，共{sourceFiles?.Count ?? 0}个文件");
                         break;
                     case "SDZYZC":
                         sourceFiles = SharedDataManager.GetSDZYDLTBFiles();
-                        System.Diagnostics.Debug.WriteLine($"获取湿地资源源数据: SDZY_DLTB");
+                        System.Diagnostics.Debug.WriteLine($"获取湿地资源源数据: SDZY_DLTB，共{sourceFiles?.Count ?? 0}个文件");
                         break;
                     default:
                         System.Diagnostics.Debug.WriteLine($"未知的输出类型: {outputBaseName}，使用默认SLZY_DLTB");
@@ -686,28 +686,96 @@ namespace ForestResourcePlugin
                         break;
                 }
 
-                if (sourceFiles == null)
+                if (sourceFiles == null || sourceFiles.Count == 0)
                 {
-                    System.Diagnostics.Debug.WriteLine($"警告: 无法获取{outputBaseName}的源数据文件列表");
+                    System.Diagnostics.Debug.WriteLine($"警告: 无法获取{outputBaseName}的源数据文件列表或列表为空");
                     return null;
                 }
 
-                foreach (var fileInfo in sourceFiles)
+                // 🔥 新增：详细输出所有可用的源文件
+                System.Diagnostics.Debug.WriteLine($"当前{outputBaseName}源数据文件列表：");
+                foreach (var file in sourceFiles)
                 {
-                    if (fileInfo.DisplayName.Equals(countyName, StringComparison.OrdinalIgnoreCase) ||
-                        fileInfo.DisplayName.Contains(countyName))
+                    System.Diagnostics.Debug.WriteLine($"  - DisplayName: '{file.DisplayName}', FullPath: '{file.FullPath}'");
+                    if (file.IsGdb)
                     {
-                        System.Diagnostics.Debug.WriteLine($"找到{countyName}的{outputBaseName}对应源文件: {fileInfo.FullPath}");
-                        return fileInfo.FullPath;
+                        System.Diagnostics.Debug.WriteLine($"    GDB要素类: '{file.FeatureClassName}'");
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"未找到{countyName}的{outputBaseName}对应源文件");
+                // 🔥 修改：获取县名对应的县级代码
+                string targetCountyCode = Utils.CountyCodeMapper.GetCountyCode(countyName);
+                System.Diagnostics.Debug.WriteLine($"县名 '{countyName}' 对应的县级代码: '{targetCountyCode}'");
+
+                // 🔥 修改：多种匹配策略
+                foreach (var fileInfo in sourceFiles)
+                {
+                    // 策略1: 精确匹配县名
+                    if (fileInfo.DisplayName.Equals(countyName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"策略1成功: 找到{countyName}的{outputBaseName}源文件(精确县名匹配): {fileInfo.FullPath}");
+                        return fileInfo.FullPath;
+                    }
+
+                    // 策略2: 匹配县级代码
+                    if (fileInfo.DisplayName.Equals(targetCountyCode, StringComparison.OrdinalIgnoreCase))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"策略2成功: 找到{countyName}的{outputBaseName}源文件(县级代码匹配): {fileInfo.FullPath}");
+                        return fileInfo.FullPath;
+                    }
+
+                    // 策略3: 包含县名
+                    if (fileInfo.DisplayName.Contains(countyName))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"策略3成功: 找到{countyName}的{outputBaseName}源文件(包含县名): {fileInfo.FullPath}");
+                        return fileInfo.FullPath;
+                    }
+
+                    // 策略4: 包含县级代码
+                    if (fileInfo.DisplayName.Contains(targetCountyCode))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"策略4成功: 找到{countyName}的{outputBaseName}源文件(包含县级代码): {fileInfo.FullPath}");
+                        return fileInfo.FullPath;
+                    }
+
+                    // 策略5: 从FullPath中提取县级代码进行匹配
+                    if (!string.IsNullOrEmpty(fileInfo.FullPath))
+                    {
+                        string extractedCountyCode = GdbFeatureClassFinder.GetCountyCodeFromPath(fileInfo.FullPath);
+                        if (extractedCountyCode.Equals(targetCountyCode, StringComparison.OrdinalIgnoreCase))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"策略5成功: 找到{countyName}的{outputBaseName}源文件(路径提取县级代码匹配): {fileInfo.FullPath}");
+                            return fileInfo.FullPath;
+                        }
+                    }
+
+                    // 策略6: 如果是GDB，从要素类名称中查找
+                    if (fileInfo.IsGdb && !string.IsNullOrEmpty(fileInfo.FeatureClassName))
+                    {
+                        if (fileInfo.FeatureClassName.Contains(countyName) ||
+                            fileInfo.FeatureClassName.Contains(targetCountyCode))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"策略6成功: 找到{countyName}的{outputBaseName}源文件(GDB要素类名匹配): {fileInfo.FullPath}");
+                            return fileInfo.FullPath;
+                        }
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"所有匹配策略均失败: 未找到{countyName}(代码:{targetCountyCode})的{outputBaseName}对应源文件");
+
+                // 🔥 新增：输出详细的匹配失败信息
+                System.Diagnostics.Debug.WriteLine("匹配失败详情:");
+                System.Diagnostics.Debug.WriteLine($"  目标县名: '{countyName}'");
+                System.Diagnostics.Debug.WriteLine($"  目标县级代码: '{targetCountyCode}'");
+                System.Diagnostics.Debug.WriteLine($"  数据类型: {outputBaseName}");
+                System.Diagnostics.Debug.WriteLine($"  可用源文件数量: {sourceFiles.Count}");
+
                 return null;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"获取{countyName}的{outputBaseName}源路径时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
                 return null;
             }
         }
@@ -939,9 +1007,35 @@ namespace ForestResourcePlugin
                 return null;
             }
         }
-
         /// <summary>
-        /// 复制和处理要素数据（修改版：JJJZ使用HSJG×GTDCTBMJ计算）
+        /// 🔥 新增：根据数据类型动态获取字段映射
+        /// </summary>
+        /// <returns>对应数据类型的字段映射字典</returns>
+        private Dictionary<string, string> GetDLTBFieldMappings()
+        {
+            string currentOutputType = GetCurrentOutputShapefileName();
+
+            switch (currentOutputType)
+            {
+                case "SLZYZC":
+                    System.Diagnostics.Debug.WriteLine("使用森林资源SLZY_DLTB字段映射");
+                    return GetSLZYDLTBToSLZYZCDLTBFieldMappings();
+
+                case "CYZYZC":
+                    System.Diagnostics.Debug.WriteLine("使用草地资源CYZY_DLTB字段映射");
+                    return GetCYZYDLTBToCYZYZCDLTBFieldMappings();
+
+                case "SDZYZC":
+                    System.Diagnostics.Debug.WriteLine("使用湿地资源SDZY_DLTB字段映射");
+                    return GetSDZYDLTBToSDZYZCDLTBFieldMappings();
+
+                default:
+                    System.Diagnostics.Debug.WriteLine($"未知的输出类型: {currentOutputType}，使用默认森林资源映射");
+                    return GetSLZYDLTBToSLZYZCDLTBFieldMappings();
+            }
+        }
+        /// <summary>
+        /// 复制和处理要素数据（修改版：从DLTB文件名提取XZQDM）
         /// </summary>
         private int CopyAndProcessFeatures(
             IFeatureClass sourceFeatureClass,
@@ -961,8 +1055,18 @@ namespace ForestResourcePlugin
                 int processedCount = 0;
                 int successCount = 0;
 
-                // 获取字段映射
-                var fieldMappings = GetSLZYDLTBToSLZYZCDLTBFieldMappings();
+                // 🔥 修改：使用动态字段映射方法替代硬编码调用
+                var fieldMappings = GetDLTBFieldMappings();
+
+                // 🔥 新增：输出当前使用的字段映射信息
+                string currentOutputType = GetCurrentOutputShapefileName();
+                System.Diagnostics.Debug.WriteLine($"当前数据类型: {currentOutputType}，使用字段映射数量: {fieldMappings.Count}");
+
+                // 调试：输出字段映射详情
+                foreach (var mapping in fieldMappings)
+                {
+                    System.Diagnostics.Debug.WriteLine($"  {mapping.Key} -> {mapping.Value}");
+                }
 
                 // 预先获取字段索引
                 var sourceFieldIndexes = new Dictionary<string, int>();
@@ -980,6 +1084,14 @@ namespace ForestResourcePlugin
                     {
                         sourceFieldIndexes[sourceField] = sourceIndex;
                         targetFieldIndexes[targetField] = targetIndex;
+                        System.Diagnostics.Debug.WriteLine($"字段映射成功: {targetField}({targetIndex}) <- {sourceField}({sourceIndex})");
+                    }
+                    else
+                    {
+                        if (sourceIndex == -1)
+                            System.Diagnostics.Debug.WriteLine($"警告: 源字段 '{sourceField}' 未找到");
+                        if (targetIndex == -1)
+                            System.Diagnostics.Debug.WriteLine($"警告: 目标字段 '{targetField}' 未找到");
                     }
                 }
 
@@ -995,7 +1107,22 @@ namespace ForestResourcePlugin
                 int hsjgIndex = targetFeatureClass.FindField("HSJG");
                 int jjjzIndex = targetFeatureClass.FindField("JJJZ");
 
-                // 获取对应县的LDHSJG数据
+                // 🔥 新增：从源DLTB文件名提取XZQDM
+                string extractedXZQDM = ExtractXZQDMFromDLTBFileName(countyName);
+                string extractedXZQMC = "";
+                if (!string.IsNullOrEmpty(extractedXZQDM))
+                {
+                    extractedXZQMC = Utils.CountyCodeMapper.GetCountyNameFromCode(extractedXZQDM);
+                    System.Diagnostics.Debug.WriteLine($"从DLTB文件名提取: XZQDM={extractedXZQDM}, XZQMC={extractedXZQMC}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"警告：无法从DLTB文件名提取XZQDM，将使用默认值");
+                    extractedXZQDM = "000000";
+                    extractedXZQMC = countyName; // 使用传入的县名作为备用
+                }
+
+                // 获取对应县的LDHSJG数据（仅用于HSJG字段）
                 var ldhsjgData = GetLDHSJGDataForCounty(countyName);
                 if (ldhsjgData.featureClass != null)
                 {
@@ -1005,9 +1132,6 @@ namespace ForestResourcePlugin
                 {
                     System.Diagnostics.Debug.WriteLine($"警告：未找到{countyName}的LDHSJG数据");
                 }
-
-                // 预先获取该县的XZQDM值
-                string countyXZQDM = GetCountyXZQDMFromLDHSJG(ldhsjgFeatureClass, countyName);
 
                 // 创建游标
                 sourceCursor = sourceFeatureClass.Search(null, false);
@@ -1046,21 +1170,31 @@ namespace ForestResourcePlugin
                         // 设置YSDM字段为固定值
                         if (ysdmIndex != -1)
                         {
-                            string currentOutputType = GetCurrentOutputShapefileName();
                             string ysdmValue;
                             switch (currentOutputType)
                             {
                                 case "CYZYZC":
-                                    ysdmValue = "2160301000";  // 草地资源
+                                    ysdmValue = "2160301010";  // 草地资源_DLTB
                                     break;
                                 case "SDZYZC":
-                                    ysdmValue = "2170401000";  // 湿地资源
+                                    ysdmValue = "2240201010";  // 湿地资源_DLTB
                                     break;
                                 default: // SLZYZC
-                                    ysdmValue = "2150201010";  // 森林资源
+                                    ysdmValue = "2150201010";  // 森林资源_DLTB
                                     break;
                             }
                             targetBuffer.set_Value(ysdmIndex, ysdmValue);
+                        }
+
+                        // 🔥 新增：设置从文件名提取的XZQDM和XZQMC
+                        if (xzqdmIndex != -1)
+                        {
+                            targetBuffer.set_Value(xzqdmIndex, extractedXZQDM);
+                        }
+
+                        if (xzqmcIndex != -1)
+                        {
+                            targetBuffer.set_Value(xzqmcIndex, extractedXZQMC);
                         }
 
                         // 使用新的比例计算逻辑计算CZKFBJMJ字段
@@ -1096,22 +1230,12 @@ namespace ForestResourcePlugin
                         // 声明HSJG值变量（用于后续JJJZ计算）
                         object hsjgValue = null;
 
-                        // 改进：处理LDHSJG相关字段，使用修复后的方法
-                        if (ldhsjgFeatureClass != null)
+                        // 处理LDHSJG相关字段（仅获取HSJG字段）
+                        if (ldhsjgFeatureClass != null && hsjgIndex != -1)
                         {
                             var ldhsjgValues = GetLDHSJGValuesForFeature(sourceFeature, ldhsjgFeatureClass, countyName);
 
-                            if (xzqmcIndex != -1 && !string.IsNullOrEmpty(ldhsjgValues.XZQMC))
-                            {
-                                targetBuffer.set_Value(xzqmcIndex, ldhsjgValues.XZQMC);
-                            }
-
-                            if (xzqdmIndex != -1 && !string.IsNullOrEmpty(ldhsjgValues.XZQDM))
-                            {
-                                targetBuffer.set_Value(xzqdmIndex, ldhsjgValues.XZQDM);
-                            }
-
-                            if (hsjgIndex != -1 && ldhsjgValues.HSJG != null)
+                            if (ldhsjgValues.HSJG != null)
                             {
                                 targetBuffer.set_Value(hsjgIndex, ldhsjgValues.HSJG);
                                 hsjgValue = ldhsjgValues.HSJG; // 保存HSJG值用于JJJZ计算
@@ -1144,24 +1268,16 @@ namespace ForestResourcePlugin
                                     jjjzValue = gtdctbmjArea * hsjgNumber;
                                     System.Diagnostics.Debug.WriteLine($"JJJZ计算: GTDCTBMJ({gtdctbmjArea:F2}) * HSJG({hsjgNumber:F2}) = {jjjzValue:F2}");
                                 }
-                                else
-                                {
-                                    //System.Diagnostics.Debug.WriteLine($"警告: 无法获取有效的HSJG值，JJJZ将设为0");
-                                }
-                            }
-                            else
-                            {
-                                //System.Diagnostics.Debug.WriteLine($"警告: 无法获取有效的GTDCTBMJ值，JJJZ将设为0");
                             }
 
                             // 设置JJJZ字段值
                             targetBuffer.set_Value(jjjzIndex, jjjzValue);
                         }
 
-                        // 生成ZCQCBSM字段值
+                        // 生成ZCQCBSM字段值（使用提取的XZQDM）
                         if (zcqcbsmIndex != -1)
                         {
-                            string zcqcbsmValue = GenerateZCQCBSMForSLZYZCDLTBWithCountyXZQDM(countyXZQDM, sequenceNumber);
+                            string zcqcbsmValue = GenerateZCQCBSMForSLZYZCDLTBWithCountyXZQDM(extractedXZQDM, sequenceNumber);
                             if (!string.IsNullOrEmpty(zcqcbsmValue))
                             {
                                 targetBuffer.set_Value(zcqcbsmIndex, zcqcbsmValue);
@@ -1179,7 +1295,7 @@ namespace ForestResourcePlugin
                         {
                             int percentage = (int)((processedCount / (double)totalFeatures) * 100);
                             progressCallback?.Invoke(percentage,
-                                $"正在处理{countyName}的数据... ({processedCount}/{totalFeatures})");
+                                $"正在处理{countyName}的{currentOutputType}_DLTB数据... ({processedCount}/{totalFeatures})");
                         }
                     }
                     catch (Exception ex)
@@ -1198,7 +1314,7 @@ namespace ForestResourcePlugin
                 // 提交插入操作
                 insertCursor.Flush();
 
-                System.Diagnostics.Debug.WriteLine($"成功处理{successCount}个要素到SLZYZC_DLTB");
+                System.Diagnostics.Debug.WriteLine($"成功处理{successCount}个要素到{currentOutputType}_DLTB");
                 return successCount;
             }
             finally
@@ -1213,7 +1329,87 @@ namespace ForestResourcePlugin
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(ldhsjgFeatureClass);
             }
         }
+        /// <summary>
+        /// 🔥 新增：从DLTB文件名中提取6位县级代码
+        /// 支持的文件名格式：(123456)SLZY_DLTB、（123456）CYZY_DLTB、(123456)SDZY_DLTB 等
+        /// </summary>
+        /// <param name="countyName">县名（用于获取对应的源数据文件）</param>
+        /// <returns>提取的6位县级代码，提取失败返回null</returns>
+        private string ExtractXZQDMFromDLTBFileName(string countyName)
+        {
+            try
+            {
+                // 根据当前数据类型获取对应的源数据文件列表
+                string outputBaseName = GetCurrentOutputShapefileName();
+                List<SourceDataFileInfo> sourceFiles = null;
 
+                switch (outputBaseName)
+                {
+                    case "SLZYZC":
+                        sourceFiles = SharedDataManager.GetSLZYDLTBFiles();
+                        break;
+                    case "CYZYZC":
+                        sourceFiles = SharedDataManager.GetCYZYDLTBFiles();
+                        break;
+                    case "SDZYZC":
+                        sourceFiles = SharedDataManager.GetSDZYDLTBFiles();
+                        break;
+                    default:
+                        sourceFiles = SharedDataManager.GetSLZYDLTBFiles();
+                        break;
+                }
+
+                if (sourceFiles == null || sourceFiles.Count == 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"警告: 无法获取{outputBaseName}的源数据文件列表");
+                    return null;
+                }
+
+                // 查找匹配县名的文件
+                foreach (var fileInfo in sourceFiles)
+                {
+                    if (fileInfo.DisplayName.Equals(countyName, StringComparison.OrdinalIgnoreCase) ||
+                        fileInfo.DisplayName.Contains(countyName))
+                    {
+                        // 从文件路径中提取文件名
+                        string fileName = "";
+                        if (fileInfo.IsGdb)
+                        {
+                            // 如果是GDB要素类，使用要素类名称
+                            fileName = fileInfo.FeatureClassName ?? "";
+                        }
+                        else
+                        {
+                            // 如果是Shapefile，使用文件名
+                            fileName = System.IO.Path.GetFileNameWithoutExtension(fileInfo.FullPath) ?? "";
+                        }
+
+                        System.Diagnostics.Debug.WriteLine($"正在从文件名提取XZQDM: {fileName}");
+
+                        // 使用正则表达式提取括号内的6位数字
+                        var match = System.Text.RegularExpressions.Regex.Match(fileName, @"[（(](\d{6})[）)]");
+                        if (match.Success)
+                        {
+                            string extractedCode = match.Groups[1].Value;
+                            System.Diagnostics.Debug.WriteLine($"成功从文件名 '{fileName}' 提取XZQDM: {extractedCode}");
+                            return extractedCode;
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"警告: 文件名 '{fileName}' 中未找到符合格式的6位数字");
+                        }
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"未找到{countyName}对应的DLTB文件或无法提取XZQDM");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"从DLTB文件名提取XZQDM时出错: {ex.Message}");
+                return null;
+            }
+        }
         /// <summary>
         /// 🔥 新增：从LDHSJG数据中获取该县的XZQDM值
         /// </summary>
@@ -1411,8 +1607,7 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 为当前要素获取对应的LDHSJG字段值（修复版）
-        /// 增强空间查询精度和字段映射一致性
+        /// 简化版：为当前要素获取LDHSJG的HSJG字段值（仅获取价格信息）
         /// </summary>
         /// <param name="sourceFeature">源要素</param>
         /// <param name="ldhsjgFeatureClass">LDHSJG要素类</param>
@@ -1430,13 +1625,7 @@ namespace ForestResourcePlugin
                     return result;
                 }
 
-                // 🔥 修复：统一获取HSJG字段索引，确保HSJG和XJLDPJJ指向同一个字段
-                int zcqcbsmFieldIndex = ldhsjgFeatureClass.FindField("ZCQCBSM");
-                int ysdmFieldIndex = ldhsjgFeatureClass.FindField("YSDM");
-                int xjxzmcFieldIndex = ldhsjgFeatureClass.FindField("XJXZMC");
-                int xjxzdmFieldIndex = ldhsjgFeatureClass.FindField("XJXZDM");
-
-                // 🔥 关键修复：统一HSJG字段获取逻辑，优先查找XJLDPJJ，然后查找其他可能的字段名
+                // 🔥 简化：只获取HSJG字段索引
                 int hsjgFieldIndex = -1;
                 string[] possibleHsjgFields = { "XJLDPJJ", "HSJG", "林地定级平均价", "平均价格", "PJJ" };
 
@@ -1453,11 +1642,10 @@ namespace ForestResourcePlugin
                 if (hsjgFieldIndex == -1)
                 {
                     System.Diagnostics.Debug.WriteLine($"警告：{countyName} - 未找到HSJG相关字段");
-                    // 列出所有可用字段进行调试
-                    ListAllFieldsInFeatureClass(ldhsjgFeatureClass, "LDHSJG");
+                    return result;
                 }
 
-                // 🔥 改进空间查询：使用更精确的空间关系和容差
+                // 🔥 简化的空间查询：只获取HSJG值
                 ISpatialFilter spatialFilter = null;
                 IFeatureCursor ldhsjgCursor = null;
 
@@ -1466,21 +1654,15 @@ namespace ForestResourcePlugin
                     spatialFilter = new SpatialFilterClass();
                     spatialFilter.Geometry = sourceFeature.Shape;
                     spatialFilter.GeometryField = ldhsjgFeatureClass.ShapeFieldName;
-
-                    // 🔥 修复：使用更精确的空间关系 - 先尝试Intersects，如果没有结果再尝试Contains
                     spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
 
                     ldhsjgCursor = ldhsjgFeatureClass.Search(spatialFilter, false);
                     IFeature bestMatchFeature = null;
                     double maxOverlapArea = 0;
 
-                    // 🔥 改进：寻找重叠面积最大的LDHSJG要素，而不是第一个相交的要素
                     IFeature ldhsjgFeature;
-                    int candidateCount = 0;
-
                     while ((ldhsjgFeature = ldhsjgCursor.NextFeature()) != null)
                     {
-                        candidateCount++;
                         try
                         {
                             if (ldhsjgFeature.Shape != null && !ldhsjgFeature.Shape.IsEmpty)
@@ -1488,13 +1670,10 @@ namespace ForestResourcePlugin
                                 // 计算重叠面积
                                 double overlapArea = CalculateOverlapArea(sourceFeature.Shape, ldhsjgFeature.Shape);
 
-                                System.Diagnostics.Debug.WriteLine($"候选LDHSJG要素 {candidateCount}: 重叠面积 = {overlapArea:F2}");
-
                                 if (overlapArea > maxOverlapArea)
                                 {
                                     maxOverlapArea = overlapArea;
 
-                                    // 释放之前的最佳匹配要素
                                     if (bestMatchFeature != null)
                                     {
                                         System.Runtime.InteropServices.Marshal.ReleaseComObject(bestMatchFeature);
@@ -1514,54 +1693,15 @@ namespace ForestResourcePlugin
                         }
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"空间查询完成：找到 {candidateCount} 个候选要素，最大重叠面积: {maxOverlapArea:F2}");
-
-                    // 使用最佳匹配的要素获取字段值
+                    // 使用最佳匹配的要素获取HSJG字段值
                     if (bestMatchFeature != null)
                     {
-                        // 获取字段值
-                        if (zcqcbsmFieldIndex != -1)
-                        {
-                            result.ZCQCBSM = bestMatchFeature.get_Value(zcqcbsmFieldIndex)?.ToString() ?? "";
-                        }
-
-                        if (ysdmFieldIndex != -1)
-                        {
-                            result.YSDM = bestMatchFeature.get_Value(ysdmFieldIndex)?.ToString() ?? "";
-                        }
-
-                        if (xjxzmcFieldIndex != -1)
-                        {
-                            result.XZQMC = bestMatchFeature.get_Value(xjxzmcFieldIndex)?.ToString() ?? "";
-                        }
-
-                        if (xjxzdmFieldIndex != -1)
-                        {
-                            result.XZQDM = bestMatchFeature.get_Value(xjxzdmFieldIndex)?.ToString() ?? "";
-                        }
-
-                        // 🔥 关键修复：统一HSJG字段值获取
-                        if (hsjgFieldIndex != -1)
-                        {
-                            result.HSJG = bestMatchFeature.get_Value(hsjgFieldIndex);
-
-                            // 调试输出：显示获取到的HSJG值和字段名
-                            string fieldName = bestMatchFeature.Fields.get_Field(hsjgFieldIndex).Name;
-                            //System.Diagnostics.Debug.WriteLine($"成功获取{countyName}的HSJG字段值: {result.HSJG} (字段名: {fieldName})");
-                        }
-                        else
-                        {
-                            System.Diagnostics.Debug.WriteLine($"警告：{countyName} - HSJG字段索引为-1，无法获取价格信息");
-                        }
-
-                        // 释放最佳匹配要素
-                        //System.Runtime.InteropServices.Marshal.ReleaseComObject(bestMatchFeature);
+                        result.HSJG = bestMatchFeature.get_Value(hsjgFieldIndex);
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(bestMatchFeature);
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"警告：未找到与当前要素相交的{countyName}的LDHSJG要素");
-
-                        // 🔥 备用方案：如果空间查询失败，尝试使用最近邻查询
+                        // 备用方案：使用最近邻查询
                         result = TryNearestNeighborLDHSJGQuery(sourceFeature, ldhsjgFeatureClass, countyName);
                     }
                 }
@@ -1576,7 +1716,6 @@ namespace ForestResourcePlugin
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"获取{countyName}的LDHSJG字段值时出错: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"错误堆栈: {ex.StackTrace}");
             }
 
             return result;
@@ -1783,6 +1922,51 @@ namespace ForestResourcePlugin
                 { "GTDCDLBM", "DLBM" },        // 国土调查地类编码
                 { "GTDCDLMC", "DLMC" },        // 国土调查地类名称
                 { "GTDCTDQS", "QSXZ" },        // 国土调查土地权属
+                { "ZLDWDM", "ZLDWDM" },        // 坐落单位代码
+                { "ZLDWMC", "ZLDWMC" },        // 坐落单位名称
+                { "GTDCTBMJ", "TBMJ" },        // 国土调查图斑面积
+                { "FRDBS", "FRDBS" },          // 飞入地标识
+                { "QSDWDM", "QSDWDM" },        // 权属单位代码
+                { "QSDWMC", "QSDWMC" }         // 权属单位名称
+                // CZKFBJMJ 字段通过特殊计算处理
+            };
+        }
+        /// <summary>
+        /// 获取CYZY_DLTB到CYZYZC_DLTB的字段映射
+        /// </summary>
+        /// <returns>字段映射字典</returns>
+        private Dictionary<string, string> GetCYZYDLTBToCYZYZCDLTBFieldMappings()
+        {
+            return new Dictionary<string, string>
+            {
+                { "GTDCTBBSM", "BSM" },        // 国土调查图斑编码
+                { "GTDCTBBH", "TBBH" },        // 国土调查图斑编号
+                { "GTDCDLBM", "DLBM" },        // 国土调查地类编码
+                { "GTDCDLMC", "DLMC" },        // 国土调查地类名称
+                { "GTDCQSXZ", "QSXZ" },        //  修复：国土调查土地权属，映射到正确的字段 GTDCQSXZ
+                { "ZLDWDM", "ZLDWDM" },        // 坐落单位代码
+                { "ZLDWMC", "ZLDWMC" },        // 坐落单位名称
+                { "GTDCTBMJ", "TBMJ" },        // 国土调查图斑面积
+                { "FRDBS", "FRDBS" },          // 飞入地标识
+                { "QSDWDM", "QSDWDM" },        // 权属单位代码
+                { "QSDWMC", "QSDWMC" }         // 权属单位名称
+                // CZKFBJMJ 字段通过特殊计算处理
+            };
+        }
+
+        /// <summary>
+        /// 获取SDZY_DLTB到SDZYZC_DLTB的字段映射
+        /// </summary>
+        /// <returns>字段映射字典</returns>
+        private Dictionary<string, string> GetSDZYDLTBToSDZYZCDLTBFieldMappings()
+        {
+            return new Dictionary<string, string>
+            {
+                { "GTDCTBBSM", "BSM" },        // 国土调查图斑编码
+                { "GTDCTBBH", "TBBH" },        // 国土调查图斑编号
+                { "GTDCDLBM", "DLBM" },        // 国土调查地类编码
+                { "GTDCDLMC", "DLMC" },        // 国土调查地类名称
+                { "GTDCTDQSXZ", "QSXZ" },        // 国土调查土地权属
                 { "ZLDWDM", "ZLDWDM" },        // 坐落单位代码
                 { "ZLDWMC", "ZLDWMC" },        // 坐落单位名称
                 { "GTDCTBMJ", "TBMJ" },        // 国土调查图斑面积
@@ -2395,9 +2579,20 @@ namespace ForestResourcePlugin
                         // 🔥 修改：根据数据类型设置不同的YSDM值
                         if (ysdmIndex != -1)
                         {
-                            // 原代码：featureBuffer.set_Value(ysdmIndex, "2150201020");
                             string currentOutputType = GetCurrentOutputShapefileName();
-                            string ysdmValue = currentOutputType == "CYZYZC" ? "2160301000" : "2150201020";
+                            string ysdmValue;
+                            switch (currentOutputType)
+                            {
+                                case "CYZYZC":
+                                    ysdmValue = "2160301020";  // 草地资源
+                                    break;
+                                case "SDZYZC":
+                                    ysdmValue = "2240201020";  // 湿地资源
+                                    break;
+                                default: // SLZYZC
+                                    ysdmValue = "2150201020";  // 森林资源
+                                    break;
+                            }
                             featureBuffer.set_Value(ysdmIndex, ysdmValue);
                         }
 
@@ -2468,7 +2663,7 @@ namespace ForestResourcePlugin
                                         if (!string.IsNullOrEmpty(administrativeName))
                                         {
                                             xzqmcValue = administrativeName;
-                                            System.Diagnostics.Debug.WriteLine($"根据XZQDM '{normalizedXzqdm}' 获取到行政区名称: '{administrativeName}'");
+                                            //System.Diagnostics.Debug.WriteLine($"根据XZQDM '{normalizedXzqdm}' 获取到行政区名称: '{administrativeName}'");
                                         }
                                         else
                                         {

@@ -2500,7 +2500,7 @@ namespace TestArcMapAddin2
             // 国土调查权属性质
             IField field09 = new FieldClass();
             IFieldEdit fieldEdit09 = (IFieldEdit)field09;
-            fieldEdit09.Name_2 = "GTDCCQSXZ";
+            fieldEdit09.Name_2 = "GTDCQSXZ";
             fieldEdit09.Type_2 = esriFieldType.esriFieldTypeString;
             fieldEdit09.IsNullable_2 = false;  // M约束
             fieldEdit09.AliasName_2 = "国土调查权属性质";

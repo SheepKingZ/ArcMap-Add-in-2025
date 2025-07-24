@@ -21,10 +21,10 @@ namespace ForestResourcePlugin
         // 存储找到的SLZY_DLTB文件信息
         private static List<SourceDataFileInfo> slzyDltbFiles = new List<SourceDataFileInfo>();
 
-        // 新增：存储找到的CYZY_DLTB文件信息（草地资源地类图斑数据）
+        // 存储找到的CYZY_DLTB文件信息（草地资源地类图斑数据）
         private static List<SourceDataFileInfo> cyzyDltbFiles = new List<SourceDataFileInfo>();
 
-        // 新增：存储找到的SDZY_DLTB文件信息（湿地资源地类图斑数据）
+        // 存储找到的SDZY_DLTB文件信息（湿地资源地类图斑数据）
         private static List<SourceDataFileInfo> sdzyDltbFiles = new List<SourceDataFileInfo>();
 
         // 数据类型选择状态
