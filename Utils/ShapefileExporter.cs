@@ -561,7 +561,7 @@ namespace ForestResourcePlugin
             return false;
         }
         /// <summary>
-        /// 执行自动转换 - 根据SLZY_DLTB数据生成SLZYZC_DLTB
+        /// 执行自动转换 - 根据当前数据类型生成对应的_DLTB数据
         /// </summary>
         /// <param name="countyName">县名</param>
         /// <param name="outputPath">输出路径</param>
@@ -570,50 +570,60 @@ namespace ForestResourcePlugin
         {
             try
             {
-                progressCallback?.Invoke(80, $"准备为{countyName}生成SLZYZC_DLTB数据...");
-                System.Diagnostics.Debug.WriteLine($"开始为县{countyName}生成SLZYZC_DLTB数据");
+                // 🔥 修改：根据当前数据类型获取输出类型名称
+                string outputBaseName = GetCurrentOutputShapefileName();
+                string dltbTypeName = $"{outputBaseName}_DLTB";
 
-                // 构建已存在的SLZYZC_DLTB文件路径
+                progressCallback?.Invoke(80, $"准备为{countyName}生成{dltbTypeName}数据...");
+                System.Diagnostics.Debug.WriteLine($"开始为县{countyName}生成{dltbTypeName}数据");
+
+                // 构建已存在的目标DLTB文件路径
                 string countyCode = Utils.CountyCodeMapper.GetCountyCode(countyName);
                 string countyFolderName = $"{countyName}({countyCode})全民所有自然资源资产清查数据成果";
                 string countyPath = System.IO.Path.Combine(outputPath, countyFolderName);
                 string dataSetPath = System.IO.Path.Combine(countyPath, "清查数据集");
-                string forestPath = System.IO.Path.Combine(dataSetPath, "森林");
-                string spatialDataPath = System.IO.Path.Combine(forestPath, "空间数据");
 
-                // 查找SLZYZC_DLTB文件（支持多种命名模式）
-                string slzyzcDltbShapefilePath = FindSLZYZCDLTBShapefilePath(spatialDataPath);
+                // 🔥 修改：根据数据类型选择正确的资源文件夹
+                string resourceFolder = GetResourceFolderByOutputType(outputBaseName);
+                string resourcePath = System.IO.Path.Combine(dataSetPath, resourceFolder);
+                string spatialDataPath = System.IO.Path.Combine(resourcePath, "空间数据");
 
-                if (string.IsNullOrEmpty(slzyzcDltbShapefilePath))
+                System.Diagnostics.Debug.WriteLine($"目标文件夹结构: {countyName} -> {resourceFolder} -> {dltbTypeName}");
+
+                // 查找目标DLTB文件（支持多种命名模式）
+                string targetDltbShapefilePath = FindSLZYZCDLTBShapefilePath(spatialDataPath);
+
+                if (string.IsNullOrEmpty(targetDltbShapefilePath))
                 {
-                    System.Diagnostics.Debug.WriteLine($"错误: 未找到SLZYZC_DLTB文件在路径: {spatialDataPath}");
-                    progressCallback?.Invoke(99, $"{countyName}的SLZYZC_DLTB文件不存在，请先创建空的Shapefile结构");
+                    System.Diagnostics.Debug.WriteLine($"错误: 未找到{dltbTypeName}文件在路径: {spatialDataPath}");
+                    progressCallback?.Invoke(99, $"{countyName}的{dltbTypeName}文件不存在，请先创建空的Shapefile结构");
                     return;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"SLZYZC_DLTB目标文件路径: {slzyzcDltbShapefilePath}");
+                System.Diagnostics.Debug.WriteLine($"{dltbTypeName}目标文件路径: {targetDltbShapefilePath}");
 
-                // 获取对应县的SLZY_DLTB源数据
-                string slzyDltbPath = GetSLZYDLTBShapefilePath(countyName);
-                if (string.IsNullOrEmpty(slzyDltbPath))
+                // 获取对应县的源数据（根据数据类型获取不同的源数据）
+                string sourceDltbPath = GetSourceDLTBShapefilePath(countyName, outputBaseName);
+                if (string.IsNullOrEmpty(sourceDltbPath))
                 {
-                    System.Diagnostics.Debug.WriteLine($"警告: 未找到{countyName}的SLZY_DLTB源数据，跳过转换");
-                    progressCallback?.Invoke(99, $"{countyName}的SLZY_DLTB源数据不存在，跳过转换");
+                    System.Diagnostics.Debug.WriteLine($"警告: 未找到{countyName}的{outputBaseName}源数据，跳过转换");
+                    progressCallback?.Invoke(99, $"{countyName}的{outputBaseName}源数据不存在，跳过转换");
                     return;
                 }
 
-                progressCallback?.Invoke(82, $"正在处理{countyName}的SLZY_DLTB数据...");
+                progressCallback?.Invoke(82, $"正在处理{countyName}的{outputBaseName}数据...");
 
                 // 获取对应县的CZKFBJ数据
                 string czkfbjPath = GetCZKFBJShapefilePath(countyName);
                 System.Diagnostics.Debug.WriteLine($"CZKFBJ数据路径: {czkfbjPath ?? "未找到"}");
 
-                // 执行SLZYZC_DLTB生成操作
-                bool conversionSuccess = GenerateSLZYZCDLTB(
-                    slzyDltbPath,
+                // 执行目标DLTB生成操作
+                bool conversionSuccess = GenerateTargetDLTB(
+                    sourceDltbPath,
                     czkfbjPath,
-                    slzyzcDltbShapefilePath,
+                    targetDltbShapefilePath,
                     countyName,
+                    outputBaseName,
                     (subPercentage, subMessage) =>
                     {
                         // 将子进度映射到总进度的82%-99%区间
@@ -623,27 +633,86 @@ namespace ForestResourcePlugin
 
                 if (conversionSuccess)
                 {
-                    System.Diagnostics.Debug.WriteLine($"县{countyName}的SLZYZC_DLTB数据生成成功");
-                    progressCallback?.Invoke(99, $"{countyName}的SLZYZC_DLTB数据生成成功");
+                    System.Diagnostics.Debug.WriteLine($"县{countyName}的{dltbTypeName}数据生成成功");
+                    progressCallback?.Invoke(99, $"{countyName}的{dltbTypeName}数据生成成功");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"县{countyName}的SLZYZC_DLTB数据生成失败");
-                    progressCallback?.Invoke(99, $"{countyName}的SLZYZC_DLTB数据生成失败");
+                    System.Diagnostics.Debug.WriteLine($"县{countyName}的{dltbTypeName}数据生成失败");
+                    progressCallback?.Invoke(99, $"{countyName}的{dltbTypeName}数据生成失败");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"生成{countyName}的SLZYZC_DLTB数据时出错: {ex.Message}");
-                progressCallback?.Invoke(99, $"{countyName}的SLZYZC_DLTB数据生成出错: {ex.Message}");
+                string outputBaseName = GetCurrentOutputShapefileName();
+                string dltbTypeName = $"{outputBaseName}_DLTB";
+                System.Diagnostics.Debug.WriteLine($"生成{countyName}的{dltbTypeName}数据时出错: {ex.Message}");
+                progressCallback?.Invoke(99, $"{countyName}的{dltbTypeName}数据生成出错: {ex.Message}");
 
                 // 记录详细错误信息
                 System.Diagnostics.Debug.WriteLine($"错误详情: {ex}");
             }
         }
-
         /// <summary>
-        /// 在指定路径中查找SLZYZC_DLTB Shapefile文件（支持动态数据类型）
+        /// 根据数据类型获取对应的源DLTB数据路径
+        /// </summary>
+        /// <param name="countyName">县名</param>
+        /// <param name="outputBaseName">输出基础名称（SLZYZC、CYZYZC、SDZYZC）</param>
+        /// <returns>源DLTB文件路径</returns>
+        private string GetSourceDLTBShapefilePath(string countyName, string outputBaseName)
+        {
+            try
+            {
+                // 根据输出类型获取对应的源数据文件列表
+                List<SourceDataFileInfo> sourceFiles = null;
+
+                switch (outputBaseName)
+                {
+                    case "SLZYZC":
+                        sourceFiles = SharedDataManager.GetSLZYDLTBFiles();
+                        System.Diagnostics.Debug.WriteLine($"获取森林资源源数据: SLZY_DLTB");
+                        break;
+                    case "CYZYZC":
+                        sourceFiles = SharedDataManager.GetCYZYDLTBFiles();
+                        System.Diagnostics.Debug.WriteLine($"获取草地资源源数据: CYZY_DLTB");
+                        break;
+                    case "SDZYZC":
+                        sourceFiles = SharedDataManager.GetSDZYDLTBFiles();
+                        System.Diagnostics.Debug.WriteLine($"获取湿地资源源数据: SDZY_DLTB");
+                        break;
+                    default:
+                        System.Diagnostics.Debug.WriteLine($"未知的输出类型: {outputBaseName}，使用默认SLZY_DLTB");
+                        sourceFiles = SharedDataManager.GetSLZYDLTBFiles();
+                        break;
+                }
+
+                if (sourceFiles == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"警告: 无法获取{outputBaseName}的源数据文件列表");
+                    return null;
+                }
+
+                foreach (var fileInfo in sourceFiles)
+                {
+                    if (fileInfo.DisplayName.Equals(countyName, StringComparison.OrdinalIgnoreCase) ||
+                        fileInfo.DisplayName.Contains(countyName))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到{countyName}的{outputBaseName}对应源文件: {fileInfo.FullPath}");
+                        return fileInfo.FullPath;
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"未找到{countyName}的{outputBaseName}对应源文件");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"获取{countyName}的{outputBaseName}源路径时出错: {ex.Message}");
+                return null;
+            }
+        }
+        /// <summary>
+        /// 在指定路径中查找输出_DLTB Shapefile文件（支持动态数据类型）
         /// 支持以下命名模式：
         /// 1. (县代码)SLZYZC_DLTB.shp / (县代码)CYZYZC_DLTB.shp / (县代码)SDZYZC_DLTB.shp
         /// 2. SLZYZC_DLTB.shp / CYZYZC_DLTB.shp / SDZYZC_DLTB.shp
@@ -663,6 +732,8 @@ namespace ForestResourcePlugin
                 // 🔥 修改：根据当前数据类型确定要查找的文件模式
                 string outputBaseName = GetCurrentOutputShapefileName();
                 string dltbFileName = $"{outputBaseName}_DLTB";
+
+                System.Diagnostics.Debug.WriteLine($"正在查找{dltbFileName}文件...");
 
                 // 获取所有.shp文件
                 string[] shapefiles = Directory.GetFiles(spatialDataPath, "*.shp");
@@ -720,51 +791,54 @@ namespace ForestResourcePlugin
             }
             catch (Exception ex)
             {
-                //System.Diagnostics.Debug.WriteLine($"查找{outputBaseName}_DLTB Shapefile文件时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"查找DLTB Shapefile文件时出错: {ex.Message}");
                 return null;
             }
         }
 
         /// <summary>
-        /// 生成SLZYZC_DLTB数据（写入到已存在的文件中）
+        /// 生成目标_DLTB数据（写入到已存在的文件中）
         /// </summary>
-        /// <param name="slzyDltbPath">SLZY_DLTB源数据路径</param>
+        /// <param name="sourceDltbPath">源DLTB数据路径</param>
         /// <param name="czkfbjPath">CZKFBJ数据路径</param>
-        /// <param name="outputPath">输出SLZYZC_DLTB文件路径（已存在）</param>
+        /// <param name="outputPath">输出目标_DLTB文件路径（已存在）</param>
         /// <param name="countyName">县名</param>
+        /// <param name="outputBaseName">输出基础名称</param>
         /// <param name="progressCallback">进度回调</param>
         /// <returns>是否成功</returns>
-        private bool GenerateSLZYZCDLTB(
-            string slzyDltbPath,
+        private bool GenerateTargetDLTB(
+            string sourceDltbPath,
             string czkfbjPath,
             string outputPath,
             string countyName,
+            string outputBaseName,
             ProgressCallback progressCallback)
         {
             // COM对象声明
-            IWorkspace slzyDltbWorkspace = null;
-            IFeatureClass slzyDltbFeatureClass = null;
+            IWorkspace sourceDltbWorkspace = null;
+            IFeatureClass sourceDltbFeatureClass = null;
             IWorkspace czkfbjWorkspace = null;
             IFeatureClass czkfbjFeatureClass = null;
             IFeatureClass outputFeatureClass = null;
 
             try
             {
-                progressCallback?.Invoke(5, "正在打开SLZY_DLTB数据...");
+                string dltbTypeName = $"{outputBaseName}_DLTB";
+                progressCallback?.Invoke(5, $"正在打开{outputBaseName}_DLTB源数据...");
 
-                // 打开SLZY_DLTB源数据
-                var slzyResult = OpenShapefileFeatureClass(slzyDltbPath);
-                slzyDltbWorkspace = slzyResult.workspace;
-                slzyDltbFeatureClass = slzyResult.featureClass;
+                // 打开源DLTB数据
+                var sourceResult = OpenShapefileFeatureClass(sourceDltbPath);
+                sourceDltbWorkspace = sourceResult.workspace;
+                sourceDltbFeatureClass = sourceResult.featureClass;
 
-                if (slzyDltbFeatureClass == null)
+                if (sourceDltbFeatureClass == null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"无法打开SLZY_DLTB数据: {slzyDltbPath}");
+                    System.Diagnostics.Debug.WriteLine($"无法打开{outputBaseName}_DLTB源数据: {sourceDltbPath}");
                     return false;
                 }
 
-                int totalFeatures = slzyDltbFeatureClass.FeatureCount(null);
-                System.Diagnostics.Debug.WriteLine($"SLZY_DLTB包含{totalFeatures}个要素");
+                int totalFeatures = sourceDltbFeatureClass.FeatureCount(null);
+                System.Diagnostics.Debug.WriteLine($"{outputBaseName}_DLTB包含{totalFeatures}个要素");
 
                 progressCallback?.Invoke(15, "正在打开CZKFBJ数据...");
 
@@ -782,13 +856,13 @@ namespace ForestResourcePlugin
                     }
                 }
 
-                progressCallback?.Invoke(25, "正在打开已存在的SLZYZC_DLTB文件...");
+                progressCallback?.Invoke(25, $"正在打开已存在的{dltbTypeName}文件...");
 
-                // 打开已存在的SLZYZC_DLTB文件
+                // 打开已存在的目标DLTB文件
                 var outputResult = OpenShapefileFeatureClass(outputPath);
                 if (outputResult.featureClass == null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"无法打开已存在的SLZYZC_DLTB文件: {outputPath}");
+                    System.Diagnostics.Debug.WriteLine($"无法打开已存在的{dltbTypeName}文件: {outputPath}");
                     return false;
                 }
                 outputFeatureClass = outputResult.featureClass;
@@ -800,7 +874,7 @@ namespace ForestResourcePlugin
 
                 // 执行数据复制和处理
                 int processedCount = CopyAndProcessFeatures(
-                    slzyDltbFeatureClass,
+                    sourceDltbFeatureClass,
                     czkfbjFeatureClass,
                     outputFeatureClass,
                     countyName,
@@ -816,16 +890,16 @@ namespace ForestResourcePlugin
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"生成SLZYZC_DLTB时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"生成{outputBaseName}_DLTB时出错: {ex.Message}");
                 return false;
             }
             finally
             {
                 // 释放所有COM对象
-                if (slzyDltbFeatureClass != null)
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(slzyDltbFeatureClass);
-                if (slzyDltbWorkspace != null)
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(slzyDltbWorkspace);
+                if (sourceDltbFeatureClass != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(sourceDltbFeatureClass);
+                if (sourceDltbWorkspace != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(sourceDltbWorkspace);
                 if (czkfbjFeatureClass != null)
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(czkfbjFeatureClass);
                 if (czkfbjWorkspace != null)
@@ -973,7 +1047,19 @@ namespace ForestResourcePlugin
                         if (ysdmIndex != -1)
                         {
                             string currentOutputType = GetCurrentOutputShapefileName();
-                            string ysdmValue = currentOutputType == "CYZYZC" ? "2160301000" : "2150201010";
+                            string ysdmValue;
+                            switch (currentOutputType)
+                            {
+                                case "CYZYZC":
+                                    ysdmValue = "2160301000";  // 草地资源
+                                    break;
+                                case "SDZYZC":
+                                    ysdmValue = "2170401000";  // 湿地资源
+                                    break;
+                                default: // SLZYZC
+                                    ysdmValue = "2150201010";  // 森林资源
+                                    break;
+                            }
                             targetBuffer.set_Value(ysdmIndex, ysdmValue);
                         }
 
@@ -1044,7 +1130,7 @@ namespace ForestResourcePlugin
                         {
                             double jjjzValue = 0.0;
 
-                            // 🔥 关键修改：使用GTDCTBMJ值计算经济价值
+                            // 使用GTDCTBMJ值计算经济价值
                             object gtdctbmjObject = targetBuffer.get_Value(gtdctbmjIndex);
                             double gtdctbmjArea = 0.0;
 
@@ -1054,7 +1140,7 @@ namespace ForestResourcePlugin
                                 double hsjgNumber = 0.0;
                                 if (hsjgValue != null && double.TryParse(hsjgValue.ToString(), out hsjgNumber))
                                 {
-                                    // 🔥 修改：计算经济价值：GTDCTBMJ * HSJG
+                                    // 计算经济价值：GTDCTBMJ * HSJG
                                     jjjzValue = gtdctbmjArea * hsjgNumber;
                                     System.Diagnostics.Debug.WriteLine($"JJJZ计算: GTDCTBMJ({gtdctbmjArea:F2}) * HSJG({hsjgNumber:F2}) = {jjjzValue:F2}");
                                 }
@@ -1206,7 +1292,7 @@ namespace ForestResourcePlugin
 
         /// <summary>
         /// 🔥 新增：使用县级XZQDM生成SLZYZC_DLTB的ZCQCBSM字段值
-        /// 格式：XZQDM(6位) + "4110" + 序号(12位，从1开始，前补0)
+        /// 格式：XZQDM(6位) + 中间代码 + 序号(12位，从1开始，前补0)
         /// 总长度：22位
         /// </summary>
         /// <param name="countyXZQDM">县级XZQDM（6位）</param>
@@ -1234,7 +1320,19 @@ namespace ForestResourcePlugin
 
                 // 🔥 修改：根据数据类型设置不同的中间代码
                 string currentOutputType = GetCurrentOutputShapefileName();
-                string middlePart = currentOutputType == "CYZYZC" ? "5110" : "4110";
+                string middlePart;
+                switch (currentOutputType)
+                {
+                    case "CYZYZC":
+                        middlePart = "5110";  // 草地资源
+                        break;
+                    case "SDZYZC":
+                        middlePart = "6110";  // 湿地资源
+                        break;
+                    default: // SLZYZC
+                        middlePart = "4110";  // 森林资源
+                        break;
+                }
 
                 // 序号格式化为12位，前补0
                 string sequencePart = sequenceNumber.ToString("D12");
@@ -1249,7 +1347,19 @@ namespace ForestResourcePlugin
                 System.Diagnostics.Debug.WriteLine($"生成ZCQCBSM时出错: {ex.Message}");
                 // 🔥 修改：出错时的默认值也要考虑数据类型
                 string currentOutputType = GetCurrentOutputShapefileName();
-                string defaultMiddle = currentOutputType == "CYZYZC" ? "5110" : "4110";
+                string defaultMiddle;
+                switch (currentOutputType)
+                {
+                    case "CYZYZC":
+                        defaultMiddle = "5110";
+                        break;
+                    case "SDZYZC":
+                        defaultMiddle = "6110";
+                        break;
+                    default:
+                        defaultMiddle = "4110";
+                        break;
+                }
                 string defaultZcqcbsm = $"000000{defaultMiddle}{sequenceNumber.ToString("D12")}";
                 return defaultZcqcbsm;
             }
@@ -1812,18 +1922,10 @@ namespace ForestResourcePlugin
                 string countyFolderPath = System.IO.Path.Combine(outputPath, countyFolderName);
                 string dataSetPath = System.IO.Path.Combine(countyFolderPath, "清查数据集");
 
-                // 🔥 在这里添加根据输出文件名选择资源文件夹的逻辑
-                string resourceFolder = "森林"; // 默认
-                if (outputShapefileName.Contains("CYZYZC"))
-                {
-                    resourceFolder = "草原";
-                }
-                else if (outputShapefileName.Contains("SDZYZC"))
-                {
-                    resourceFolder = "湿地";
-                }
+                // 🔥 修改：根据输出文件名选择资源文件夹的逻辑
+                string resourceFolder = GetResourceFolderByOutputType(outputShapefileName);
 
-                string forestPath = System.IO.Path.Combine(dataSetPath, resourceFolder); // 使用动态资源文件夹
+                string forestPath = System.IO.Path.Combine(dataSetPath, resourceFolder);
                 string spatialDataPath = System.IO.Path.Combine(forestPath, "空间数据");
 
                 // 使用ProgID创建Shapefile工作空间工厂
@@ -1842,6 +1944,35 @@ namespace ForestResourcePlugin
                 throw;
             }
         }
+
+        /// <summary>
+        /// 根据输出类型获取资源文件夹名称
+        /// </summary>
+        /// <param name="outputShapefileName">输出Shapefile名称</param>
+        /// <returns>资源文件夹名称</returns>
+        private string GetResourceFolderByOutputType(string outputShapefileName)
+        {
+            if (string.IsNullOrEmpty(outputShapefileName))
+            {
+                // 从当前数据类型选择动态获取
+                string currentOutputType = GetCurrentOutputShapefileName();
+                return GetResourceFolderByOutputType(currentOutputType);
+            }
+
+            if (outputShapefileName.Contains("CYZYZC"))
+            {
+                return "草原";
+            }
+            else if (outputShapefileName.Contains("SDZYZC"))
+            {
+                return "湿地";
+            }
+            else // SLZYZC 或其他情况
+            {
+                return "森林";
+            }
+        }
+
         /// <summary>
         /// 创建输出 Shapefile要素类（支持动态数据类型）
         /// </summary>
@@ -1995,20 +2126,20 @@ namespace ForestResourcePlugin
         {
             try
             {
-                // 方法1: 从SharedDataManager获取数据类型选择状态
+                // 从SharedDataManager获取数据类型选择状态
                 var dataTypeSelection = SharedDataManager.GetDataTypeSelection();
 
-                if (dataTypeSelection.Forest && !dataTypeSelection.Grassland)
+                if (dataTypeSelection.Forest && !dataTypeSelection.Grassland && !dataTypeSelection.Wetland)
                 {
                     return "SLZYZC"; // 森林资源
                 }
-                else if (!dataTypeSelection.Forest && dataTypeSelection.Grassland)
+                else if (!dataTypeSelection.Forest && dataTypeSelection.Grassland && !dataTypeSelection.Wetland)
                 {
                     return "CYZYZC"; // 草地资源
                 }
-                else if (dataTypeSelection.Forest && dataTypeSelection.Grassland)
+                else if (!dataTypeSelection.Forest && !dataTypeSelection.Grassland && dataTypeSelection.Wetland)
                 {
-                    return "ZYZC"; // 通用资源（如果同时选择）
+                    return "SDZYZC"; // 湿地资源
                 }
                 else
                 {
@@ -2487,7 +2618,19 @@ namespace ForestResourcePlugin
 
                     // 🔥 修改：根据数据类型设置不同的中间代码
                     string currentOutputType = GetCurrentOutputShapefileName();
-                    string middleCode = currentOutputType == "CYZYZC" ? "5110" : "4120";
+                    string middleCode;
+                    switch (currentOutputType)
+                    {
+                        case "CYZYZC":
+                            middleCode = "5120";  // 草地资源
+                            break;
+                        case "SDZYZC":
+                            middleCode = "6120";  // 湿地资源
+                            break;
+                        default: // SLZYZC
+                            middleCode = "4120";  // 森林资源
+                            break;
+                    }
 
                     string sequenceStr = featureSequence.ToString("D12");
                     return $"{xzqdm}{middleCode}{sequenceStr}";

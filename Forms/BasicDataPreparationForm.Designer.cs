@@ -4,17 +4,18 @@ namespace TestArcMapAddin2.Forms
     {
         private System.ComponentModel.IContainer components = null;
 
-        // 修改控件声明 - 分离两个数据源
+        // 修改控件声明 - 包含三种数据源
         private System.Windows.Forms.Label lblDataSource;
         private System.Windows.Forms.TextBox txtDataPath;
         private System.Windows.Forms.Button btnBrowseData;
 
-        // 新增：数据类型选择控件
+        // 数据类型选择控件 - 新增湿地选项
         private System.Windows.Forms.GroupBox grpDataType;
         private System.Windows.Forms.CheckBox chkForest;
         private System.Windows.Forms.CheckBox chkGrassland;
+        private System.Windows.Forms.CheckBox chkWetland;
 
-        // 修改：城镇开发边界和地类图斑数据源控件（重命名以更准确反映功能）
+        // 修改：城镇开发边界与地类图斑数据源控件（更名为更准确的映射功能）
         private System.Windows.Forms.Label lblCzkfbjDltbDataSource;
         private System.Windows.Forms.TextBox txtCzkfbjDltbPath;
         private System.Windows.Forms.Button btnBrowseCzkfbjDltbData;
@@ -40,6 +41,7 @@ namespace TestArcMapAddin2.Forms
 
         private void InitializeComponent()
         {
+            
             this.topPanel = new System.Windows.Forms.Panel();
             this.titleLabel = new System.Windows.Forms.Label();
             this.lblDataSource = new System.Windows.Forms.Label();
@@ -48,6 +50,7 @@ namespace TestArcMapAddin2.Forms
             this.grpDataType = new System.Windows.Forms.GroupBox();
             this.chkForest = new System.Windows.Forms.CheckBox();
             this.chkGrassland = new System.Windows.Forms.CheckBox();
+            this.chkWetland = new System.Windows.Forms.CheckBox();  // 新增湿地复选框
             this.lblCzkfbjDltbDataSource = new System.Windows.Forms.Label();
             this.txtCzkfbjDltbPath = new System.Windows.Forms.TextBox();
             this.btnBrowseCzkfbjDltbData = new System.Windows.Forms.Button();
@@ -89,7 +92,7 @@ namespace TestArcMapAddin2.Forms
             // 
             // titleLabel
             // 
-            this.titleLabel.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.titleLabel.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.titleLabel.ForeColor = System.Drawing.Color.Black;
             this.titleLabel.Location = new System.Drawing.Point(22, 15);
             this.titleLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -101,7 +104,7 @@ namespace TestArcMapAddin2.Forms
             // 
             // lblDataSource
             // 
-            this.lblDataSource.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lblDataSource.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblDataSource.ForeColor = System.Drawing.Color.Black;
             this.lblDataSource.Location = new System.Drawing.Point(19, 74);
             this.lblDataSource.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -113,7 +116,7 @@ namespace TestArcMapAddin2.Forms
             // 
             // txtDataPath
             // 
-            this.txtDataPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.txtDataPath.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.txtDataPath.Location = new System.Drawing.Point(19, 112);
             this.txtDataPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtDataPath.Name = "txtDataPath";
@@ -124,7 +127,7 @@ namespace TestArcMapAddin2.Forms
             // 
             // btnBrowseData
             // 
-            this.btnBrowseData.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnBrowseData.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnBrowseData.Location = new System.Drawing.Point(852, 112);
             this.btnBrowseData.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseData.Name = "btnBrowseData";
@@ -138,22 +141,23 @@ namespace TestArcMapAddin2.Forms
             // 
             this.grpDataType.Controls.Add(this.chkForest);
             this.grpDataType.Controls.Add(this.chkGrassland);
-            this.grpDataType.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.grpDataType.Controls.Add(this.chkWetland);
+            this.grpDataType.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.grpDataType.Location = new System.Drawing.Point(19, 154);
             this.grpDataType.Margin = new System.Windows.Forms.Padding(4);
             this.grpDataType.Name = "grpDataType";
             this.grpDataType.Padding = new System.Windows.Forms.Padding(4);
-            this.grpDataType.Size = new System.Drawing.Size(400, 80);
+            this.grpDataType.Size = new System.Drawing.Size(550, 80);  // 扩大宽度以容纳三个选项
             this.grpDataType.TabIndex = 8;
             this.grpDataType.TabStop = false;
-            this.grpDataType.Text = "选择处理的数据类型";
+            this.grpDataType.Text = "选择要处理的数据类型";
             // 
             // chkForest
             // 
             this.chkForest.AutoSize = true;
             this.chkForest.Checked = true;
             this.chkForest.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkForest.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.chkForest.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.chkForest.Location = new System.Drawing.Point(20, 34);
             this.chkForest.Margin = new System.Windows.Forms.Padding(4);
             this.chkForest.Name = "chkForest";
@@ -166,7 +170,7 @@ namespace TestArcMapAddin2.Forms
             // chkGrassland
             // 
             this.chkGrassland.AutoSize = true;
-            this.chkGrassland.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.chkGrassland.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.chkGrassland.Location = new System.Drawing.Point(150, 34);
             this.chkGrassland.Margin = new System.Windows.Forms.Padding(4);
             this.chkGrassland.Name = "chkGrassland";
@@ -176,32 +180,45 @@ namespace TestArcMapAddin2.Forms
             this.chkGrassland.UseVisualStyleBackColor = true;
             this.chkGrassland.CheckedChanged += new System.EventHandler(this.chkGrassland_CheckedChanged);
             // 
+            // chkWetland - 新增湿地复选框
+            // 
+            this.chkWetland.AutoSize = true;
+            this.chkWetland.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.chkWetland.Location = new System.Drawing.Point(280, 34);  // 调整位置，排在草地之后
+            this.chkWetland.Margin = new System.Windows.Forms.Padding(4);
+            this.chkWetland.Name = "chkWetland";
+            this.chkWetland.Size = new System.Drawing.Size(70, 22);
+            this.chkWetland.TabIndex = 2;
+            this.chkWetland.Text = "湿地";
+            this.chkWetland.UseVisualStyleBackColor = true;
+            this.chkWetland.CheckedChanged += new System.EventHandler(this.chkWetland_CheckedChanged);  // 新增事件处理器
+            // 
             // lblCzkfbjDltbDataSource
             // 
-            this.lblCzkfbjDltbDataSource.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lblCzkfbjDltbDataSource.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblCzkfbjDltbDataSource.ForeColor = System.Drawing.Color.Black;
             this.lblCzkfbjDltbDataSource.Location = new System.Drawing.Point(19, 242);
             this.lblCzkfbjDltbDataSource.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblCzkfbjDltbDataSource.Name = "lblCzkfbjDltbDataSource";
             this.lblCzkfbjDltbDataSource.Size = new System.Drawing.Size(900, 30);
             this.lblCzkfbjDltbDataSource.TabIndex = 9;
-            this.lblCzkfbjDltbDataSource.Text = "城镇开发边界与森林资源地类图斑数据源（CZKFBJ、SLZY_DLTB）：";
+            this.lblCzkfbjDltbDataSource.Text = "城镇开发边界与地类图斑数据源（CZKFBJ、SLZY_DLTB、CYZY_DLTB、SDZY_DLTB）：";  // 更新标签文本包含湿地
             this.lblCzkfbjDltbDataSource.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // txtCzkfbjDltbPath
             // 
-            this.txtCzkfbjDltbPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.txtCzkfbjDltbPath.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.txtCzkfbjDltbPath.Location = new System.Drawing.Point(19, 280);
             this.txtCzkfbjDltbPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtCzkfbjDltbPath.Name = "txtCzkfbjDltbPath";
             this.txtCzkfbjDltbPath.ReadOnly = true;
             this.txtCzkfbjDltbPath.Size = new System.Drawing.Size(808, 28);
             this.txtCzkfbjDltbPath.TabIndex = 10;
-            this.txtCzkfbjDltbPath.Text = "请选择包含城镇开发边界和地类图斑数据的文件夹";
+            this.txtCzkfbjDltbPath.Text = "请选择包含城镇开发边界与地类图斑数据的文件夹";
             // 
             // btnBrowseCzkfbjDltbData
             // 
-            this.btnBrowseCzkfbjDltbData.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnBrowseCzkfbjDltbData.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnBrowseCzkfbjDltbData.Location = new System.Drawing.Point(852, 280);
             this.btnBrowseCzkfbjDltbData.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseCzkfbjDltbData.Name = "btnBrowseCzkfbjDltbData";
@@ -213,7 +230,7 @@ namespace TestArcMapAddin2.Forms
             // 
             // lblOutputGDBPath
             // 
-            this.lblOutputGDBPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lblOutputGDBPath.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblOutputGDBPath.ForeColor = System.Drawing.Color.Black;
             this.lblOutputGDBPath.Location = new System.Drawing.Point(19, 322);
             this.lblOutputGDBPath.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -226,7 +243,7 @@ namespace TestArcMapAddin2.Forms
             // 
             // txtOutputGDBPath
             // 
-            this.txtOutputGDBPath.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.txtOutputGDBPath.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.txtOutputGDBPath.Location = new System.Drawing.Point(19, 360);
             this.txtOutputGDBPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtOutputGDBPath.Name = "txtOutputGDBPath";
@@ -237,7 +254,7 @@ namespace TestArcMapAddin2.Forms
             // 
             // btnBrowseOutputGDB
             // 
-            this.btnBrowseOutputGDB.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnBrowseOutputGDB.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnBrowseOutputGDB.Location = new System.Drawing.Point(852, 360);
             this.btnBrowseOutputGDB.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseOutputGDB.Name = "btnBrowseOutputGDB";
@@ -268,7 +285,7 @@ namespace TestArcMapAddin2.Forms
             this.buttonResultStructure.Name = "buttonResultStructure";
             this.buttonResultStructure.Size = new System.Drawing.Size(156, 34);
             this.buttonResultStructure.TabIndex = 4;
-            this.buttonResultStructure.Text = "创建目录结构";
+            this.buttonResultStructure.Text = "生成成果目录结构";
             this.buttonResultStructure.UseVisualStyleBackColor = true;
             this.buttonResultStructure.Click += new System.EventHandler(this.buttonResultStructure_Click);
             // 
@@ -278,7 +295,7 @@ namespace TestArcMapAddin2.Forms
             this.btnResultExcel.Name = "btnResultExcel";
             this.btnResultExcel.Size = new System.Drawing.Size(156, 34);
             this.btnResultExcel.TabIndex = 3;
-            this.btnResultExcel.Text = "创建结果表格";
+            this.btnResultExcel.Text = "生成汇总表格";
             this.btnResultExcel.UseVisualStyleBackColor = true;
             this.btnResultExcel.Click += new System.EventHandler(this.btnResultExcel_Click);
             // 
@@ -295,7 +312,7 @@ namespace TestArcMapAddin2.Forms
             // 
             // btnOK
             // 
-            this.btnOK.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnOK.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnOK.Location = new System.Drawing.Point(600, 15);
             this.btnOK.Margin = new System.Windows.Forms.Padding(4);
             this.btnOK.Name = "btnOK";
@@ -308,7 +325,7 @@ namespace TestArcMapAddin2.Forms
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnCancel.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.btnCancel.Location = new System.Drawing.Point(750, 15);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(4);
             this.btnCancel.Name = "btnCancel";
@@ -325,7 +342,7 @@ namespace TestArcMapAddin2.Forms
             this.ClientSize = new System.Drawing.Size(1000, 543);
             this.Controls.Add(this.bottomPanel);
             this.Controls.Add(this.topPanel);
-            this.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;

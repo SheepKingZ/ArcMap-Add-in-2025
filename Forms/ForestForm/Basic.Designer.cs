@@ -18,6 +18,7 @@ namespace ForestResourcePlugin
             this.grpDataType = new System.Windows.Forms.GroupBox();
             this.chkForest = new System.Windows.Forms.CheckBox();
             this.chkGrassland = new System.Windows.Forms.CheckBox();
+            this.chkWetland = new System.Windows.Forms.CheckBox();
             this.buttonHSJGPath = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -167,12 +168,13 @@ namespace ForestResourcePlugin
             // 
             this.grpDataType.Controls.Add(this.chkForest);
             this.grpDataType.Controls.Add(this.chkGrassland);
+            this.grpDataType.Controls.Add(this.chkWetland);
             this.grpDataType.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.grpDataType.Location = new System.Drawing.Point(365, 114);
             this.grpDataType.Margin = new System.Windows.Forms.Padding(4);
             this.grpDataType.Name = "grpDataType";
             this.grpDataType.Padding = new System.Windows.Forms.Padding(4);
-            this.grpDataType.Size = new System.Drawing.Size(350, 70);
+            this.grpDataType.Size = new System.Drawing.Size(377, 70);
             this.grpDataType.TabIndex = 4;
             this.grpDataType.TabStop = false;
             this.grpDataType.Text = "数据类型选择";
@@ -204,6 +206,19 @@ namespace ForestResourcePlugin
             this.chkGrassland.Text = "草地";
             this.chkGrassland.UseVisualStyleBackColor = true;
             this.chkGrassland.CheckedChanged += new System.EventHandler(this.chkGrassland_CheckedChanged);
+            // 
+            // chkWetland
+            // 
+            this.chkWetland.AutoSize = true;
+            this.chkWetland.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.chkWetland.Location = new System.Drawing.Point(280, 30);
+            this.chkWetland.Margin = new System.Windows.Forms.Padding(4);
+            this.chkWetland.Name = "chkWetland";
+            this.chkWetland.Size = new System.Drawing.Size(70, 22);
+            this.chkWetland.TabIndex = 2;
+            this.chkWetland.Text = "湿地";
+            this.chkWetland.UseVisualStyleBackColor = true;
+            this.chkWetland.CheckedChanged += new System.EventHandler(this.chkWetland_CheckedChanged);
             // 
             // buttonHSJGPath
             // 
@@ -820,10 +835,11 @@ namespace ForestResourcePlugin
         private System.Windows.Forms.Button buttonForestExcel;
         private System.Windows.Forms.Button buttonA6;
         private System.Windows.Forms.Button buttonA4;
-        
+
         // 数据类型选择控件组
         private System.Windows.Forms.GroupBox grpDataType;
         private System.Windows.Forms.CheckBox chkForest;
         private System.Windows.Forms.CheckBox chkGrassland;
+        private System.Windows.Forms.CheckBox chkWetland;
     }
 }

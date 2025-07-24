@@ -79,12 +79,13 @@ namespace ForestResourcePlugin
             // 设置复选框状态
             chkForest.Checked = dataTypeSelection.Forest;
             chkGrassland.Checked = dataTypeSelection.Grassland;
+            chkWetland.Checked = dataTypeSelection.Wetland;  // 新增湿地
 
             // 如果没有任何选择，默认选择林地
-            if (!chkForest.Checked && !chkGrassland.Checked)
+            if (!chkForest.Checked && !chkGrassland.Checked && !chkWetland.Checked)
             {
                 chkForest.Checked = true;
-                SharedDataManager.SetDataTypeSelection(true, false);
+                SharedDataManager.SetDataTypeSelection(true, false, false);
             }
 
             // 更新界面显示
@@ -136,22 +137,27 @@ namespace ForestResourcePlugin
         /// </summary>
         private void UpdateFilterConditionLabels()
         {
-            if (chkForest.Checked && !chkGrassland.Checked)
+            string landTypeText = "";
+            var selectedTypes = new List<string>();
+
+            if (chkForest.Checked) selectedTypes.Add("林地");
+            if (chkGrassland.Checked) selectedTypes.Add("草地");
+            if (chkWetland.Checked) selectedTypes.Add("湿地");
+
+            if (selectedTypes.Count == 0)
             {
-                chkForestLand.Text = "地类为林地";
+                landTypeText = "请先选择数据类型";
             }
-            else if (!chkForest.Checked && chkGrassland.Checked)
+            else if (selectedTypes.Count == 1)
             {
-                chkForestLand.Text = "地类为草地";
-            }
-            else if (chkForest.Checked && chkGrassland.Checked)
-            {
-                chkForestLand.Text = "地类为林地或草地";
+                landTypeText = $"地类为{selectedTypes[0]}";
             }
             else
             {
-                chkForestLand.Text = "请先选择数据类型";
+                landTypeText = $"地类为{string.Join("或", selectedTypes)}";
             }
+
+            chkForestLand.Text = landTypeText;
         }
         /// <summary>
         /// 查找并匹配HSJG文件到对应的县
@@ -275,6 +281,10 @@ namespace ForestResourcePlugin
                 {
                     SharedDataManager.SetCDHSJGFiles(sourceDataFiles);
                 }
+                else if (hsjgType == "SDHSJG")  // 新增湿地HSJG处理
+                {
+                    SharedDataManager.SetSDHSJGFiles(sourceDataFiles);
+                }
 
                 string message = $"{hsjgType}文件搜索完成！\n\n";
                 message += $"搜索结果统计：\n";
@@ -299,21 +309,60 @@ namespace ForestResourcePlugin
         /// </summary>
         public string GetOutputShapefileName()
         {
-            if (chkForest.Checked && !chkGrassland.Checked)
+            var selectedCount = (chkForest.Checked ? 1 : 0) + (chkGrassland.Checked ? 1 : 0) + (chkWetland.Checked ? 1 : 0);
+
+            if (selectedCount == 1)
             {
-                return "SLZYZC"; // 森林资源
+                if (chkForest.Checked) return "SLZYZC"; // 森林资源
+                if (chkGrassland.Checked) return "CYZYZC"; // 草地资源
+                if (chkWetland.Checked) return "SDZYZC"; // 湿地资源
             }
-            else if (!chkForest.Checked && chkGrassland.Checked)
+
+            return "ZYZC"; // 多选或无选择时使用通用名称
+        }
+        /// <summary>
+        /// 清空湿地相关数据
+        /// </summary>
+        private void ClearWetlandRelatedData()
+        {
+            try
             {
-                return "CYZYZC"; // 草地资源
+                // 清空SharedDataManager中的湿地地类图斑数据
+                SharedDataManager.SetSDZYDLTBFiles(new List<SourceDataFileInfo>());
+
+                System.Diagnostics.Debug.WriteLine("已清空湿地相关数据");
             }
-            else if (chkForest.Checked && chkGrassland.Checked)
+            catch (Exception ex)
             {
-                return "ZYZC"; // 通用资源
+                System.Diagnostics.Debug.WriteLine($"清空湿地相关数据时出错: {ex.Message}");
             }
-            else
+        }
+        /// <summary>
+        /// 湿地复选框状态改变事件处理
+        /// </summary>
+        private void chkWetland_CheckedChanged(object sender, EventArgs e)
+        {
+            try
             {
-                return "ZYZC"; // 默认
+                // 更新SharedDataManager中的数据类型选择状态
+                SharedDataManager.SetDataTypeSelection(chkForest.Checked, chkGrassland.Checked, chkWetland.Checked);
+
+                // 更新界面显示
+                UpdateDataTypeRelatedUI();
+
+                // 如果取消选择且已有数据，清空相关数据
+                if (!chkWetland.Checked)
+                {
+                    ClearWetlandRelatedData();
+                }
+
+                System.Diagnostics.Debug.WriteLine($"湿地选择状态改变: {chkWetland.Checked}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"处理湿地选择变化时出错: {ex.Message}");
+                MessageBox.Show($"处理湿地选择变化时出错: {ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         /// <summary>
@@ -338,7 +387,7 @@ namespace ForestResourcePlugin
         /// </summary>
         private void UpdateDataTypeButtons()
         {
-            bool hasDataTypeSelected = chkForest.Checked || chkGrassland.Checked;
+            bool hasDataTypeSelected = chkForest.Checked || chkGrassland.Checked || chkWetland.Checked;
 
             // HSJG路径按钮需要先选择数据类型
             buttonHSJGPath.Enabled = hasDataTypeSelected;
@@ -383,22 +432,16 @@ namespace ForestResourcePlugin
         /// </summary>
         private string GetCurrentHSJGType()
         {
-            if (chkForest.Checked && !chkGrassland.Checked)
+            var selectedCount = (chkForest.Checked ? 1 : 0) + (chkGrassland.Checked ? 1 : 0) + (chkWetland.Checked ? 1 : 0);
+
+            if (selectedCount == 1)
             {
-                return "LDHSJG";
+                if (chkForest.Checked) return "LDHSJG";
+                if (chkGrassland.Checked) return "CDHSJG";
+                if (chkWetland.Checked) return "SDHSJG";
             }
-            else if (!chkForest.Checked && chkGrassland.Checked)
-            {
-                return "CDHSJG";
-            }
-            else if (chkForest.Checked && chkGrassland.Checked)
-            {
-                return "HSJG";  // 通用核算价格
-            }
-            else
-            {
-                return "HSJG";  // 默认
-            }
+
+            return "HSJG"; // 多选或无选择时使用通用名称
         }
 
         /// <summary>
@@ -529,7 +572,7 @@ namespace ForestResourcePlugin
             try
             {
                 // 更新SharedDataManager中的数据类型选择状态
-                SharedDataManager.SetDataTypeSelection(chkForest.Checked, chkGrassland.Checked);
+                ForestResourcePlugin.SharedDataManager.SetDataTypeSelection(chkForest.Checked, chkGrassland.Checked, chkWetland.Checked);
 
                 // 更新界面显示
                 UpdateDataTypeRelatedUI();
@@ -558,7 +601,7 @@ namespace ForestResourcePlugin
             try
             {
                 // 更新SharedDataManager中的数据类型选择状态
-                SharedDataManager.SetDataTypeSelection(chkForest.Checked, chkGrassland.Checked);
+                ForestResourcePlugin.SharedDataManager.SetDataTypeSelection(chkForest.Checked, chkGrassland.Checked, chkWetland.Checked);
 
                 // 更新界面显示
                 UpdateDataTypeRelatedUI();
@@ -1572,7 +1615,6 @@ namespace ForestResourcePlugin
                 {
                     subconditions.Add($"{landOwnerField} IN ('30', '40')");
                 }
-
                 if (subconditions.Count > 0)
                 {
                     string ownerCondition = subconditions.Count == 1 ?
@@ -1581,20 +1623,20 @@ namespace ForestResourcePlugin
 
                     // 🔥 修改：根据数据类型选择不同的地类编码
                     string landTypeCodes;
-                    if (chkForest.Checked && !chkGrassland.Checked)
+                    if (chkForest.Checked && !chkGrassland.Checked && !chkWetland.Checked)
                     {
                         // 仅林地
                         landTypeCodes = "'0301', '0302', '0305', '0307', '0301K', '0302K', '0307K'";
                     }
-                    else if (!chkForest.Checked && chkGrassland.Checked)
+                    else if (!chkForest.Checked && !chkWetland.Checked && chkGrassland.Checked)
                     {
                         // 仅草地 - 使用草地地类编码
                         landTypeCodes = "'0401', '0403', '0403K', '0404'";
                     }
-                    else if (chkForest.Checked && chkGrassland.Checked)
+                    else if (!chkForest.Checked && !chkGrassland.Checked && chkWetland.Checked)
                     {
-                        // 林地和草地
-                        landTypeCodes = "'0301', '0302', '0305', '0307', '0301K', '0302K', '0307K', '0401', '0403', '0403K', '0404'";
+                        // 仅湿地 - 使用湿地地类编码
+                        landTypeCodes = "'0303', '0304', '0306', '0402','0603','1105','1106','1108'";
                     }
                     else
                     {
@@ -1621,21 +1663,6 @@ namespace ForestResourcePlugin
                 return feature.get_Value(fallbackIndex)?.ToString() ?? "";
             }
             return "";
-        }
-
-        private string TranslateOwnershipCode(string ownerValue)
-        {
-            switch (ownerValue)
-            {
-                case "10":
-                case "20":
-                    return "国有";
-                case "30":
-                case "40":
-                    return "集体";
-                default:
-                    return ownerValue;
-            }
         }
 
         /// <summary>
@@ -1790,19 +1817,20 @@ namespace ForestResourcePlugin
 
                 // 5. 在获取映射规则时根据数据类型选择不同的规则
                 Dictionary<string, string> defaultMappings;
-                if (chkForest.Checked && !chkGrassland.Checked)
+                if (chkForest.Checked && !chkGrassland.Checked && !chkWetland.Checked)
                 {
                     defaultMappings = GetDefaultSLZYZCMappingRules();
                 }
-                else if (!chkForest.Checked && chkGrassland.Checked)
+                else if (!chkForest.Checked && chkGrassland.Checked && !chkWetland.Checked)
                 {
                     defaultMappings = GetDefaultCyzyzcMappingRules();
                 }
-                else if (chkForest.Checked && chkGrassland.Checked)
+                else if (!chkForest.Checked && !chkGrassland.Checked && chkWetland.Checked)
                 {
                     // 当同时选择林地和草地时，使用通用的映射规则或合并规则
-                    defaultMappings = GetDefaultSLZYZCMappingRules(); // 可以根据需要调整
+                    defaultMappings = GetDefaultSdzyzcMappingRules(); // 可以根据需要调整
                 }
+
                 else
                 {
                     // 如果没有选择任何数据类型，默认使用林地规则
@@ -1930,6 +1958,35 @@ namespace ForestResourcePlugin
                 { "YSCZ", "ys_caoz" },      // 优势草种
                 { "ZBGD", "zbgd" },           // 植被盖度
                 { "XBGCCL", "xb_gccl" },         // 小班干草产量
+                { "FRDBS", "frdbs" }           // 飞入地标识
+            };
+        }
+        /// <summary>
+        /// 获取SDZYZC字段映射规则
+        /// </summary>
+        private Dictionary<string, string> GetDefaultSdzyzcMappingRules()
+        {
+            return new Dictionary<string, string>
+            {
+                { "XZQDM", "xian" },           // 行政区代码
+                { "GTDCTBBSM", "bsm" },        // 国土调查图斑编码
+                { "GTDCTBBH", "tbbh" },        // 国土调查图斑编号
+                { "GTDCDLBM", "dlbm" },        // 国土调查地类编码
+                { "GTDCDLMC", "dlmc" },        // 国土调查地类名称
+                { "QSDWDM", "qsdwdm" },        // 权属单位代码
+                { "QSDWMC", "qsdwmc" },        // 权属单位名称
+                { "ZLDWDM", "zldwdm" },        // 坐落单位代码
+                { "ZLDWMC", "zldwmc" },        // 坐落单位名称
+                { "GTDCTBMJ", "tbmj" },        // 国土调查图斑面积
+                { "GTDCTDQSXZ", "qsxz" },        // 国土调查权属性质
+                { "PCDL", "di_lei" },          // 普查地类
+                { "ZTBMJ", "xbmj" },           // 图斑面积
+                { "SDDJ", "sd_dj" },        // 湿地管理分级
+                { "ZRBHDSX", "bhddm" },      // 自然保护地属性
+                { "SDLYFS", "sdlyfs" },           // 湿地利用方式
+                { "ZBLX", "zbfglx" },         // 植被类型
+                { "ZBMJ", "xbmj" },             //植被面积
+                { "SWXZK", "sdwxzk" },          //受威胁状况
                 { "FRDBS", "frdbs" }           // 飞入地标识
             };
         }

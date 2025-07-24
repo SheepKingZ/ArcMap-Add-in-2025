@@ -41,6 +41,7 @@ namespace TestArcMapAddin2.Forms
             public List<ForestResourcePlugin.SourceDataFileInfo> CzkfbjFiles { get; set; } = new List<ForestResourcePlugin.SourceDataFileInfo>();
             public List<ForestResourcePlugin.SourceDataFileInfo> SlzyDltbFiles { get; set; } = new List<ForestResourcePlugin.SourceDataFileInfo>();
             public List<ForestResourcePlugin.SourceDataFileInfo> CyzyDltbFiles { get; set; } = new List<ForestResourcePlugin.SourceDataFileInfo>(); // 新增：草地资源地类图斑
+            public List<ForestResourcePlugin.SourceDataFileInfo> SdzyDltbFiles { get; set; } = new List<ForestResourcePlugin.SourceDataFileInfo>(); // 新增：湿地资源地类图斑
         }
 
         /// <summary>
@@ -64,10 +65,11 @@ namespace TestArcMapAddin2.Forms
             // 初始化数据类型选择 - 默认选中林地
             chkForest.Checked = true;
             chkGrassland.Checked = false;
-            
+            chkWetland.Checked = false; // 添加这行
+
             // 更新SharedDataManager中的数据类型选择状态
-            ForestResourcePlugin.SharedDataManager.SetDataTypeSelection(chkForest.Checked, chkGrassland.Checked);
-            
+            ForestResourcePlugin.SharedDataManager.SetDataTypeSelection(chkForest.Checked, chkGrassland.Checked, chkWetland.Checked);
+
             // 初始化界面文本
             UpdateDataTypeLabels();
 
@@ -116,23 +118,38 @@ namespace TestArcMapAddin2.Forms
         {
             bool isForestSelected = chkForest.Checked;
             bool isGrasslandSelected = chkGrassland.Checked;
+            bool isWetlandSelected = chkWetland.Checked;
+
+            // 构建数据源描述文本
+            var selectedTypes = new List<string>();
+            var dataSourceTypes = new List<string>();
+
+            if (isForestSelected)
+            {
+                selectedTypes.Add("森林资源");
+                dataSourceTypes.Add("SLZY_DLTB");
+            }
+            if (isGrasslandSelected)
+            {
+                selectedTypes.Add("草地资源");
+                dataSourceTypes.Add("CYZY_DLTB");
+            }
+            if (isWetlandSelected)
+            {
+                selectedTypes.Add("湿地资源");
+                dataSourceTypes.Add("SDZY_DLTB");
+            }
 
             // 更新第二个数据源的标签文本
-            if (isForestSelected && !isGrasslandSelected)
+            if (selectedTypes.Count == 0)
             {
-                lblCzkfbjDltbDataSource.Text = "城镇开发边界与森林资源地类图斑数据源（CZKFBJ、SLZY_DLTB）：";
-            }
-            else if (!isForestSelected && isGrasslandSelected)
-            {
-                lblCzkfbjDltbDataSource.Text = "城镇开发边界与草地资源地类图斑数据源（CZKFBJ、CYZY_DLTB）：";
-            }
-            else if (isForestSelected && isGrasslandSelected)
-            {
-                lblCzkfbjDltbDataSource.Text = "城镇开发边界与地类图斑数据源（CZKFBJ、SLZY_DLTB、CYZY_DLTB）：";
+                lblCzkfbjDltbDataSource.Text = "城镇开发边界与地类图斑数据源（请先选择数据类型）：";
             }
             else
             {
-                lblCzkfbjDltbDataSource.Text = "城镇开发边界与地类图斑数据源（请先选择数据类型）：";
+                string typeText = string.Join("、", selectedTypes);
+                string dataText = string.Join("、", dataSourceTypes);
+                lblCzkfbjDltbDataSource.Text = $"城镇开发边界与{typeText}地类图斑数据源（CZKFBJ、{dataText}）：";
             }
 
             // 更新文本框的占位符文本
@@ -141,7 +158,7 @@ namespace TestArcMapAddin2.Forms
                 // 如果已有路径，保持现有显示
                 return;
             }
-            
+
             txtCzkfbjDltbPath.Text = GetDefaultCzkfbjDltbPathText();
         }
 
@@ -152,22 +169,21 @@ namespace TestArcMapAddin2.Forms
         {
             bool isForestSelected = chkForest.Checked;
             bool isGrasslandSelected = chkGrassland.Checked;
+            bool isWetlandSelected = chkWetland.Checked;
 
-            if (isForestSelected && !isGrasslandSelected)
+            var selectedTypes = new List<string>();
+            if (isForestSelected) selectedTypes.Add("森林资源");
+            if (isGrasslandSelected) selectedTypes.Add("草地资源");
+            if (isWetlandSelected) selectedTypes.Add("湿地资源");
+
+            if (selectedTypes.Count == 0)
             {
-                return "请选择包含城镇开发边界和森林资源地类图斑数据的文件夹";
-            }
-            else if (!isForestSelected && isGrasslandSelected)
-            {
-                return "请选择包含城镇开发边界和草地资源地类图斑数据的文件夹";
-            }
-            else if (isForestSelected && isGrasslandSelected)
-            {
-                return "请选择包含城镇开发边界和地类图斑数据的文件夹";
+                return "请先选择数据类型，然后选择相应的数据文件夹";
             }
             else
             {
-                return "请先选择数据类型，然后选择相应的数据文件夹";
+                string typeText = string.Join("和", selectedTypes);
+                return $"请选择包含城镇开发边界和{typeText}地类图斑数据的文件夹";
             }
         }
 
@@ -177,7 +193,7 @@ namespace TestArcMapAddin2.Forms
             bool hasLcxzgxData = !string.IsNullOrEmpty(lcxzgxDataPath);
             bool hasCzkfbjDltbData = !string.IsNullOrEmpty(czkfbjDltbDataPath);
             bool hasOutputGDB = !string.IsNullOrEmpty(outputGDBPath);
-            bool hasDataTypeSelected = chkForest.Checked || chkGrassland.Checked;
+            bool hasDataTypeSelected = chkForest.Checked || chkGrassland.Checked || chkWetland.Checked;
 
             // 基础数据源选择按钮始终启用
             btnBrowseData.Enabled = true;
@@ -198,8 +214,8 @@ namespace TestArcMapAddin2.Forms
         private void chkForest_CheckedChanged(object sender, EventArgs e)
         {
             // 更新SharedDataManager中的数据类型选择状态
-            ForestResourcePlugin.SharedDataManager.SetDataTypeSelection(chkForest.Checked, chkGrassland.Checked);
-            
+            ForestResourcePlugin.SharedDataManager.SetDataTypeSelection(chkForest.Checked, chkGrassland.Checked, chkWetland.Checked);
+
             // 更新界面标签
             UpdateDataTypeLabels();
             
@@ -214,23 +230,36 @@ namespace TestArcMapAddin2.Forms
         }
 
         /// <summary>
-        /// 草地复选框状态改变事件处理
+        /// 清空湿地相关数据
         /// </summary>
-        private void chkGrassland_CheckedChanged(object sender, EventArgs e)
+        private void ClearWetlandRelatedData()
         {
-            // 更新SharedDataManager中的数据类型选择状态
-            ForestResourcePlugin.SharedDataManager.SetDataTypeSelection(chkForest.Checked, chkGrassland.Checked);
-            
+            // 从县级数据映射中清空湿地地类图斑数据
+            foreach (var county in countyDataMappings.Values)
+            {
+                county.SdzyDltbFiles.Clear();
+            }
+
+            // 清空SharedDataManager中的湿地地类图斑数据
+            ForestResourcePlugin.SharedDataManager.SetSDZYDLTBFiles(new List<ForestResourcePlugin.SourceDataFileInfo>());
+        }
+        /// <summary>
+        /// 湿地复选框状态改变事件处理  // 修改这个注释
+        /// </summary>
+        private void chkWetland_CheckedChanged(object sender, EventArgs e)
+        {
+            ForestResourcePlugin.SharedDataManager.SetDataTypeSelection(chkForest.Checked, chkGrassland.Checked, chkWetland.Checked);
+
             // 更新界面标签
             UpdateDataTypeLabels();
-            
+
             // 更新按钮状态
             UpdateButtonStates();
-            
+
             // 如果取消选择且已有数据，清空相关数据
-            if (!chkGrassland.Checked)
+            if (!chkWetland.Checked)
             {
-                ClearGrasslandRelatedData();
+                ClearWetlandRelatedData();
             }
         }
 
@@ -263,7 +292,25 @@ namespace TestArcMapAddin2.Forms
             // 清空SharedDataManager中的草地地类图斑数据
             ForestResourcePlugin.SharedDataManager.SetCYZYDLTBFiles(new List<ForestResourcePlugin.SourceDataFileInfo>());
         }
+        /// <summary>
+        /// 草地复选框状态改变事件处理
+        /// </summary>
+        private void chkGrassland_CheckedChanged(object sender, EventArgs e)
+        {
+            ForestResourcePlugin.SharedDataManager.SetDataTypeSelection(chkForest.Checked, chkGrassland.Checked, chkWetland.Checked);
 
+            // 更新界面标签
+            UpdateDataTypeLabels();
+
+            // 更新按钮状态
+            UpdateButtonStates();
+
+            // 如果取消选择且已有数据，清空相关数据
+            if (!chkGrassland.Checked)
+            {
+                ClearGrasslandRelatedData();
+            }
+        }
         // 第一个按钮专门用于读取林草湿荒普查数据
         private void BtnBrowseData_Click(object sender, EventArgs e)
         {
@@ -307,12 +354,12 @@ namespace TestArcMapAddin2.Forms
             }
         }
 
-        // 修改：第二个按钮根据数据类型选择读取相应的地类图斑数据
+        // 第二个按钮根据数据类型选择读取相应的地类图斑数据
         private void BtnBrowseCzkfbjDltbData_Click(object sender, EventArgs e)
         {
-            if (!chkForest.Checked && !chkGrassland.Checked)
+            if (!chkForest.Checked && !chkGrassland.Checked && !chkWetland.Checked)
             {
-                MessageBox.Show("请先选择要处理的数据类型（林地或草地）。", "提示", 
+                MessageBox.Show("请先选择要处理的数据类型（林地、草地或湿地）。", "提示",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
@@ -339,6 +386,7 @@ namespace TestArcMapAddin2.Forms
                     // 根据选择的数据类型查找相应的地类图斑文件
                     List<ForestResourcePlugin.SourceDataFileInfo> slzyDltbFiles = new List<ForestResourcePlugin.SourceDataFileInfo>();
                     List<ForestResourcePlugin.SourceDataFileInfo> cyzyDltbFiles = new List<ForestResourcePlugin.SourceDataFileInfo>();
+                    List<ForestResourcePlugin.SourceDataFileInfo> sdzyDltbFiles = new List<ForestResourcePlugin.SourceDataFileInfo>();
 
                     if (chkForest.Checked)
                     {
@@ -348,6 +396,11 @@ namespace TestArcMapAddin2.Forms
                     if (chkGrassland.Checked)
                     {
                         cyzyDltbFiles = FindFilesWithPatternAndCountyCode(czkfbjDltbDataPath, "CYZY_DLTB");
+                    }
+
+                    if (chkWetland.Checked)
+                    {
+                        sdzyDltbFiles = FindFilesWithPatternAndCountyCode(czkfbjDltbDataPath, "SDZY_DLTB");
                     }
 
                     // 显示文件搜索结果
@@ -384,29 +437,39 @@ namespace TestArcMapAddin2.Forms
             }
         }
 
-        /// <summary>
-        /// 获取城镇开发边界和地类图斑数据选择对话框的描述文本
-        /// </summary>
         private string GetCzkfbjDltbDialogDescription()
         {
             bool isForestSelected = chkForest.Checked;
             bool isGrasslandSelected = chkGrassland.Checked;
+            bool isWetlandSelected = chkWetland.Checked;
 
-            if (isForestSelected && !isGrasslandSelected)
+            var selectedTypes = new List<string>();
+            var dataTypes = new List<string>();
+
+            if (isForestSelected)
             {
-                return "选择包含城镇开发边界（CZKFBJ）和森林资源地类图斑（SLZY_DLTB）数据的文件夹";
+                selectedTypes.Add("森林资源地类图斑（SLZY_DLTB）");
+                dataTypes.Add("SLZY_DLTB");
             }
-            else if (!isForestSelected && isGrasslandSelected)
+            if (isGrasslandSelected)
             {
-                return "选择包含城镇开发边界（CZKFBJ）和草地资源地类图斑（CYZY_DLTB）数据的文件夹";
+                selectedTypes.Add("草地资源地类图斑（CYZY_DLTB）");
+                dataTypes.Add("CYZY_DLTB");
             }
-            else if (isForestSelected && isGrasslandSelected)
+            if (isWetlandSelected)
             {
-                return "选择包含城镇开发边界（CZKFBJ）、森林资源地类图斑（SLZY_DLTB）和草地资源地类图斑（CYZY_DLTB）数据的文件夹";
+                selectedTypes.Add("湿地资源地类图斑（SDZY_DLTB）");
+                dataTypes.Add("SDZY_DLTB");
+            }
+
+            if (selectedTypes.Count == 0)
+            {
+                return "选择包含数据的文件夹";
             }
             else
             {
-                return "选择包含数据的文件夹";
+                string typeText = string.Join("和", selectedTypes);
+                return $"选择包含城镇开发边界（CZKFBJ）和{typeText}数据的文件夹";
             }
         }
 
@@ -452,9 +515,9 @@ namespace TestArcMapAddin2.Forms
                 return;
             }
 
-            if (!chkForest.Checked && !chkGrassland.Checked)
+            if (!chkForest.Checked && !chkGrassland.Checked && !chkWetland.Checked)
             {
-                MessageBox.Show("请至少选择一种数据类型（林地或草地）。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("请至少选择一种数据类型（林地、草地或湿地）。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -579,10 +642,10 @@ namespace TestArcMapAddin2.Forms
 
             try
             {
-                //System.Diagnostics.Debug.WriteLine($"开始在 {rootDir} 目录下查找包含 {pattern} 的文件（按县代码分类）");
+                System.Diagnostics.Debug.WriteLine($"开始在 {rootDir} 目录下查找包含 {pattern} 的文件（按县代码分类）");
 
-                // 1. 首先查找GDB要素类
-                //System.Diagnostics.Debug.WriteLine("第1步：查找GDB要素类...");
+                //1.首先查找GDB要素类
+                System.Diagnostics.Debug.WriteLine("第1步：查找GDB要素类...");
                 var gdbFeatureClasses = ForestResourcePlugin.GdbFeatureClassFinder.FindFeatureClassesWithPatternAsSourceData(
                     rootDir, pattern, ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon);
 
@@ -599,51 +662,51 @@ namespace TestArcMapAddin2.Forms
                     }
                 }
 
-               // // 2. 再查找Shapefile文件
-               // //System.Diagnostics.Debug.WriteLine("第2步：查找Shapefile文件...");
+                // 2. 再查找Shapefile文件
+                //System.Diagnostics.Debug.WriteLine("第2步：查找Shapefile文件...");
 
-               // if (Directory.Exists(rootDir))
-               // {
-               //     string[] files = System.IO.Directory.GetFiles(rootDir, "*.shp", System.IO.SearchOption.AllDirectories);
-               //     System.Diagnostics.Debug.WriteLine($"在 {rootDir} 目录下找到 {files.Length} 个Shapefile文件");
+                if (Directory.Exists(rootDir))
+                {
+                    string[] files = System.IO.Directory.GetFiles(rootDir, "*.shp", System.IO.SearchOption.AllDirectories);
+                    //System.Diagnostics.Debug.WriteLine($"在 {rootDir} 目录下找到 {files.Length} 个Shapefile文件");
 
-               //     // 筛选包含指定模式的Shapefile
-               //     int matchCount = 0;
-               //     foreach (string filePath in files)
-               //     {
-               //         if (filePath.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0)
-               //         {
-               //             // 提取县代码
-               //             string countyCode = ExtractCountyCodeFromPath(filePath, rootDir);
-               //             if (!string.IsNullOrEmpty(countyCode))
-               //             {
-               //                 string countyName = GetCountyNameFromCode(countyCode);
+                    // 筛选包含指定模式的Shapefile
+                    int matchCount = 0;
+                    foreach (string filePath in files)
+                    {
+                        if (filePath.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            // 提取县代码
+                            string countyCode = ExtractCountyCodeFromPath(filePath, rootDir);
+                            if (!string.IsNullOrEmpty(countyCode))
+                            {
+                                string countyName = GetCountyNameFromCode(countyCode);
 
-               //                 result.Add(new ForestResourcePlugin.SourceDataFileInfo
-               //                 {
-               //                     FullPath = filePath,
-               //                     DisplayName = countyName,
-               //                     CountyCode = countyCode,
-               //                     IsGdb = false,
-               //                     GeometryType = ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon
-               //                 });
+                                result.Add(new ForestResourcePlugin.SourceDataFileInfo
+                                {
+                                    FullPath = filePath,
+                                    DisplayName = countyName,
+                                    CountyCode = countyCode,
+                                    IsGdb = false,
+                                    GeometryType = ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon
+                                });
 
-               //                 matchCount++;
-               //                 //System.Diagnostics.Debug.WriteLine($"Shapefile匹配[{matchCount}]: {filePath}, 县代码: {countyCode}, 县名: {countyName}");
-               //             }
-               //             else
-               //             {
-               //                 //System.Diagnostics.Debug.WriteLine($"警告: 文件 {filePath} 中未找到县代码，跳过");
-               //             }
-               //         }
-               //     }
-               // }
-               // else
-               // {
-               //     //System.Diagnostics.Debug.WriteLine($"警告: 目录 {rootDir} 不存在");
-               // }
+                                matchCount++;
+                                //System.Diagnostics.Debug.WriteLine($"Shapefile匹配[{matchCount}]: {filePath}, 县代码: {countyCode}, 县名: {countyName}");
+                            }
+                            else
+                            {
+                                //System.Diagnostics.Debug.WriteLine($"警告: 文件 {filePath} 中未找到县代码，跳过");
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    //System.Diagnostics.Debug.WriteLine($"警告: 目录 {rootDir} 不存在");
+                }
 
-               //// System.Diagnostics.Debug.WriteLine($"共找到 {result.Count} 个匹配文件，所有文件都包含有效的县代码");
+                // System.Diagnostics.Debug.WriteLine($"共找到 {result.Count} 个匹配文件，所有文件都包含有效的县代码");
             }
             catch (Exception ex)
             {
