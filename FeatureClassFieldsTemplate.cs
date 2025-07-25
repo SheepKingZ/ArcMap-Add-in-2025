@@ -2573,7 +2573,7 @@ namespace TestArcMapAddin2
             IField field16 = new FieldClass();
             IFieldEdit fieldEdit16 = (IFieldEdit)field16;
             fieldEdit16.Name_2 = "CD_DENG";
-            fieldEdit16.Type_2 = esriFieldType.esriFieldTypeInteger;
+            fieldEdit16.Type_2 = esriFieldType.esriFieldTypeSmallInteger;
             fieldEdit16.IsNullable_2 = true;  // O约束
             fieldEdit16.AliasName_2 = "草地等";
             fieldEdit16.Length_2 = 2;
@@ -2841,7 +2841,7 @@ namespace TestArcMapAddin2
             IField field21 = new FieldClass();
             IFieldEdit fieldEdit21 = (IFieldEdit)field21;
             fieldEdit21.Name_2 = "ZBGD";
-            fieldEdit21.Type_2 = esriFieldType.esriFieldTypeInteger;
+            fieldEdit21.Type_2 = esriFieldType.esriFieldTypeSmallInteger;
             fieldEdit21.IsNullable_2 = true;  // O约束
             fieldEdit21.AliasName_2 = "植被盖度";
             fieldEdit21.Length_2 = 9;
@@ -2862,7 +2862,7 @@ namespace TestArcMapAddin2
             IField field23 = new FieldClass();
             IFieldEdit fieldEdit23 = (IFieldEdit)field23;
             fieldEdit23.Name_2 = "CD_DENG";
-            fieldEdit23.Type_2 = esriFieldType.esriFieldTypeInteger;
+            fieldEdit23.Type_2 = esriFieldType.esriFieldTypeSmallInteger;
             fieldEdit23.IsNullable_2 = true;  // O约束
             fieldEdit23.AliasName_2 = "草地等";
             fieldEdit23.Length_2 = 2;

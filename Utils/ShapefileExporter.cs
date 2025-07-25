@@ -1037,6 +1037,9 @@ namespace ForestResourcePlugin
         /// <summary>
         /// 复制和处理要素数据（修改版：从DLTB文件名提取XZQDM）
         /// </summary>
+        /// <summary>
+        /// 复制和处理要素数据（修改版：从DLTB文件名提取XZQDM）
+        /// </summary>
         private int CopyAndProcessFeatures(
             IFeatureClass sourceFeatureClass,
             IFeatureClass czkfbjFeatureClass,
@@ -1047,7 +1050,7 @@ namespace ForestResourcePlugin
             IFeatureCursor sourceCursor = null;
             IFeatureBuffer targetBuffer = null;
             IFeatureCursor insertCursor = null;
-            IFeatureClass ldhsjgFeatureClass = null;
+            IFeatureClass hsjgFeatureClass = null; // 🔥 修改：改为通用的HSJG要素类
 
             try
             {
@@ -1122,15 +1125,16 @@ namespace ForestResourcePlugin
                     extractedXZQMC = countyName; // 使用传入的县名作为备用
                 }
 
-                // 获取对应县的LDHSJG数据（仅用于HSJG字段）
-                var ldhsjgData = GetLDHSJGDataForCounty(countyName);
-                if (ldhsjgData.featureClass != null)
+                // 🔥 修改：获取对应县的HSJG数据（根据数据类型动态获取）
+                var hsjgData = GetHSJGDataForCounty(countyName, currentOutputType);
+                if (hsjgData.featureClass != null)
                 {
-                    ldhsjgFeatureClass = ldhsjgData.featureClass;
+                    hsjgFeatureClass = hsjgData.featureClass;
+                    System.Diagnostics.Debug.WriteLine($"成功获取{countyName}的{GetHSJGTypeByOutputType(currentOutputType)}数据");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"警告：未找到{countyName}的LDHSJG数据");
+                    System.Diagnostics.Debug.WriteLine($"警告：未找到{countyName}的{GetHSJGTypeByOutputType(currentOutputType)}数据");
                 }
 
                 // 创建游标
@@ -1215,7 +1219,7 @@ namespace ForestResourcePlugin
                                         czkfbjmjValue = CalculateIntersectionAreaWithCZKFBJ(
                                             sourceFeature.Shape, czkfbjFeatureClass, gtdctbmjArea);
 
-                                        System.Diagnostics.Debug.WriteLine($"要素OID={sourceFeature.OID}: GTDCTBMJ={gtdctbmjArea:F2}, 按比例计算CZKFBJMJ={czkfbjmjValue:F2}");
+                                        //System.Diagnostics.Debug.WriteLine($"要素OID={sourceFeature.OID}: GTDCTBMJ={gtdctbmjArea:F2}, 按比例计算CZKFBJMJ={czkfbjmjValue:F2}");
                                     }
                                 }
                                 else
@@ -1230,18 +1234,18 @@ namespace ForestResourcePlugin
                         // 声明HSJG值变量（用于后续JJJZ计算）
                         object hsjgValue = null;
 
-                        // 处理LDHSJG相关字段（仅获取HSJG字段）
-                        if (ldhsjgFeatureClass != null && hsjgIndex != -1)
+                        // 🔥 修改：处理HSJG相关字段（支持不同数据类型的HSJG）
+                        if (hsjgFeatureClass != null && hsjgIndex != -1)
                         {
-                            var ldhsjgValues = GetLDHSJGValuesForFeature(sourceFeature, ldhsjgFeatureClass, countyName);
+                            var hsjgValues = GetHSJGValuesForFeature(sourceFeature, hsjgFeatureClass, countyName, currentOutputType);
 
-                            if (ldhsjgValues.HSJG != null)
+                            if (hsjgValues.HSJG != null)
                             {
-                                targetBuffer.set_Value(hsjgIndex, ldhsjgValues.HSJG);
-                                hsjgValue = ldhsjgValues.HSJG; // 保存HSJG值用于JJJZ计算
+                                targetBuffer.set_Value(hsjgIndex, hsjgValues.HSJG);
+                                hsjgValue = hsjgValues.HSJG; // 保存HSJG值用于JJJZ计算
 
                                 // 调试：输出HSJG字段设置信息
-                                System.Diagnostics.Debug.WriteLine($"为要素OID={sourceFeature.OID}设置HSJG值: {hsjgValue}");
+                                //System.Diagnostics.Debug.WriteLine($"为要素OID={sourceFeature.OID}设置HSJG值: {hsjgValue}");
                             }
                             else
                             {
@@ -1266,7 +1270,7 @@ namespace ForestResourcePlugin
                                 {
                                     // 计算经济价值：GTDCTBMJ * HSJG
                                     jjjzValue = gtdctbmjArea * hsjgNumber;
-                                    System.Diagnostics.Debug.WriteLine($"JJJZ计算: GTDCTBMJ({gtdctbmjArea:F2}) * HSJG({hsjgNumber:F2}) = {jjjzValue:F2}");
+                                    //System.Diagnostics.Debug.WriteLine($"JJJZ计算: GTDCTBMJ({gtdctbmjArea:F2}) * HSJG({hsjgNumber:F2}) = {jjjzValue:F2}");
                                 }
                             }
 
@@ -1325,12 +1329,333 @@ namespace ForestResourcePlugin
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(targetBuffer);
                 if (insertCursor != null)
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(insertCursor);
-                if (ldhsjgFeatureClass != null)
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(ldhsjgFeatureClass);
+                if (hsjgFeatureClass != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(hsjgFeatureClass);
             }
         }
+
         /// <summary>
-        /// 🔥 新增：从DLTB文件名中提取6位县级代码
+        /// 🔥 新增：根据数据类型获取对应的HSJG数据
+        /// </summary>
+        /// <param name="countyName">县名</param>
+        /// <param name="outputType">输出类型（SLZYZC、CYZYZC、SDZYZC）</param>
+        /// <returns>HSJG要素类和工作空间</returns>
+        private (IWorkspace workspace, IFeatureClass featureClass) GetHSJGDataForCounty(string countyName, string outputType)
+        {
+            try
+            {
+                // 根据输出类型获取对应的HSJG文件列表
+                List<SourceDataFileInfo> hsjgFiles = null;
+
+                switch (outputType)
+                {
+                    case "SLZYZC":
+                        hsjgFiles = SharedDataManager.GetLDHSJGFiles();
+                        System.Diagnostics.Debug.WriteLine($"获取森林资源HSJG数据: LDHSJG，共{hsjgFiles?.Count ?? 0}个文件");
+                        break;
+                    case "CYZYZC":
+                        hsjgFiles = SharedDataManager.GetCDHSJGFiles();
+                        System.Diagnostics.Debug.WriteLine($"获取草地资源HSJG数据: CDHSJG，共{hsjgFiles?.Count ?? 0}个文件");
+                        break;
+                    case "SDZYZC":
+                        hsjgFiles = SharedDataManager.GetSDHSJGFiles();
+                        System.Diagnostics.Debug.WriteLine($"获取湿地资源HSJG数据: SDHSJG，共{hsjgFiles?.Count ?? 0}个文件");
+                        break;
+                    default:
+                        System.Diagnostics.Debug.WriteLine($"未知的输出类型: {outputType}，使用默认LDHSJG");
+                        hsjgFiles = SharedDataManager.GetLDHSJGFiles();
+                        break;
+                }
+
+                if (hsjgFiles == null || hsjgFiles.Count == 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"警告: 无法获取{outputType}的HSJG文件列表或列表为空");
+                    return (null, null);
+                }
+
+                // 查找匹配县名的文件
+                foreach (var fileInfo in hsjgFiles)
+                {
+                    if (fileInfo.DisplayName.Equals(countyName, StringComparison.OrdinalIgnoreCase) ||
+                        fileInfo.DisplayName.Contains(countyName))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到{countyName}的{GetHSJGTypeByOutputType(outputType)}文件: {fileInfo.FullPath}");
+                        return OpenShapefileFeatureClass(fileInfo.FullPath);
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"未找到{countyName}的{GetHSJGTypeByOutputType(outputType)}文件");
+                return (null, null);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"获取{countyName}的{GetHSJGTypeByOutputType(outputType)}数据时出错: {ex.Message}");
+                return (null, null);
+            }
+        }
+
+        /// <summary>
+        /// 🔥 新增：根据输出类型获取HSJG类型名称
+        /// </summary>
+        /// <param name="outputType">输出类型</param>
+        /// <returns>HSJG类型名称</returns>
+        private string GetHSJGTypeByOutputType(string outputType)
+        {
+            switch (outputType)
+            {
+                case "SLZYZC":
+                    return "LDHSJG";
+                case "CYZYZC":
+                    return "CDHSJG";
+                case "SDZYZC":
+                    return "SDHSJG";
+                default:
+                    return "LDHSJG";
+            }
+        }
+
+        /// <summary>
+        /// 🔥 修改：为当前要素获取HSJG字段值（支持不同数据类型的HSJG）
+        /// </summary>
+        /// <param name="sourceFeature">源要素</param>
+        /// <param name="hsjgFeatureClass">HSJG要素类</param>
+        /// <param name="countyName">县名</param>
+        /// <param name="outputType">输出类型</param>
+        /// <returns>HSJG字段值</returns>
+        private LDHSJGValues GetHSJGValuesForFeature(IFeature sourceFeature, IFeatureClass hsjgFeatureClass, string countyName, string outputType)
+        {
+            var result = new LDHSJGValues();
+
+            try
+            {
+                if (sourceFeature?.Shape == null || hsjgFeatureClass == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"警告：{countyName} - 源要素或{GetHSJGTypeByOutputType(outputType)}要素类为空");
+                    return result;
+                }
+
+                // 🔥 修改：根据数据类型获取不同的HSJG字段名称
+                int hsjgFieldIndex = -1;
+                string[] possibleHsjgFields = GetHSJGFieldNamesByOutputType(outputType);
+
+                foreach (string fieldName in possibleHsjgFields)
+                {
+                    hsjgFieldIndex = hsjgFeatureClass.FindField(fieldName);
+                    if (hsjgFieldIndex != -1)
+                    {
+                        //System.Diagnostics.Debug.WriteLine($"找到{GetHSJGTypeByOutputType(outputType)}字段: {fieldName} (索引: {hsjgFieldIndex})");
+                        break;
+                    }
+                }
+
+                if (hsjgFieldIndex == -1)
+                {
+                    System.Diagnostics.Debug.WriteLine($"警告：{countyName} - 未找到{GetHSJGTypeByOutputType(outputType)}相关字段");
+                    return result;
+                }
+
+                // 简化的空间查询：只获取HSJG值
+                ISpatialFilter spatialFilter = null;
+                IFeatureCursor hsjgCursor = null;
+
+                try
+                {
+                    spatialFilter = new SpatialFilterClass();
+                    spatialFilter.Geometry = sourceFeature.Shape;
+                    spatialFilter.GeometryField = hsjgFeatureClass.ShapeFieldName;
+                    spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
+
+                    hsjgCursor = hsjgFeatureClass.Search(spatialFilter, false);
+                    IFeature bestMatchFeature = null;
+                    double maxOverlapArea = 0;
+
+                    IFeature hsjgFeature;
+                    while ((hsjgFeature = hsjgCursor.NextFeature()) != null)
+                    {
+                        try
+                        {
+                            if (hsjgFeature.Shape != null && !hsjgFeature.Shape.IsEmpty)
+                            {
+                                // 计算重叠面积
+                                double overlapArea = CalculateOverlapArea(sourceFeature.Shape, hsjgFeature.Shape);
+
+                                if (overlapArea > maxOverlapArea)
+                                {
+                                    maxOverlapArea = overlapArea;
+
+                                    if (bestMatchFeature != null)
+                                    {
+                                        System.Runtime.InteropServices.Marshal.ReleaseComObject(bestMatchFeature);
+                                    }
+
+                                    bestMatchFeature = hsjgFeature;
+                                    hsjgFeature = null; // 防止在finally中释放
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            if (hsjgFeature != null)
+                            {
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(hsjgFeature);
+                            }
+                        }
+                    }
+
+                    // 使用最佳匹配的要素获取HSJG字段值
+                    if (bestMatchFeature != null)
+                    {
+                        result.HSJG = bestMatchFeature.get_Value(hsjgFieldIndex);
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(bestMatchFeature);
+                    }
+                    else
+                    {
+                        // 备用方案：使用最近邻查询
+                        result = TryNearestNeighborHSJGQuery(sourceFeature, hsjgFeatureClass, countyName, outputType);
+                    }
+                }
+                finally
+                {
+                    if (hsjgCursor != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(hsjgCursor);
+                    if (spatialFilter != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(spatialFilter);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"获取{countyName}的{GetHSJGTypeByOutputType(outputType)}字段值时出错: {ex.Message}");
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 🔥 新增：根据输出类型获取HSJG字段名称数组
+        /// </summary>
+        /// <param name="outputType">输出类型</param>
+        /// <returns>可能的HSJG字段名称数组</returns>
+        private string[] GetHSJGFieldNamesByOutputType(string outputType)
+        {
+            switch (outputType)
+            {
+                case "SLZYZC":
+                    return new[] {  "XJLDPJJ" };
+                case "CYZYZC":
+                    return new[] {  "XJCDPJJ" };
+                case "SDZYZC":
+                    return new[] {  "HSJG" };
+                default:
+                    return new[] {  "HSJG" };
+            }
+        }
+
+        /// <summary>
+        /// 🔥 修改：备用方案 - 使用最近邻查询获取HSJG数据
+        /// </summary>
+        /// <param name="sourceFeature">源要素</param>
+        /// <param name="hsjgFeatureClass">HSJG要素类</param>
+        /// <param name="countyName">县名</param>
+        /// <param name="outputType">输出类型</param>
+        /// <returns>HSJG字段值</returns>
+        private LDHSJGValues TryNearestNeighborHSJGQuery(IFeature sourceFeature, IFeatureClass hsjgFeatureClass, string countyName, string outputType)
+        {
+            var result = new LDHSJGValues();
+
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"尝试{countyName}的最近邻{GetHSJGTypeByOutputType(outputType)}查询...");
+
+                // 获取源要素的中心点
+                IArea area = (IArea)sourceFeature.Shape;
+                IPoint centerPoint = area.Centroid;
+
+                // 查找距离中心点最近的HSJG要素
+                IFeatureCursor cursor = null;
+                try
+                {
+                    cursor = hsjgFeatureClass.Search(null, false);
+                    IFeature nearestFeature = null;
+                    double minDistance = double.MaxValue;
+
+                    IFeature hsjgFeature;
+                    while ((hsjgFeature = cursor.NextFeature()) != null)
+                    {
+                        try
+                        {
+                            if (hsjgFeature.Shape != null)
+                            {
+                                IArea hsjgArea = (IArea)hsjgFeature.Shape;
+                                IPoint hsjgCenter = hsjgArea.Centroid;
+
+                                // 计算距离
+                                double distance = CalculateDistance(centerPoint, hsjgCenter);
+
+                                if (distance < minDistance)
+                                {
+                                    minDistance = distance;
+
+                                    if (nearestFeature != null)
+                                    {
+                                        System.Runtime.InteropServices.Marshal.ReleaseComObject(nearestFeature);
+                                    }
+
+                                    nearestFeature = hsjgFeature;
+                                    hsjgFeature = null; // 防止释放
+                                }
+
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(hsjgCenter);
+                            }
+                        }
+                        finally
+                        {
+                            if (hsjgFeature != null)
+                            {
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(hsjgFeature);
+                            }
+                        }
+                    }
+
+                    if (nearestFeature != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"找到最近的{GetHSJGTypeByOutputType(outputType)}要素，距离: {minDistance:F2}");
+
+                        // 获取字段值（使用与主方法相同的逻辑）
+                        int hsjgFieldIndex = -1;
+                        string[] possibleHsjgFields = GetHSJGFieldNamesByOutputType(outputType);
+
+                        foreach (string fieldName in possibleHsjgFields)
+                        {
+                            hsjgFieldIndex = hsjgFeatureClass.FindField(fieldName);
+                            if (hsjgFieldIndex != -1) break;
+                        }
+
+                        if (hsjgFieldIndex != -1)
+                        {
+                            result.HSJG = nearestFeature.get_Value(hsjgFieldIndex);
+                            System.Diagnostics.Debug.WriteLine($"最近邻查询获取到{GetHSJGTypeByOutputType(outputType)}值: {result.HSJG}");
+                        }
+
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(nearestFeature);
+                    }
+
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(centerPoint);
+                }
+                finally
+                {
+                    if (cursor != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(cursor);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"最近邻{GetHSJGTypeByOutputType(outputType)}查询出错: {ex.Message}");
+            }
+
+            return result;
+        }
+        /// <summary>
+        /// 从DLTB文件名中提取6位县级代码
         /// 支持的文件名格式：(123456)SLZY_DLTB、（123456）CYZY_DLTB、(123456)SDZY_DLTB 等
         /// </summary>
         /// <param name="countyName">县名（用于获取对应的源数据文件）</param>
@@ -1411,7 +1736,7 @@ namespace ForestResourcePlugin
             }
         }
         /// <summary>
-        /// 🔥 新增：从LDHSJG数据中获取该县的XZQDM值
+        /// 从LDHSJG数据中获取该县的XZQDM值
         /// </summary>
         /// <param name="ldhsjgFeatureClass">LDHSJG要素类</param>
         /// <param name="countyName">县名</param>
@@ -1487,7 +1812,7 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 🔥 新增：使用县级XZQDM生成SLZYZC_DLTB的ZCQCBSM字段值
+        /// 使用县级XZQDM生成SLZYZC_DLTB的ZCQCBSM字段值
         /// 格式：XZQDM(6位) + 中间代码 + 序号(12位，从1开始，前补0)
         /// 总长度：22位
         /// </summary>
@@ -1514,7 +1839,7 @@ namespace ForestResourcePlugin
                     xzqdm = xzqdm.PadLeft(6, '0');
                 }
 
-                // 🔥 修改：根据数据类型设置不同的中间代码
+                // 根据数据类型设置不同的中间代码
                 string currentOutputType = GetCurrentOutputShapefileName();
                 string middlePart;
                 switch (currentOutputType)
@@ -1541,7 +1866,7 @@ namespace ForestResourcePlugin
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"生成ZCQCBSM时出错: {ex.Message}");
-                // 🔥 修改：出错时的默认值也要考虑数据类型
+                // 出错时的默认值也要考虑数据类型
                 string currentOutputType = GetCurrentOutputShapefileName();
                 string defaultMiddle;
                 switch (currentOutputType)
@@ -1607,7 +1932,7 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 简化版：为当前要素获取LDHSJG的HSJG字段值（仅获取价格信息）
+        /// 为当前要素获取LDHSJG的HSJG字段值（仅获取价格信息）
         /// </summary>
         /// <param name="sourceFeature">源要素</param>
         /// <param name="ldhsjgFeatureClass">LDHSJG要素类</param>
@@ -1645,7 +1970,7 @@ namespace ForestResourcePlugin
                     return result;
                 }
 
-                // 🔥 简化的空间查询：只获取HSJG值
+                // 简化的空间查询：只获取HSJG值
                 ISpatialFilter spatialFilter = null;
                 IFeatureCursor ldhsjgCursor = null;
 
@@ -1722,7 +2047,7 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 🔥 新增：计算两个几何体的重叠面积
+        /// 计算两个几何体的重叠面积
         /// </summary>
         /// <param name="geometry1">几何体1</param>
         /// <param name="geometry2">几何体2</param>
@@ -1760,7 +2085,7 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 🔥 新增：备用方案 - 使用最近邻查询获取LDHSJG数据
+        /// 备用方案 - 使用最近邻查询获取LDHSJG数据
         /// </summary>
         /// <param name="sourceFeature">源要素</param>
         /// <param name="ldhsjgFeatureClass">LDHSJG要素类</param>
@@ -1864,7 +2189,7 @@ namespace ForestResourcePlugin
         }
 
         /// <summary>
-        /// 🔥 新增：计算两点之间的距离
+        /// 计算两点之间的距离
         /// </summary>
         /// <param name="point1">点1</param>
         /// <param name="point2">点2</param>
@@ -1880,32 +2205,6 @@ namespace ForestResourcePlugin
             catch
             {
                 return double.MaxValue;
-            }
-        }
-
-        /// <summary>
-        /// 🔥 新增：列出要素类中的所有字段（调试用）
-        /// </summary>
-        /// <param name="featureClass">要素类</param>
-        /// <param name="description">描述</param>
-        private void ListAllFieldsInFeatureClass(IFeatureClass featureClass, string description)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"=== {description} 要素类字段列表 ===");
-                IFields fields = featureClass.Fields;
-
-                for (int i = 0; i < fields.FieldCount; i++)
-                {
-                    IField field = fields.get_Field(i);
-                    System.Diagnostics.Debug.WriteLine($"  字段 {i}: {field.Name} ({field.Type})");
-                }
-
-                System.Diagnostics.Debug.WriteLine($"=== 共 {fields.FieldCount} 个字段 ===");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"列出字段时出错: {ex.Message}");
             }
         }
 
@@ -1979,7 +2278,7 @@ namespace ForestResourcePlugin
 
         /// <summary>
         /// 计算几何对象与CZKFBJ的相交面积（改进版：基于比例计算）
-        /// 新逻辑：CZKFBJMJ = GTDCTBMJ × (图斑在CZKFBJ内的面积比例)
+        /// CZKFBJMJ = GTDCTBMJ × (图斑在CZKFBJ内的面积比例)
         /// </summary>
         /// <param name="geometry">要计算的几何对象</param>
         /// <param name="czkfbjFeatureClass">CZKFBJ要素类</param>
@@ -2055,7 +2354,7 @@ namespace ForestResourcePlugin
                     }
                 }
 
-                // 🔥 新逻辑：计算比例并应用到GTDCTBMJ值
+                // 计算比例并应用到GTDCTBMJ值
                 double intersectionRatio = totalIntersectionArea / totalOriginalArea;
 
                 // 确保比例在合理范围内（0-1之间）
