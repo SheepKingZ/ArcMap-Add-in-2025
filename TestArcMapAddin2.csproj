@@ -235,9 +235,13 @@
     <Compile Include="obj\Release\.NETFramework,Version=v4.6.1.AssemblyAttributes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\CountyCodeMapper.cs" />
+    <Compile Include="Utils\CountyPriceMapping.cs" />
+    <Compile Include="Utils\CZCDYDFieldMappings.cs" />
+    <Compile Include="Utils\CZCDYDProcessor.cs" />
     <Compile Include="Utils\ExcelExporter.cs" />
     <Compile Include="Utils\GdbFeatureClassFinder.cs" />
     <Compile Include="Utils\GeodatabaseUtilities.cs" />
+    <Compile Include="Utils\GISOperationUtils.cs" />
     <Compile Include="Utils\MapLayerUtilities.cs" />
     <Compile Include="Utils\ShapefileExporter.cs" />
     <Compile Include="Utils\ShapefileReader.cs" />

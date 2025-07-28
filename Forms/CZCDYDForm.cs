@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using ForestResourcePlugin;
+using TestArcMapAddin2.Utils;
 
 namespace TestArcMapAddin2.Forms
 {
@@ -15,12 +16,17 @@ namespace TestArcMapAddin2.Forms
         private string selectedCyzyzcPath = "";
         private string selectedSdzyzcPath = "";
         private string selectedCzcdydPath = "";
+        private string selectedOutputPath = ""; // 新数据输出路径
+        private string selectedResultOutputPath = ""; // 新增：现有结果文件夹路径
 
         // 存储按县代码分组的文件信息
         private Dictionary<string, CountyFileGroup> countyFileGroups = new Dictionary<string, CountyFileGroup>();
 
         // 存储选中的县列表
         private List<string> selectedCounties = new List<string>();
+
+        // 存储发现的CZCDYDQC文件映射 (县代码 -> shapefile路径)
+        private Dictionary<string, string> czcdydqcFileMap = new Dictionary<string, string>();
 
         public CZCDYDForm()
         {
@@ -312,6 +318,74 @@ namespace TestArcMapAddin2.Forms
             }
         }
 
+        private void btnBrowseOutput_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = "选择CZCDYDQC结果输出文件夹";
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    selectedOutputPath = dialog.SelectedPath;
+                    txtOutputPath.Text = dialog.SelectedPath;
+                    txtOutputPath.ForeColor = Color.DarkGreen;
+                }
+            }
+        }
+
+        // 新增：结果输出路径选择事件处理程序
+        private void btnBrowseResultOutput_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = "选择现有CZCDYDQC结果文件夹";
+                dialog.ShowNewFolderButton = false;
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        lblStatus.Text = "正在扫描CZCDYDQC结果文件...";
+                        lblStatus.ForeColor = Color.Blue;
+                        progressBar.Style = ProgressBarStyle.Marquee;
+                        Application.DoEvents();
+
+                        selectedResultOutputPath = dialog.SelectedPath;
+
+                        // 扫描结果文件夹中的CZCDYDQC文件
+                        var czcdydqcFiles = FindCZCDYDQCShapefiles(dialog.SelectedPath);
+                        czcdydqcFileMap.Clear();
+
+                        foreach (var file in czcdydqcFiles)
+                        {
+                            var countyCode = ExtractCountyCodeFromCZCDYDQCFileName(file);
+                            if (!string.IsNullOrEmpty(countyCode))
+                            {
+                                czcdydqcFileMap[countyCode] = file;
+                            }
+                        }
+
+                        txtResultOutputPath.Text = $"{dialog.SelectedPath} (找到 {czcdydqcFiles.Count} 个CZCDYDQC文件)";
+                        txtResultOutputPath.ForeColor = Color.DarkGreen;
+
+                        progressBar.Style = ProgressBarStyle.Continuous;
+                        progressBar.Value = 0;
+
+                        UpdateStatusLabel();
+                    }
+                    catch (Exception ex)
+                    {
+                        progressBar.Style = ProgressBarStyle.Continuous;
+                        progressBar.Value = 0;
+                        lblStatus.Text = "扫描CZCDYDQC结果文件时出错";
+                        lblStatus.ForeColor = Color.Red;
+                        MessageBox.Show($"扫描CZCDYDQC结果文件时出错: {ex.Message}", "错误",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
         private void btnSelectAll_Click(object sender, EventArgs e)
         {
             for (int i = 0; i < checkedListBoxCounties.Items.Count; i++)
@@ -351,6 +425,25 @@ namespace TestArcMapAddin2.Forms
 
                 var processingResults = new List<string>();
 
+                // 判断处理模式：新建输出还是写入现有结果
+                bool writeToExistingResults = !string.IsNullOrEmpty(selectedResultOutputPath) && czcdydqcFileMap.Count > 0;
+
+                string outputBaseDir;
+                if (writeToExistingResults)
+                {
+                    outputBaseDir = selectedResultOutputPath;
+                }
+                else
+                {
+                    // 创建新的输出目录
+                    outputBaseDir = !string.IsNullOrEmpty(selectedOutputPath) ? selectedOutputPath :
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "CZCDYDQC_Output");
+                    if (!Directory.Exists(outputBaseDir))
+                    {
+                        Directory.CreateDirectory(outputBaseDir);
+                    }
+                }
+
                 for (int i = 0; i < selectedCounties.Count; i++)
                 {
                     string countyCode = selectedCounties[i];
@@ -363,15 +456,82 @@ namespace TestArcMapAddin2.Forms
                     {
                         var fileGroup = countyFileGroups[countyCode];
 
-                        // TODO: 在这里添加具体的业务逻辑处理
-                        // 例如：处理该县的所有文件
+                        try
+                        {
+                            string targetShapefilePath;
 
-                        processingResults.Add($"{countyName}({countyCode}) - 处理完成");
-                        System.Diagnostics.Debug.WriteLine($"处理县: {countyName}({countyCode})");
-                        System.Diagnostics.Debug.WriteLine($"  SLZYZC_DLTB: {fileGroup.SlzyzcDltbFile ?? "无"}");
-                        System.Diagnostics.Debug.WriteLine($"  CYZYZC_DLTB: {fileGroup.CyzyzcDltbFile ?? "无"}");
-                        System.Diagnostics.Debug.WriteLine($"  SDZYZC_DLTB: {fileGroup.SdzyzcDltbFile ?? "无"}");
-                        System.Diagnostics.Debug.WriteLine($"  CZCDYD: {fileGroup.CzcdydFile ?? "无"}");
+                            if (writeToExistingResults && czcdydqcFileMap.ContainsKey(countyCode))
+                            {
+                                // 写入现有的CZCDYDQC文件
+                                targetShapefilePath = czcdydqcFileMap[countyCode];
+                            }
+                            else
+                            {
+                                // 创建新的输出文件
+                                string countyOutputDir = Path.Combine(outputBaseDir, $"{countyName}_{countyCode}");
+                                if (!Directory.Exists(countyOutputDir))
+                                {
+                                    Directory.CreateDirectory(countyOutputDir);
+                                }
+                                targetShapefilePath = Path.Combine(countyOutputDir, $"({countyCode})CZCDYDQC.shp");
+                            }
+
+                            // 构建CZCDYD处理器参数
+                            var countyFiles = new CZCDYDProcessor.CountyFiles
+                            {
+                                CountyCode = countyCode,
+                                SlzyzcDltbFile = fileGroup.SlzyzcDltbFile,
+                                CyzyzcDltbFile = fileGroup.CyzyzcDltbFile,
+                                SdzyzcDltbFile = fileGroup.SdzyzcDltbFile,
+                                CzcdydFile = fileGroup.CzcdydFile,
+                                OutputDirectory = Path.GetDirectoryName(targetShapefilePath)
+                            };
+
+                            // 创建进度回调
+                            CZCDYDProcessor.ProgressCallback progressCallback = (percentage, message) =>
+                            {
+                                // 计算总体进度
+                                int overallProgress = (i * 100 + percentage) / selectedCounties.Count;
+
+                                // 更新UI需要在UI线程中执行
+                                if (this.InvokeRequired)
+                                {
+                                    this.Invoke(new Action(() =>
+                                    {
+                                        lblStatus.Text = $"{countyName}: {message}";
+                                        Application.DoEvents();
+                                    }));
+                                }
+                                else
+                                {
+                                    lblStatus.Text = $"{countyName}: {message}";
+                                    Application.DoEvents();
+                                }
+                            };
+
+                            // 执行CZCDYDQC处理
+                            var processor = new CZCDYDProcessor();
+                            var result = processor.ProcessCountyCZCDYDQC(countyFiles, progressCallback);
+
+                            if (result.Success)
+                            {
+                                string mode = writeToExistingResults ? "更新现有文件" : "创建新文件";
+                                processingResults.Add($"{countyName}({countyCode}) - 处理完成 ({mode})");
+                                System.Diagnostics.Debug.WriteLine($"县 {countyName}({countyCode}) 处理成功");
+                                System.Diagnostics.Debug.WriteLine($"  输出文件: {result.OutputPath}");
+                                System.Diagnostics.Debug.WriteLine($"  处理要素数: {result.ProcessedFeatureCount}");
+                            }
+                            else
+                            {
+                                processingResults.Add($"{countyName}({countyCode}) - 处理失败: {result.ErrorMessage}");
+                                System.Diagnostics.Debug.WriteLine($"县 {countyName}({countyCode}) 处理失败: {result.ErrorMessage}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            processingResults.Add($"{countyName}({countyCode}) - 处理异常: {ex.Message}");
+                            System.Diagnostics.Debug.WriteLine($"处理县 {countyName}({countyCode}) 时出现异常: {ex.Message}");
+                        }
                     }
 
                     progressBar.Value = i + 1;
@@ -381,8 +541,22 @@ namespace TestArcMapAddin2.Forms
                 lblStatus.Text = "处理完成！";
                 lblStatus.ForeColor = Color.DarkGreen;
 
-                string resultMessage = $"处理完成！\n\n处理结果：\n{string.Join("\n", processingResults)}";
+                string processingMode = writeToExistingResults ? "更新现有CZCDYDQC文件" : "创建新CZCDYDQC文件";
+                string resultMessage = $"{processingMode}完成！\n\n输出目录：{outputBaseDir}\n\n处理结果：\n{string.Join("\n", processingResults)}";
                 MessageBox.Show(resultMessage, "处理完成", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // 询问是否打开输出目录
+                if (MessageBox.Show("是否打开输出目录查看结果？", "提示", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    try
+                    {
+                        System.Diagnostics.Process.Start(outputBaseDir);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"打开输出目录时出错: {ex.Message}");
+                    }
+                }
 
                 this.DialogResult = DialogResult.OK;
             }
@@ -441,6 +615,60 @@ namespace TestArcMapAddin2.Forms
             }
 
             return foundFiles;
+        }
+
+        /// <summary>
+        /// 查找CZCDYDQC shapefile文件
+        /// </summary>
+        /// <param name="rootPath">根目录路径</param>
+        /// <returns>找到的CZCDYDQC shapefile列表</returns>
+        private List<string> FindCZCDYDQCShapefiles(string rootPath)
+        {
+            var foundFiles = new List<string>();
+
+            try
+            {
+                // 递归查找所有.shp文件
+                var shpFiles = Directory.GetFiles(rootPath, "*.shp", SearchOption.AllDirectories);
+
+                foreach (var file in shpFiles)
+                {
+                    var fileName = Path.GetFileNameWithoutExtension(file);
+
+                    // 查找符合(六位县代码)CZCDYDQC模式的文件
+                    if (Regex.IsMatch(fileName, @"^\(\d{6}\)CZCDYDQC$", RegexOptions.IgnoreCase))
+                    {
+                        foundFiles.Add(file);
+                        System.Diagnostics.Debug.WriteLine($"找到CZCDYDQC文件: {file}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"查找CZCDYDQC文件时出错: {ex.Message}");
+                throw;
+            }
+
+            return foundFiles;
+        }
+
+        /// <summary>
+        /// 从CZCDYDQC文件名中提取六位县代码
+        /// </summary>
+        /// <param name="filePath">文件路径</param>
+        /// <returns>县代码，如果未找到则返回null</returns>
+        private string ExtractCountyCodeFromCZCDYDQCFileName(string filePath)
+        {
+            var fileName = Path.GetFileNameWithoutExtension(filePath);
+
+            // 查找括号中的六位数字
+            var match = Regex.Match(fileName, @"^\((\d{6})\)CZCDYDQC$", RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                return match.Groups[1].Value;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -581,6 +809,16 @@ namespace TestArcMapAddin2.Forms
         /// 获取选择的CZCDYD数据源文件夹路径
         /// </summary>
         public string SelectedCzcdydPath => selectedCzcdydPath;
+
+        /// <summary>
+        /// 获取选择的输出路径
+        /// </summary>
+        public string SelectedOutputPath => selectedOutputPath;
+
+        /// <summary>
+        /// 获取选择的结果输出路径
+        /// </summary>
+        public string SelectedResultOutputPath => selectedResultOutputPath;
 
         #endregion
     }

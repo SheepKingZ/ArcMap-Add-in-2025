@@ -268,7 +268,7 @@ namespace ForestResourcePlugin
                     catch (Exception ex)
                     {
                         string errorMsg = $"执行自动转换失败 - 县名: {countyName}";
-                        //System.Diagnostics.Debug.WriteLine(errorMsg);
+                        System.Diagnostics.Debug.WriteLine(errorMsg);
                         //System.Diagnostics.Debug.WriteLine($"PerformAutoConversion异常: {ex.Message}");
                         //System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
                         // 注意：这里可以选择是否抛出异常，或者仅记录警告
@@ -283,7 +283,7 @@ namespace ForestResourcePlugin
                     //string errorMsg = $"ExportToShapefile主要处理过程中出错 - 县名: {countyName}";
                     //System.Diagnostics.Debug.WriteLine(errorMsg);
                     //System.Diagnostics.Debug.WriteLine($"主要处理异常: {ex.Message}");
-                    //System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
+                    System.Diagnostics.Debug.WriteLine($"异常详情: {ex}");
 
                     // 重新抛出异常，保留原始堆栈跟踪
                     //throw new Exception(errorMsg, ex);
@@ -301,21 +301,10 @@ namespace ForestResourcePlugin
                     }
                     catch (Exception ex)
                     {
-                        //System.Diagnostics.Debug.WriteLine($"释放slzyzcFeatureClass COM对象时出错: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"释放slzyzcFeatureClass COM对象时出错: {ex.Message}");
                     }
 
-                    try
-                    {
-                        if (shapefileWorkspace != null)
-                        {
-                            //System.Diagnostics.Debug.WriteLine($"释放shapefileWorkspace COM对象 - 县名: {countyName}");
-                            //System.Runtime.InteropServices.Marshal.ReleaseComObject(shapefileWorkspace);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        //System.Diagnostics.Debug.WriteLine($"释放shapefileWorkspace COM对象时出错: {ex.Message}");
-                    }
+                    
 
                     //System.Diagnostics.Debug.WriteLine($"ExportToShapefile finally块完成 - 县名: {countyName}");
                 }
@@ -325,7 +314,7 @@ namespace ForestResourcePlugin
                 //string errorMsg = $"ExportToShapefile顶级异常 - 县名: {countyName ?? "未知"}";
                 //System.Diagnostics.Debug.WriteLine(errorMsg);
                 //System.Diagnostics.Debug.WriteLine($"顶级异常: {ex.Message}");
-                //System.Diagnostics.Debug.WriteLine($"完整异常信息: {ex}");
+                System.Diagnostics.Debug.WriteLine($"完整异常信息: {ex}");
 
                 // 抛出包含详细信息的异常
                 //throw new Exception($"{errorMsg}: {ex.Message}", ex);

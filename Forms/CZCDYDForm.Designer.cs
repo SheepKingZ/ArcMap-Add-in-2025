@@ -40,6 +40,13 @@ namespace TestArcMapAddin2.Forms
             this.lblCzcdydPath = new System.Windows.Forms.Label();
             this.txtCzcdydPath = new System.Windows.Forms.TextBox();
             this.btnBrowseCzcdyd = new System.Windows.Forms.Button();
+            this.lblOutputPath = new System.Windows.Forms.Label();
+            this.txtOutputPath = new System.Windows.Forms.TextBox();
+            this.btnBrowseOutput = new System.Windows.Forms.Button();
+            // 新增：输出结果路径选择框
+            this.lblResultOutputPath = new System.Windows.Forms.Label();
+            this.txtResultOutputPath = new System.Windows.Forms.TextBox();
+            this.btnBrowseResultOutput = new System.Windows.Forms.Button();
             this.lblCountySelection = new System.Windows.Forms.Label();
             this.checkedListBoxCounties = new System.Windows.Forms.CheckedListBox();
             this.btnSelectAll = new System.Windows.Forms.Button();
@@ -178,63 +185,127 @@ namespace TestArcMapAddin2.Forms
             this.btnBrowseCzcdyd.UseVisualStyleBackColor = true;
             this.btnBrowseCzcdyd.Click += new System.EventHandler(this.btnBrowseCzcdyd_Click);
             // 
+            // lblOutputPath
+            // 
+            this.lblOutputPath.AutoSize = true;
+            this.lblOutputPath.Location = new System.Drawing.Point(18, 334);
+            this.lblOutputPath.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblOutputPath.Name = "lblOutputPath";
+            this.lblOutputPath.Size = new System.Drawing.Size(215, 18);
+            this.lblOutputPath.TabIndex = 12;
+            this.lblOutputPath.Text = "选择CZCDYDQC结果输出路径:";
+            // 
+            // txtOutputPath
+            // 
+            this.txtOutputPath.ForeColor = System.Drawing.Color.Gray;
+            this.txtOutputPath.Location = new System.Drawing.Point(18, 364);
+            this.txtOutputPath.Margin = new System.Windows.Forms.Padding(4);
+            this.txtOutputPath.Name = "txtOutputPath";
+            this.txtOutputPath.ReadOnly = true;
+            this.txtOutputPath.Size = new System.Drawing.Size(580, 28);
+            this.txtOutputPath.TabIndex = 13;
+            this.txtOutputPath.Text = "请选择CZCDYDQC结果输出文件夹";
+            // 
+            // btnBrowseOutput
+            // 
+            this.btnBrowseOutput.Location = new System.Drawing.Point(612, 362);
+            this.btnBrowseOutput.Margin = new System.Windows.Forms.Padding(4);
+            this.btnBrowseOutput.Name = "btnBrowseOutput";
+            this.btnBrowseOutput.Size = new System.Drawing.Size(100, 32);
+            this.btnBrowseOutput.TabIndex = 14;
+            this.btnBrowseOutput.Text = "浏览...";
+            this.btnBrowseOutput.UseVisualStyleBackColor = true;
+            this.btnBrowseOutput.Click += new System.EventHandler(this.btnBrowseOutput_Click);
+            // 
+            // lblResultOutputPath
+            // 
+            this.lblResultOutputPath.AutoSize = true;
+            this.lblResultOutputPath.Location = new System.Drawing.Point(18, 412);
+            this.lblResultOutputPath.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblResultOutputPath.Name = "lblResultOutputPath";
+            this.lblResultOutputPath.Size = new System.Drawing.Size(233, 18);
+            this.lblResultOutputPath.TabIndex = 15;
+            this.lblResultOutputPath.Text = "选择现有CZCDYDQC结果文件夹:";
+            // 
+            // txtResultOutputPath
+            // 
+            this.txtResultOutputPath.ForeColor = System.Drawing.Color.Gray;
+            this.txtResultOutputPath.Location = new System.Drawing.Point(18, 442);
+            this.txtResultOutputPath.Margin = new System.Windows.Forms.Padding(4);
+            this.txtResultOutputPath.Name = "txtResultOutputPath";
+            this.txtResultOutputPath.ReadOnly = true;
+            this.txtResultOutputPath.Size = new System.Drawing.Size(580, 28);
+            this.txtResultOutputPath.TabIndex = 16;
+            this.txtResultOutputPath.Text = "请选择包含CZCDYDQC结果的文件夹";
+            // 
+            // btnBrowseResultOutput
+            // 
+            this.btnBrowseResultOutput.Location = new System.Drawing.Point(612, 440);
+            this.btnBrowseResultOutput.Margin = new System.Windows.Forms.Padding(4);
+            this.btnBrowseResultOutput.Name = "btnBrowseResultOutput";
+            this.btnBrowseResultOutput.Size = new System.Drawing.Size(100, 32);
+            this.btnBrowseResultOutput.TabIndex = 17;
+            this.btnBrowseResultOutput.Text = "浏览...";
+            this.btnBrowseResultOutput.UseVisualStyleBackColor = true;
+            this.btnBrowseResultOutput.Click += new System.EventHandler(this.btnBrowseResultOutput_Click);
+            // 
             // lblCountySelection
             // 
             this.lblCountySelection.AutoSize = true;
-            this.lblCountySelection.Location = new System.Drawing.Point(18, 334);
+            this.lblCountySelection.Location = new System.Drawing.Point(18, 490);
             this.lblCountySelection.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblCountySelection.Name = "lblCountySelection";
             this.lblCountySelection.Size = new System.Drawing.Size(179, 18);
-            this.lblCountySelection.TabIndex = 12;
+            this.lblCountySelection.TabIndex = 18;
             this.lblCountySelection.Text = "选择要处理的县(区):";
             // 
             // checkedListBoxCounties
             // 
             this.checkedListBoxCounties.CheckOnClick = true;
             this.checkedListBoxCounties.FormattingEnabled = true;
-            this.checkedListBoxCounties.Location = new System.Drawing.Point(18, 364);
+            this.checkedListBoxCounties.Location = new System.Drawing.Point(18, 520);
             this.checkedListBoxCounties.Margin = new System.Windows.Forms.Padding(4);
             this.checkedListBoxCounties.Name = "checkedListBoxCounties";
-            this.checkedListBoxCounties.Size = new System.Drawing.Size(580, 379);
-            this.checkedListBoxCounties.TabIndex = 13;
+            this.checkedListBoxCounties.Size = new System.Drawing.Size(580, 301);
+            this.checkedListBoxCounties.TabIndex = 19;
             // 
             // btnSelectAll
             // 
-            this.btnSelectAll.Location = new System.Drawing.Point(612, 364);
+            this.btnSelectAll.Location = new System.Drawing.Point(612, 520);
             this.btnSelectAll.Margin = new System.Windows.Forms.Padding(4);
             this.btnSelectAll.Name = "btnSelectAll";
             this.btnSelectAll.Size = new System.Drawing.Size(100, 32);
-            this.btnSelectAll.TabIndex = 14;
+            this.btnSelectAll.TabIndex = 20;
             this.btnSelectAll.Text = "全选";
             this.btnSelectAll.UseVisualStyleBackColor = true;
             this.btnSelectAll.Click += new System.EventHandler(this.btnSelectAll_Click);
             // 
             // btnSelectNone
             // 
-            this.btnSelectNone.Location = new System.Drawing.Point(612, 404);
+            this.btnSelectNone.Location = new System.Drawing.Point(612, 560);
             this.btnSelectNone.Margin = new System.Windows.Forms.Padding(4);
             this.btnSelectNone.Name = "btnSelectNone";
             this.btnSelectNone.Size = new System.Drawing.Size(100, 32);
-            this.btnSelectNone.TabIndex = 15;
+            this.btnSelectNone.TabIndex = 21;
             this.btnSelectNone.Text = "全不选";
             this.btnSelectNone.UseVisualStyleBackColor = true;
             this.btnSelectNone.Click += new System.EventHandler(this.btnSelectNone_Click);
             // 
             // progressBar
             // 
-            this.progressBar.Location = new System.Drawing.Point(18, 787);
+            this.progressBar.Location = new System.Drawing.Point(18, 865);
             this.progressBar.Margin = new System.Windows.Forms.Padding(4);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(694, 25);
-            this.progressBar.TabIndex = 17;
+            this.progressBar.TabIndex = 22;
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(500, 829);
+            this.btnOK.Location = new System.Drawing.Point(500, 907);
             this.btnOK.Margin = new System.Windows.Forms.Padding(4);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(100, 40);
-            this.btnOK.TabIndex = 18;
+            this.btnOK.TabIndex = 23;
             this.btnOK.Text = "开始处理";
             this.btnOK.UseVisualStyleBackColor = true;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
@@ -242,11 +313,11 @@ namespace TestArcMapAddin2.Forms
             // btnClose
             // 
             this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnClose.Location = new System.Drawing.Point(612, 829);
+            this.btnClose.Location = new System.Drawing.Point(612, 907);
             this.btnClose.Margin = new System.Windows.Forms.Padding(4);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(100, 40);
-            this.btnClose.TabIndex = 19;
+            this.btnClose.TabIndex = 24;
             this.btnClose.Text = "关闭";
             this.btnClose.UseVisualStyleBackColor = true;
             this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
@@ -255,11 +326,11 @@ namespace TestArcMapAddin2.Forms
             // 
             this.lblStatus.AutoSize = true;
             this.lblStatus.ForeColor = System.Drawing.Color.DarkBlue;
-            this.lblStatus.Location = new System.Drawing.Point(18, 759);
+            this.lblStatus.Location = new System.Drawing.Point(18, 837);
             this.lblStatus.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(71, 18);
-            this.lblStatus.TabIndex = 16;
+            this.lblStatus.TabIndex = 25;
             this.lblStatus.Text = "就绪...";
             // 
             // CZCDYDForm
@@ -268,7 +339,7 @@ namespace TestArcMapAddin2.Forms
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnClose;
-            this.ClientSize = new System.Drawing.Size(730, 876);
+            this.ClientSize = new System.Drawing.Size(730, 960);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.progressBar);
@@ -277,6 +348,12 @@ namespace TestArcMapAddin2.Forms
             this.Controls.Add(this.btnSelectAll);
             this.Controls.Add(this.checkedListBoxCounties);
             this.Controls.Add(this.lblCountySelection);
+            this.Controls.Add(this.btnBrowseResultOutput);
+            this.Controls.Add(this.txtResultOutputPath);
+            this.Controls.Add(this.lblResultOutputPath);
+            this.Controls.Add(this.btnBrowseOutput);
+            this.Controls.Add(this.txtOutputPath);
+            this.Controls.Add(this.lblOutputPath);
             this.Controls.Add(this.btnBrowseCzcdyd);
             this.Controls.Add(this.txtCzcdydPath);
             this.Controls.Add(this.lblCzcdydPath);
@@ -317,6 +394,12 @@ namespace TestArcMapAddin2.Forms
         private System.Windows.Forms.Label lblCzcdydPath;
         private System.Windows.Forms.TextBox txtCzcdydPath;
         private System.Windows.Forms.Button btnBrowseCzcdyd;
+        private System.Windows.Forms.Label lblOutputPath;
+        private System.Windows.Forms.TextBox txtOutputPath;
+        private System.Windows.Forms.Button btnBrowseOutput;
+        private System.Windows.Forms.Label lblResultOutputPath;
+        private System.Windows.Forms.TextBox txtResultOutputPath;
+        private System.Windows.Forms.Button btnBrowseResultOutput;
         private System.Windows.Forms.Label lblCountySelection;
         private System.Windows.Forms.CheckedListBox checkedListBoxCounties;
         private System.Windows.Forms.Button btnSelectAll;
