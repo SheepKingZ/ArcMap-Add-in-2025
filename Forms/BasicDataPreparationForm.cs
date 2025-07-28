@@ -965,7 +965,7 @@ namespace TestArcMapAddin2.Forms
                     return true;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"开始创建{shapefileName} Shapefile");
+                //System.Diagnostics.Debug.WriteLine($"开始创建{shapefileName} Shapefile");
 
                 // 创建字段集合
                 IFields fields = new FieldsClass();
@@ -1026,6 +1026,10 @@ namespace TestArcMapAddin2.Forms
                 else if (ContainsKeyword(shapefileName, "SDZYZC") && ContainsKeyword(shapefileName, "DLTB"))
                 {
                     FeatureClassFieldsTemplate.GenerateSdzyzc_dltbFields(fieldsEdit);
+                }
+                else if (ContainsKeyword(shapefileName, "CZCDYDQC"))
+                {
+                    FeatureClassFieldsTemplate.GenerateCzcdydqc_dltbFields(fieldsEdit);
                 }
 
                 fields = (IFields)fieldsEdit;
@@ -1321,7 +1325,8 @@ namespace TestArcMapAddin2.Forms
                     {
                         { "森林", new[] { $"({countyCode})SLZYZC", $"({countyCode})SLZYZC_DLTB" } },
                         { "草原", new[] { $"({countyCode})CYZYZC", $"({countyCode})CYZYZC_DLTB" } },
-                        { "湿地", new[] { $"({countyCode})SDZYZC", $"({countyCode})SDZYZC_DLTB" } }
+                        { "湿地", new[] { $"({countyCode})SDZYZC", $"({countyCode})SDZYZC_DLTB" } },
+                        { "城镇村等用地", new[] { $"({countyCode})CZCDYDQC"} },
                     };
 
                     bool countySuccess = true;
@@ -1901,7 +1906,7 @@ namespace TestArcMapAddin2.Forms
                             string summaryTablePath = System.IO.Path.Combine(countyFolderPath, "汇总表格");
 
                             // 创建第四级目录
-                            string[] subFolders = { "森林", "草原", "湿地" };
+                            string[] subFolders = { "森林", "草原", "湿地" ,"城镇村等用地"};
                             foreach (var subFolder in subFolders)
                             {
                                 // 清查数据集下的子目录

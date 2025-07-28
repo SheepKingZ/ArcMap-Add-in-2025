@@ -191,6 +191,17 @@
     <Compile Include="Forms\BasicDataPreparationForm.Designer.cs">
       <DependentUpon>BasicDataPreparationForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\CZCDYDForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CZCDYDForm.Designer.cs">
+      <DependentUpon>CZCDYDForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CZCDYDForm1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CZCDYDForm.resx</DependentUpon>
+    </Compile>
     <Compile Include="Forms\ForestBasemapPriceAssociationForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -284,6 +295,11 @@
   <ItemGroup>
     <EmbeddedResource Include="Forms\BasicDataPreparationForm.resx">
       <DependentUpon>BasicDataPreparationForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CZCDYDForm.resx">
+      <DependentUpon>CZCDYDForm.cs</DependentUpon>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>CZCDYDForm1.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\ForestBasemapPriceAssociationForm.resx">
       <DependentUpon>ForestBasemapPriceAssociationForm.cs</DependentUpon>

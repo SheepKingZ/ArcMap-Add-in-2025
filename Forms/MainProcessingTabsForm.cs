@@ -726,5 +726,12 @@ namespace TestArcMapAddin2.Forms
         {
 
         }
+
+        private void buttonCZCDYD_Click(object sender, EventArgs e)
+        {
+            // 打开森林底图与价格关联处理窗体
+            var czcdydForm = new CZCDYDForm();
+            var result = czcdydForm.ShowDialog();
+        }
     }
 }

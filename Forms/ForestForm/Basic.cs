@@ -1126,38 +1126,9 @@ namespace ForestResourcePlugin
             {
                 return true;
             }
-
-            // 集体林地需要检查是否在城镇开发边界内
-            if (chkCollectiveInBoundary.Checked &&
-                (ownerValue == "30" || ownerValue == "40") &&
-                czkfbjFeatureClass != null)
-            {
-                return IsFeatureInBoundaryForCounty(feature, spatialFilter, czkfbjFeatureClass);
-            }
-
             return false;
         }
 
-        /// <summary>
-        /// 检查要素是否在边界内（针对特定县）
-        /// </summary>
-        private bool IsFeatureInBoundaryForCounty(IFeature feature, ISpatialFilter spatialFilter, IFeatureClass czkfbjFeatureClass)
-        {
-            try
-            {
-                if (spatialFilter == null || czkfbjFeatureClass == null)
-                    return false;
-
-                spatialFilter.Geometry = feature.Shape;
-                int count = czkfbjFeatureClass.FeatureCount(spatialFilter);
-                return count > 0;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"空间查询出错: {ex.Message}");
-                return false;
-            }
-        }
 
         private bool ValidateInputs()
         {

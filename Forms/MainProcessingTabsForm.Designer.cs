@@ -81,6 +81,7 @@
             this.titleLabel = new System.Windows.Forms.Label();
             this.tabControlMain = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.buttonCZCDYD = new System.Windows.Forms.Button();
             this.showForestWorkflowDetails = new System.Windows.Forms.LinkLabel();
             this.forestDetailPanel = new System.Windows.Forms.Panel();
             this.btnForestExtractScope = new System.Windows.Forms.Button();
@@ -176,6 +177,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.buttonCZCDYD);
             this.tabPage2.Controls.Add(this.showForestWorkflowDetails);
             this.tabPage2.Controls.Add(this.forestDetailPanel);
             this.tabPage2.Controls.Add(this.btnForestExtractScope);
@@ -192,6 +194,18 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "🌲 森林资源资产清查";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // buttonCZCDYD
+            // 
+            this.buttonCZCDYD.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.buttonCZCDYD.Location = new System.Drawing.Point(330, 131);
+            this.buttonCZCDYD.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonCZCDYD.Name = "buttonCZCDYD";
+            this.buttonCZCDYD.Size = new System.Drawing.Size(240, 45);
+            this.buttonCZCDYD.TabIndex = 11;
+            this.buttonCZCDYD.Text = "4. 处理城镇村等用地";
+            this.buttonCZCDYD.UseVisualStyleBackColor = true;
+            this.buttonCZCDYD.Click += new System.EventHandler(this.buttonCZCDYD_Click);
             // 
             // showForestWorkflowDetails
             // 
@@ -742,5 +756,7 @@
             this.ResumeLayout(false);
 
         }
+
+        private System.Windows.Forms.Button buttonCZCDYD;
     }
 }

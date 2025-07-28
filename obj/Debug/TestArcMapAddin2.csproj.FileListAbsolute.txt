@@ -235,4 +235,5 @@ D:\桌面\LDY_Proj\bin\Debug\System.ValueTuple.dll
 D:\桌面\LDY_Proj\obj\Debug\TestArcMapAddin2.csprojAssemblyReference.cache
 D:\桌面\LDY_Proj\obj\Debug\TestArcMapAddin2.Forms.ForestBasemapPriceAssociationForm.resources
 D:\桌面\LDY_Proj\obj\Debug\TestArcMapAddin2.Forms.ForestPriceSupplementForm.resources
+D:\桌面\LDY_Proj\obj\Debug\TestArcMapAddin2.Forms.CZCDYDForm.resources
 D:\桌面\LDY_Proj\bin\Debug\TestArcMapAddin2.esriAddIn
