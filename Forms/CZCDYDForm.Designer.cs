@@ -62,19 +62,19 @@ namespace TestArcMapAddin2.Forms
             // 
             // txtSlzyzcPath
             // 
+            this.txtSlzyzcPath.ForeColor = System.Drawing.Color.Gray;
             this.txtSlzyzcPath.Location = new System.Drawing.Point(18, 52);
-            this.txtSlzyzcPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtSlzyzcPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtSlzyzcPath.Name = "txtSlzyzcPath";
             this.txtSlzyzcPath.ReadOnly = true;
             this.txtSlzyzcPath.Size = new System.Drawing.Size(580, 28);
             this.txtSlzyzcPath.TabIndex = 1;
             this.txtSlzyzcPath.Text = "请选择包含SLZYZC_DLTB数据的文件夹";
-            this.txtSlzyzcPath.ForeColor = System.Drawing.Color.Gray;
             // 
             // btnBrowseSlzyzc
             // 
             this.btnBrowseSlzyzc.Location = new System.Drawing.Point(612, 50);
-            this.btnBrowseSlzyzc.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseSlzyzc.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseSlzyzc.Name = "btnBrowseSlzyzc";
             this.btnBrowseSlzyzc.Size = new System.Drawing.Size(100, 32);
             this.btnBrowseSlzyzc.TabIndex = 2;
@@ -94,19 +94,19 @@ namespace TestArcMapAddin2.Forms
             // 
             // txtCyzyzcPath
             // 
+            this.txtCyzyzcPath.ForeColor = System.Drawing.Color.Gray;
             this.txtCyzyzcPath.Location = new System.Drawing.Point(18, 130);
-            this.txtCyzyzcPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtCyzyzcPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtCyzyzcPath.Name = "txtCyzyzcPath";
             this.txtCyzyzcPath.ReadOnly = true;
             this.txtCyzyzcPath.Size = new System.Drawing.Size(580, 28);
             this.txtCyzyzcPath.TabIndex = 4;
             this.txtCyzyzcPath.Text = "请选择包含CYZYZC_DLTB数据的文件夹";
-            this.txtCyzyzcPath.ForeColor = System.Drawing.Color.Gray;
             // 
             // btnBrowseCyzyzc
             // 
             this.btnBrowseCyzyzc.Location = new System.Drawing.Point(612, 128);
-            this.btnBrowseCyzyzc.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseCyzyzc.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseCyzyzc.Name = "btnBrowseCyzyzc";
             this.btnBrowseCyzyzc.Size = new System.Drawing.Size(100, 32);
             this.btnBrowseCyzyzc.TabIndex = 5;
@@ -126,19 +126,19 @@ namespace TestArcMapAddin2.Forms
             // 
             // txtSdzyzcPath
             // 
+            this.txtSdzyzcPath.ForeColor = System.Drawing.Color.Gray;
             this.txtSdzyzcPath.Location = new System.Drawing.Point(18, 208);
-            this.txtSdzyzcPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtSdzyzcPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtSdzyzcPath.Name = "txtSdzyzcPath";
             this.txtSdzyzcPath.ReadOnly = true;
             this.txtSdzyzcPath.Size = new System.Drawing.Size(580, 28);
             this.txtSdzyzcPath.TabIndex = 7;
             this.txtSdzyzcPath.Text = "请选择包含SDZYZC_DLTB数据的文件夹";
-            this.txtSdzyzcPath.ForeColor = System.Drawing.Color.Gray;
             // 
             // btnBrowseSdzyzc
             // 
             this.btnBrowseSdzyzc.Location = new System.Drawing.Point(612, 206);
-            this.btnBrowseSdzyzc.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseSdzyzc.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseSdzyzc.Name = "btnBrowseSdzyzc";
             this.btnBrowseSdzyzc.Size = new System.Drawing.Size(100, 32);
             this.btnBrowseSdzyzc.TabIndex = 8;
@@ -158,19 +158,19 @@ namespace TestArcMapAddin2.Forms
             // 
             // txtCzcdydPath
             // 
+            this.txtCzcdydPath.ForeColor = System.Drawing.Color.Gray;
             this.txtCzcdydPath.Location = new System.Drawing.Point(18, 286);
-            this.txtCzcdydPath.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtCzcdydPath.Margin = new System.Windows.Forms.Padding(4);
             this.txtCzcdydPath.Name = "txtCzcdydPath";
             this.txtCzcdydPath.ReadOnly = true;
             this.txtCzcdydPath.Size = new System.Drawing.Size(580, 28);
             this.txtCzcdydPath.TabIndex = 10;
             this.txtCzcdydPath.Text = "请选择包含CZCDYD数据的文件夹";
-            this.txtCzcdydPath.ForeColor = System.Drawing.Color.Gray;
             // 
             // btnBrowseCzcdyd
             // 
             this.btnBrowseCzcdyd.Location = new System.Drawing.Point(612, 284);
-            this.btnBrowseCzcdyd.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnBrowseCzcdyd.Margin = new System.Windows.Forms.Padding(4);
             this.btnBrowseCzcdyd.Name = "btnBrowseCzcdyd";
             this.btnBrowseCzcdyd.Size = new System.Drawing.Size(100, 32);
             this.btnBrowseCzcdyd.TabIndex = 11;
@@ -184,7 +184,7 @@ namespace TestArcMapAddin2.Forms
             this.lblCountySelection.Location = new System.Drawing.Point(18, 334);
             this.lblCountySelection.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblCountySelection.Name = "lblCountySelection";
-            this.lblCountySelection.Size = new System.Drawing.Size(170, 18);
+            this.lblCountySelection.Size = new System.Drawing.Size(179, 18);
             this.lblCountySelection.TabIndex = 12;
             this.lblCountySelection.Text = "选择要处理的县(区):";
             // 
@@ -193,15 +193,15 @@ namespace TestArcMapAddin2.Forms
             this.checkedListBoxCounties.CheckOnClick = true;
             this.checkedListBoxCounties.FormattingEnabled = true;
             this.checkedListBoxCounties.Location = new System.Drawing.Point(18, 364);
-            this.checkedListBoxCounties.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkedListBoxCounties.Margin = new System.Windows.Forms.Padding(4);
             this.checkedListBoxCounties.Name = "checkedListBoxCounties";
-            this.checkedListBoxCounties.Size = new System.Drawing.Size(580, 148);
+            this.checkedListBoxCounties.Size = new System.Drawing.Size(580, 379);
             this.checkedListBoxCounties.TabIndex = 13;
             // 
             // btnSelectAll
             // 
             this.btnSelectAll.Location = new System.Drawing.Point(612, 364);
-            this.btnSelectAll.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSelectAll.Margin = new System.Windows.Forms.Padding(4);
             this.btnSelectAll.Name = "btnSelectAll";
             this.btnSelectAll.Size = new System.Drawing.Size(100, 32);
             this.btnSelectAll.TabIndex = 14;
@@ -212,7 +212,7 @@ namespace TestArcMapAddin2.Forms
             // btnSelectNone
             // 
             this.btnSelectNone.Location = new System.Drawing.Point(612, 404);
-            this.btnSelectNone.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSelectNone.Margin = new System.Windows.Forms.Padding(4);
             this.btnSelectNone.Name = "btnSelectNone";
             this.btnSelectNone.Size = new System.Drawing.Size(100, 32);
             this.btnSelectNone.TabIndex = 15;
@@ -220,29 +220,18 @@ namespace TestArcMapAddin2.Forms
             this.btnSelectNone.UseVisualStyleBackColor = true;
             this.btnSelectNone.Click += new System.EventHandler(this.btnSelectNone_Click);
             // 
-            // lblStatus
-            // 
-            this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(18, 530);
-            this.lblStatus.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(62, 18);
-            this.lblStatus.TabIndex = 16;
-            this.lblStatus.Text = "就绪...";
-            this.lblStatus.ForeColor = System.Drawing.Color.DarkBlue;
-            // 
             // progressBar
             // 
-            this.progressBar.Location = new System.Drawing.Point(18, 558);
-            this.progressBar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.progressBar.Location = new System.Drawing.Point(18, 787);
+            this.progressBar.Margin = new System.Windows.Forms.Padding(4);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(694, 25);
             this.progressBar.TabIndex = 17;
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(500, 600);
-            this.btnOK.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnOK.Location = new System.Drawing.Point(500, 829);
+            this.btnOK.Margin = new System.Windows.Forms.Padding(4);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(100, 40);
             this.btnOK.TabIndex = 18;
@@ -253,8 +242,8 @@ namespace TestArcMapAddin2.Forms
             // btnClose
             // 
             this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnClose.Location = new System.Drawing.Point(612, 600);
-            this.btnClose.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnClose.Location = new System.Drawing.Point(612, 829);
+            this.btnClose.Margin = new System.Windows.Forms.Padding(4);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(100, 40);
             this.btnClose.TabIndex = 19;
@@ -262,13 +251,24 @@ namespace TestArcMapAddin2.Forms
             this.btnClose.UseVisualStyleBackColor = true;
             this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
+            // lblStatus
+            // 
+            this.lblStatus.AutoSize = true;
+            this.lblStatus.ForeColor = System.Drawing.Color.DarkBlue;
+            this.lblStatus.Location = new System.Drawing.Point(18, 759);
+            this.lblStatus.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(71, 18);
+            this.lblStatus.TabIndex = 16;
+            this.lblStatus.Text = "就绪...";
+            // 
             // CZCDYDForm
             // 
             this.AcceptButton = this.btnOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnClose;
-            this.ClientSize = new System.Drawing.Size(730, 658);
+            this.ClientSize = new System.Drawing.Size(730, 876);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.progressBar);
@@ -290,7 +290,7 @@ namespace TestArcMapAddin2.Forms
             this.Controls.Add(this.txtSlzyzcPath);
             this.Controls.Add(this.lblSlzyzcPath);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "CZCDYDForm";

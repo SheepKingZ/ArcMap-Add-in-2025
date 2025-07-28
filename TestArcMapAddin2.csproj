@@ -197,11 +197,6 @@
     <Compile Include="Forms\CZCDYDForm.Designer.cs">
       <DependentUpon>CZCDYDForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\CZCDYDForm1.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>CZCDYDForm.resx</DependentUpon>
-    </Compile>
     <Compile Include="Forms\ForestBasemapPriceAssociationForm.cs">
       <SubType>Form</SubType>
     </Compile>
