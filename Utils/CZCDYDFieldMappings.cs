@@ -59,56 +59,28 @@ namespace TestArcMapAddin2.Utils
         public static List<FieldMapping> GetStandardFieldMappings()
         {
             return new List<FieldMapping>
-            {
-                // 标准字段映射
-                new FieldMapping("YZCQCBSM", "ZCQCBSM", false, null, "源调查区编号"),
-                // 🔥 修改：YSDM设置为固定值3410001020
-                new FieldMapping("YSDM", "", true, "FIXED_YSDM_VALUE", "要素代码 = 固定值3410001020"),
-                new FieldMapping("XZQDM", "XZQDM", false, null, "行政区代码"),
-                new FieldMapping("XZQMC", "XZQMC", false, null, "行政区名称"),
-                new FieldMapping("GTDCTBBSM", "GTDCTBBSM", false, null, "国土调查图斑编号"),
-                new FieldMapping("DLBM", "GTDCDLBM", false, null, "地类编码"),
-                new FieldMapping("DLMC", "GTDCDLMC", false, null, "地类名称"),
-                new FieldMapping("TBDLMJ", "GTDCTBMJ", false, null, "图斑地类面积"),
-                new FieldMapping("HSJG", "HSJG", false, null, "核实价格"),
-                new FieldMapping("TBJJJZ", "JJJZ", false, null, "图斑经济价值"),
+    {
+        // 标准字段映射
+        new FieldMapping("YZCQCBSM", "ZCQCBSM", false, null, "源调查区编号"),
+        // 🔥 修改：YSDM设置为固定值3410001020
+        new FieldMapping("YSDM", "", true, "FIXED_YSDM_VALUE", "要素代码 = 固定值3410001020"),
+        new FieldMapping("XZQDM", "XZQDM", false, null, "行政区代码"),
+        new FieldMapping("XZQMC", "XZQMC", false, null, "行政区名称"),
+        new FieldMapping("GTDCTBBSM", "GTDCTBBSM", false, null, "国土调查图斑编号"),
+        new FieldMapping("DLBM", "GTDCDLBM", false, null, "地类编码"),
+        new FieldMapping("DLMC", "GTDCDLMC", false, null, "地类名称"),
+        new FieldMapping("TBDLMJ", "GTDCTBMJ", false, null, "图斑地类面积"),
+        new FieldMapping("HSJG", "HSJG", false, null, "核实价格"),
+        new FieldMapping("TBJJJZ", "JJJZ", false, null, "图斑经济价值"),
 
-                // 特殊计算字段
-                new FieldMapping("ZCQCBSM", "", true, "COUNTY_CODE_GENERATION", "资源调查区编号 = 县代码+9110+12位FID"),
-                new FieldMapping("HRCZCMJ", "", true, "AREA_RATIO_CALCULATION", "核实城镇村面积 = GTDCTBMJ * area2 / area1"),
-                new FieldMapping("HRCZCTKMJ", "0", true, "FIXED_VALUE", "核实城镇村退垦面积 = 0"),
-                new FieldMapping("HRCZCJJJZ", "", true, "VALUE_RATIO_CALCULATION", "核实城镇村经济价值 = JJJZ * area2 / area1"),
-                new FieldMapping("TKJJJJZ", "", true, "PRICE_CALCULATION", "退垦经济价值 = HRCZCMJ * TKJHSJG"),
-                new FieldMapping("TKJHSJG", "", true, "COUNTY_PRICE_LOOKUP", "退垦价格核实价格 = 根据县代码查询最低价")
-            };
-        }
-
-        /// <summary>
-        /// 获取CZCDYDQC输出字段定义
-        /// 定义最终输出shapefile的完整字段结构
-        /// </summary>
-        /// <returns>输出字段定义列表</returns>
-        public static List<OutputFieldDefinition> GetOutputFieldDefinitions()
-        {
-            return new List<OutputFieldDefinition>
-            {
-                new OutputFieldDefinition("ZCQCBSM", "字符型", 20, 0, "资源调查区编号"),
-                new OutputFieldDefinition("YZCQCBSM", "字符型", 20, 0, "源调查区编号"),
-                new OutputFieldDefinition("YSDM", "字符型", 10, 0, "要素代码"),
-                new OutputFieldDefinition("XZQDM", "字符型", 6, 0, "行政区代码"),
-                new OutputFieldDefinition("XZQMC", "字符型", 60, 0, "行政区名称"),
-                new OutputFieldDefinition("GTDCTBBSM", "字符型", 20, 0, "国土调查图斑编号"),
-                new OutputFieldDefinition("DLBM", "字符型", 5, 0, "地类编码"),
-                new OutputFieldDefinition("DLMC", "字符型", 60, 0, "地类名称"),
-                new OutputFieldDefinition("TBDLMJ", "双精度", 18, 2, "图斑地类面积"),
-                new OutputFieldDefinition("HSJG", "双精度", 12, 2, "核实价格"),
-                new OutputFieldDefinition("TBJJJZ", "双精度", 18, 2, "图斑经济价值"),
-                new OutputFieldDefinition("HRCZCMJ", "双精度", 18, 2, "核实城镇村面积"),
-                new OutputFieldDefinition("HRCZCTKMJ", "双精度", 18, 2, "核实城镇村退垦面积"),
-                new OutputFieldDefinition("HRCZCJJJZ", "双精度", 18, 2, "核实城镇村经济价值"),
-                new OutputFieldDefinition("TKJJJJZ", "双精度", 18, 2, "退垦经济价值"),
-                new OutputFieldDefinition("TKJHSJG", "双精度", 12, 2, "退垦价格核实价格")
-            };
+        // 特殊计算字段
+        new FieldMapping("ZCQCBSM", "", true, "COUNTY_CODE_GENERATION", "资源调查区编号 = 县代码+9110+12位计数器(从1开始)"),
+        new FieldMapping("HRCZCMJ", "", true, "AREA_RATIO_CALCULATION", "核实城镇村面积 = GTDCTBMJ * area2 / area1"),
+        new FieldMapping("HRCZCTKMJ", "0", true, "FIXED_VALUE", "核实城镇村退垦面积 = 0"),
+        new FieldMapping("HRCZCJJJZ", "", true, "VALUE_RATIO_CALCULATION", "核实城镇村经济价值 = JJJZ * area2 / area1"),
+        new FieldMapping("TKJJJJZ", "", true, "PRICE_CALCULATION", "退垦经济价值 = HRCZCMJ * TKJHSJG"),
+        new FieldMapping("TKJHSJG", "", true, "COUNTY_PRICE_LOOKUP", "退垦价格核实价格 = 根据县代码查询最低价")
+    };
         }
 
         /// <summary>
@@ -252,19 +224,24 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// 生成资源调查区编号
+        /// 🔥 修改：生成资源调查区编号（使用计数器）
         /// </summary>
         /// <param name="countyCode">县代码</param>
-        /// <param name="fid">要素ID</param>
+        /// <param name="counter">计数器（从1开始）</param>
         /// <returns>资源调查区编号</returns>
-        public static string GenerateZCQCBSM(string countyCode, int fid)
+        public static string GenerateZCQCBSM(string countyCode, int counter)
         {
             if (!IsValidCountyCode(countyCode))
             {
                 throw new ArgumentException("无效的县代码", nameof(countyCode));
             }
 
-            return $"{countyCode}9110{fid:D12}";
+            if (counter < 1)
+            {
+                throw new ArgumentException("计数器必须从1开始", nameof(counter));
+            }
+
+            return $"{countyCode}9110{counter:D12}";
         }
 
         /// <summary>

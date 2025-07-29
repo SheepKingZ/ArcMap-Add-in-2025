@@ -15,6 +15,11 @@ namespace TestArcMapAddin2.Utils
     public class CZCDYDProcessor
     {
         /// <summary>
+        /// 🔥 新增：全局计数器，在整个处理过程中保持连续
+        /// </summary>
+        private int _globalFidCounter = 1;
+
+        /// <summary>
         /// 进度回调委托
         /// </summary>
         /// <param name="percentage">完成百分比</param>
@@ -97,6 +102,7 @@ namespace TestArcMapAddin2.Utils
                 return result;
             }
         }
+
         /// <summary>
         /// 处理城镇村等用地数据并写入目标Shapefile
         /// </summary>
@@ -112,20 +118,27 @@ namespace TestArcMapAddin2.Utils
 
             try
             {
+                // 🔥 重要修改：在开始处理前重置全局计数器
+                _globalFidCounter = 1;
+                System.Diagnostics.Debug.WriteLine($"🔥 重置全局计数器: {_globalFidCounter}");
+
                 progressCallback?.Invoke(25, "正在处理森林资源数据...");
                 var slData = ProcessResourceDataToFeatureData(countyFiles.SlzyzcDltbFile, countyFiles.CzcdydFile,
                     countyFiles.CountyCode, "SL");
                 if (slData != null) featureDataList.AddRange(slData);
+                System.Diagnostics.Debug.WriteLine($"🔥 森林资源处理完成，当前全局计数器: {_globalFidCounter}，累计要素: {featureDataList.Count}");
 
                 progressCallback?.Invoke(45, "正在处理草地资源数据...");
                 var cdData = ProcessResourceDataToFeatureData(countyFiles.CyzyzcDltbFile, countyFiles.CzcdydFile,
                     countyFiles.CountyCode, "CD");
                 if (cdData != null) featureDataList.AddRange(cdData);
+                System.Diagnostics.Debug.WriteLine($"🔥 草地资源处理完成，当前全局计数器: {_globalFidCounter}，累计要素: {featureDataList.Count}");
 
                 progressCallback?.Invoke(65, "正在处理湿地资源数据...");
                 var sdData = ProcessResourceDataToFeatureData(countyFiles.SdzyzcDltbFile, countyFiles.CzcdydFile,
                     countyFiles.CountyCode, "SD");
                 if (sdData != null) featureDataList.AddRange(sdData);
+                System.Diagnostics.Debug.WriteLine($"🔥 湿地资源处理完成，当前全局计数器: {_globalFidCounter}，累计要素: {featureDataList.Count}");
 
                 progressCallback?.Invoke(80, "正在写入数据到目标Shapefile...");
 
@@ -146,8 +159,9 @@ namespace TestArcMapAddin2.Utils
                 return result;
             }
         }
+
         /// <summary>
-        /// 处理单类资源数据并返回要素数据列表
+        /// 🔥 修改：处理单类资源数据并返回要素数据列表（使用全局计数器）
         /// </summary>
         /// <param name="resourceFile">资源shapefile路径</param>
         /// <param name="czcdydFile">城镇村等用地文件路径</param>
@@ -166,6 +180,10 @@ namespace TestArcMapAddin2.Utils
                     System.Diagnostics.Debug.WriteLine($"资源文件不存在: {resourceFile}");
                     return featureDataList;
                 }
+
+                // 🔥 重要：记录开始处理时的计数器状态
+                int startingCounter = _globalFidCounter;
+                System.Diagnostics.Debug.WriteLine($"🔥 开始处理{resourceType}资源，起始计数器: {startingCounter}");
 
                 // 打开资源数据
                 var resourceResult = OpenShapefile(resourceFile);
@@ -225,7 +243,6 @@ namespace TestArcMapAddin2.Utils
                                 if (resourceSR != null && czcdydSR != null &&
                                     !IsSpatialReferenceEqual(resourceSR, czcdydSR))
                                 {
-                                    //System.Diagnostics.Debug.WriteLine($"投影城镇村几何到资源数据坐标系");
                                     try
                                     {
                                         czcdGeometry.Project(resourceSR);
@@ -262,7 +279,7 @@ namespace TestArcMapAddin2.Utils
                     // 处理资源数据
                     IFeatureCursor resourceCursor = resourceResult.featureClass.Search(null, false);
                     IFeature resourceFeature;
-                    int fidCounter = 1;
+                    // 🔥 重要修改：移除局部fidCounter，直接使用全局计数器
                     int processedCount = 0;
                     int errorCount = 0;
 
@@ -303,12 +320,14 @@ namespace TestArcMapAddin2.Utils
                                             var featureData = new GISOperationUtils.FeatureData();
                                             featureData.Geometry = intersectionResult.Intersection;
 
-                                            // 处理字段映射和特殊计算
+                                            // 🔥 关键修改：使用全局计数器并递增
                                             ProcessFeatureMappingToAttributes(resourceFeature, resourceResult.featureClass,
-                                                featureData.Attributes, countyCode, fidCounter);
+                                                featureData.Attributes, countyCode, _globalFidCounter);
 
                                             featureDataList.Add(featureData);
-                                            fidCounter++;
+                                            
+                                            // 🔥 重要：递增全局计数器
+                                            _globalFidCounter++;
                                             foundIntersection = true;
                                             break; // 找到交集后跳出内层循环
                                         }
@@ -333,7 +352,7 @@ namespace TestArcMapAddin2.Utils
                             // 定期输出进度
                             if (processedCount % 100 == 0)
                             {
-                                System.Diagnostics.Debug.WriteLine($"已处理{resourceType}资源 {processedCount} 个要素，生成 {featureDataList.Count} 个交集要素，错误 {errorCount} 个");
+                                System.Diagnostics.Debug.WriteLine($"已处理{resourceType}资源 {processedCount} 个要素，生成 {featureDataList.Count} 个交集要素，当前全局计数器: {_globalFidCounter}，错误 {errorCount} 个");
                             }
                         }
                         catch (Exception ex)
@@ -355,7 +374,15 @@ namespace TestArcMapAddin2.Utils
                         System.Runtime.InteropServices.Marshal.ReleaseComObject(geom);
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"处理{resourceType}资源完成，总计处理 {processedCount} 个要素，生成 {featureDataList.Count} 个交集要素，错误 {errorCount} 个");
+                    // 🔥 新增：记录处理完成时的计数器状态
+                    int endingCounter = _globalFidCounter - 1; // 减1因为最后一次递增后没有使用
+                    System.Diagnostics.Debug.WriteLine($"🔥 处理{resourceType}资源完成:");
+                    System.Diagnostics.Debug.WriteLine($"🔥   起始计数器: {startingCounter}");
+                    System.Diagnostics.Debug.WriteLine($"🔥   结束计数器: {endingCounter}");
+                    System.Diagnostics.Debug.WriteLine($"🔥   生成要素数: {featureDataList.Count}");
+                    System.Diagnostics.Debug.WriteLine($"🔥   下一个计数器: {_globalFidCounter}");
+                    System.Diagnostics.Debug.WriteLine($"🔥   总计处理 {processedCount} 个要素，错误 {errorCount} 个");
+
                     return featureDataList;
                 }
                 finally
@@ -676,6 +703,7 @@ namespace TestArcMapAddin2.Utils
                 return false;
             }
         }
+
         /// <summary>
         /// 处理要素映射到属性字典
         /// </summary>
@@ -719,6 +747,7 @@ namespace TestArcMapAddin2.Utils
                 System.Diagnostics.Debug.WriteLine($"处理要素映射到属性时出错: {ex.Message}");
             }
         }
+
         /// <summary>
         /// 计算特殊字段
         /// </summary>
@@ -789,44 +818,83 @@ namespace TestArcMapAddin2.Utils
                 return null;
             }
         }
+
         /// <summary>
-        /// 🔥 修复：计算交集面积比例
+        /// 🔥 修复：计算交集面积比例并乘以TBDLMJ
         /// </summary>
         /// <param name="feature">要素</param>
         /// <param name="fc">要素类</param>
-        /// <param name="baseField">基础面积字段</param>
-        /// <returns>交集面积</returns>
+        /// <param name="baseField">基础面积字段（GTDCTBMJ）</param>
+        /// <returns>HRCZCMJ = TBDLMJ * (交集面积 / 原始面积)</returns>
         private object CalculateIntersectionAreaRatio(IFeature feature, IFeatureClass fc, string baseField)
         {
             try
             {
-                // 获取基础面积（通常是GTDCTBMJ）
-                int baseIndex = fc.FindField(baseField);
-                if (baseIndex == -1)
+                // 🔥 步骤1：获取TBDLMJ字段值
+                int tbdlmjIndex = fc.FindField("TBDLMJ");
+                if (tbdlmjIndex == -1)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🔥 未找到基础面积字段: {baseField}");
-                    return 0.0;
-                }
+                    System.Diagnostics.Debug.WriteLine($"🔥 未找到TBDLMJ字段，尝试查找GTDCTBMJ字段");
 
-                double baseArea = Convert.ToDouble(feature.get_Value(baseIndex));
-                System.Diagnostics.Debug.WriteLine($"🔥 基础面积 {baseField}: {baseArea}");
-
-                // 🔥 关键修复：使用交集几何计算实际面积
-                if (feature.Shape != null && !feature.Shape.IsEmpty)
-                {
-                    IArea areaInterface = feature.Shape as IArea;
-                    if (areaInterface != null)
+                    // 如果没有TBDLMJ字段，使用GTDCTBMJ字段作为备选
+                    tbdlmjIndex = fc.FindField("GTDCTBMJ");
+                    if (tbdlmjIndex == -1)
                     {
-                        double intersectionArea = Math.Abs(areaInterface.Area);
-                        System.Diagnostics.Debug.WriteLine($"🔥 交集几何面积: {intersectionArea}");
-
-                        // 返回交集面积（在城镇村范围内的面积）
-                        return intersectionArea;
+                        System.Diagnostics.Debug.WriteLine($"🔥 未找到TBDLMJ或GTDCTBMJ字段");
+                        return 0.0;
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"🔥 无法计算交集面积，返回基础面积: {baseArea}");
-                return baseArea;
+                double tbdlmjValue = Convert.ToDouble(feature.get_Value(tbdlmjIndex));
+                System.Diagnostics.Debug.WriteLine($"🔥 TBDLMJ值: {tbdlmjValue}");
+
+                // 🔥 步骤2：获取原始几何的面积
+                if (feature.Shape == null || feature.Shape.IsEmpty)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔥 要素几何为空，返回0");
+                    return 0.0;
+                }
+
+                // 这里的feature.Shape实际上是已经裁剪后的交集几何
+                IArea intersectionAreaInterface = feature.Shape as IArea;
+                if (intersectionAreaInterface == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔥 无法获取交集几何面积接口");
+                    return 0.0;
+                }
+
+                double intersectionArea = Math.Abs(intersectionAreaInterface.Area);
+                System.Diagnostics.Debug.WriteLine($"🔥 交集几何面积: {intersectionArea}");
+
+                // 🔥 步骤3：获取原始几何面积（从字段中获取）
+                // 在字段映射中，TBDLMJ对应源数据的GTDCTBMJ字段，这是原始面积
+                double originalArea = tbdlmjValue; // TBDLMJ就是原始图斑面积
+                System.Diagnostics.Debug.WriteLine($"🔥 原始图斑面积: {originalArea}");
+
+                if (originalArea <= 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔥 原始面积无效，直接返回交集面积: {intersectionArea}");
+                    return intersectionArea;
+                }
+
+                // 🔥 步骤4：计算面积比例
+                double areaRatio = intersectionArea / originalArea;
+                if (areaRatio > 1.0)
+                {
+                    areaRatio = 1.0; // 确保比例不超过1
+                    System.Diagnostics.Debug.WriteLine($"🔥 面积比例超过1，调整为1.0");
+                }
+
+                // 🔥 步骤5：计算HRCZCMJ = TBDLMJ * 面积比例
+                double hrczcmj = tbdlmjValue * areaRatio;
+
+                System.Diagnostics.Debug.WriteLine($"🔥 计算过程:");
+                System.Diagnostics.Debug.WriteLine($"🔥   TBDLMJ (原始面积): {tbdlmjValue}");
+                System.Diagnostics.Debug.WriteLine($"🔥   交集面积: {intersectionArea}");
+                System.Diagnostics.Debug.WriteLine($"🔥   面积比例: {areaRatio:F4}");
+                System.Diagnostics.Debug.WriteLine($"🔥   HRCZCMJ = {tbdlmjValue} * {areaRatio:F4} = {hrczcmj}");
+
+                return hrczcmj;
             }
             catch (Exception ex)
             {
@@ -834,12 +902,13 @@ namespace TestArcMapAddin2.Utils
                 return 0.0;
             }
         }
+
         /// <summary>
-        /// 🔥 修复：计算价值比例
+        /// 🔥 修复：计算价值比例（基于新的HRCZCMJ计算逻辑）
         /// </summary>
         /// <param name="feature">要素</param>
         /// <param name="fc">要素类</param>
-        /// <param name="valueField">价值字段</param>
+        /// <param name="valueField">价值字段（JJJZ）</param>
         /// <returns>按比例计算的价值</returns>
         private object CalculateValueRatio(IFeature feature, IFeatureClass fc, string valueField)
         {
@@ -856,40 +925,61 @@ namespace TestArcMapAddin2.Utils
                 double originalValue = Convert.ToDouble(feature.get_Value(valueIndex));
                 System.Diagnostics.Debug.WriteLine($"🔥 原始价值 {valueField}: {originalValue}");
 
-                // 获取基础面积
-                int baseAreaIndex = fc.FindField("GTDCTBMJ");
-                if (baseAreaIndex == -1)
+                // 🔥 步骤1：获取TBDLMJ（原始图斑面积）
+                int tbdlmjIndex = fc.FindField("TBDLMJ");
+                if (tbdlmjIndex == -1)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🔥 未找到基础面积字段GTDCTBMJ");
-                    return originalValue; // 如果没有面积字段，返回原值
-                }
-
-                double baseArea = Convert.ToDouble(feature.get_Value(baseAreaIndex));
-                System.Diagnostics.Debug.WriteLine($"🔥 基础面积GTDCTBMJ: {baseArea}");
-
-                // 🔥 关键修复：使用交集几何计算面积比例
-                if (feature.Shape != null && !feature.Shape.IsEmpty)
-                {
-                    IArea areaInterface = feature.Shape as IArea;
-                    if (areaInterface != null)
+                    // 如果没有TBDLMJ字段，使用GTDCTBMJ字段作为备选
+                    tbdlmjIndex = fc.FindField("GTDCTBMJ");
+                    if (tbdlmjIndex == -1)
                     {
-                        double intersectionArea = Math.Abs(areaInterface.Area);
-                        System.Diagnostics.Debug.WriteLine($"🔥 交集几何面积: {intersectionArea}");
-
-                        if (baseArea > 0)
-                        {
-                            double ratio = intersectionArea / baseArea;
-                            if (ratio > 1.0) ratio = 1.0; // 确保比例不超过1
-
-                            double calculatedValue = originalValue * ratio;
-                            System.Diagnostics.Debug.WriteLine($"🔥 面积比例: {ratio:F4}, 计算价值: {calculatedValue}");
-                            return calculatedValue;
-                        }
+                        System.Diagnostics.Debug.WriteLine($"🔥 未找到TBDLMJ或GTDCTBMJ字段，返回原始价值");
+                        return originalValue;
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"🔥 无法计算比例，返回原始价值: {originalValue}");
-                return originalValue;
+                double tbdlmjValue = Convert.ToDouble(feature.get_Value(tbdlmjIndex));
+                System.Diagnostics.Debug.WriteLine($"🔥 TBDLMJ值: {tbdlmjValue}");
+
+                // 🔥 步骤2：获取交集几何面积
+                if (feature.Shape == null || feature.Shape.IsEmpty)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔥 要素几何为空，返回0");
+                    return 0.0;
+                }
+
+                IArea intersectionAreaInterface = feature.Shape as IArea;
+                if (intersectionAreaInterface == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔥 无法获取交集几何面积接口，返回原始价值");
+                    return originalValue;
+                }
+
+                double intersectionArea = Math.Abs(intersectionAreaInterface.Area);
+                System.Diagnostics.Debug.WriteLine($"🔥 交集几何面积: {intersectionArea}");
+
+                // 🔥 步骤3：计算面积比例
+                if (tbdlmjValue > 0)
+                {
+                    double ratio = intersectionArea / tbdlmjValue;
+                    if (ratio > 1.0) ratio = 1.0; // 确保比例不超过1
+
+                    double calculatedValue = originalValue * ratio;
+
+                    System.Diagnostics.Debug.WriteLine($"🔥 价值计算过程:");
+                    System.Diagnostics.Debug.WriteLine($"🔥   原始价值: {originalValue}");
+                    System.Diagnostics.Debug.WriteLine($"🔥   TBDLMJ: {tbdlmjValue}");
+                    System.Diagnostics.Debug.WriteLine($"🔥   交集面积: {intersectionArea}");
+                    System.Diagnostics.Debug.WriteLine($"🔥   面积比例: {ratio:F4}");
+                    System.Diagnostics.Debug.WriteLine($"🔥   计算价值: {originalValue} * {ratio:F4} = {calculatedValue}");
+
+                    return calculatedValue;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔥 TBDLMJ值无效，返回原始价值: {originalValue}");
+                    return originalValue;
+                }
             }
             catch (Exception ex)
             {
@@ -897,8 +987,9 @@ namespace TestArcMapAddin2.Utils
                 return 0.0;
             }
         }
+
         /// <summary>
-        /// 🔥 修复：计算退垦价值
+        /// 🔥 修复：计算退垦价值（基于新的面积计算逻辑）
         /// </summary>
         /// <param name="feature">要素</param>
         /// <param name="fc">要素类</param>
@@ -908,24 +999,59 @@ namespace TestArcMapAddin2.Utils
         {
             try
             {
-                // 🔥 关键修复：先计算HRCZCMJ（城镇村面积）
-                double hrczcmj = 0.0;
+                // 🔥 关键修复：使用与HRCZCMJ相同的计算逻辑
+                // HRCZCMJ = TBDLMJ * (交集面积 / 原始面积)
+
+                // 步骤1：获取TBDLMJ
+                int tbdlmjIndex = fc.FindField("TBDLMJ");
+                if (tbdlmjIndex == -1)
+                {
+                    tbdlmjIndex = fc.FindField("GTDCTBMJ");
+                    if (tbdlmjIndex == -1)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"🔥 未找到TBDLMJ或GTDCTBMJ字段");
+                        return 0.0;
+                    }
+                }
+
+                double tbdlmjValue = Convert.ToDouble(feature.get_Value(tbdlmjIndex));
+
+                // 步骤2：获取交集面积
+                double intersectionArea = 0.0;
                 if (feature.Shape != null && !feature.Shape.IsEmpty)
                 {
                     IArea areaInterface = feature.Shape as IArea;
                     if (areaInterface != null)
                     {
-                        hrczcmj = Math.Abs(areaInterface.Area);
+                        intersectionArea = Math.Abs(areaInterface.Area);
                     }
                 }
 
-                // 🔥 修复：获取退垦价格并转换为double类型
+                // 步骤3：计算面积比例
+                double areaRatio = 1.0;
+                if (tbdlmjValue > 0)
+                {
+                    areaRatio = intersectionArea / tbdlmjValue;
+                    if (areaRatio > 1.0) areaRatio = 1.0;
+                }
+
+                // 步骤4：计算HRCZCMJ
+                double hrczcmj = tbdlmjValue * areaRatio;
+
+                // 步骤5：获取退垦价格
                 decimal tkjhsjgDecimal = CountyPriceMapping.GetMinimumPrice(countyCode);
                 double tkjhsjg = (double)tkjhsjgDecimal;
 
+                // 步骤6：计算退垦经济价值
                 double tkjjjjz = hrczcmj * tkjhsjg;
 
-                System.Diagnostics.Debug.WriteLine($"🔥 HRCZCMJ: {hrczcmj}, TKJHSJG: {tkjhsjg}, TKJJJJZ: {tkjjjjz}");
+                System.Diagnostics.Debug.WriteLine($"🔥 退垦价值计算过程:");
+                System.Diagnostics.Debug.WriteLine($"🔥   TBDLMJ: {tbdlmjValue}");
+                System.Diagnostics.Debug.WriteLine($"🔥   交集面积: {intersectionArea}");
+                System.Diagnostics.Debug.WriteLine($"🔥   面积比例: {areaRatio:F4}");
+                System.Diagnostics.Debug.WriteLine($"🔥   HRCZCMJ: {hrczcmj}");
+                System.Diagnostics.Debug.WriteLine($"🔥   TKJHSJG: {tkjhsjg}");
+                System.Diagnostics.Debug.WriteLine($"🔥   TKJJJJZ: {tkjjjjz}");
 
                 return tkjjjjz;
             }

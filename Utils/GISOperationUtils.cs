@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.IO;
 using ESRI.ArcGIS.Geodatabase;
@@ -9,20 +9,20 @@ using ESRI.ArcGIS.esriSystem;
 namespace TestArcMapAddin2.Utils
 {
     /// <summary>
-    /// GIS²Ù×÷¹¤¾ßÀà
-    /// Ìá¹©¼¸ºÎÔËËã¡¢¿Õ¼ä·ÖÎö¡¢×Ö¶Î²Ù×÷µÈGISºËĞÄ¹¦ÄÜ
+    /// GISæ“ä½œå·¥å…·ç±»
+    /// æä¾›å‡ ä½•è¿ç®—ã€ç©ºé—´åˆ†æã€å­—æ®µæ“ä½œç­‰GISæ ¸å¿ƒåŠŸèƒ½
     /// </summary>
     public static class GISOperationUtils
     {
         /// <summary>
-        /// ½ø¶È»Øµ÷Î¯ÍĞ
+        /// è¿›åº¦å›è°ƒå§”æ‰˜
         /// </summary>
-        /// <param name="percentage">Íê³É°Ù·Ö±È</param>
-        /// <param name="message">½ø¶ÈÏûÏ¢</param>
+        /// <param name="percentage">å®Œæˆç™¾åˆ†æ¯”</param>
+        /// <param name="message">è¿›åº¦æ¶ˆæ¯</param>
         public delegate void ProgressCallback(int percentage, string message);
 
         /// <summary>
-        /// ²Ã¼ô²Ù×÷½á¹û
+        /// è£å‰ªæ“ä½œç»“æœ
         /// </summary>
         public class ClipResult
         {
@@ -33,7 +33,7 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// Shapefile´ò¿ª½á¹û
+        /// Shapefileæ‰“å¼€ç»“æœ
         /// </summary>
         public class ShapefileOpenResult
         {
@@ -44,7 +44,7 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// Êı¾İĞ´Èë²Ù×÷½á¹û
+        /// æ•°æ®å†™å…¥æ“ä½œç»“æœ
         /// </summary>
         public class WriteDataResult
         {
@@ -55,7 +55,7 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// ÒªËØÊı¾İ½á¹¹ - ÓÃÓÚ´«µİ¼¸ºÎºÍÊôĞÔÊı¾İ
+        /// è¦ç´ æ•°æ®ç»“æ„ - ç”¨äºä¼ é€’å‡ ä½•å’Œå±æ€§æ•°æ®
         /// </summary>
         public class FeatureData
         {
@@ -64,7 +64,7 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// ÏØ¼¶´¦ÀíĞÅÏ¢
+        /// å¿çº§å¤„ç†ä¿¡æ¯
         /// </summary>
         public class CountyProcessingInfo
         {
@@ -73,31 +73,31 @@ namespace TestArcMapAddin2.Utils
             public IFeatureClass SourceFeatureClass { get; set; }
             public Dictionary<string, string> FieldMappings { get; set; }
             public string WhereClause { get; set; }
-            public string ResourceType { get; set; } // "É­ÁÖ", "²İÔ­", "ÊªµØ", µÈ
+            public string ResourceType { get; set; } // "æ£®æ—", "è‰åŸ", "æ¹¿åœ°", ç­‰
         }
 
         /// <summary>
-        /// ¸øÒªËØÀàÌí¼Ó×Ö¶Î
+        /// ç»™è¦ç´ ç±»æ·»åŠ å­—æ®µ
         /// </summary>
-        /// <param name="featureClass">ÒªËØÀà</param>
-        /// <param name="fieldName">×Ö¶ÎÃû</param>
-        /// <param name="fieldType">×Ö¶ÎÀàĞÍ</param>
-        /// <param name="length">×Ö¶Î³¤¶È</param>
-        /// <param name="precision">¾«¶È</param>
-        /// <returns>ÊÇ·ñ³É¹¦Ìí¼Ó</returns>
+        /// <param name="featureClass">è¦ç´ ç±»</param>
+        /// <param name="fieldName">å­—æ®µå</param>
+        /// <param name="fieldType">å­—æ®µç±»å‹</param>
+        /// <param name="length">å­—æ®µé•¿åº¦</param>
+        /// <param name="precision">ç²¾åº¦</param>
+        /// <returns>æ˜¯å¦æˆåŠŸæ·»åŠ </returns>
         public static bool AddField(IFeatureClass featureClass, string fieldName, esriFieldType fieldType,
                                   int length = 50, int precision = 0)
         {
             try
             {
-                // ¼ì²é×Ö¶ÎÊÇ·ñÒÑ´æÔÚ
+                // æ£€æŸ¥å­—æ®µæ˜¯å¦å·²å­˜åœ¨
                 if (featureClass.FindField(fieldName) != -1)
                 {
-                    System.Diagnostics.Debug.WriteLine($"×Ö¶Î {fieldName} ÒÑ´æÔÚ");
+                    System.Diagnostics.Debug.WriteLine($"å­—æ®µ {fieldName} å·²å­˜åœ¨");
                     return true;
                 }
 
-                // ´´½¨×Ö¶Î¶¨Òå
+                // åˆ›å»ºå­—æ®µå®šä¹‰
                 IField field = new FieldClass();
                 IFieldEdit fieldEdit = (IFieldEdit)field;
 
@@ -111,29 +111,29 @@ namespace TestArcMapAddin2.Utils
                 else if (fieldType == esriFieldType.esriFieldTypeDouble && precision > 0)
                 {
                     fieldEdit.Precision_2 = precision;
-                    fieldEdit.Scale_2 = 2; // Ğ¡ÊıÎ»Êı
+                    fieldEdit.Scale_2 = 2; // å°æ•°ä½æ•°
                 }
 
-                // Ìí¼Ó×Ö¶Îµ½ÒªËØÀà
+                // æ·»åŠ å­—æ®µåˆ°è¦ç´ ç±»
                 featureClass.AddField(field);
 
-                System.Diagnostics.Debug.WriteLine($"³É¹¦Ìí¼Ó×Ö¶Î: {fieldName}");
+                System.Diagnostics.Debug.WriteLine($"æˆåŠŸæ·»åŠ å­—æ®µ: {fieldName}");
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Ìí¼Ó×Ö¶Î {fieldName} Ê§°Ü: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"æ·»åŠ å­—æ®µ {fieldName} å¤±è´¥: {ex.Message}");
                 return false;
             }
         }
 
         /// <summary>
-        /// ¼ÆËãÒªËØµÄ¼¸ºÎÃæ»ı²¢¸üĞÂµ½Ö¸¶¨×Ö¶Î
+        /// è®¡ç®—è¦ç´ çš„å‡ ä½•é¢ç§¯å¹¶æ›´æ–°åˆ°æŒ‡å®šå­—æ®µ
         /// </summary>
-        /// <param name="featureClass">ÒªËØÀà</param>
-        /// <param name="areaFieldName">Ãæ»ı×Ö¶ÎÃû</param>
-        /// <param name="progressCallback">½ø¶È»Øµ÷</param>
-        /// <returns>¼ÆËã³É¹¦µÄÒªËØÊıÁ¿</returns>
+        /// <param name="featureClass">è¦ç´ ç±»</param>
+        /// <param name="areaFieldName">é¢ç§¯å­—æ®µå</param>
+        /// <param name="progressCallback">è¿›åº¦å›è°ƒ</param>
+        /// <returns>è®¡ç®—æˆåŠŸçš„è¦ç´ æ•°é‡</returns>
         public static int CalculateGeometricArea(IFeatureClass featureClass, string areaFieldName,
                                                ProgressCallback progressCallback = null)
         {
@@ -143,21 +143,21 @@ namespace TestArcMapAddin2.Utils
 
             try
             {
-                // È·±£Ãæ»ı×Ö¶Î´æÔÚ
+                // ç¡®ä¿é¢ç§¯å­—æ®µå­˜åœ¨
                 int areaFieldIndex = featureClass.FindField(areaFieldName);
                 if (areaFieldIndex == -1)
                 {
                     if (!AddField(featureClass, areaFieldName, esriFieldType.esriFieldTypeDouble))
                     {
-                        throw new Exception($"ÎŞ·¨´´½¨Ãæ»ı×Ö¶Î: {areaFieldName}");
+                        throw new Exception($"æ— æ³•åˆ›å»ºé¢ç§¯å­—æ®µ: {areaFieldName}");
                     }
                     areaFieldIndex = featureClass.FindField(areaFieldName);
                 }
 
                 int totalFeatures = featureClass.FeatureCount(null);
-                progressCallback?.Invoke(0, $"¿ªÊ¼¼ÆËã {totalFeatures} ¸öÒªËØµÄ¼¸ºÎÃæ»ı...");
+                progressCallback?.Invoke(0, $"å¼€å§‹è®¡ç®— {totalFeatures} ä¸ªè¦ç´ çš„å‡ ä½•é¢ç§¯...");
 
-                // ´´½¨¸üĞÂÓÎ±ê
+                // åˆ›å»ºæ›´æ–°æ¸¸æ ‡
                 updateCursor = featureClass.Update(null, false);
                 IFeature feature;
                 int processedCount = 0;
@@ -168,7 +168,7 @@ namespace TestArcMapAddin2.Utils
                     {
                         if (feature.Shape != null && !feature.Shape.IsEmpty)
                         {
-                            // ¼ÆËã¼¸ºÎÃæ»ı
+                            // è®¡ç®—å‡ ä½•é¢ç§¯
                             IArea areaInterface = feature.Shape as IArea;
                             if (areaInterface != null)
                             {
@@ -181,17 +181,17 @@ namespace TestArcMapAddin2.Utils
 
                         processedCount++;
 
-                        // ¸üĞÂ½ø¶È
+                        // æ›´æ–°è¿›åº¦
                         if (processedCount % 100 == 0 || processedCount == totalFeatures)
                         {
                             int percentage = (processedCount * 100) / totalFeatures;
                             progressCallback?.Invoke(percentage,
-                                $"ÒÑ¼ÆËã {processedCount}/{totalFeatures} ¸öÒªËØµÄÃæ»ı");
+                                $"å·²è®¡ç®— {processedCount}/{totalFeatures} ä¸ªè¦ç´ çš„é¢ç§¯");
                         }
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"¼ÆËãÒªËØÃæ»ıÊ±³ö´í: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"è®¡ç®—è¦ç´ é¢ç§¯æ—¶å‡ºé”™: {ex.Message}");
                     }
                     finally
                     {
@@ -200,12 +200,12 @@ namespace TestArcMapAddin2.Utils
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"Ãæ»ı¼ÆËãÍê³É: ³É¹¦ {successCount}/{totalFeatures}");
+                System.Diagnostics.Debug.WriteLine($"é¢ç§¯è®¡ç®—å®Œæˆ: æˆåŠŸ {successCount}/{totalFeatures}");
                 return successCount;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"¼ÆËã¼¸ºÎÃæ»ıÊ±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"è®¡ç®—å‡ ä½•é¢ç§¯æ—¶å‡ºé”™: {ex.Message}");
                 throw;
             }
             finally
@@ -218,12 +218,12 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// ¸´ÖÆÒªËØÊôĞÔ
+        /// å¤åˆ¶è¦ç´ å±æ€§
         /// </summary>
-        /// <param name="sourceFeature">Ô´ÒªËØ</param>
-        /// <param name="sourceFeatureClass">Ô´ÒªËØÀà</param>
-        /// <param name="targetBuffer">Ä¿±ê»º³åÇø</param>
-        /// <param name="targetFeatureClass">Ä¿±êÒªËØÀà</param>
+        /// <param name="sourceFeature">æºè¦ç´ </param>
+        /// <param name="sourceFeatureClass">æºè¦ç´ ç±»</param>
+        /// <param name="targetBuffer">ç›®æ ‡ç¼“å†²åŒº</param>
+        /// <param name="targetFeatureClass">ç›®æ ‡è¦ç´ ç±»</param>
         public static void CopyFeatureAttributes(IFeature sourceFeature, IFeatureClass sourceFeatureClass,
                                                IFeatureBuffer targetBuffer, IFeatureClass targetFeatureClass)
         {
@@ -236,12 +236,12 @@ namespace TestArcMapAddin2.Utils
                 {
                     IField sourceField = sourceFields.get_Field(i);
 
-                    // Ìø¹ıOIDºÍ¼¸ºÎ×Ö¶Î
+                    // è·³è¿‡OIDå’Œå‡ ä½•å­—æ®µ
                     if (sourceField.Type == esriFieldType.esriFieldTypeOID ||
                         sourceField.Type == esriFieldType.esriFieldTypeGeometry)
                         continue;
 
-                    // ²éÕÒÄ¿±ê×Ö¶Î
+                    // æŸ¥æ‰¾ç›®æ ‡å­—æ®µ
                     int targetIndex = targetFeatureClass.FindField(sourceField.Name);
                     if (targetIndex != -1)
                     {
@@ -255,25 +255,25 @@ namespace TestArcMapAddin2.Utils
                         }
                         catch (Exception ex)
                         {
-                            System.Diagnostics.Debug.WriteLine($"¸´ÖÆ×Ö¶Î {sourceField.Name} Ê±³ö´í: {ex.Message}");
+                            System.Diagnostics.Debug.WriteLine($"å¤åˆ¶å­—æ®µ {sourceField.Name} æ—¶å‡ºé”™: {ex.Message}");
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"¸´ÖÆÒªËØÊôĞÔÊ±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"å¤åˆ¶è¦ç´ å±æ€§æ—¶å‡ºé”™: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// ¸´ÖÆÒªËØÊôĞÔ£¨Ê¹ÓÃ×Ö¶ÎÓ³Éä£©
+        /// å¤åˆ¶è¦ç´ å±æ€§ï¼ˆä½¿ç”¨å­—æ®µæ˜ å°„ï¼‰
         /// </summary>
-        /// <param name="sourceFeature">Ô´ÒªËØ</param>
-        /// <param name="sourceFeatureClass">Ô´ÒªËØÀà</param>
-        /// <param name="targetBuffer">Ä¿±ê»º³åÇø</param>
-        /// <param name="targetFeatureClass">Ä¿±êÒªËØÀà</param>
-        /// <param name="fieldMappings">×Ö¶ÎÓ³Éä£¨Ä¿±ê×Ö¶ÎÃû -> Ô´×Ö¶ÎÃû£©</param>
+        /// <param name="sourceFeature">æºè¦ç´ </param>
+        /// <param name="sourceFeatureClass">æºè¦ç´ ç±»</param>
+        /// <param name="targetBuffer">ç›®æ ‡ç¼“å†²åŒº</param>
+        /// <param name="targetFeatureClass">ç›®æ ‡è¦ç´ ç±»</param>
+        /// <param name="fieldMappings">å­—æ®µæ˜ å°„ï¼ˆç›®æ ‡å­—æ®µå -> æºå­—æ®µåï¼‰</param>
         public static void CopyFeatureAttributesWithMapping(IFeature sourceFeature, IFeatureClass sourceFeatureClass,
                                                            IFeatureBuffer targetBuffer, IFeatureClass targetFeatureClass,
                                                            Dictionary<string, string> fieldMappings)
@@ -282,7 +282,7 @@ namespace TestArcMapAddin2.Utils
             {
                 if (fieldMappings == null || fieldMappings.Count == 0)
                 {
-                    // Èç¹ûÃ»ÓĞ×Ö¶ÎÓ³Éä£¬Ê¹ÓÃÄ¬ÈÏµÄ¸´ÖÆ·½·¨
+                    // å¦‚æœæ²¡æœ‰å­—æ®µæ˜ å°„ï¼Œä½¿ç”¨é»˜è®¤çš„å¤åˆ¶æ–¹æ³•
                     CopyFeatureAttributes(sourceFeature, sourceFeatureClass, targetBuffer, targetFeatureClass);
                     return;
                 }
@@ -308,21 +308,21 @@ namespace TestArcMapAddin2.Utils
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"¸´ÖÆ×Ö¶ÎÓ³Éä {targetFieldName} <- {sourceFieldName} Ê±³ö´í: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"å¤åˆ¶å­—æ®µæ˜ å°„ {targetFieldName} <- {sourceFieldName} æ—¶å‡ºé”™: {ex.Message}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Ê¹ÓÃ×Ö¶ÎÓ³Éä¸´ÖÆÒªËØÊôĞÔÊ±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"ä½¿ç”¨å­—æ®µæ˜ å°„å¤åˆ¶è¦ç´ å±æ€§æ—¶å‡ºé”™: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// ´ò¿ªshapefile
+        /// æ‰“å¼€shapefile
         /// </summary>
-        /// <param name="shapefilePath">shapefileÂ·¾¶</param>
-        /// <returns>´ò¿ª½á¹û</returns>
+        /// <param name="shapefilePath">shapefileè·¯å¾„</param>
+        /// <returns>æ‰“å¼€ç»“æœ</returns>
         public static ShapefileOpenResult OpenShapefile(string shapefilePath)
         {
             var result = new ShapefileOpenResult();
@@ -331,14 +331,14 @@ namespace TestArcMapAddin2.Utils
             {
                 if (!File.Exists(shapefilePath))
                 {
-                    result.ErrorMessage = $"ÎÄ¼ş²»´æÔÚ: {shapefilePath}";
+                    result.ErrorMessage = $"æ–‡ä»¶ä¸å­˜åœ¨: {shapefilePath}";
                     return result;
                 }
 
                 string directory = System.IO.Path.GetDirectoryName(shapefilePath);
                 string fileName = System.IO.Path.GetFileNameWithoutExtension(shapefilePath);
 
-                // Ê¹ÓÃ Type.GetTypeFromProgID ºÍ Activator.CreateInstance À´´´½¨¹¤×÷¿Õ¼ä¹¤³§
+                // ä½¿ç”¨ Type.GetTypeFromProgID å’Œ Activator.CreateInstance æ¥åˆ›å»ºå·¥ä½œç©ºé—´å·¥å‚
                 Type factoryType = Type.GetTypeFromProgID("esriDataSourcesFile.ShapefileWorkspaceFactory");
                 IWorkspaceFactory factory = Activator.CreateInstance(factoryType) as IWorkspaceFactory;
 
@@ -356,145 +356,34 @@ namespace TestArcMapAddin2.Utils
             {
                 result.Success = false;
                 result.ErrorMessage = ex.Message;
-                System.Diagnostics.Debug.WriteLine($"´ò¿ªshapefile {shapefilePath} Ê±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"æ‰“å¼€shapefile {shapefilePath} æ—¶å‡ºé”™: {ex.Message}");
                 return result;
             }
         }
 
         /// <summary>
-        /// ÏòÏÖÓĞShapefileĞ´ÈëÊı¾İ
+        /// ğŸ”¥ é‡è½½ï¼šå‘ç°æœ‰Shapefileå†™å…¥æ•°æ®ï¼ˆä¿æŒåŸæœ‰æ¥å£å…¼å®¹æ€§ï¼‰
         /// </summary>
-        /// <param name="targetShapefilePath">Ä¿±êShapefileÂ·¾¶</param>
-        /// <param name="sourceData">Ô´Êı¾İÁĞ±í£¨¼¸ºÎºÍÊôĞÔ£©</param>
-        /// <param name="progressCallback">½ø¶È»Øµ÷</param>
-        /// <returns>Ğ´Èë²Ù×÷½á¹û</returns>
+        /// <param name="targetShapefilePath">ç›®æ ‡Shapefileè·¯å¾„</param>
+        /// <param name="sourceData">æºæ•°æ®åˆ—è¡¨ï¼ˆå‡ ä½•å’Œå±æ€§ï¼‰</param>
+        /// <param name="progressCallback">è¿›åº¦å›è°ƒ</param>
+        /// <returns>å†™å…¥æ“ä½œç»“æœ</returns>
         public static WriteDataResult WriteDataToExistingShapefile(string targetShapefilePath,
             List<FeatureData> sourceData, ProgressCallback progressCallback = null)
         {
-            var result = new WriteDataResult();
-            IWorkspace workspace = null;
-            IFeatureClass featureClass = null;
-            IFeatureCursor insertCursor = null;
-
-            try
-            {
-                progressCallback?.Invoke(0, "ÕıÔÚ´ò¿ªÄ¿±êShapefile...");
-
-                // ´ò¿ªÏÖÓĞµÄShapefile
-                var openResult = OpenShapefile(targetShapefilePath);
-                if (!openResult.Success)
-                {
-                    result.ErrorMessage = openResult.ErrorMessage;
-                    return result;
-                }
-
-                workspace = openResult.Workspace;
-                featureClass = openResult.FeatureClass;
-
-                progressCallback?.Invoke(10, "ÕıÔÚ×¼±¸Êı¾İĞ´Èë...");
-
-                // ´´½¨²åÈëÓÎ±ê
-                insertCursor = featureClass.Insert(true);
-                int totalFeatures = sourceData.Count;
-                int successCount = 0;
-
-                progressCallback?.Invoke(20, $"¿ªÊ¼Ğ´Èë {totalFeatures} ¸öÒªËØ...");
-
-                for (int i = 0; i < totalFeatures; i++)
-                {
-                    try
-                    {
-                        var data = sourceData[i];
-
-                        // ´´½¨ÒªËØ»º³åÇø
-                        IFeatureBuffer featureBuffer = featureClass.CreateFeatureBuffer();
-
-                        // ÉèÖÃ¼¸ºÎ
-                        if (data.Geometry != null)
-                        {
-                            featureBuffer.Shape = data.Geometry;
-                        }
-
-                        // ÉèÖÃÊôĞÔ
-                        if (data.Attributes != null)
-                        {
-                            foreach (var attr in data.Attributes)
-                            {
-                                int fieldIndex = featureClass.FindField(attr.Key);
-                                if (fieldIndex != -1)
-                                {
-                                    try
-                                    {
-                                        featureBuffer.set_Value(fieldIndex, attr.Value ?? DBNull.Value);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        System.Diagnostics.Debug.WriteLine($"ÉèÖÃ×Ö¶Î {attr.Key} ÖµÊ±³ö´í: {ex.Message}");
-                                    }
-                                }
-                            }
-                        }
-
-                        // ²åÈëÒªËØ
-                        insertCursor.InsertFeature(featureBuffer);
-                        successCount++;
-
-                        // ÊÍ·Å»º³åÇø
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(featureBuffer);
-
-                        // ¸üĞÂ½ø¶È
-                        if (i % 50 == 0 || i == totalFeatures - 1)
-                        {
-                            int percentage = 20 + (i * 70) / totalFeatures;
-                            progressCallback?.Invoke(percentage, $"ÒÑĞ´Èë {i + 1}/{totalFeatures} ¸öÒªËØ");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Ğ´ÈëµÚ {i + 1} ¸öÒªËØÊ±³ö´í: {ex.Message}");
-                    }
-                }
-
-                // Ìá½»Êı¾İ
-                insertCursor.Flush();
-
-                result.Success = true;
-                result.ProcessedFeatureCount = successCount;
-                result.OutputPath = targetShapefilePath;
-
-                progressCallback?.Invoke(100, $"Êı¾İĞ´ÈëÍê³É£¬³É¹¦Ğ´Èë {successCount}/{totalFeatures} ¸öÒªËØ");
-
-                System.Diagnostics.Debug.WriteLine($"Ïò {targetShapefilePath} ³É¹¦Ğ´Èë {successCount} ¸öÒªËØ");
-                return result;
-            }
-            catch (Exception ex)
-            {
-                result.Success = false;
-                result.ErrorMessage = ex.Message;
-                System.Diagnostics.Debug.WriteLine($"ÏòShapefileĞ´ÈëÊı¾İÊ±³ö´í: {ex.Message}");
-                return result;
-            }
-            finally
-            {
-                // ÊÍ·Å×ÊÔ´
-                if (insertCursor != null)
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(insertCursor);
-                if (featureClass != null)
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);
-                if (workspace != null)
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(workspace);
-            }
+            // é»˜è®¤æ¸…ç©ºç°æœ‰æ•°æ®
+            return WriteDataToExistingShapefile(targetShapefilePath, sourceData, true, progressCallback);
         }
 
         /// <summary>
-        /// ´ÓÔ´ÒªËØÀà¶ÁÈ¡Êı¾İ²¢Ğ´Èëµ½Ä¿±êShapefile
+        /// ä»æºè¦ç´ ç±»è¯»å–æ•°æ®å¹¶å†™å…¥åˆ°ç›®æ ‡Shapefile
         /// </summary>
-        /// <param name="sourceFeatureClass">Ô´ÒªËØÀà</param>
-        /// <param name="targetShapefilePath">Ä¿±êShapefileÂ·¾¶</param>
-        /// <param name="fieldMappings">×Ö¶ÎÓ³Éä£¨Ä¿±ê×Ö¶ÎÃû -> Ô´×Ö¶ÎÃû£©</param>
-        /// <param name="whereClause">²éÑ¯Ìõ¼ş£¨¿ÉÑ¡£©</param>
-        /// <param name="progressCallback">½ø¶È»Øµ÷</param>
-        /// <returns>Ğ´Èë²Ù×÷½á¹û</returns>
+        /// <param name="sourceFeatureClass">æºè¦ç´ ç±»</param>
+        /// <param name="targetShapefilePath">ç›®æ ‡Shapefileè·¯å¾„</param>
+        /// <param name="fieldMappings">å­—æ®µæ˜ å°„ï¼ˆç›®æ ‡å­—æ®µå -> æºå­—æ®µåï¼‰</param>
+        /// <param name="whereClause">æŸ¥è¯¢æ¡ä»¶ï¼ˆå¯é€‰ï¼‰</param>
+        /// <param name="progressCallback">è¿›åº¦å›è°ƒ</param>
+        /// <returns>å†™å…¥æ“ä½œç»“æœ</returns>
         public static WriteDataResult WriteFeatureClassToShapefile(IFeatureClass sourceFeatureClass,
             string targetShapefilePath, Dictionary<string, string> fieldMappings = null,
             string whereClause = null, ProgressCallback progressCallback = null)
@@ -505,9 +394,9 @@ namespace TestArcMapAddin2.Utils
 
             try
             {
-                progressCallback?.Invoke(0, "ÕıÔÚ¶ÁÈ¡Ô´Êı¾İ...");
+                progressCallback?.Invoke(0, "æ­£åœ¨è¯»å–æºæ•°æ®...");
 
-                // ´´½¨²éÑ¯¹ıÂËÆ÷
+                // åˆ›å»ºæŸ¥è¯¢è¿‡æ»¤å™¨
                 IQueryFilter queryFilter = null;
                 if (!string.IsNullOrEmpty(whereClause))
                 {
@@ -515,7 +404,7 @@ namespace TestArcMapAddin2.Utils
                     queryFilter.WhereClause = whereClause;
                 }
 
-                // ¶ÁÈ¡Ô´Êı¾İ
+                // è¯»å–æºæ•°æ®
                 sourceCursor = sourceFeatureClass.Search(queryFilter, false);
                 IFeature sourceFeature;
                 int readCount = 0;
@@ -526,13 +415,13 @@ namespace TestArcMapAddin2.Utils
                     {
                         var featureData = new FeatureData();
 
-                        // ¸´ÖÆ¼¸ºÎ
+                        // å¤åˆ¶å‡ ä½•
                         if (sourceFeature.Shape != null)
                         {
                             featureData.Geometry = sourceFeature.ShapeCopy;
                         }
 
-                        // ¸´ÖÆÊôĞÔ
+                        // å¤åˆ¶å±æ€§
                         if (fieldMappings != null)
                         {
                             foreach (var mapping in fieldMappings)
@@ -550,7 +439,7 @@ namespace TestArcMapAddin2.Utils
                         }
                         else
                         {
-                            // Èç¹ûÃ»ÓĞ×Ö¶ÎÓ³Éä£¬¸´ÖÆËùÓĞ·Ç¼¸ºÎ×Ö¶Î
+                            // å¦‚æœæ²¡æœ‰å­—æ®µæ˜ å°„ï¼Œå¤åˆ¶æ‰€æœ‰éå‡ ä½•å­—æ®µ
                             IFields fields = sourceFeatureClass.Fields;
                             for (int i = 0; i < fields.FieldCount; i++)
                             {
@@ -569,7 +458,7 @@ namespace TestArcMapAddin2.Utils
 
                         if (readCount % 100 == 0)
                         {
-                            progressCallback?.Invoke(readCount % 50, $"ÒÑ¶ÁÈ¡ {readCount} ¸öÒªËØ...");
+                            progressCallback?.Invoke(readCount % 50, $"å·²è¯»å– {readCount} ä¸ªè¦ç´ ...");
                         }
                     }
                     finally
@@ -578,9 +467,9 @@ namespace TestArcMapAddin2.Utils
                     }
                 }
 
-                progressCallback?.Invoke(50, $"Êı¾İ¶ÁÈ¡Íê³É£¬¹²¶ÁÈ¡ {readCount} ¸öÒªËØ");
+                progressCallback?.Invoke(50, $"æ•°æ®è¯»å–å®Œæˆï¼Œå…±è¯»å– {readCount} ä¸ªè¦ç´ ");
 
-                // Ğ´Èëµ½Ä¿±êShapefile
+                // å†™å…¥åˆ°ç›®æ ‡Shapefile
                 var writeResult = WriteDataToExistingShapefile(targetShapefilePath, featureDataList,
                     (percentage, message) => {
                         int adjustedProgress = 50 + (percentage * 50) / 100;
@@ -593,7 +482,7 @@ namespace TestArcMapAddin2.Utils
             {
                 result.Success = false;
                 result.ErrorMessage = ex.Message;
-                System.Diagnostics.Debug.WriteLine($"´ÓÒªËØÀàĞ´ÈëShapefileÊ±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"ä»è¦ç´ ç±»å†™å…¥Shapefileæ—¶å‡ºé”™: {ex.Message}");
                 return result;
             }
             finally
@@ -604,12 +493,12 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// ÅúÁ¿´¦Àí¶à¸öÏØµÄÊı¾İĞ´Èë
+        /// æ‰¹é‡å¤„ç†å¤šä¸ªå¿çš„æ•°æ®å†™å…¥
         /// </summary>
-        /// <param name="countyDataMappings">ÏØ¼¶Êı¾İÓ³Éä£¨ÏØ´úÂë -> Êı¾İĞÅÏ¢£©</param>
-        /// <param name="outputBasePath">Êä³ö»ù´¡Â·¾¶</param>
-        /// <param name="progressCallback">½ø¶È»Øµ÷</param>
-        /// <returns>ÅúÁ¿´¦Àí½á¹û</returns>
+        /// <param name="countyDataMappings">å¿çº§æ•°æ®æ˜ å°„ï¼ˆå¿ä»£ç  -> æ•°æ®ä¿¡æ¯ï¼‰</param>
+        /// <param name="outputBasePath">è¾“å‡ºåŸºç¡€è·¯å¾„</param>
+        /// <param name="progressCallback">è¿›åº¦å›è°ƒ</param>
+        /// <returns>æ‰¹é‡å¤„ç†ç»“æœ</returns>
         public static Dictionary<string, WriteDataResult> BatchWriteCountyData(
             Dictionary<string, CountyProcessingInfo> countyDataMappings,
             string outputBasePath, ProgressCallback progressCallback = null)
@@ -621,7 +510,7 @@ namespace TestArcMapAddin2.Utils
                 int totalCounties = countyDataMappings.Count;
                 int processedCounties = 0;
 
-                progressCallback?.Invoke(0, $"¿ªÊ¼ÅúÁ¿´¦Àí {totalCounties} ¸öÏØµÄÊı¾İĞ´Èë...");
+                progressCallback?.Invoke(0, $"å¼€å§‹æ‰¹é‡å¤„ç† {totalCounties} ä¸ªå¿çš„æ•°æ®å†™å…¥...");
 
                 foreach (var countyData in countyDataMappings)
                 {
@@ -633,14 +522,14 @@ namespace TestArcMapAddin2.Utils
                         int startProgress = (processedCounties * 100) / totalCounties;
                         int endProgress = ((processedCounties + 1) * 100) / totalCounties;
 
-                        progressCallback?.Invoke(startProgress, $"ÕıÔÚ´¦ÀíÏØ´úÂë {countyCode}...");
+                        progressCallback?.Invoke(startProgress, $"æ­£åœ¨å¤„ç†å¿ä»£ç  {countyCode}...");
 
-                        // ¹¹½¨ÏØ¼¶Êä³öÂ·¾¶
+                        // æ„å»ºå¿çº§è¾“å‡ºè·¯å¾„
                         string countyName = ForestResourcePlugin.Utils.CountyCodeMapper.GetCountyNameFromCode(countyCode);
-                        string countyFolderName = $"{countyName}({countyCode})È«ÃñËùÓĞ×ÔÈ»×ÊÔ´×Ê²úÇå²éÊı¾İ³É¹û";
+                        string countyFolderName = $"{countyName}({countyCode})å…¨æ°‘æ‰€æœ‰è‡ªç„¶èµ„æºèµ„äº§æ¸…æŸ¥æ•°æ®æˆæœ";
                         string countyOutputPath = System.IO.Path.Combine(outputBasePath, countyFolderName);
 
-                        // ´¦Àí¸ÃÏØµÄÊı¾İ
+                        // å¤„ç†è¯¥å¿çš„æ•°æ®
                         var countyResult = ProcessSingleCountyData(processingInfo, countyOutputPath,
                             (percentage, message) => {
                                 int adjustedProgress = startProgress + (percentage * (endProgress - startProgress)) / 100;
@@ -652,11 +541,11 @@ namespace TestArcMapAddin2.Utils
 
                         if (countyResult.Success)
                         {
-                            System.Diagnostics.Debug.WriteLine($"ÏØ {countyCode} Êı¾İĞ´Èë³É¹¦");
+                            System.Diagnostics.Debug.WriteLine($"å¿ {countyCode} æ•°æ®å†™å…¥æˆåŠŸ");
                         }
                         else
                         {
-                            System.Diagnostics.Debug.WriteLine($"ÏØ {countyCode} Êı¾İĞ´ÈëÊ§°Ü: {countyResult.ErrorMessage}");
+                            System.Diagnostics.Debug.WriteLine($"å¿ {countyCode} æ•°æ®å†™å…¥å¤±è´¥: {countyResult.ErrorMessage}");
                         }
                     }
                     catch (Exception ex)
@@ -669,58 +558,58 @@ namespace TestArcMapAddin2.Utils
                         results[countyCode] = errorResult;
                         processedCounties++;
 
-                        System.Diagnostics.Debug.WriteLine($"´¦ÀíÏØ {countyCode} Ê±³öÏÖÒì³£: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"å¤„ç†å¿ {countyCode} æ—¶å‡ºç°å¼‚å¸¸: {ex.Message}");
                     }
                 }
 
-                progressCallback?.Invoke(100, "ÅúÁ¿Êı¾İĞ´ÈëÍê³É");
+                progressCallback?.Invoke(100, "æ‰¹é‡æ•°æ®å†™å…¥å®Œæˆ");
                 return results;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ÅúÁ¿Ğ´ÈëÏØ¼¶Êı¾İÊ±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"æ‰¹é‡å†™å…¥å¿çº§æ•°æ®æ—¶å‡ºé”™: {ex.Message}");
                 return results;
             }
         }
 
         /// <summary>
-        /// ´¦Àíµ¥¸öÏØµÄÊı¾İ
+        /// å¤„ç†å•ä¸ªå¿çš„æ•°æ®
         /// </summary>
-        /// <param name="processingInfo">´¦ÀíĞÅÏ¢</param>
-        /// <param name="countyOutputPath">ÏØ¼¶Êä³öÂ·¾¶</param>
-        /// <param name="progressCallback">½ø¶È»Øµ÷</param>
-        /// <returns>´¦Àí½á¹û</returns>
+        /// <param name="processingInfo">å¤„ç†ä¿¡æ¯</param>
+        /// <param name="countyOutputPath">å¿çº§è¾“å‡ºè·¯å¾„</param>
+        /// <param name="progressCallback">è¿›åº¦å›è°ƒ</param>
+        /// <returns>å¤„ç†ç»“æœ</returns>
         private static WriteDataResult ProcessSingleCountyData(CountyProcessingInfo processingInfo,
             string countyOutputPath, ProgressCallback progressCallback = null)
         {
             try
             {
-                // ¹¹½¨Ä¿±êShapefileÂ·¾¶
-                string resourcePath = System.IO.Path.Combine(countyOutputPath, "Çå²éÊı¾İ¼¯", processingInfo.ResourceType, "¿Õ¼äÊı¾İ");
+                // æ„å»ºç›®æ ‡Shapefileè·¯å¾„
+                string resourcePath = System.IO.Path.Combine(countyOutputPath, "æ¸…æŸ¥æ•°æ®é›†", processingInfo.ResourceType, "ç©ºé—´æ•°æ®");
                 string targetShapefileName = GetTargetShapefileName(processingInfo.CountyCode, processingInfo.ResourceType);
                 string targetShapefilePath = System.IO.Path.Combine(resourcePath, targetShapefileName + ".shp");
 
-                // ÑéÖ¤Ä¿±êÂ·¾¶´æÔÚ
+                // éªŒè¯ç›®æ ‡è·¯å¾„å­˜åœ¨
                 if (!Directory.Exists(resourcePath))
                 {
                     return new WriteDataResult
                     {
                         Success = false,
-                        ErrorMessage = $"Ä¿±êÂ·¾¶²»´æÔÚ: {resourcePath}"
+                        ErrorMessage = $"ç›®æ ‡è·¯å¾„ä¸å­˜åœ¨: {resourcePath}"
                     };
                 }
 
-                // ÑéÖ¤Ä¿±êShapefile´æÔÚ
+                // éªŒè¯ç›®æ ‡Shapefileå­˜åœ¨
                 if (!File.Exists(targetShapefilePath))
                 {
                     return new WriteDataResult
                     {
                         Success = false,
-                        ErrorMessage = $"Ä¿±êShapefile²»´æÔÚ: {targetShapefilePath}"
+                        ErrorMessage = $"ç›®æ ‡Shapefileä¸å­˜åœ¨: {targetShapefilePath}"
                     };
                 }
 
-                // Ö´ĞĞÊı¾İĞ´Èë
+                // æ‰§è¡Œæ•°æ®å†™å…¥
                 return WriteFeatureClassToShapefile(
                     processingInfo.SourceFeatureClass,
                     targetShapefilePath,
@@ -739,22 +628,22 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// ¸ù¾İÏØ´úÂëºÍ×ÊÔ´ÀàĞÍ»ñÈ¡Ä¿±êShapefileÃû³Æ
+        /// æ ¹æ®å¿ä»£ç å’Œèµ„æºç±»å‹è·å–ç›®æ ‡Shapefileåç§°
         /// </summary>
-        /// <param name="countyCode">ÏØ´úÂë</param>
-        /// <param name="resourceType">×ÊÔ´ÀàĞÍ</param>
-        /// <returns>ShapefileÃû³Æ</returns>
+        /// <param name="countyCode">å¿ä»£ç </param>
+        /// <param name="resourceType">èµ„æºç±»å‹</param>
+        /// <returns>Shapefileåç§°</returns>
         private static string GetTargetShapefileName(string countyCode, string resourceType)
         {
             switch (resourceType)
             {
-                case "É­ÁÖ":
+                case "æ£®æ—":
                     return $"({countyCode})SLZYZC";
-                case "²İÔ­":
+                case "è‰åŸ":
                     return $"({countyCode})CYZYZC";
-                case "ÊªµØ":
+                case "æ¹¿åœ°":
                     return $"({countyCode})SDZYZC";
-                case "³ÇÕò´åµÈÓÃµØ":
+                case "åŸé•‡æ‘ç­‰ç”¨åœ°":
                     return $"({countyCode})CZCDYDQC";
                 default:
                     return $"({countyCode}){resourceType}";
@@ -762,16 +651,16 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// É¾³ıÁÙÊ±ÎÄ¼ş
+        /// åˆ é™¤ä¸´æ—¶æ–‡ä»¶
         /// </summary>
-        /// <param name="filePath">ÎÄ¼şÂ·¾¶</param>
+        /// <param name="filePath">æ–‡ä»¶è·¯å¾„</param>
         public static void DeleteTemporaryFiles(string filePath)
         {
             try
             {
                 if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
                 {
-                    // É¾³ıshapefileÏà¹ØµÄËùÓĞÎÄ¼ş
+                    // åˆ é™¤shapefileç›¸å…³çš„æ‰€æœ‰æ–‡ä»¶
                     string basePath = System.IO.Path.ChangeExtension(filePath, null);
                     string[] extensions = { ".shp", ".shx", ".dbf", ".prj", ".cpg", ".qpj", ".sbn", ".sbx" };
 
@@ -786,24 +675,24 @@ namespace TestArcMapAddin2.Utils
                             }
                             catch (Exception ex)
                             {
-                                System.Diagnostics.Debug.WriteLine($"É¾³ıÎÄ¼ş {file} Ê±³ö´í: {ex.Message}");
+                                System.Diagnostics.Debug.WriteLine($"åˆ é™¤æ–‡ä»¶ {file} æ—¶å‡ºé”™: {ex.Message}");
                             }
                         }
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"ÒÑÉ¾³ıÁÙÊ±ÎÄ¼ş: {filePath}");
+                    System.Diagnostics.Debug.WriteLine($"å·²åˆ é™¤ä¸´æ—¶æ–‡ä»¶: {filePath}");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"É¾³ıÁÙÊ±ÎÄ¼ş {filePath} Ê±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"åˆ é™¤ä¸´æ—¶æ–‡ä»¶ {filePath} æ—¶å‡ºé”™: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// É¾³ı¶à¸öÁÙÊ±ÎÄ¼ş
+        /// åˆ é™¤å¤šä¸ªä¸´æ—¶æ–‡ä»¶
         /// </summary>
-        /// <param name="filePaths">ÎÄ¼şÂ·¾¶ÁĞ±í</param>
+        /// <param name="filePaths">æ–‡ä»¶è·¯å¾„åˆ—è¡¨</param>
         public static void DeleteTemporaryFiles(IEnumerable<string> filePaths)
         {
             foreach (string filePath in filePaths)
@@ -813,10 +702,10 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// ÑéÖ¤shapefileÎÄ¼şµÄÓĞĞ§ĞÔ
+        /// éªŒè¯shapefileæ–‡ä»¶çš„æœ‰æ•ˆæ€§
         /// </summary>
-        /// <param name="shapefilePath">shapefileÂ·¾¶</param>
-        /// <returns>ÊÇ·ñÓĞĞ§</returns>
+        /// <param name="shapefilePath">shapefileè·¯å¾„</param>
+        /// <returns>æ˜¯å¦æœ‰æ•ˆ</returns>
         public static bool ValidateShapefile(string shapefilePath)
         {
             try
@@ -826,7 +715,7 @@ namespace TestArcMapAddin2.Utils
                     return false;
                 }
 
-                // ¼ì²é±ØĞèµÄshapefile×é¼şÎÄ¼ş
+                // æ£€æŸ¥å¿…éœ€çš„shapefileç»„ä»¶æ–‡ä»¶
                 string basePath = System.IO.Path.ChangeExtension(shapefilePath, null);
                 string[] requiredExtensions = { ".shp", ".shx", ".dbf" };
 
@@ -838,13 +727,13 @@ namespace TestArcMapAddin2.Utils
                     }
                 }
 
-                // ³¢ÊÔ´ò¿ªshapefileÑéÖ¤ÆäÍêÕûĞÔ
+                // å°è¯•æ‰“å¼€shapefileéªŒè¯å…¶å®Œæ•´æ€§
                 var openResult = OpenShapefile(shapefilePath);
                 if (openResult.Success && openResult.FeatureClass != null)
                 {
                     try
                     {
-                        // ³¢ÊÔ»ñÈ¡ÒªËØÊıÁ¿ÒÔÑéÖ¤Êı¾İÍêÕûĞÔ
+                        // å°è¯•è·å–è¦ç´ æ•°é‡ä»¥éªŒè¯æ•°æ®å®Œæ•´æ€§
                         int count = openResult.FeatureClass.FeatureCount(null);
                         return true;
                     }
@@ -859,16 +748,16 @@ namespace TestArcMapAddin2.Utils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ÑéÖ¤shapefile {shapefilePath} Ê±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"éªŒè¯shapefile {shapefilePath} æ—¶å‡ºé”™: {ex.Message}");
                 return false;
             }
         }
 
         /// <summary>
-        /// »ñÈ¡ÒªËØÀàµÄ×Ö¶ÎĞÅÏ¢
+        /// è·å–è¦ç´ ç±»çš„å­—æ®µä¿¡æ¯
         /// </summary>
-        /// <param name="featureClass">ÒªËØÀà</param>
-        /// <returns>×Ö¶ÎĞÅÏ¢ÁĞ±í</returns>
+        /// <param name="featureClass">è¦ç´ ç±»</param>
+        /// <returns>å­—æ®µä¿¡æ¯åˆ—è¡¨</returns>
         public static List<string> GetFeatureClassFields(IFeatureClass featureClass)
         {
             var fieldNames = new List<string>();
@@ -884,18 +773,360 @@ namespace TestArcMapAddin2.Utils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"»ñÈ¡ÒªËØÀà×Ö¶ÎĞÅÏ¢Ê±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"è·å–è¦ç´ ç±»å­—æ®µä¿¡æ¯æ—¶å‡ºé”™: {ex.Message}");
             }
 
             return fieldNames;
         }
+        /// <summary>
+        /// ğŸ”¥ æ–°å¢ï¼šæ¸…ç©ºShapefileä¸­çš„æ‰€æœ‰æ•°æ®
+        /// </summary>
+        /// <param name="shapefilePath">shapefileè·¯å¾„</param>
+        /// <param name="progressCallback">è¿›åº¦å›è°ƒ</param>
+        /// <returns>æ¸…ç©ºæ“ä½œç»“æœ</returns>
+        public static WriteDataResult ClearShapefileData(string shapefilePath, ProgressCallback progressCallback = null)
+        {
+            var result = new WriteDataResult();
+            IWorkspace workspace = null;
+            IFeatureClass featureClass = null;
+            IFeatureCursor deleteCursor = null;
+
+            try
+            {
+                progressCallback?.Invoke(0, "æ­£åœ¨æ‰“å¼€Shapefile...");
+
+                // æ‰“å¼€Shapefile
+                var openResult = OpenShapefile(shapefilePath);
+                if (!openResult.Success)
+                {
+                    result.ErrorMessage = openResult.ErrorMessage;
+                    return result;
+                }
+
+                workspace = openResult.Workspace;
+                featureClass = openResult.FeatureClass;
+
+                // è·å–å½“å‰è¦ç´ æ•°é‡
+                int totalFeatures = featureClass.FeatureCount(null);
+                progressCallback?.Invoke(10, $"å‘ç° {totalFeatures} ä¸ªè¦ç´ éœ€è¦æ¸…ç©º...");
+
+                if (totalFeatures == 0)
+                {
+                    progressCallback?.Invoke(100, "Shapefileå·²ç»ä¸ºç©ºï¼Œæ— éœ€æ¸…ç©º");
+                    result.Success = true;
+                    result.ProcessedFeatureCount = 0;
+                    result.OutputPath = shapefilePath;
+                    return result;
+                }
+
+                progressCallback?.Invoke(20, "å¼€å§‹æ¸…ç©ºæ•°æ®...");
+
+                // åˆ›å»ºåˆ é™¤æ¸¸æ ‡
+                deleteCursor = featureClass.Search(null, false);
+                IFeature feature;
+                int deletedCount = 0;
+
+                // ğŸ”¥ ä½¿ç”¨UpdateCursorè€Œä¸æ˜¯ç›´æ¥åˆ é™¤ï¼Œè¿™æ ·æ›´å®‰å…¨
+                IFeatureCursor updateCursor = featureClass.Update(null, false);
+
+                try
+                {
+                    while ((feature = updateCursor.NextFeature()) != null)
+                    {
+                        try
+                        {
+                            // åˆ é™¤è¦ç´ 
+                            updateCursor.DeleteFeature();
+                            deletedCount++;
+
+                            // æ›´æ–°è¿›åº¦
+                            if (deletedCount % 100 == 0 || deletedCount == totalFeatures)
+                            {
+                                int percentage = 20 + (deletedCount * 70) / totalFeatures;
+                                progressCallback?.Invoke(percentage, $"å·²æ¸…ç©º {deletedCount}/{totalFeatures} ä¸ªè¦ç´ ");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"åˆ é™¤ç¬¬ {deletedCount + 1} ä¸ªè¦ç´ æ—¶å‡ºé”™: {ex.Message}");
+                        }
+                        finally
+                        {
+                            if (feature != null)
+                                System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                        }
+                    }
+
+                    // æäº¤åˆ é™¤æ“ä½œ
+                    updateCursor.Flush();
+                }
+                finally
+                {
+                    if (updateCursor != null)
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(updateCursor);
+                }
+
+                result.Success = true;
+                result.ProcessedFeatureCount = deletedCount;
+                result.OutputPath = shapefilePath;
+
+                progressCallback?.Invoke(100, $"æˆåŠŸæ¸…ç©º {deletedCount} ä¸ªè¦ç´ ");
+                System.Diagnostics.Debug.WriteLine($"æˆåŠŸæ¸…ç©º {shapefilePath} ä¸­çš„ {deletedCount} ä¸ªè¦ç´ ");
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Success = false;
+                result.ErrorMessage = ex.Message;
+                System.Diagnostics.Debug.WriteLine($"æ¸…ç©ºShapefileæ•°æ®æ—¶å‡ºé”™: {ex.Message}");
+                return result;
+            }
+            finally
+            {
+                // é‡Šæ”¾èµ„æº
+                if (deleteCursor != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(deleteCursor);
+                if (featureClass != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);
+                if (workspace != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(workspace);
+            }
+        }
 
         /// <summary>
-        /// ÅúÁ¿´¦ÀíCZCDYDQCÊı¾İ
+        /// ğŸ”¥ ä¿®æ”¹ï¼šå‘ç°æœ‰Shapefileå†™å…¥æ•°æ®ï¼ˆå¸¦æ¸…ç©ºåŠŸèƒ½ï¼‰
         /// </summary>
-        /// <param name="countyFiles">ÏØ¼¶ÎÄ¼şĞÅÏ¢ÁĞ±í</param>
-        /// <param name="progressCallback">½ø¶È»Øµ÷</param>
-        /// <returns>´¦Àí½á¹ûÁĞ±í</returns>
+        /// <param name="targetShapefilePath">ç›®æ ‡Shapefileè·¯å¾„</param>
+        /// <param name="sourceData">æºæ•°æ®åˆ—è¡¨ï¼ˆå‡ ä½•å’Œå±æ€§ï¼‰</param>
+        /// <param name="clearExistingData">æ˜¯å¦æ¸…ç©ºç°æœ‰æ•°æ®</param>
+        /// <param name="progressCallback">è¿›åº¦å›è°ƒ</param>
+        /// <returns>å†™å…¥æ“ä½œç»“æœ</returns>
+        public static WriteDataResult WriteDataToExistingShapefile(string targetShapefilePath,
+            List<FeatureData> sourceData, bool clearExistingData = true, ProgressCallback progressCallback = null)
+        {
+            var result = new WriteDataResult();
+            IWorkspace workspace = null;
+            IFeatureClass featureClass = null;
+            IFeatureCursor insertCursor = null;
+
+            try
+            {
+                progressCallback?.Invoke(0, "æ­£åœ¨æ‰“å¼€ç›®æ ‡Shapefile...");
+
+                // æ‰“å¼€ç°æœ‰çš„Shapefile
+                var openResult = OpenShapefile(targetShapefilePath);
+                if (!openResult.Success)
+                {
+                    result.ErrorMessage = openResult.ErrorMessage;
+                    return result;
+                }
+
+                workspace = openResult.Workspace;
+                featureClass = openResult.FeatureClass;
+
+                // ğŸ”¥ æ–°å¢ï¼šå¦‚æœéœ€è¦æ¸…ç©ºç°æœ‰æ•°æ®
+                if (clearExistingData)
+                {
+                    progressCallback?.Invoke(5, "æ­£åœ¨æ¸…ç©ºç°æœ‰æ•°æ®...");
+
+                    var clearResult = ClearShapefileDataInternal(featureClass, (percentage, message) =>
+                    {
+                        int adjustedProgress = 5 + (percentage * 10) / 100; // æ¸…ç©ºæ“ä½œå ç”¨5%-15%çš„è¿›åº¦
+                        progressCallback?.Invoke(adjustedProgress, $"æ¸…ç©ºæ•°æ®: {message}");
+                    });
+
+                    if (!clearResult.Success)
+                    {
+                        result.ErrorMessage = $"æ¸…ç©ºç°æœ‰æ•°æ®å¤±è´¥: {clearResult.ErrorMessage}";
+                        return result;
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"æˆåŠŸæ¸…ç©º {clearResult.ProcessedFeatureCount} ä¸ªç°æœ‰è¦ç´ ");
+                }
+
+                progressCallback?.Invoke(15, "æ­£åœ¨å‡†å¤‡æ•°æ®å†™å…¥...");
+
+                // åˆ›å»ºæ’å…¥æ¸¸æ ‡
+                insertCursor = featureClass.Insert(true);
+                int totalFeatures = sourceData.Count;
+                int successCount = 0;
+
+                progressCallback?.Invoke(20, $"å¼€å§‹å†™å…¥ {totalFeatures} ä¸ªè¦ç´ ...");
+
+                for (int i = 0; i < totalFeatures; i++)
+                {
+                    try
+                    {
+                        var data = sourceData[i];
+
+                        // åˆ›å»ºè¦ç´ ç¼“å†²åŒº
+                        IFeatureBuffer featureBuffer = featureClass.CreateFeatureBuffer();
+
+                        // è®¾ç½®å‡ ä½•
+                        if (data.Geometry != null)
+                        {
+                            featureBuffer.Shape = data.Geometry;
+                        }
+
+                        // è®¾ç½®å±æ€§
+                        if (data.Attributes != null)
+                        {
+                            foreach (var attr in data.Attributes)
+                            {
+                                int fieldIndex = featureClass.FindField(attr.Key);
+                                if (fieldIndex != -1)
+                                {
+                                    try
+                                    {
+                                        featureBuffer.set_Value(fieldIndex, attr.Value ?? DBNull.Value);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"è®¾ç½®å­—æ®µ {attr.Key} å€¼æ—¶å‡ºé”™: {ex.Message}");
+                                    }
+                                }
+                            }
+                        }
+
+                        // æ’å…¥è¦ç´ 
+                        insertCursor.InsertFeature(featureBuffer);
+                        successCount++;
+
+                        // é‡Šæ”¾ç¼“å†²åŒº
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(featureBuffer);
+
+                        // æ›´æ–°è¿›åº¦
+                        if (i % 50 == 0 || i == totalFeatures - 1)
+                        {
+                            int percentage = 20 + (i * 70) / totalFeatures;
+                            progressCallback?.Invoke(percentage, $"å·²å†™å…¥ {i + 1}/{totalFeatures} ä¸ªè¦ç´ ");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"å†™å…¥ç¬¬ {i + 1} ä¸ªè¦ç´ æ—¶å‡ºé”™: {ex.Message}");
+                    }
+                }
+
+                // æäº¤æ•°æ®
+                insertCursor.Flush();
+
+                result.Success = true;
+                result.ProcessedFeatureCount = successCount;
+                result.OutputPath = targetShapefilePath;
+
+                progressCallback?.Invoke(100, $"æ•°æ®å†™å…¥å®Œæˆï¼ŒæˆåŠŸå†™å…¥ {successCount}/{totalFeatures} ä¸ªè¦ç´ ");
+
+                System.Diagnostics.Debug.WriteLine($"å‘ {targetShapefilePath} æˆåŠŸå†™å…¥ {successCount} ä¸ªè¦ç´ ");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Success = false;
+                result.ErrorMessage = ex.Message;
+                System.Diagnostics.Debug.WriteLine($"å‘Shapefileå†™å…¥æ•°æ®æ—¶å‡ºé”™: {ex.Message}");
+                return result;
+            }
+            finally
+            {
+                // é‡Šæ”¾èµ„æº
+                if (insertCursor != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(insertCursor);
+                if (featureClass != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(featureClass);
+                if (workspace != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(workspace);
+            }
+        }
+
+        /// <summary>
+        /// ğŸ”¥ å†…éƒ¨æ–¹æ³•ï¼šæ¸…ç©ºè¦ç´ ç±»ä¸­çš„æ‰€æœ‰æ•°æ®ï¼ˆä¸é‡Šæ”¾è¦ç´ ç±»å¯¹è±¡ï¼‰
+        /// </summary>
+        /// <param name="featureClass">è¦ç´ ç±»</param>
+        /// <param name="progressCallback">è¿›åº¦å›è°ƒ</param>
+        /// <returns>æ¸…ç©ºæ“ä½œç»“æœ</returns>
+        private static WriteDataResult ClearShapefileDataInternal(IFeatureClass featureClass, ProgressCallback progressCallback = null)
+        {
+            var result = new WriteDataResult();
+            IFeatureCursor updateCursor = null;
+
+            try
+            {
+                // è·å–å½“å‰è¦ç´ æ•°é‡
+                int totalFeatures = featureClass.FeatureCount(null);
+
+                if (totalFeatures == 0)
+                {
+                    progressCallback?.Invoke(100, "è¦ç´ ç±»å·²ç»ä¸ºç©º");
+                    result.Success = true;
+                    result.ProcessedFeatureCount = 0;
+                    return result;
+                }
+
+                progressCallback?.Invoke(0, $"å¼€å§‹æ¸…ç©º {totalFeatures} ä¸ªè¦ç´ ...");
+
+                // åˆ›å»ºæ›´æ–°æ¸¸æ ‡
+                updateCursor = featureClass.Update(null, false);
+                IFeature feature;
+                int deletedCount = 0;
+
+                while ((feature = updateCursor.NextFeature()) != null)
+                {
+                    try
+                    {
+                        // åˆ é™¤è¦ç´ 
+                        updateCursor.DeleteFeature();
+                        deletedCount++;
+
+                        // æ›´æ–°è¿›åº¦
+                        if (deletedCount % 100 == 0 || deletedCount == totalFeatures)
+                        {
+                            int percentage = (deletedCount * 100) / totalFeatures;
+                            progressCallback?.Invoke(percentage, $"å·²æ¸…ç©º {deletedCount}/{totalFeatures} ä¸ªè¦ç´ ");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"åˆ é™¤ç¬¬ {deletedCount + 1} ä¸ªè¦ç´ æ—¶å‡ºé”™: {ex.Message}");
+                    }
+                    finally
+                    {
+                        if (feature != null)
+                            System.Runtime.InteropServices.Marshal.ReleaseComObject(feature);
+                    }
+                }
+
+                // æäº¤åˆ é™¤æ“ä½œ
+                updateCursor.Flush();
+
+                result.Success = true;
+                result.ProcessedFeatureCount = deletedCount;
+                progressCallback?.Invoke(100, $"æˆåŠŸæ¸…ç©º {deletedCount} ä¸ªè¦ç´ ");
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Success = false;
+                result.ErrorMessage = ex.Message;
+                System.Diagnostics.Debug.WriteLine($"æ¸…ç©ºè¦ç´ ç±»æ•°æ®æ—¶å‡ºé”™: {ex.Message}");
+                return result;
+            }
+            finally
+            {
+                if (updateCursor != null)
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(updateCursor);
+            }
+        }
+
+      
+        /// <summary>
+        /// æ‰¹é‡å¤„ç†CZCDYDQCæ•°æ®
+        /// </summary>
+        /// <param name="countyFiles">å¿çº§æ–‡ä»¶ä¿¡æ¯åˆ—è¡¨</param>
+        /// <param name="progressCallback">è¿›åº¦å›è°ƒ</param>
+        /// <returns>å¤„ç†ç»“æœåˆ—è¡¨</returns>
         public static List<CZCDYDProcessor.ProcessingResult> BatchProcessCZCDYDQC(
             List<CZCDYDProcessor.CountyFiles> countyFiles, ProgressCallback progressCallback = null)
         {
@@ -905,7 +1136,7 @@ namespace TestArcMapAddin2.Utils
             try
             {
                 int totalCounties = countyFiles.Count;
-                progressCallback?.Invoke(0, $"¿ªÊ¼ÅúÁ¿´¦Àí {totalCounties} ¸öÏØµÄCZCDYDQCÊı¾İ...");
+                progressCallback?.Invoke(0, $"å¼€å§‹æ‰¹é‡å¤„ç† {totalCounties} ä¸ªå¿çš„CZCDYDQCæ•°æ®...");
 
                 for (int i = 0; i < totalCounties; i++)
                 {
@@ -913,9 +1144,9 @@ namespace TestArcMapAddin2.Utils
                     int startProgress = (i * 100) / totalCounties;
                     int endProgress = ((i + 1) * 100) / totalCounties;
 
-                    progressCallback?.Invoke(startProgress, $"ÕıÔÚ´¦ÀíÏØ´úÂë {countyFile.CountyCode}...");
+                    progressCallback?.Invoke(startProgress, $"æ­£åœ¨å¤„ç†å¿ä»£ç  {countyFile.CountyCode}...");
 
-                    // ´´½¨ÏØ¼¶½ø¶È»Øµ÷
+                    // åˆ›å»ºå¿çº§è¿›åº¦å›è°ƒ
                     CZCDYDProcessor.ProgressCallback countyProgress = (percentage, message) =>
                     {
                         int adjustedProgress = startProgress + (percentage * (endProgress - startProgress)) / 100;
@@ -927,16 +1158,16 @@ namespace TestArcMapAddin2.Utils
 
                     if (!result.Success)
                     {
-                        System.Diagnostics.Debug.WriteLine($"´¦ÀíÏØ {countyFile.CountyCode} Ê§°Ü: {result.ErrorMessage}");
+                        System.Diagnostics.Debug.WriteLine($"å¤„ç†å¿ {countyFile.CountyCode} å¤±è´¥: {result.ErrorMessage}");
                     }
                 }
 
-                progressCallback?.Invoke(100, "ÅúÁ¿´¦ÀíÍê³É");
+                progressCallback?.Invoke(100, "æ‰¹é‡å¤„ç†å®Œæˆ");
                 return results;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ÅúÁ¿´¦ÀíCZCDYDQCÊı¾İÊ±³ö´í: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"æ‰¹é‡å¤„ç†CZCDYDQCæ•°æ®æ—¶å‡ºé”™: {ex.Message}");
                 return results;
             }
         }
