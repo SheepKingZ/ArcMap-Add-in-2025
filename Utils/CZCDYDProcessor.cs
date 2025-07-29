@@ -225,7 +225,7 @@ namespace TestArcMapAddin2.Utils
                                 if (resourceSR != null && czcdydSR != null &&
                                     !IsSpatialReferenceEqual(resourceSR, czcdydSR))
                                 {
-                                    System.Diagnostics.Debug.WriteLine($"投影城镇村几何到资源数据坐标系");
+                                    //System.Diagnostics.Debug.WriteLine($"投影城镇村几何到资源数据坐标系");
                                     try
                                     {
                                         czcdGeometry.Project(resourceSR);
@@ -733,40 +733,206 @@ namespace TestArcMapAddin2.Utils
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"🔥 开始计算特殊字段: {mapping.TargetField}, 类型: {mapping.CalculationType}");
+
                 switch (mapping.CalculationType)
                 {
                     case "COUNTY_CODE_GENERATION":
                         // ZCQCBSM = 县代码 + 9110 + 12位FID
-                        return $"{countyCode}9110{fid:D12}";
+                        var zcqcbsm = $"{countyCode}9110{fid:D12}";
+                        System.Diagnostics.Debug.WriteLine($"🔥 生成ZCQCBSM: {zcqcbsm}");
+                        return zcqcbsm;
+
+                    case "FIXED_YSDM_VALUE":
+                        // 🔥 新增：YSDM = 固定值3410001020
+                        var ysdm = CZCDYDFieldMappings.GetFixedYSDMValue();
+                        System.Diagnostics.Debug.WriteLine($"🔥 设置YSDM: {ysdm}");
+                        return ysdm;
 
                     case "AREA_RATIO_CALCULATION":
-                        // HRCZCMJ = GTDCTBMJ * area2 / area1
-                        return CalculateAreaRatio(sourceFeature, sourceFC, "GTDCTBMJ", "area2", "area1");
+                        // 🔥 修复：HRCZCMJ = 计算交集面积与原始面积的比例
+                        var hrczcmj = CalculateIntersectionAreaRatio(sourceFeature, sourceFC, "GTDCTBMJ");
+                        System.Diagnostics.Debug.WriteLine($"🔥 计算HRCZCMJ: {hrczcmj}");
+                        return hrczcmj;
 
                     case "FIXED_VALUE":
                         // HRCZCTKMJ = 0
+                        System.Diagnostics.Debug.WriteLine($"🔥 设置固定值: 0");
                         return 0.0;
 
                     case "VALUE_RATIO_CALCULATION":
-                        // HRCZCJJJZ = JJJZ * area2 / area1
-                        return CalculateAreaRatio(sourceFeature, sourceFC, "JJJZ", "area2", "area1");
+                        // 🔥 修复：HRCZCJJJZ = 计算价值比例
+                        var hrczcjjjz = CalculateValueRatio(sourceFeature, sourceFC, "JJJZ");
+                        System.Diagnostics.Debug.WriteLine($"🔥 计算HRCZCJJJZ: {hrczcjjjz}");
+                        return hrczcjjjz;
 
                     case "PRICE_CALCULATION":
-                        // TKJJJJZ = HRCZCMJ * TKJHSJG
-                        return CalculatePriceValue(sourceFeature, sourceFC);
+                        // 🔥 修复：TKJJJJZ = 根据已计算的HRCZCMJ和TKJHSJG计算
+                        var tkjjjjz = CalculateRetirementValue(sourceFeature, sourceFC, countyCode);
+                        System.Diagnostics.Debug.WriteLine($"🔥 计算TKJJJJZ: {tkjjjjz}");
+                        return tkjjjjz;
 
                     case "COUNTY_PRICE_LOOKUP":
                         // TKJHSJG = 根据县代码查询最低价
-                        return CountyPriceMapping.GetMinimumPrice(countyCode);
+                        var tkjhsjg = CountyPriceMapping.GetMinimumPrice(countyCode);
+                        System.Diagnostics.Debug.WriteLine($"🔥 查询TKJHSJG: {tkjhsjg}");
+                        return tkjhsjg;
 
                     default:
+                        System.Diagnostics.Debug.WriteLine($"🔥 未知计算类型: {mapping.CalculationType}");
                         return null;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"计算特殊字段 {mapping.TargetField} 时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"🔥 计算特殊字段 {mapping.TargetField} 时出错: {ex.Message}");
                 return null;
+            }
+        }
+        /// <summary>
+        /// 🔥 修复：计算交集面积比例
+        /// </summary>
+        /// <param name="feature">要素</param>
+        /// <param name="fc">要素类</param>
+        /// <param name="baseField">基础面积字段</param>
+        /// <returns>交集面积</returns>
+        private object CalculateIntersectionAreaRatio(IFeature feature, IFeatureClass fc, string baseField)
+        {
+            try
+            {
+                // 获取基础面积（通常是GTDCTBMJ）
+                int baseIndex = fc.FindField(baseField);
+                if (baseIndex == -1)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔥 未找到基础面积字段: {baseField}");
+                    return 0.0;
+                }
+
+                double baseArea = Convert.ToDouble(feature.get_Value(baseIndex));
+                System.Diagnostics.Debug.WriteLine($"🔥 基础面积 {baseField}: {baseArea}");
+
+                // 🔥 关键修复：使用交集几何计算实际面积
+                if (feature.Shape != null && !feature.Shape.IsEmpty)
+                {
+                    IArea areaInterface = feature.Shape as IArea;
+                    if (areaInterface != null)
+                    {
+                        double intersectionArea = Math.Abs(areaInterface.Area);
+                        System.Diagnostics.Debug.WriteLine($"🔥 交集几何面积: {intersectionArea}");
+
+                        // 返回交集面积（在城镇村范围内的面积）
+                        return intersectionArea;
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"🔥 无法计算交集面积，返回基础面积: {baseArea}");
+                return baseArea;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"🔥 计算交集面积比例时出错: {ex.Message}");
+                return 0.0;
+            }
+        }
+        /// <summary>
+        /// 🔥 修复：计算价值比例
+        /// </summary>
+        /// <param name="feature">要素</param>
+        /// <param name="fc">要素类</param>
+        /// <param name="valueField">价值字段</param>
+        /// <returns>按比例计算的价值</returns>
+        private object CalculateValueRatio(IFeature feature, IFeatureClass fc, string valueField)
+        {
+            try
+            {
+                // 获取原始价值
+                int valueIndex = fc.FindField(valueField);
+                if (valueIndex == -1)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔥 未找到价值字段: {valueField}");
+                    return 0.0;
+                }
+
+                double originalValue = Convert.ToDouble(feature.get_Value(valueIndex));
+                System.Diagnostics.Debug.WriteLine($"🔥 原始价值 {valueField}: {originalValue}");
+
+                // 获取基础面积
+                int baseAreaIndex = fc.FindField("GTDCTBMJ");
+                if (baseAreaIndex == -1)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔥 未找到基础面积字段GTDCTBMJ");
+                    return originalValue; // 如果没有面积字段，返回原值
+                }
+
+                double baseArea = Convert.ToDouble(feature.get_Value(baseAreaIndex));
+                System.Diagnostics.Debug.WriteLine($"🔥 基础面积GTDCTBMJ: {baseArea}");
+
+                // 🔥 关键修复：使用交集几何计算面积比例
+                if (feature.Shape != null && !feature.Shape.IsEmpty)
+                {
+                    IArea areaInterface = feature.Shape as IArea;
+                    if (areaInterface != null)
+                    {
+                        double intersectionArea = Math.Abs(areaInterface.Area);
+                        System.Diagnostics.Debug.WriteLine($"🔥 交集几何面积: {intersectionArea}");
+
+                        if (baseArea > 0)
+                        {
+                            double ratio = intersectionArea / baseArea;
+                            if (ratio > 1.0) ratio = 1.0; // 确保比例不超过1
+
+                            double calculatedValue = originalValue * ratio;
+                            System.Diagnostics.Debug.WriteLine($"🔥 面积比例: {ratio:F4}, 计算价值: {calculatedValue}");
+                            return calculatedValue;
+                        }
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"🔥 无法计算比例，返回原始价值: {originalValue}");
+                return originalValue;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"🔥 计算价值比例时出错: {ex.Message}");
+                return 0.0;
+            }
+        }
+        /// <summary>
+        /// 🔥 修复：计算退垦价值
+        /// </summary>
+        /// <param name="feature">要素</param>
+        /// <param name="fc">要素类</param>
+        /// <param name="countyCode">县代码</param>
+        /// <returns>退垦经济价值</returns>
+        private object CalculateRetirementValue(IFeature feature, IFeatureClass fc, string countyCode)
+        {
+            try
+            {
+                // 🔥 关键修复：先计算HRCZCMJ（城镇村面积）
+                double hrczcmj = 0.0;
+                if (feature.Shape != null && !feature.Shape.IsEmpty)
+                {
+                    IArea areaInterface = feature.Shape as IArea;
+                    if (areaInterface != null)
+                    {
+                        hrczcmj = Math.Abs(areaInterface.Area);
+                    }
+                }
+
+                // 🔥 修复：获取退垦价格并转换为double类型
+                decimal tkjhsjgDecimal = CountyPriceMapping.GetMinimumPrice(countyCode);
+                double tkjhsjg = (double)tkjhsjgDecimal;
+
+                double tkjjjjz = hrczcmj * tkjhsjg;
+
+                System.Diagnostics.Debug.WriteLine($"🔥 HRCZCMJ: {hrczcmj}, TKJHSJG: {tkjhsjg}, TKJJJJZ: {tkjjjjz}");
+
+                return tkjjjjz;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"🔥 计算退垦价值时出错: {ex.Message}");
+                return 0.0;
             }
         }
 

@@ -1,46 +1,46 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace TestArcMapAddin2.Utils
 {
     /// <summary>
-    /// CZCDYDQC×Ö¶ÎÓ³ÉäÅäÖÃ¹¤¾ßÀà
-    /// ¶¨Òå´ÓÔ´Êı¾İ£¨SLZYZC_DLTB¡¢CYZYZC_DLTB¡¢SDZYZC_DLTB£©µ½Ä¿±êCZCDYDQCµÄ×Ö¶ÎÓ³Éä
+    /// CZCDYDQCå­—æ®µæ˜ å°„é…ç½®å·¥å…·ç±»
+    /// å®šä¹‰ä»æºæ•°æ®ï¼ˆSLZYZC_DLTBã€CYZYZC_DLTBã€SDZYZC_DLTBï¼‰åˆ°ç›®æ ‡CZCDYDQCçš„å­—æ®µæ˜ å°„
     /// </summary>
     public static class CZCDYDFieldMappings
     {
         /// <summary>
-        /// ×Ö¶ÎÓ³ÉäĞÅÏ¢
+        /// å­—æ®µæ˜ å°„ä¿¡æ¯
         /// </summary>
         public class FieldMapping
         {
             /// <summary>
-            /// Ä¿±ê×Ö¶ÎÃû
+            /// ç›®æ ‡å­—æ®µå
             /// </summary>
             public string TargetField { get; set; }
 
             /// <summary>
-            /// Ô´×Ö¶ÎÃû
+            /// æºå­—æ®µå
             /// </summary>
             public string SourceField { get; set; }
 
             /// <summary>
-            /// ÊÇ·ñÎªÌØÊâ¼ÆËã×Ö¶Î
+            /// æ˜¯å¦ä¸ºç‰¹æ®Šè®¡ç®—å­—æ®µ
             /// </summary>
             public bool IsSpecialCalculation { get; set; }
 
             /// <summary>
-            /// ÌØÊâ¼ÆËãÀàĞÍ
+            /// ç‰¹æ®Šè®¡ç®—ç±»å‹
             /// </summary>
             public string CalculationType { get; set; }
 
             /// <summary>
-            /// ×Ö¶ÎÃèÊö
+            /// å­—æ®µæè¿°
             /// </summary>
             public string Description { get; set; }
 
-            public FieldMapping(string targetField, string sourceField, bool isSpecialCalculation = false, 
+            public FieldMapping(string targetField, string sourceField, bool isSpecialCalculation = false,
                               string calculationType = null, string description = "")
             {
                 TargetField = targetField;
@@ -52,66 +52,67 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// »ñÈ¡±ê×¼µÄ×Ö¶ÎÓ³ÉäÅäÖÃ
-        /// »ùÓÚÓÃ»§Ìá¹©µÄ×Ö¶ÎÓ³ÉäÒªÇó
+        /// è·å–æ ‡å‡†çš„å­—æ®µæ˜ å°„é…ç½®
+        /// åŸºäºç”¨æˆ·æä¾›çš„å­—æ®µæ˜ å°„è¦æ±‚
         /// </summary>
-        /// <returns>×Ö¶ÎÓ³ÉäÅäÖÃÁĞ±í</returns>
+        /// <returns>å­—æ®µæ˜ å°„é…ç½®åˆ—è¡¨</returns>
         public static List<FieldMapping> GetStandardFieldMappings()
         {
             return new List<FieldMapping>
             {
-                // ±ê×¼×Ö¶ÎÓ³Éä
-                new FieldMapping("YZCQCBSM", "ZCQCBSM", false, null, "Ô´µ÷²éÇø±àºÅ"),
-                new FieldMapping("YSDM", "YSDM", false, null, "ÒªËØ´úÂë"),
-                new FieldMapping("XZQDM", "XZQDM", false, null, "ĞĞÕşÇø´úÂë"),
-                new FieldMapping("XZQMC", "XZQMC", false, null, "ĞĞÕşÇøÃû³Æ"),
-                new FieldMapping("GTDCTBBSM", "GTDCTBBSM", false, null, "¹úÍÁµ÷²éÍ¼°ß±àºÅ"),
-                new FieldMapping("DLBM", "GTDCDLBM", false, null, "µØÀà±àÂë"),
-                new FieldMapping("DLMC", "GTDCDLMC", false, null, "µØÀàÃû³Æ"),
-                new FieldMapping("TBDLMJ", "GTDCTBMJ", false, null, "Í¼°ßµØÀàÃæ»ı"),
-                new FieldMapping("HSJG", "HSJG", false, null, "ºËÊµ¼Û¸ñ"),
-                new FieldMapping("TBJJJZ", "JJJZ", false, null, "Í¼°ß¾­¼Ã¼ÛÖµ"),
+                // æ ‡å‡†å­—æ®µæ˜ å°„
+                new FieldMapping("YZCQCBSM", "ZCQCBSM", false, null, "æºè°ƒæŸ¥åŒºç¼–å·"),
+                // ğŸ”¥ ä¿®æ”¹ï¼šYSDMè®¾ç½®ä¸ºå›ºå®šå€¼3410001020
+                new FieldMapping("YSDM", "", true, "FIXED_YSDM_VALUE", "è¦ç´ ä»£ç  = å›ºå®šå€¼3410001020"),
+                new FieldMapping("XZQDM", "XZQDM", false, null, "è¡Œæ”¿åŒºä»£ç "),
+                new FieldMapping("XZQMC", "XZQMC", false, null, "è¡Œæ”¿åŒºåç§°"),
+                new FieldMapping("GTDCTBBSM", "GTDCTBBSM", false, null, "å›½åœŸè°ƒæŸ¥å›¾æ–‘ç¼–å·"),
+                new FieldMapping("DLBM", "GTDCDLBM", false, null, "åœ°ç±»ç¼–ç "),
+                new FieldMapping("DLMC", "GTDCDLMC", false, null, "åœ°ç±»åç§°"),
+                new FieldMapping("TBDLMJ", "GTDCTBMJ", false, null, "å›¾æ–‘åœ°ç±»é¢ç§¯"),
+                new FieldMapping("HSJG", "HSJG", false, null, "æ ¸å®ä»·æ ¼"),
+                new FieldMapping("TBJJJZ", "JJJZ", false, null, "å›¾æ–‘ç»æµä»·å€¼"),
 
-                // ÌØÊâ¼ÆËã×Ö¶Î
-                new FieldMapping("ZCQCBSM", "", true, "COUNTY_CODE_GENERATION", "×ÊÔ´µ÷²éÇø±àºÅ = ÏØ´úÂë+9110+12Î»FID"),
-                new FieldMapping("HRCZCMJ", "", true, "AREA_RATIO_CALCULATION", "ºËÊµ³ÇÕò´åÃæ»ı = GTDCTBMJ * area2 / area1"),
-                new FieldMapping("HRCZCTKMJ", "0", true, "FIXED_VALUE", "ºËÊµ³ÇÕò´åÍË¿ÑÃæ»ı = 0"),
-                new FieldMapping("HRCZCJJJZ", "", true, "VALUE_RATIO_CALCULATION", "ºËÊµ³ÇÕò´å¾­¼Ã¼ÛÖµ = JJJZ * area2 / area1"),
-                new FieldMapping("TKJJJJZ", "", true, "PRICE_CALCULATION", "ÍË¿Ñ¾­¼Ã¼ÛÖµ = HRCZCMJ * TKJHSJG"),
-                new FieldMapping("TKJHSJG", "", true, "COUNTY_PRICE_LOOKUP", "ÍË¿Ñ¼Û¸ñºËÊµ¼Û¸ñ = ¸ù¾İÏØ´úÂë²éÑ¯×îµÍ¼Û")
+                // ç‰¹æ®Šè®¡ç®—å­—æ®µ
+                new FieldMapping("ZCQCBSM", "", true, "COUNTY_CODE_GENERATION", "èµ„æºè°ƒæŸ¥åŒºç¼–å· = å¿ä»£ç +9110+12ä½FID"),
+                new FieldMapping("HRCZCMJ", "", true, "AREA_RATIO_CALCULATION", "æ ¸å®åŸé•‡æ‘é¢ç§¯ = GTDCTBMJ * area2 / area1"),
+                new FieldMapping("HRCZCTKMJ", "0", true, "FIXED_VALUE", "æ ¸å®åŸé•‡æ‘é€€å¦é¢ç§¯ = 0"),
+                new FieldMapping("HRCZCJJJZ", "", true, "VALUE_RATIO_CALCULATION", "æ ¸å®åŸé•‡æ‘ç»æµä»·å€¼ = JJJZ * area2 / area1"),
+                new FieldMapping("TKJJJJZ", "", true, "PRICE_CALCULATION", "é€€å¦ç»æµä»·å€¼ = HRCZCMJ * TKJHSJG"),
+                new FieldMapping("TKJHSJG", "", true, "COUNTY_PRICE_LOOKUP", "é€€å¦ä»·æ ¼æ ¸å®ä»·æ ¼ = æ ¹æ®å¿ä»£ç æŸ¥è¯¢æœ€ä½ä»·")
             };
         }
 
         /// <summary>
-        /// »ñÈ¡CZCDYDQCÊä³ö×Ö¶Î¶¨Òå
-        /// ¶¨Òå×îÖÕÊä³öshapefileµÄÍêÕû×Ö¶Î½á¹¹
+        /// è·å–CZCDYDQCè¾“å‡ºå­—æ®µå®šä¹‰
+        /// å®šä¹‰æœ€ç»ˆè¾“å‡ºshapefileçš„å®Œæ•´å­—æ®µç»“æ„
         /// </summary>
-        /// <returns>Êä³ö×Ö¶Î¶¨ÒåÁĞ±í</returns>
+        /// <returns>è¾“å‡ºå­—æ®µå®šä¹‰åˆ—è¡¨</returns>
         public static List<OutputFieldDefinition> GetOutputFieldDefinitions()
         {
             return new List<OutputFieldDefinition>
             {
-                new OutputFieldDefinition("ZCQCBSM", "×Ö·ûĞÍ", 20, 0, "×ÊÔ´µ÷²éÇø±àºÅ"),
-                new OutputFieldDefinition("YZCQCBSM", "×Ö·ûĞÍ", 20, 0, "Ô´µ÷²éÇø±àºÅ"),
-                new OutputFieldDefinition("YSDM", "×Ö·ûĞÍ", 10, 0, "ÒªËØ´úÂë"),
-                new OutputFieldDefinition("XZQDM", "×Ö·ûĞÍ", 6, 0, "ĞĞÕşÇø´úÂë"),
-                new OutputFieldDefinition("XZQMC", "×Ö·ûĞÍ", 60, 0, "ĞĞÕşÇøÃû³Æ"),
-                new OutputFieldDefinition("GTDCTBBSM", "×Ö·ûĞÍ", 20, 0, "¹úÍÁµ÷²éÍ¼°ß±àºÅ"),
-                new OutputFieldDefinition("DLBM", "×Ö·ûĞÍ", 5, 0, "µØÀà±àÂë"),
-                new OutputFieldDefinition("DLMC", "×Ö·ûĞÍ", 60, 0, "µØÀàÃû³Æ"),
-                new OutputFieldDefinition("TBDLMJ", "Ë«¾«¶È", 18, 2, "Í¼°ßµØÀàÃæ»ı"),
-                new OutputFieldDefinition("HSJG", "Ë«¾«¶È", 12, 2, "ºËÊµ¼Û¸ñ"),
-                new OutputFieldDefinition("TBJJJZ", "Ë«¾«¶È", 18, 2, "Í¼°ß¾­¼Ã¼ÛÖµ"),
-                new OutputFieldDefinition("HRCZCMJ", "Ë«¾«¶È", 18, 2, "ºËÊµ³ÇÕò´åÃæ»ı"),
-                new OutputFieldDefinition("HRCZCTKMJ", "Ë«¾«¶È", 18, 2, "ºËÊµ³ÇÕò´åÍË¿ÑÃæ»ı"),
-                new OutputFieldDefinition("HRCZCJJJZ", "Ë«¾«¶È", 18, 2, "ºËÊµ³ÇÕò´å¾­¼Ã¼ÛÖµ"),
-                new OutputFieldDefinition("TKJJJJZ", "Ë«¾«¶È", 18, 2, "ÍË¿Ñ¾­¼Ã¼ÛÖµ"),
-                new OutputFieldDefinition("TKJHSJG", "Ë«¾«¶È", 12, 2, "ÍË¿Ñ¼Û¸ñºËÊµ¼Û¸ñ")
+                new OutputFieldDefinition("ZCQCBSM", "å­—ç¬¦å‹", 20, 0, "èµ„æºè°ƒæŸ¥åŒºç¼–å·"),
+                new OutputFieldDefinition("YZCQCBSM", "å­—ç¬¦å‹", 20, 0, "æºè°ƒæŸ¥åŒºç¼–å·"),
+                new OutputFieldDefinition("YSDM", "å­—ç¬¦å‹", 10, 0, "è¦ç´ ä»£ç "),
+                new OutputFieldDefinition("XZQDM", "å­—ç¬¦å‹", 6, 0, "è¡Œæ”¿åŒºä»£ç "),
+                new OutputFieldDefinition("XZQMC", "å­—ç¬¦å‹", 60, 0, "è¡Œæ”¿åŒºåç§°"),
+                new OutputFieldDefinition("GTDCTBBSM", "å­—ç¬¦å‹", 20, 0, "å›½åœŸè°ƒæŸ¥å›¾æ–‘ç¼–å·"),
+                new OutputFieldDefinition("DLBM", "å­—ç¬¦å‹", 5, 0, "åœ°ç±»ç¼–ç "),
+                new OutputFieldDefinition("DLMC", "å­—ç¬¦å‹", 60, 0, "åœ°ç±»åç§°"),
+                new OutputFieldDefinition("TBDLMJ", "åŒç²¾åº¦", 18, 2, "å›¾æ–‘åœ°ç±»é¢ç§¯"),
+                new OutputFieldDefinition("HSJG", "åŒç²¾åº¦", 12, 2, "æ ¸å®ä»·æ ¼"),
+                new OutputFieldDefinition("TBJJJZ", "åŒç²¾åº¦", 18, 2, "å›¾æ–‘ç»æµä»·å€¼"),
+                new OutputFieldDefinition("HRCZCMJ", "åŒç²¾åº¦", 18, 2, "æ ¸å®åŸé•‡æ‘é¢ç§¯"),
+                new OutputFieldDefinition("HRCZCTKMJ", "åŒç²¾åº¦", 18, 2, "æ ¸å®åŸé•‡æ‘é€€å¦é¢ç§¯"),
+                new OutputFieldDefinition("HRCZCJJJZ", "åŒç²¾åº¦", 18, 2, "æ ¸å®åŸé•‡æ‘ç»æµä»·å€¼"),
+                new OutputFieldDefinition("TKJJJJZ", "åŒç²¾åº¦", 18, 2, "é€€å¦ç»æµä»·å€¼"),
+                new OutputFieldDefinition("TKJHSJG", "åŒç²¾åº¦", 12, 2, "é€€å¦ä»·æ ¼æ ¸å®ä»·æ ¼")
             };
         }
 
         /// <summary>
-        /// Êä³ö×Ö¶Î¶¨Òå
+        /// è¾“å‡ºå­—æ®µå®šä¹‰
         /// </summary>
         public class OutputFieldDefinition
         {
@@ -131,20 +132,20 @@ namespace TestArcMapAddin2.Utils
             }
 
             /// <summary>
-            /// »ñÈ¡ArcGIS×Ö¶ÎÀàĞÍ
+            /// è·å–ArcGISå­—æ®µç±»å‹
             /// </summary>
-            /// <returns>¶ÔÓ¦µÄArcGIS×Ö¶ÎÀàĞÍ</returns>
+            /// <returns>å¯¹åº”çš„ArcGISå­—æ®µç±»å‹</returns>
             public ESRI.ArcGIS.Geodatabase.esriFieldType GetArcGISFieldType()
             {
                 switch (DataType.ToLower())
                 {
-                    case "×Ö·ûĞÍ":
+                    case "å­—ç¬¦å‹":
                         return ESRI.ArcGIS.Geodatabase.esriFieldType.esriFieldTypeString;
-                    case "ÕûĞÍ":
+                    case "æ•´å‹":
                         return ESRI.ArcGIS.Geodatabase.esriFieldType.esriFieldTypeInteger;
-                    case "Ë«¾«¶È":
+                    case "åŒç²¾åº¦":
                         return ESRI.ArcGIS.Geodatabase.esriFieldType.esriFieldTypeDouble;
-                    case "¸¡µãĞÍ":
+                    case "æµ®ç‚¹å‹":
                         return ESRI.ArcGIS.Geodatabase.esriFieldType.esriFieldTypeSingle;
                     default:
                         return ESRI.ArcGIS.Geodatabase.esriFieldType.esriFieldTypeString;
@@ -153,9 +154,9 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// »ñÈ¡×Ö¶ÎÓ³Éä×Öµä£¨Ä¿±ê×Ö¶ÎÃû -> Ô´×Ö¶ÎÃû£©
+        /// è·å–å­—æ®µæ˜ å°„å­—å…¸ï¼ˆç›®æ ‡å­—æ®µå -> æºå­—æ®µåï¼‰
         /// </summary>
-        /// <returns>×Ö¶ÎÓ³Éä×Öµä</returns>
+        /// <returns>å­—æ®µæ˜ å°„å­—å…¸</returns>
         public static Dictionary<string, string> GetFieldMappingDictionary()
         {
             var mappings = GetStandardFieldMappings();
@@ -173,9 +174,9 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// »ñÈ¡ÌØÊâ¼ÆËã×Ö¶ÎÁĞ±í
+        /// è·å–ç‰¹æ®Šè®¡ç®—å­—æ®µåˆ—è¡¨
         /// </summary>
-        /// <returns>ÌØÊâ¼ÆËã×Ö¶ÎÓ³ÉäÁĞ±í</returns>
+        /// <returns>ç‰¹æ®Šè®¡ç®—å­—æ®µæ˜ å°„åˆ—è¡¨</returns>
         public static List<FieldMapping> GetSpecialCalculationFields()
         {
             var mappings = GetStandardFieldMappings();
@@ -193,10 +194,10 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// ÑéÖ¤×Ö¶ÎÓ³ÉäµÄÍêÕûĞÔ
+        /// éªŒè¯å­—æ®µæ˜ å°„çš„å®Œæ•´æ€§
         /// </summary>
-        /// <param name="sourceFields">Ô´×Ö¶ÎÁĞ±í</param>
-        /// <returns>ÑéÖ¤½á¹û</returns>
+        /// <param name="sourceFields">æºå­—æ®µåˆ—è¡¨</param>
+        /// <returns>éªŒè¯ç»“æœ</returns>
         public static FieldMappingValidationResult ValidateFieldMappings(List<string> sourceFields)
         {
             var result = new FieldMappingValidationResult();
@@ -225,7 +226,7 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// ×Ö¶ÎÓ³ÉäÑéÖ¤½á¹û
+        /// å­—æ®µæ˜ å°„éªŒè¯ç»“æœ
         /// </summary>
         public class FieldMappingValidationResult
         {
@@ -238,73 +239,83 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// ÑéÖ¤ÏØ´úÂëµÄÓĞĞ§ĞÔ
+        /// éªŒè¯å¿ä»£ç çš„æœ‰æ•ˆæ€§
         /// </summary>
-        /// <param name="countyCode">ÏØ´úÂë</param>
-        /// <returns>ÊÇ·ñÓĞĞ§</returns>
+        /// <param name="countyCode">å¿ä»£ç </param>
+        /// <returns>æ˜¯å¦æœ‰æ•ˆ</returns>
         public static bool IsValidCountyCode(string countyCode)
         {
             if (string.IsNullOrEmpty(countyCode))
                 return false;
-                
+
             return countyCode.Length == 6 && countyCode.All(char.IsDigit);
         }
 
         /// <summary>
-        /// Éú³É×ÊÔ´µ÷²éÇø±àºÅ
+        /// ç”Ÿæˆèµ„æºè°ƒæŸ¥åŒºç¼–å·
         /// </summary>
-        /// <param name="countyCode">ÏØ´úÂë</param>
-        /// <param name="fid">ÒªËØID</param>
-        /// <returns>×ÊÔ´µ÷²éÇø±àºÅ</returns>
+        /// <param name="countyCode">å¿ä»£ç </param>
+        /// <param name="fid">è¦ç´ ID</param>
+        /// <returns>èµ„æºè°ƒæŸ¥åŒºç¼–å·</returns>
         public static string GenerateZCQCBSM(string countyCode, int fid)
         {
             if (!IsValidCountyCode(countyCode))
             {
-                throw new ArgumentException("ÎŞĞ§µÄÏØ´úÂë", nameof(countyCode));
+                throw new ArgumentException("æ— æ•ˆçš„å¿ä»£ç ", nameof(countyCode));
             }
-            
+
             return $"{countyCode}9110{fid:D12}";
         }
 
         /// <summary>
-        /// ¼ÆËãÃæ»ı±ÈÀı£¬È·±£²»³¬¹ı1
+        /// ğŸ”¥ æ–°å¢ï¼šè·å–å›ºå®šçš„YSDMå€¼
         /// </summary>
-        /// <param name="baseArea">»ù´¡Ãæ»ı</param>
-        /// <param name="numeratorArea">·Ö×ÓÃæ»ı</param>
-        /// <param name="denominatorArea">·ÖÄ¸Ãæ»ı</param>
-        /// <returns>¼ÆËã½á¹û</returns>
+        /// <returns>å›ºå®šçš„YSDMå€¼</returns>
+        public static string GetFixedYSDMValue()
+        {
+            return "3410001020";
+        }
+
+        /// <summary>
+        /// è®¡ç®—é¢ç§¯æ¯”ä¾‹ï¼Œç¡®ä¿ä¸è¶…è¿‡1
+        /// </summary>
+        /// <param name="baseArea">åŸºç¡€é¢ç§¯</param>
+        /// <param name="numeratorArea">åˆ†å­é¢ç§¯</param>
+        /// <param name="denominatorArea">åˆ†æ¯é¢ç§¯</param>
+        /// <returns>è®¡ç®—ç»“æœ</returns>
         public static double CalculateAreaRatio(double baseArea, double numeratorArea, double denominatorArea)
         {
             if (denominatorArea <= 0)
                 return 0.0;
-                
+
             double ratio = numeratorArea / denominatorArea;
             if (ratio > 1.0)
                 ratio = 1.0;
-                
+
             return baseArea * ratio;
         }
 
         /// <summary>
-        /// ¼ÆËãÍË¿Ñ¾­¼Ã¼ÛÖµ
+        /// è®¡ç®—é€€å¦ç»æµä»·å€¼
         /// </summary>
-        /// <param name="hrczcmj">ºËÊµ³ÇÕò´åÃæ»ı</param>
-        /// <param name="tkjhsjg">ÍË¿Ñ¼Û¸ñºËÊµ¼Û¸ñ</param>
-        /// <returns>ÍË¿Ñ¾­¼Ã¼ÛÖµ</returns>
+        /// <param name="hrczcmj">æ ¸å®åŸé•‡æ‘é¢ç§¯</param>
+        /// <param name="tkjhsjg">é€€å¦ä»·æ ¼æ ¸å®ä»·æ ¼</param>
+        /// <returns>é€€å¦ç»æµä»·å€¼</returns>
         public static double CalculateTKJJJZ(double hrczcmj, double tkjhsjg)
         {
             return hrczcmj * tkjhsjg;
         }
 
         /// <summary>
-        /// »ñÈ¡×Ö¶ÎÓ³ÉäÑéÖ¤¹æÔò
+        /// è·å–å­—æ®µæ˜ å°„éªŒè¯è§„åˆ™
         /// </summary>
-        /// <returns>ÑéÖ¤¹æÔò×Öµä</returns>
+        /// <returns>éªŒè¯è§„åˆ™å­—å…¸</returns>
         public static Dictionary<string, Func<object, bool>> GetFieldValidationRules()
         {
             return new Dictionary<string, Func<object, bool>>
             {
                 ["ZCQCBSM"] = value => value != null && value.ToString().Length == 20,
+                ["YSDM"] = value => value != null && value.ToString() == "3410001020", // ğŸ”¥ ä¿®æ”¹ï¼šYSDMå¿…é¡»ä¸ºå›ºå®šå€¼
                 ["XZQDM"] = value => value != null && IsValidCountyCode(value.ToString()),
                 ["TBDLMJ"] = value => value != null && double.TryParse(value.ToString(), out double area) && area >= 0,
                 ["HRCZCMJ"] = value => value != null && double.TryParse(value.ToString(), out double area) && area >= 0,
@@ -316,20 +327,20 @@ namespace TestArcMapAddin2.Utils
         }
 
         /// <summary>
-        /// ÑéÖ¤ÒªËØÊôĞÔµÄÍêÕûĞÔ
+        /// éªŒè¯è¦ç´ å±æ€§çš„å®Œæ•´æ€§
         /// </summary>
-        /// <param name="featureAttributes">ÒªËØÊôĞÔ×Öµä</param>
-        /// <returns>ÑéÖ¤½á¹û</returns>
+        /// <param name="featureAttributes">è¦ç´ å±æ€§å­—å…¸</param>
+        /// <returns>éªŒè¯ç»“æœ</returns>
         public static FieldValidationResult ValidateFeatureAttributes(Dictionary<string, object> featureAttributes)
         {
             var result = new FieldValidationResult();
             var rules = GetFieldValidationRules();
-            
+
             foreach (var rule in rules)
             {
                 string fieldName = rule.Key;
                 var validator = rule.Value;
-                
+
                 if (featureAttributes.ContainsKey(fieldName))
                 {
                     if (validator(featureAttributes[fieldName]))
@@ -339,21 +350,21 @@ namespace TestArcMapAddin2.Utils
                     else
                     {
                         result.InvalidFields.Add(fieldName);
-                        result.ValidationErrors.Add($"×Ö¶Î {fieldName} ÖµÎŞĞ§: {featureAttributes[fieldName]}");
+                        result.ValidationErrors.Add($"å­—æ®µ {fieldName} å€¼æ— æ•ˆ: {featureAttributes[fieldName]}");
                     }
                 }
                 else
                 {
                     result.MissingFields.Add(fieldName);
-                    result.ValidationErrors.Add($"È±ÉÙ±ØĞè×Ö¶Î: {fieldName}");
+                    result.ValidationErrors.Add($"ç¼ºå°‘å¿…éœ€å­—æ®µ: {fieldName}");
                 }
             }
-            
+
             return result;
         }
 
         /// <summary>
-        /// ×Ö¶ÎÑéÖ¤½á¹û
+        /// å­—æ®µéªŒè¯ç»“æœ
         /// </summary>
         public class FieldValidationResult
         {
@@ -361,7 +372,7 @@ namespace TestArcMapAddin2.Utils
             public List<string> InvalidFields { get; set; } = new List<string>();
             public List<string> MissingFields { get; set; } = new List<string>();
             public List<string> ValidationErrors { get; set; } = new List<string>();
-            
+
             public bool IsValid => InvalidFields.Count == 0 && MissingFields.Count == 0;
             public int TotalFields => ValidFields.Count + InvalidFields.Count + MissingFields.Count;
         }
